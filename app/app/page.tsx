@@ -3841,7 +3841,7 @@ const LoginView = ({
     setNotice(null);
     setLoading(true);
     try {
-      const callbackUrl = buildClientRedirectUrl('/dashboard');
+      const callbackUrl = buildClientRedirectUrl('/auth/callback');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -3856,10 +3856,12 @@ const LoginView = ({
     } catch (err: any) {
       const rawMessage = String(err?.message || '');
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
-        setError('Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /dashboard.');
+        setError(
+          'Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
+        );
       } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
         setError(
-          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/dashboard')} nas URLs permitidas do Supabase.`
+          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
         );
       } else {
         setError(rawMessage || 'Falha ao iniciar login com Google.');
