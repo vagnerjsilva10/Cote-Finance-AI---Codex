@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import {
+  asPrismaServiceUnavailableError,
+  getDatabaseConfigValidationIssue,
+  prisma,
+} from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
   const dbUrl = process.env.DATABASE_URL || '';
+  const dbIssue = getDatabaseConfigValidationIssue();
   let dbHost = 'unknown';
   let dbPort = 'unknown';
 
@@ -23,16 +28,29 @@ export async function GET() {
     }
   }
 
+  if (dbIssue) {
+    return NextResponse.json(
+      {
+        dbHost,
+        dbPort,
+        status: 'error',
+        error: dbIssue,
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     // Test connection
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json({ dbHost, dbPort, status: 'connected' });
   } catch (error: any) {
+    const prismaError = asPrismaServiceUnavailableError(error);
     return NextResponse.json({ 
       dbHost, 
       dbPort, 
       status: 'error', 
-      error: error.message 
-    }, { status: 500 });
+      error: prismaError?.message || error.message 
+    }, { status: prismaError ? 503 : 500 });
   }
 }

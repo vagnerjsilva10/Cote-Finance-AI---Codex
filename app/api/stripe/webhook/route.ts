@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getStripe, STRIPE_NOT_CONFIGURED_RESPONSE, STRIPE_SECRET_KEY_MISSING_ERROR } from '@/lib/stripe';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { logWorkspaceEventSafe, upsertWorkspaceSubscriptionSafe } from '@/lib/server/multi-tenant';
@@ -189,6 +189,49 @@ async function syncSubscriptionBySubscriptionRef(params: {
   }
 }
 
+async function syncWorkspaceStatusByReference(params: {
+  subscriptionId?: string | null;
+  customerId?: string | null;
+  plan: AppPlan | null;
+  status: EntitlementStatus | 'PENDING';
+  currentPeriodEnd?: Date | null;
+  eventType?: string;
+}) {
+  try {
+    const whereClauses: Array<{ stripe_subscription_id?: string; stripe_customer_id?: string }> = [];
+    if (params.subscriptionId) {
+      whereClauses.push({ stripe_subscription_id: params.subscriptionId });
+    }
+    if (params.customerId) {
+      whereClauses.push({ stripe_customer_id: params.customerId });
+    }
+    if (whereClauses.length === 0) return;
+
+    const workspaceSubscriptions = await prisma.workspaceSubscription.findMany({
+      where: {
+        OR: whereClauses,
+      },
+      select: {
+        workspace_id: true,
+      },
+    });
+
+    for (const workspaceSubscription of workspaceSubscriptions) {
+      await syncSubscriptionByWorkspaceId({
+        workspaceId: workspaceSubscription.workspace_id,
+        plan: params.plan,
+        status: params.status,
+        customerId: params.customerId ?? null,
+        subscriptionId: params.subscriptionId ?? null,
+        currentPeriodEnd: params.currentPeriodEnd ?? null,
+        eventType: params.eventType || 'stripe.invoice_synced_by_reference',
+      });
+    }
+  } catch {
+    // Optional table not migrated yet.
+  }
+}
+
 export async function POST(req: Request) {
   let stripe: ReturnType<typeof getStripe>;
 
@@ -327,10 +370,46 @@ export async function POST(req: Request) {
         break;
       }
 
+      case 'invoice.paid':
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
+        const parentSubscription = invoice.parent?.subscription_details?.subscription;
+        const subscriptionId = typeof parentSubscription === 'string' ? parentSubscription : null;
+        const recurringLine = invoice.lines.data.find((line) => {
+          const linePrice = line.pricing?.price_details?.price;
+          if (!linePrice || typeof linePrice === 'string') {
+            return false;
+          }
+          return linePrice.type === 'recurring';
+        }) ?? null;
+        const recurringPrice = recurringLine?.pricing?.price_details?.price;
+        const priceId =
+          typeof recurringPrice === 'string' ? recurringPrice : recurringPrice?.id ?? null;
+        const plan = planFromPriceId(priceId);
+        const status = event.type === 'invoice.paid' ? 'ACTIVE' : 'PENDING';
+
+        await syncWorkspaceStatusByReference({
+          subscriptionId,
+          customerId,
+          plan,
+          status,
+          eventType: `stripe.${event.type}`,
+        });
+
+        break;
+      }
+
       default:
         break;
     }
   } catch (error) {
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      console.error('Stripe webhook database unavailable:', prismaError.detail || prismaError.message);
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+
     console.error('Stripe webhook processing error:', error);
   }
 

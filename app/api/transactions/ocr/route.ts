@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Type } from '@google/genai';
 import { getGeminiClient, GEMINI_KEY_MISSING_ERROR } from '@/lib/gemini';
+import { asPrismaServiceUnavailableError } from '@/lib/prisma';
 import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
 export const dynamic = 'force-dynamic';
@@ -126,6 +127,15 @@ export async function POST(req: Request) {
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+
+    if (error instanceof Error && error.message === GEMINI_KEY_MISSING_ERROR) {
+      return NextResponse.json({ error: GEMINI_KEY_MISSING_ERROR }, { status: 503 });
     }
 
     console.error('OCR Route Error:', error);

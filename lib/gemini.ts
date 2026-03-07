@@ -4,10 +4,10 @@ import { GoogleGenAI } from '@google/genai';
 let geminiClient: GoogleGenAI | null = null;
 
 export const GEMINI_KEY_MISSING_ERROR =
-  'Gemini API key is missing. Defina GEMINI_API_KEY ou NEXT_PUBLIC_GEMINI_API_KEY.';
+  'Gemini nao configurado. Defina GEMINI_API_KEY no servidor.';
 
 export function getGeminiClient() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error(GEMINI_KEY_MISSING_ERROR);
   }

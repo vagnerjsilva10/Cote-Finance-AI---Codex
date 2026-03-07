@@ -1,7 +1,8 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, assertPrismaAvailable, prisma } from '@/lib/prisma';
 import { getSupabaseClient } from '@/lib/supabase';
+import { setupUser } from '@/lib/auth-setup';
 
 export type WorkspacePlan = 'FREE' | 'PRO' | 'PREMIUM';
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -87,7 +88,17 @@ function isMissingTableError(error: unknown) {
   );
 }
 
+function throwWorkspaceDatabaseError(error: unknown): never {
+  const prismaError = asPrismaServiceUnavailableError(error);
+  if (prismaError) {
+    throw new HttpError(503, prismaError.message);
+  }
+  throw error instanceof Error ? error : new Error(String(error || 'Unknown workspace database error'));
+}
+
 async function findWorkspaceMemberships(userId: string) {
+  assertPrismaAvailable();
+
   try {
     return await prisma.workspaceMember.findMany({
       where: { user_id: userId },
@@ -106,22 +117,33 @@ async function findWorkspaceMemberships(userId: string) {
       },
     });
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      throwWorkspaceDatabaseError(error);
+    }
+
     if (!isMissingTableError(error)) throw error;
 
-    return prisma.workspaceMember.findMany({
-      where: { user_id: userId },
-      include: {
-        workspace: {
-          select: {
-            id: true,
-            name: true,
+    try {
+      return await prisma.workspaceMember.findMany({
+        where: { user_id: userId },
+        include: {
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
-      },
-      orderBy: {
-        workspace_id: 'asc',
-      },
-    });
+        orderBy: {
+          workspace_id: 'asc',
+        },
+      });
+    } catch (fallbackError) {
+      if (asPrismaServiceUnavailableError(fallbackError)) {
+        throwWorkspaceDatabaseError(fallbackError);
+      }
+      throw fallbackError;
+    }
   }
 }
 
@@ -152,7 +174,15 @@ export async function requireAuthenticatedUser(req: Request) {
 export async function resolveWorkspaceContext(req: Request): Promise<WorkspaceContext> {
   const authUser = await requireAuthenticatedUser(req);
 
-  const memberships = await findWorkspaceMemberships(authUser.userId);
+  let memberships = await findWorkspaceMemberships(authUser.userId);
+
+  if (memberships.length === 0 && authUser.email) {
+    await setupUser({
+      id: authUser.userId,
+      email: authUser.email,
+    });
+    memberships = await findWorkspaceMemberships(authUser.userId);
+  }
 
   if (memberships.length === 0) {
     throw new HttpError(404, 'Workspace not found');
@@ -182,6 +212,8 @@ export async function resolveWorkspaceContext(req: Request): Promise<WorkspaceCo
 }
 
 async function readUserFallbackPlan(userId: string): Promise<WorkspacePlan> {
+  assertPrismaAvailable();
+
   try {
     const [entitlement, profile] = await Promise.all([
       prisma.subscriptionEntitlement.findUnique({
@@ -200,6 +232,9 @@ async function readUserFallbackPlan(userId: string): Promise<WorkspacePlan> {
 
     return normalizePlan(profile?.plan);
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      throwWorkspaceDatabaseError(error);
+    }
     if (!isMissingTableError(error)) {
       throw error;
     }
@@ -208,6 +243,8 @@ async function readUserFallbackPlan(userId: string): Promise<WorkspacePlan> {
 }
 
 export async function getWorkspacePlan(workspaceId: string, userId: string): Promise<WorkspacePlan> {
+  assertPrismaAvailable();
+
   try {
     const workspaceSubscription = await prisma.workspaceSubscription.findUnique({
       where: { workspace_id: workspaceId },
@@ -218,6 +255,9 @@ export async function getWorkspacePlan(workspaceId: string, userId: string): Pro
       return normalizePlan(workspaceSubscription.plan);
     }
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      throwWorkspaceDatabaseError(error);
+    }
     if (!isMissingTableError(error)) {
       throw error;
     }
@@ -254,12 +294,17 @@ export async function upsertWorkspaceSubscriptionSafe(params: {
       },
     });
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      return null;
+    }
     if (isMissingTableError(error)) return null;
     throw error;
   }
 }
 
 export async function getWorkspacePreference(workspaceId: string, userId: string) {
+  assertPrismaAvailable();
+
   try {
     const preference = await prisma.workspacePreference.findUnique({
       where: { workspace_id: workspaceId },
@@ -273,6 +318,9 @@ export async function getWorkspacePreference(workspaceId: string, userId: string
 
     if (preference) return preference;
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      throwWorkspaceDatabaseError(error);
+    }
     if (!isMissingTableError(error)) {
       throw error;
     }
@@ -285,6 +333,9 @@ export async function getWorkspacePreference(workspaceId: string, userId: string
       select: { tutorial_completed: true },
     });
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      throwWorkspaceDatabaseError(error);
+    }
     if (!isMissingTableError(error)) {
       throw error;
     }
@@ -333,22 +384,31 @@ export async function upsertWorkspacePreferenceSafe(params: {
       },
     });
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      return null;
+    }
     if (!isMissingTableError(error)) {
       throw error;
     }
 
     if (params.userId && typeof params.onboardingCompleted === 'boolean') {
-      await prisma.profile.upsert({
-        where: { user_id: params.userId },
-        update: {
-          tutorial_completed: params.onboardingCompleted,
-        },
-        create: {
-          user_id: params.userId,
-          tutorial_completed: params.onboardingCompleted,
-          plan: 'FREE',
-        },
-      });
+      try {
+        await prisma.profile.upsert({
+          where: { user_id: params.userId },
+          update: {
+            tutorial_completed: params.onboardingCompleted,
+          },
+          create: {
+            user_id: params.userId,
+            tutorial_completed: params.onboardingCompleted,
+            plan: 'FREE',
+          },
+        });
+      } catch (profileError) {
+        if (!asPrismaServiceUnavailableError(profileError)) {
+          throw profileError;
+        }
+      }
     }
     return null;
   }
@@ -370,6 +430,9 @@ export async function logWorkspaceEventSafe(params: {
       },
     });
   } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      return;
+    }
     if (!isMissingTableError(error)) {
       console.error('Workspace event write failed:', error);
     }

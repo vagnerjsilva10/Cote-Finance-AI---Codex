@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "prebuild": "npm run clean",
     "prisma:generate": "prisma generate",
-    "build": "npm run prisma:generate && next build",
+    "build": "node scripts/build-with-prisma.js",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "clean": "node scripts/clean-next.js"
@@ -16,6 +16,8 @@
     "@google/genai": "^1.43.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.0.0",
+    "@stripe/react-stripe-js": "^3.9.2",
+    "@stripe/stripe-js": "^7.8.0",
     "@supabase/supabase-js": "^2.98.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.13.6",

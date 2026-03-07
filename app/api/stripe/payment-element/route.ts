@@ -1,0 +1,294 @@
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import {
+  getStripe,
+  STRIPE_NOT_CONFIGURED_RESPONSE,
+  STRIPE_SECRET_KEY_MISSING_ERROR,
+} from '@/lib/stripe';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import {
+  HttpError,
+  logWorkspaceEventSafe,
+  resolveWorkspaceContext,
+  upsertWorkspaceSubscriptionSafe,
+} from '@/lib/server/multi-tenant';
+import {
+  ensureStripeCustomer,
+  isMissingOptionalBillingTableError,
+  resolveStripePlan,
+} from '@/lib/server/stripe-billing';
+import {
+  BILLING_PLAN_DETAILS,
+  formatBillingPrice,
+  normalizeBillingPlan,
+  type BillingIntervalCode,
+  type BillingPlanCode,
+} from '@/lib/billing/plans';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+type PaymentElementBody = {
+  priceId?: string;
+  plan?: string;
+  interval?: string;
+};
+
+type CheckoutIntentType = 'payment' | 'setup' | 'none';
+
+function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
+  const currentPeriodEndRaw = (subscription as Stripe.Subscription & { current_period_end?: number | null })
+    .current_period_end;
+
+  return typeof currentPeriodEndRaw === 'number' ? new Date(currentPeriodEndRaw * 1000) : null;
+}
+
+function getExpandedInvoice(invoice: string | Stripe.Invoice | null) {
+  if (!invoice || typeof invoice === 'string') {
+    return null;
+  }
+
+  return invoice;
+}
+
+function getExpandedSetupIntent(setupIntent: string | Stripe.SetupIntent | null) {
+  if (!setupIntent || typeof setupIntent === 'string') {
+    return null;
+  }
+
+  return setupIntent;
+}
+
+function serializeSubscriptionState(params: {
+  subscription: Stripe.Subscription;
+  plan: BillingPlanCode;
+  interval: BillingIntervalCode;
+  workspaceId: string;
+  workspaceName: string;
+  customerId: string;
+  priceId: string;
+}) {
+  const invoice = getExpandedInvoice(params.subscription.latest_invoice);
+  const setupIntent = getExpandedSetupIntent(params.subscription.pending_setup_intent);
+  const paymentClientSecret = invoice?.confirmation_secret?.client_secret ?? null;
+  const setupClientSecret = setupIntent?.client_secret ?? null;
+  const clientSecret = paymentClientSecret || setupClientSecret;
+  const intentType: CheckoutIntentType = paymentClientSecret
+    ? 'payment'
+    : setupClientSecret
+      ? 'setup'
+      : 'none';
+
+  return {
+    clientSecret,
+    intentType,
+    subscriptionId: params.subscription.id,
+    customerId: params.customerId,
+    workspaceId: params.workspaceId,
+    workspaceName: params.workspaceName,
+    plan: params.plan,
+    interval: params.interval,
+    planName: BILLING_PLAN_DETAILS[params.plan].name,
+    priceLabel: formatBillingPrice(params.plan, params.interval),
+    priceId: params.priceId,
+    subscriptionStatus: params.subscription.status,
+    requiresConfirmation: intentType !== 'none',
+  };
+}
+
+async function readWorkspaceSubscription(workspaceId: string) {
+  try {
+    return await prisma.workspaceSubscription.findUnique({
+      where: { workspace_id: workspaceId },
+      select: {
+        plan: true,
+        status: true,
+        stripe_customer_id: true,
+        stripe_subscription_id: true,
+      },
+    });
+  } catch (error) {
+    if (!isMissingOptionalBillingTableError(error)) {
+      throw error;
+    }
+    return null;
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const stripe = getStripe();
+    const body = (await req.json().catch(() => null)) as PaymentElementBody | null;
+
+    if (!body) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const resolved = resolveStripePlan(body);
+    if (!resolved.plan || !resolved.interval || !resolved.priceId) {
+      return NextResponse.json(
+        { error: 'Missing or invalid billing selection. Send a valid plan/interval.' },
+        { status: 400 }
+      );
+    }
+
+    const context = await resolveWorkspaceContext(req);
+    const workspace = context.workspaces.find((item) => item.id === context.workspaceId);
+    const workspaceName = workspace?.name || 'Workspace atual';
+    const customerId = await ensureStripeCustomer({
+      userId: context.userId,
+      email: context.email,
+    });
+
+    const existingWorkspaceSubscription = await readWorkspaceSubscription(context.workspaceId);
+    const existingSubscriptionId = existingWorkspaceSubscription?.stripe_subscription_id ?? null;
+
+    if (existingSubscriptionId) {
+      try {
+        const existingSubscription = await stripe.subscriptions.retrieve(existingSubscriptionId, {
+          expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+        });
+
+        const existingPriceId = existingSubscription.items.data[0]?.price?.id ?? null;
+        const requestedSelectionMatches =
+          existingPriceId === resolved.priceId ||
+          normalizeBillingPlan(existingWorkspaceSubscription?.plan) === resolved.plan;
+
+        if (
+          existingSubscription.status === 'active' ||
+          existingSubscription.status === 'trialing' ||
+          existingSubscription.status === 'paused'
+        ) {
+          return NextResponse.json(
+            {
+              error:
+                'Este workspace já possui uma assinatura ativa. Use o portal do cliente para trocar ou cancelar o plano.',
+              code: 'ACTIVE_SUBSCRIPTION_EXISTS',
+              currentPlan: existingWorkspaceSubscription?.plan || null,
+              currentStatus: existingSubscription.status,
+            },
+            { status: 409 }
+          );
+        }
+
+        if (
+          requestedSelectionMatches &&
+          (existingSubscription.status === 'incomplete' || existingSubscription.status === 'past_due')
+        ) {
+          const reusedState = serializeSubscriptionState({
+            subscription: existingSubscription,
+            plan: resolved.plan,
+            interval: resolved.interval,
+            workspaceId: context.workspaceId,
+            workspaceName,
+            customerId,
+            priceId: resolved.priceId,
+          });
+
+          await upsertWorkspaceSubscriptionSafe({
+            workspaceId: context.workspaceId,
+            plan: resolved.plan,
+            status: reusedState.requiresConfirmation ? 'PENDING' : 'ACTIVE',
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: existingSubscription.id,
+            currentPeriodEnd: getCurrentPeriodEnd(existingSubscription),
+          });
+
+          return NextResponse.json(reusedState);
+        }
+
+        if (existingSubscription.status === 'incomplete' && !requestedSelectionMatches) {
+          await stripe.subscriptions.cancel(existingSubscription.id);
+        }
+      } catch (error) {
+        console.warn('Stripe Payment Element: failed to inspect existing subscription', error);
+      }
+    }
+
+    const subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [
+        {
+          price: resolved.priceId,
+        },
+      ],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        save_default_payment_method: 'on_subscription',
+      },
+      trial_from_plan: true,
+      metadata: {
+        userId: context.userId,
+        workspaceId: context.workspaceId,
+        plan: resolved.plan,
+        interval: resolved.interval,
+        priceId: resolved.priceId,
+      },
+      expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+    });
+
+    const checkoutState = serializeSubscriptionState({
+      subscription,
+      plan: resolved.plan,
+      interval: resolved.interval,
+      workspaceId: context.workspaceId,
+      workspaceName,
+      customerId,
+      priceId: resolved.priceId,
+    });
+
+    if (!checkoutState.clientSecret && checkoutState.intentType !== 'none') {
+      return NextResponse.json(
+        { error: 'Stripe did not return a client secret for the subscription.' },
+        { status: 500 }
+      );
+    }
+
+    await upsertWorkspaceSubscriptionSafe({
+      workspaceId: context.workspaceId,
+      plan: resolved.plan,
+      status:
+        checkoutState.subscriptionStatus === 'active' || checkoutState.subscriptionStatus === 'trialing'
+          ? 'ACTIVE'
+          : 'PENDING',
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscription.id,
+      currentPeriodEnd: getCurrentPeriodEnd(subscription),
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      type: 'stripe.payment_element_started',
+      payload: {
+        plan: resolved.plan,
+        interval: resolved.interval,
+        priceId: resolved.priceId,
+        subscriptionId: subscription.id,
+        intentType: checkoutState.intentType,
+      },
+    });
+
+    return NextResponse.json(checkoutState);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+
+    if (error instanceof Error && error.message === STRIPE_SECRET_KEY_MISSING_ERROR) {
+      return NextResponse.json({ error: STRIPE_NOT_CONFIGURED_RESPONSE }, { status: 500 });
+    }
+
+    console.error('Stripe Payment Element Error:', error);
+    const message =
+      process.env.NODE_ENV === 'development' && error instanceof Error
+        ? error.message
+        : 'Failed to initialize embedded checkout.';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

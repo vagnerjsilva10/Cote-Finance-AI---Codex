@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
   getWorkspacePlan,
@@ -41,6 +41,11 @@ export async function GET(req: Request) {
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
     }
 
     console.error('Workspaces GET Error:', error);
@@ -122,6 +127,11 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
     }
 
     console.error('Workspaces POST Error:', error);

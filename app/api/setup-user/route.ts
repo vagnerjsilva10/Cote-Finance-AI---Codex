@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
 import { getWorkspacePlan, getWorkspacePreference } from '@/lib/server/multi-tenant';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, assertPrismaAvailable, prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +36,8 @@ export async function POST(req: Request) {
     if (error || !user?.id || !user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    assertPrismaAvailable();
 
     const dbData = await setupUser({
       id: user.id,
@@ -115,6 +117,11 @@ export async function POST(req: Request) {
       })),
     });
   } catch (error: any) {
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+
     console.error('Setup User Error:', error);
     return NextResponse.json({ error: error.message || 'Failed to setup user' }, { status: 500 });
   }

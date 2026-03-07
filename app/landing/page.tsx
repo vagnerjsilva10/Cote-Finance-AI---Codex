@@ -22,6 +22,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
 const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
@@ -226,39 +227,25 @@ export default function LandingPage() {
         const workspaceId =
           typeof dashboardPayload?.activeWorkspaceId === 'string' ? dashboardPayload.activeWorkspaceId : undefined;
 
-        const priceMap: Record<CheckoutPlan, string> = {
-          'Pro Mensal': process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY ?? '',
-          'Premium Mensal': process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM_MONTHLY ?? '',
-        };
-
-        const priceId = priceMap[plan];
-        if (!priceId) {
-          throw new Error('Preço Stripe não configurado para este plano.');
+        const selectedPlan = parseCheckoutPlanLabel(plan);
+        if (!selectedPlan) {
+          throw new Error('Plano invalido para checkout.');
         }
 
-        const checkoutResponse = await fetch('/api/stripe/checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            ...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
-          },
-          body: JSON.stringify({ priceId }),
-        });
-
-        const payload = await checkoutResponse.json().catch(() => ({}));
-        if (!checkoutResponse.ok || !payload?.url) {
-          throw new Error(typeof payload?.error === 'string' ? payload.error : 'Erro ao iniciar checkout.');
-        }
-
-        window.location.href = payload.url as string;
+        router.push(
+          getCheckoutPath({
+            plan: selectedPlan.plan,
+            interval: selectedPlan.interval,
+            workspaceId,
+          })
+        );
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao iniciar checkout.');
       } finally {
         setIsBusy(false);
       }
     },
-    [openAuth, startFree]
+    [openAuth, router, startFree]
   );
 
   return (
@@ -849,7 +836,10 @@ export default function LandingPage() {
           viewport={{ once: true, margin: '-120px' }}
           transition={{ duration: 0.45 }}
         >
-          <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+          <h2
+            className="text-center text-3xl font-bold text-white md:text-4xl"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
             Escolha o plano ideal para você
           </h2>
 

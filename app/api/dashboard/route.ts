@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
   PLAN_LIMITS,
@@ -383,9 +383,16 @@ export async function GET(req: Request) {
         getWorkspaceEventSnapshot(workspaceId),
       ]);
 
-    if (!workspace) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
-    }
+    const safeWorkspace =
+      workspace ||
+      ({
+        id: workspaceId,
+        name: context.workspaces.find((item) => item.id === workspaceId)?.name || 'Minha Conta',
+        whatsapp_status: null,
+        whatsapp_phone_number: null,
+        created_at: null,
+        updated_at: null,
+      } as const);
 
     const totalBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
     const totalInvested = investments.reduce<number>(
@@ -402,7 +409,7 @@ export async function GET(req: Request) {
       goals,
       investments,
       debts,
-      workspace,
+      workspace: safeWorkspace,
       plan,
       limits: PLAN_LIMITS[plan],
       currentMonthTransactionCount,
@@ -421,6 +428,11 @@ export async function GET(req: Request) {
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
     }
 
     console.error('Dashboard API Error:', error);

@@ -8,7 +8,7 @@ import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -104,8 +104,13 @@ Retorne a categoria mais provável e um score de confiança (0-1).`,
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+
     if (error instanceof Error && error.message === GEMINI_KEY_MISSING_ERROR) {
-      return NextResponse.json({ error: GEMINI_KEY_MISSING_ERROR }, { status: 500 });
+      return NextResponse.json({ error: GEMINI_KEY_MISSING_ERROR }, { status: 503 });
     }
 
     console.error('AI Classify Error:', error);

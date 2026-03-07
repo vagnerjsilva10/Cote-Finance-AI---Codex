@@ -1,6 +1,5 @@
 import 'server-only';
-import { prisma } from './prisma';
-import { normalizePlan } from '@/lib/server/multi-tenant';
+import { assertPrismaAvailable, prisma } from './prisma';
 import { Prisma } from '@prisma/client';
 
 type AuthUserInput = {
@@ -23,7 +22,19 @@ const isMissingTableError = (error: unknown) => {
   return /does not exist|relation .* does not exist|column .* does not exist/i.test(message);
 };
 
+const normalizeWorkspacePlan = (value: string | null | undefined) => {
+  const normalized = String(value || '')
+    .trim()
+    .toUpperCase();
+  if (normalized === 'PRO' || normalized === 'PREMIUM') {
+    return normalized;
+  }
+  return 'FREE';
+};
+
 export async function setupUser(input: AuthUserInput) {
+  assertPrismaAvailable();
+
   const { id, email, name, avatar_url, company_name, segment, objective } = input;
   const defaultWorkspaceName =
     (company_name?.trim() || (name ? `${name.split(' ')[0]} Workspace` : null)) || 'Minha Conta';
@@ -122,7 +133,7 @@ export async function setupUser(input: AuthUserInput) {
           update: {},
           create: {
             workspace_id: workspace.id,
-            plan: normalizePlan(userPlan?.plan),
+            plan: normalizeWorkspacePlan(userPlan?.plan),
             status: 'ACTIVE',
           },
         });

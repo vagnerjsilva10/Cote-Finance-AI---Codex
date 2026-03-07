@@ -54,6 +54,7 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 
 // --- Types ---
 
@@ -2132,9 +2133,13 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         }),
       });
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao gerar insights.');
+      }
       setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi possível gerar insights no momento.');
     } catch (error) {
       console.error('AI Insight error:', error);
+      setAiInsight('Não foi possível gerar insights no momento.');
     } finally {
       setIsGeneratingInsight(false);
     }
@@ -4029,6 +4034,7 @@ export default function App() {
       setGoals([]);
       setInvestments([]);
       setDebts([]);
+      setDashboardInsights(['Não foi possível carregar os insights no momento.']);
     } finally {
       setDataLoading(false);
     }
@@ -4648,50 +4654,24 @@ export default function App() {
   const handleUpgrade = React.useCallback(
     async (plan: string) => {
       try {
-        const priceMap: Record<string, string> = {
-          'Pro Mensal': process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY || 'price_pro_monthly',
-          'Pro Anual': process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL || 'price_pro_annual',
-          'Premium Mensal': process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM_MONTHLY || 'price_premium_monthly',
-          'Premium Anual': process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM_ANNUAL || 'price_premium_annual',
-        };
+        const selectedPlan = parseCheckoutPlanLabel(plan);
+        if (!selectedPlan) {
+          alert('Plano invalido para checkout.');
+          return;
+        }
 
-        const response = await fetch('/api/stripe/checkout', {
-          method: 'POST',
-          headers: await getAuthHeaders(true),
-          body: JSON.stringify({
-            priceId: priceMap[plan] || 'price_pro_monthly',
-          }),
+        window.location.href = getCheckoutPath({
+          plan: selectedPlan.plan,
+          interval: selectedPlan.interval,
+          workspaceId: activeWorkspaceId,
         });
-
-        const raw = await response.text();
-        const data = raw ? JSON.parse(raw) : {};
-
-        if (!response.ok) {
-          const message =
-            typeof data?.error === 'string'
-              ? data.error
-              : `Falha ao iniciar checkout (HTTP ${response.status}).`;
-          if (message.toLowerCase().includes('stripe')) {
-            alert('Stripe não configurado.');
-          } else {
-            alert(message);
-          }
-          return;
-        }
-
-        if (data.url) {
-          window.location.href = data.url;
-          return;
-        }
-
-        alert('Não foi possível iniciar checkout.');
       } catch (error) {
         console.error('Upgrade error:', error);
         const message = error instanceof Error ? error.message : 'erro desconhecido';
         alert(`Erro ao iniciar upgrade: ${message}`);
       }
     },
-    [getAuthHeaders]
+    [activeWorkspaceId]
   );
 
   const handleManageSubscription = async () => {
