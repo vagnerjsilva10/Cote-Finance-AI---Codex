@@ -17,6 +17,14 @@ const OTP_TYPES: ReadonlyArray<EmailOtpType> = [
 const isEmailOtpType = (value: string): value is EmailOtpType =>
   OTP_TYPES.includes(value as EmailOtpType);
 
+function normalizeAuthErrorMessage(message: string) {
+  if (/Unable to exchange external code/i.test(message)) {
+    return 'Não foi possível concluir o login com Google. Tente novamente para gerar um novo link de autenticação.';
+  }
+
+  return message;
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
@@ -46,7 +54,10 @@ export default function AuthCallbackPage() {
         if (authCode) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
           if (exchangeError) {
-            throw exchangeError;
+            const existingSession = (await supabase.auth.getSession()).data.session;
+            if (!existingSession?.access_token) {
+              throw exchangeError;
+            }
           }
         } else if (tokenHash && authType) {
           if (!isEmailOtpType(authType)) {
@@ -97,7 +108,8 @@ export default function AuthCallbackPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Falha na autenticação.');
+          const rawMessage = err instanceof Error ? err.message : 'Falha na autenticação.';
+          setError(normalizeAuthErrorMessage(rawMessage));
         }
       }
     };

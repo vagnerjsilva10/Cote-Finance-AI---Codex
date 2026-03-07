@@ -25,7 +25,13 @@ function readSupabaseEnv() {
 export function getSupabaseClient() {
   if (!supabaseClient) {
     const { supabaseUrl, supabaseAnonKey } = readSupabaseEnv();
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
+    });
   }
 
   return supabaseClient;
