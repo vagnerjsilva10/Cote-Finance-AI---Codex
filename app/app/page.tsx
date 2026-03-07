@@ -502,6 +502,26 @@ const formatSubscriptionDate = (isoString?: string | null) => {
   });
 };
 
+const normalizePublicAppUrl = (value?: string | null) =>
+  String(value || '')
+    .trim()
+    .replace(/\/+$/, '');
+
+const getClientAppUrl = () => {
+  const envUrl = normalizePublicAppUrl(process.env.NEXT_PUBLIC_APP_URL);
+  if (envUrl) return envUrl;
+  if (typeof window !== 'undefined') {
+    return normalizePublicAppUrl(window.location.origin);
+  }
+  return '';
+};
+
+const buildClientRedirectUrl = (path: string) => {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const baseUrl = getClientAppUrl();
+  return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath;
+};
+
 const getCurrentMonthKey = () => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -3620,34 +3640,29 @@ const LoginView = ({
   onLoginSuccess: (user: any) => void;
   initialMode?: 'login' | 'signup';
 }) => {
-  const [fullName, setFullName] = React.useState('');
-  const [companyName, setCompanyName] = React.useState('');
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
   const [email, setEmail] = React.useState('');
-  const [phone, setPhone] = React.useState('');
-  const [segment, setSegment] = React.useState('');
-  const [operationsCount, setOperationsCount] = React.useState('');
-  const [objective, setObjective] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   const [isLogin, setIsLogin] = React.useState(initialMode !== 'signup');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
+  const [pendingConfirmationEmail, setPendingConfirmationEmail] = React.useState('');
 
   React.useEffect(() => {
     setIsLogin(initialMode !== 'signup');
   }, [initialMode]);
 
   const validateSignup = () => {
-    if (!fullName.trim()) return 'Informe seu nome completo.';
-    if (!companyName.trim()) return 'Informe o nome da empresa/operação.';
+    if (!firstName.trim()) return 'Informe seu nome.';
+    if (!lastName.trim()) return 'Informe seu sobrenome.';
     if (!email.trim()) return 'Informe seu e-mail.';
     if (password.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
       return 'A senha deve conter letras e números.';
     }
-    if (password !== confirmPassword) return 'A confirmação de senha não confere.';
     if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
     return null;
   };
@@ -3663,6 +3678,32 @@ const LoginView = ({
     if (!setupRes.ok && setupData.error) throw new Error(setupData.error);
   };
 
+  const handleResendConfirmation = async () => {
+    if (!pendingConfirmationEmail || loading) return;
+
+    setLoading(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email: pendingConfirmationEmail,
+        options: {
+          emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
+        },
+      });
+
+      if (resendError) throw resendError;
+
+      setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
+    } catch (err: any) {
+      setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -3670,6 +3711,8 @@ const LoginView = ({
     setNotice(null);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+
       if (!isLogin) {
         const validationError = validateSignup();
         if (validationError) {
@@ -3681,24 +3724,17 @@ const LoginView = ({
 
       let result: any;
       if (isLogin) {
-        result = await supabase.auth.signInWithPassword({ email, password });
+        result = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       } else {
-        const normalizedOperationsCount = Number(operationsCount);
         result = await supabase.auth.signUp({
-          email,
+          email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/confirm`,
+            emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
             data: {
-              full_name: fullName.trim(),
-              company_name: companyName.trim(),
-              phone: phone.trim() || null,
-              segment: segment.trim() || null,
-              operations_count:
-                Number.isFinite(normalizedOperationsCount) && normalizedOperationsCount > 0
-                  ? normalizedOperationsCount
-                  : null,
-              objective: objective.trim() || null,
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+              full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
             },
           },
         });
@@ -3717,12 +3753,12 @@ const LoginView = ({
       }
 
       if (!isLogin) {
+        setPendingConfirmationEmail(normalizedEmail);
         setNotice(
-          'Conta criada com sucesso. Verifique seu e-mail para confirmar o cadastro e depois faça login.'
+          'Conta criada com sucesso. Enviamos um e-mail de confirmação para continuar seu acesso.'
         );
         setIsLogin(true);
         setPassword('');
-        setConfirmPassword('');
         return;
       }
 
@@ -3736,11 +3772,14 @@ const LoginView = ({
 
   const handleGoogleLogin = async () => {
     setError(null);
+    setNotice(null);
+    setLoading(true);
     try {
+      const callbackUrl = buildClientRedirectUrl('/auth/callback');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -3752,22 +3791,24 @@ const LoginView = ({
       const rawMessage = String(err?.message || '');
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError('Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.');
-        return;
+      } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
+        setError(
+          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase e do Google.`
+        );
+      } else {
+        setError(rawMessage || 'Falha ao iniciar login com Google.');
       }
-      if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
-        setError('Redirect URI inválida. Adicione http://localhost:3000/auth/callback nas URLs permitidas do Supabase/Google.');
-        return;
-      }
-      setError(rawMessage || 'Falha ao iniciar login com Google.');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-950 px-4 py-8">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl"
+        className="w-full max-w-[420px] rounded-[2rem] border border-slate-800 bg-slate-900/95 p-7 shadow-[0_32px_120px_-60px_rgba(16,185,129,0.45)]"
       >
         <div className="flex flex-col items-center mb-8">
           <Image
@@ -3778,44 +3819,44 @@ const LoginView = ({
             priority
             className="w-full max-w-[340px] h-auto mb-3"
           />
-          <p className="text-slate-500 text-sm mt-1">
-            {isLogin
-              ? 'Acesse sua operação com segurança'
-              : 'Crie sua conta com onboarding inteligente'}
-          </p>
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-black text-white">
+              {isLogin ? 'Entre na sua conta' : 'Crie sua conta gratuita'}
+            </h1>
+            <p className="text-sm text-slate-400">
+              {isLogin
+                ? 'Acesse seu workspace com segurança e continue de onde parou.'
+                : 'Comece a organizar suas finanças em minutos.'}
+            </p>
+          </div>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4 max-h-[62vh] overflow-y-auto custom-scrollbar pr-1">
+        <form onSubmit={handleAuth} className="space-y-4">
           {!isLogin && (
-            <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                  Nome completo
-                </label>
+                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Nome</label>
                 <input
                   type="text"
                   required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                  placeholder="Seu nome completo"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                  placeholder="Seu nome"
                 />
               </div>
-
               <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                  Empresa ou operação
-                </label>
+                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Sobrenome</label>
                 <input
                   type="text"
                   required
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                  placeholder="Ex: Studio Alpha, Loja Centro"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                  placeholder="Seu sobrenome"
                 />
               </div>
-            </>
+            </div>
           )}
 
           <div className="space-y-2">
@@ -3825,8 +3866,8 @@ const LoginView = ({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-              placeholder="seu@email.com"
+              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+              placeholder="seuemail@exemplo.com"
             />
           </div>
           <div className="space-y-2">
@@ -3836,120 +3877,67 @@ const LoginView = ({
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-              placeholder="********"
+              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+              placeholder={isLogin ? 'Digite sua senha' : 'Crie uma senha segura'}
             />
           </div>
 
           {!isLogin && (
             <>
-              <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                  Confirmar senha
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                  placeholder="********"
-                />
-              </div>
+              <p className="rounded-xl border border-slate-800 bg-slate-800/40 px-4 py-3 text-xs text-slate-400">
+                Empresa, telefone, segmento, quantidade de contas e objetivo financeiro podem ser definidos depois, no onboarding.
+              </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                    Telefone (opcional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                    placeholder="+55 11 99999-9999"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                    Segmento (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={segment}
-                    onChange={(e) => setSegment(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                    placeholder="SaaS, varejo, agência..."
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                    Quantidade de contas (opcional)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={operationsCount}
-                    onChange={(e) => setOperationsCount(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                    placeholder="1"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                    Objetivo principal (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={objective}
-                    onChange={(e) => setObjective(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-all"
-                    placeholder="Organizar fluxo de caixa"
-                  />
-                </div>
-              </div>
-
-              <label className="flex items-start gap-2 text-xs text-slate-400">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3 text-xs text-slate-300">
                 <input
                   type="checkbox"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-0.5"
+                  className="mt-0.5 rounded border-slate-600 bg-slate-900"
                 />
                 <span>
-                  Aceito os termos de uso e política de privacidade para criar minha conta.
+                  Aceito os termos de uso e politica de privacidade.
                 </span>
               </label>
             </>
           )}
 
-          {notice && <p className="text-emerald-400 text-xs font-bold">{notice}</p>}
-          {error && <p className="text-rose-500 text-xs font-bold">{error}</p>}
+          {notice && <p className="text-emerald-400 text-xs font-bold leading-relaxed">{notice}</p>}
+          {error && <p className="text-rose-500 text-xs font-bold leading-relaxed">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+            className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
           >
-            {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar Conta'}
+            {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar conta gratuita'}
           </button>
+
+          {pendingConfirmationEmail ? (
+            <button
+              type="button"
+              onClick={handleResendConfirmation}
+              disabled={loading}
+              className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
+            >
+              Nao recebeu o e-mail? Reenviar confirmacao
+            </button>
+          ) : null}
         </form>
 
-        <div className="relative my-8">
+        <div className="relative my-7">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-800"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-900 px-2 text-slate-500 font-bold">Ou continue com</span>
+            <span className="bg-slate-900 px-3 text-slate-500 font-bold">Ou continue com</span>
           </div>
         </div>
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold hover:bg-slate-700 transition-all flex items-center justify-center gap-3"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-700 bg-slate-800 py-3 text-sm font-bold text-white transition-all hover:bg-slate-700 disabled:opacity-50"
         >
           <svg className="size-5" viewBox="0 0 24 24">
             <path
@@ -3969,19 +3957,24 @@ const LoginView = ({
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Google
+          Continuar com Google
         </button>
 
-        <p className="text-center text-slate-500 text-sm mt-8">
-          {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+        <p className="mt-7 text-center text-sm text-slate-500">
+          {isLogin ? 'Nao tem uma conta?' : 'Ja tem uma conta?'}
           <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-emerald-500 font-bold ml-1 hover:underline"
+            onClick={() => {
+              setError(null);
+              setNotice(null);
+              setIsLogin(!isLogin);
+            }}
+            className="ml-1 font-bold text-emerald-500 hover:underline"
           >
-            {isLogin ? 'Cadastre-se' : 'Faça Login'}
+            {isLogin ? 'Criar conta gratuita' : 'Entrar'}
           </button>
         </p>
       </motion.div>
+      </div>
     </div>
   );
 };
