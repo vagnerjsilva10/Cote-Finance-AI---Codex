@@ -28,10 +28,10 @@ export default function DashboardAuthBridgePage() {
         <Image
           src="/brand/cote-finance-ai-logo.svg"
           alt="Cote Finance AI - By Cote Juros"
-          width={380}
-          height={102}
+          width={460}
+          height={122}
           priority
-          className="mx-auto mb-5 h-auto w-full max-w-[320px]"
+          className="mx-auto mb-5 h-auto w-full max-w-[360px]"
         />
         <div className="mx-auto mb-4 size-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin" />
         <h1 className="text-lg font-bold text-white">Preparando seu acesso</h1>

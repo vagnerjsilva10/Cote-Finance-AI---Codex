@@ -256,15 +256,15 @@ export default function LandingPage() {
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,.18),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(59,130,246,.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
 
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:justify-between">
+          <Link href="/" className="flex items-center justify-center">
             <Image
               src="/brand/cote-finance-ai-logo.svg"
               alt="Cote Finance AI - By Cote Juros"
-              width={420}
-              height={112}
+              width={560}
+              height={150}
               priority
-              className="h-16 w-auto"
+              className="h-20 w-auto sm:h-24"
             />
           </Link>
 
@@ -286,17 +286,17 @@ export default function LandingPage() {
             </button>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <button
               onClick={() => openAuth('login')}
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500"
+              className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 sm:min-w-[112px]"
             >
               Entrar
             </button>
             <button
               onClick={startFree}
               disabled={isBusy}
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:min-w-[152px]"
             >
               Começar grátis
             </button>
@@ -304,7 +304,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl space-y-24 px-6 pb-24 pt-14">
+      <main className="mx-auto w-full max-w-7xl space-y-16 px-4 pb-20 pt-10 sm:space-y-20 sm:px-6 sm:pb-24 sm:pt-14">
         <section
           className="grid items-center gap-10 lg:grid-cols-2"
           onMouseMove={handleHeroMouseMove}
@@ -314,7 +314,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="space-y-6"
+            className="space-y-6 text-center lg:text-left"
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
               <Sparkles size={14} /> Controle financeiro com IA
@@ -326,11 +326,11 @@ export default function LandingPage() {
               O Cote Finance AI organiza suas finanças automaticamente e usa inteligência artificial para mostrar como
               você pode economizar mais e tomar decisões financeiras melhores.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
               <button
                 onClick={startFree}
                 disabled={isBusy}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
               >
                 Começar grátis <ArrowRight size={16} />
               </button>
@@ -353,17 +353,17 @@ export default function LandingPage() {
               transform: `translate3d(${heroParallax.x * -0.35}px, ${heroParallax.y * -0.35}px, 0)`,
             }}
           >
-            <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-r from-emerald-500/25 via-cyan-500/12 to-blue-500/20 blur-3xl" />
-            <div className="relative rounded-[2rem] border border-white/10 bg-slate-900/75 p-5">
+            <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-emerald-500/25 via-cyan-500/12 to-blue-500/20 blur-3xl sm:-inset-6" />
+            <div className="relative rounded-[2rem] border border-white/10 bg-slate-900/75 p-4 sm:p-5">
               <motion.div
                 animate={{ y: [0, -4, 0] }}
                 transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="mb-3 inline-flex items-center rounded-xl border border-cyan-300/25 bg-slate-900/90 px-3 py-2 text-xs text-cyan-200"
+                className="mb-3 inline-flex items-center rounded-xl border border-cyan-300/25 bg-slate-900/90 px-3 py-2 text-[11px] text-cyan-200 sm:text-xs"
               >
                 IA detectou 3 oportunidades
               </motion.div>
               <p className="mb-4 text-xs uppercase tracking-[0.2em] text-slate-500">Preview do dashboard</p>
-              <div className="mb-3 grid grid-cols-3 gap-3">
+              <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
                   <p className="text-[11px] text-emerald-200">Saldo</p>
                   <p className="text-sm font-bold text-emerald-100">R$ 12.830</p>
@@ -406,7 +406,7 @@ export default function LandingPage() {
             <motion.div
               animate={{ y: [0, 6, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -bottom-5 -right-6 hidden rounded-xl border border-emerald-300/25 bg-slate-900/90 px-3 py-2 text-xs text-emerald-200 md:block"
+              className="absolute -bottom-5 -right-6 hidden rounded-xl border border-emerald-300/25 bg-slate-900/90 px-3 py-2 text-xs text-emerald-200 xl:block"
               style={{
                 transform: `translate3d(${heroParallax.x * 0.45}px, ${heroParallax.y * 0.45}px, 0)`,
               }}
@@ -425,7 +425,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(248,113,113,.14),transparent_55%)]" />
-          <div className="space-y-5 lg:order-2">
+          <div className="space-y-5 text-center lg:order-2 lg:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-rose-300/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100">
               <TrendingDown size={14} /> Problemas comuns no controle financeiro
             </span>
@@ -434,19 +434,19 @@ export default function LandingPage() {
             </h2>
             <p className="text-slate-300">No fim do mês, a sensação é sempre a mesma:</p>
             <ul className="space-y-2 text-slate-200">
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingDown size={16} className="text-rose-300" /> o dinheiro simplesmente desaparece
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingDown size={16} className="text-rose-300" /> pequenas despesas viram grandes problemas
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingDown size={16} className="text-rose-300" /> falta clareza para decidir com confiança
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingDown size={16} className="text-rose-300" /> economizar parece difícil de manter
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingDown size={16} className="text-rose-300" /> decisões financeiras viram um chute
               </li>
             </ul>
@@ -466,10 +466,10 @@ export default function LandingPage() {
               className="h-auto w-full"
               priority={false}
             />
-            <div className="absolute -left-3 top-5 rounded-lg border border-rose-300/25 bg-slate-900/90 px-3 py-1.5 text-xs text-rose-200">
+            <div className="absolute left-3 top-3 rounded-lg border border-rose-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-rose-200 sm:left-2 sm:top-4 sm:text-xs lg:-left-3 lg:top-5">
               Sem visibilidade real
             </div>
-            <div className="absolute -right-3 bottom-7 rounded-lg border border-amber-300/25 bg-slate-900/90 px-3 py-1.5 text-xs text-amber-200">
+            <div className="absolute right-3 bottom-4 rounded-lg border border-amber-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-amber-200 sm:right-2 sm:bottom-5 sm:text-xs lg:-right-3 lg:bottom-7">
               Decisão no escuro
             </div>
           </motion.div>
@@ -497,15 +497,15 @@ export default function LandingPage() {
               className="h-auto w-full"
               priority={false}
             />
-            <div className="absolute -left-3 top-5 rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-xs text-emerald-200">
+            <div className="absolute left-3 top-3 rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-emerald-200 sm:left-2 sm:top-4 sm:text-xs lg:-left-3 lg:top-5">
               Insights automáticos
             </div>
-            <div className="absolute -right-3 bottom-7 rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-xs text-cyan-200">
+            <div className="absolute right-3 bottom-4 rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-cyan-200 sm:right-2 sm:bottom-5 sm:text-xs lg:-right-3 lg:bottom-7">
               Clareza em minutos
             </div>
           </motion.div>
 
-          <div className="space-y-5 lg:order-1">
+          <div className="space-y-5 text-center lg:order-1 lg:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
               <Sparkles size={14} /> Clareza financeira com inteligência artificial
             </span>
@@ -514,16 +514,16 @@ export default function LandingPage() {
             </h2>
             <p className="text-emerald-100">Com o Cote Finance AI você entende exatamente o que acontece com seu dinheiro:</p>
             <ul className="space-y-2 text-emerald-100">
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <Check size={16} className="text-emerald-300" /> exatamente para onde seu dinheiro está indo
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <Check size={16} className="text-emerald-300" /> quais gastos estão aumentando e por quê
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <Check size={16} className="text-emerald-300" /> quanto você realmente está economizando
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <Check size={16} className="text-emerald-300" /> quais ações práticas melhoram seus hábitos financeiros
               </li>
             </ul>
@@ -605,8 +605,8 @@ export default function LandingPage() {
 
             <motion.div whileHover={{ y: -3, scale: 1.005 }} className="relative mx-auto w-full max-w-3xl">
               <div className="absolute -inset-5 rounded-[2.3rem] bg-[radial-gradient(circle_at_35%_15%,rgba(16,185,129,.35),transparent_48%),radial-gradient(circle_at_70%_80%,rgba(16,185,129,.18),transparent_45%)] blur-2xl" />
-              <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/88 p-4 ring-1 ring-emerald-300/15 shadow-[0_28px_95px_-38px_rgba(16,185,129,.68)]">
-                <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-900/80 px-4 py-2">
+              <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/88 p-3 sm:p-4 ring-1 ring-emerald-300/15 shadow-[0_28px_95px_-38px_rgba(16,185,129,.68)]">
+                <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-900/80 px-3 py-2 sm:px-4">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-400/90" />
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-400/90" />
@@ -699,14 +699,14 @@ export default function LandingPage() {
               <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -left-5 top-12 hidden rounded-xl border border-cyan-300/30 bg-slate-900/92 px-3 py-2 text-xs text-cyan-200 md:block"
+                className="absolute -left-5 top-12 hidden rounded-xl border border-cyan-300/30 bg-slate-900/92 px-3 py-2 text-xs text-cyan-200 xl:block"
               >
                 IA analisando padrões
               </motion.div>
               <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -right-4 bottom-10 hidden rounded-xl border border-emerald-300/30 bg-slate-900/92 px-3 py-2 text-xs text-emerald-200 md:block"
+                className="absolute -right-4 bottom-10 hidden rounded-xl border border-emerald-300/30 bg-slate-900/92 px-3 py-2 text-xs text-emerald-200 xl:block"
               >
                 Atualização em tempo real
               </motion.div>
@@ -752,22 +752,22 @@ export default function LandingPage() {
         >
           <div className="pointer-events-none absolute inset-x-0 top-10 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(16,185,129,.15),transparent_54%)]" />
 
-          <div className="space-y-5">
+          <div className="space-y-5 text-center lg:text-left">
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Clareza financeira muda tudo.
             </h2>
             <p className="text-slate-300">Quando você entende seus números:</p>
             <ul className="space-y-2 text-slate-200">
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingUp size={16} className="text-emerald-300" /> economizar fica mais fácil
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingUp size={16} className="text-emerald-300" /> decisões ficam melhores
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingUp size={16} className="text-emerald-300" /> metas se tornam possíveis
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center justify-center gap-2 lg:justify-start">
                 <TrendingUp size={16} className="text-emerald-300" /> dívidas deixam de ser um problema
               </li>
             </ul>
@@ -789,17 +789,17 @@ export default function LandingPage() {
               className="h-auto w-full"
               priority={false}
             />
-            <div className="absolute -left-3 top-7 rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-xs text-emerald-200">
+            <div className="absolute left-3 top-4 rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-emerald-200 sm:left-2 sm:top-5 sm:text-xs lg:-left-3 lg:top-7">
               + Controle
             </div>
-            <div className="absolute -right-3 bottom-7 rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-xs text-cyan-200">
+            <div className="absolute right-3 bottom-4 rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-cyan-200 sm:right-2 sm:bottom-5 sm:text-xs lg:-right-3 lg:bottom-7">
               + Decisões melhores
             </div>
           </motion.div>
         </motion.section>
 
         <motion.section
-          className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 md:p-10"
+          className="rounded-3xl border border-white/10 bg-slate-900/50 p-6 md:p-10"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -939,7 +939,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col justify-between gap-3 px-6 text-xs text-slate-500 sm:flex-row">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center text-xs text-slate-500 sm:flex-row sm:px-6 sm:text-left">
           <p>© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <Link href="/app" className="hover:text-slate-300">

@@ -204,10 +204,10 @@ function CheckoutLoadingShell() {
             <Image
               src="/brand/cote-finance-ai-logo.svg"
               alt="Cote Finance AI - By Cote Juros"
-              width={480}
-              height={128}
+              width={560}
+              height={150}
               priority
-              className="h-20 w-auto"
+              className="h-24 w-auto"
             />
           </Link>
         </div>
@@ -564,10 +564,10 @@ function CheckoutPageContent() {
             <Image
               src="/brand/cote-finance-ai-logo.svg"
               alt="Cote Finance AI - By Cote Juros"
-              width={480}
-              height={128}
+              width={560}
+              height={150}
               priority
-              className="h-20 w-auto"
+              className="h-24 w-auto"
             />
           </Link>
         </div>

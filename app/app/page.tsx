@@ -3879,10 +3879,10 @@ const LoginView = ({
           <Image
             src="/brand/cote-finance-ai-logo.svg"
             alt="Cote Finance AI - By Cote Juros"
-            width={380}
-            height={102}
+            width={480}
+            height={128}
             priority
-            className="w-full max-w-[340px] h-auto mb-3"
+            className="mb-3 h-auto w-full max-w-[380px]"
           />
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-black text-white">
@@ -6303,9 +6303,9 @@ export default function App() {
           <Image
             src="/brand/cote-finance-ai-logo.svg"
             alt="Cote Finance AI - By Cote Juros"
-            width={330}
-            height={88}
-            className="w-full max-w-[240px] h-auto"
+            width={420}
+            height={112}
+            className="h-auto w-full max-w-[280px]"
           />
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-500 hover:text-white">
             <X size={20} />
