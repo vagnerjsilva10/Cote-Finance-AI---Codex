@@ -100,6 +100,7 @@ function EmbeddedPaymentForm(props: {
   const stripe = useStripe();
   const elements = useElements();
   const [status, setStatus] = React.useState<FormStatus>('idle');
+  const [isPaymentElementReady, setIsPaymentElementReady] = React.useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -108,6 +109,20 @@ function EmbeddedPaymentForm(props: {
     setStatus('submitting');
 
     try {
+      const paymentElement = elements.getElement(PaymentElement);
+      if (!paymentElement) {
+        props.onError('O formulario de pagamento ainda nao terminou de carregar. Aguarde alguns segundos e tente novamente.');
+        setStatus('idle');
+        return;
+      }
+
+      const submission = await elements.submit();
+      if (submission.error) {
+        props.onError(submission.error.message || 'Nao foi possivel validar o formulario de pagamento.');
+        setStatus('idle');
+        return;
+      }
+
       const result =
         props.intentType === 'setup'
           ? await stripe.confirmSetup({
@@ -153,17 +168,21 @@ function EmbeddedPaymentForm(props: {
               },
             },
           }}
+          onReady={() => setIsPaymentElementReady(true)}
         />
       </div>
 
       <button
         type="submit"
-        disabled={!stripe || !elements || status === 'submitting'}
+        disabled={!stripe || !elements || status === 'submitting' || !isPaymentElementReady}
         className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-bold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === 'submitting' ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
         {status === 'submitting' ? 'Confirmando pagamento...' : props.submitLabel}
       </button>
+      {!isPaymentElementReady ? (
+        <p className="text-center text-xs text-slate-500">Carregando formulario de pagamento seguro...</p>
+      ) : null}
       <p className="text-center text-xs text-slate-400">{props.helperText}</p>
     </form>
   );
