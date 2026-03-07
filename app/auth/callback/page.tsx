@@ -39,6 +39,7 @@ export default function AuthCallbackPage() {
         const authCode = url.searchParams.get('code');
         const tokenHash = url.searchParams.get('token_hash');
         const authType = url.searchParams.get('type');
+        let resolvedSession = (await supabase.auth.getSession()).data.session;
 
         const authError =
           url.searchParams.get('error_description') ||
@@ -52,28 +53,34 @@ export default function AuthCallbackPage() {
         }
 
         if (authCode) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
+          const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
           if (exchangeError) {
             const existingSession = (await supabase.auth.getSession()).data.session;
             if (!existingSession?.access_token) {
               throw exchangeError;
             }
+            resolvedSession = existingSession;
+          } else if (exchangeData?.session?.access_token) {
+            resolvedSession = exchangeData.session;
           }
         } else if (tokenHash && authType) {
           if (!isEmailOtpType(authType)) {
             throw new Error('Tipo de confirmação inválido.');
           }
 
-          const { error: verifyError } = await supabase.auth.verifyOtp({
+          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type: authType,
           });
           if (verifyError) {
             throw verifyError;
           }
+          if (verifyData?.session?.access_token) {
+            resolvedSession = verifyData.session;
+          }
         }
 
-        let session = (await supabase.auth.getSession()).data.session;
+        let session = resolvedSession || (await supabase.auth.getSession()).data.session;
         let attempts = 0;
         while (!session?.access_token && attempts < 8) {
           await new Promise((resolve) => setTimeout(resolve, 350));
