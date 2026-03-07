@@ -1,0 +1,3 @@
+HOME_STATUS=C:\Users\Marlon
+CHECKOUT_STATUS=500
+CHECKOUT_BODY={"error":"Stripe não configurado. Defina STRIPE_SECRET_KEY no .env"}

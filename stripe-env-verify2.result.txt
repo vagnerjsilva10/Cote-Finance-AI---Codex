@@ -1,0 +1,2 @@
+CHECKOUT_STATUS=401
+CHECKOUT_BODY={"error":"Unauthorized"}

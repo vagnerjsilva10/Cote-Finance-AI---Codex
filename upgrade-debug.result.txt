@@ -1,0 +1,2 @@
+STATUS=request_failed
+BODY=Impossível conectar-se ao servidor remoto

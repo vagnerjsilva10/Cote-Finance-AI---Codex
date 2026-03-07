@@ -1,0 +1,33 @@
+[diag] 200 GET /api/diag :: {"dbHost":"aws-1-sa-east-1.pooler.supabase.com","dbPort":"6543","status":"connected"}
+[dashboard] 401 GET /api/dashboard :: {"error":"Unauthorized"}
+[onboarding.get] 401 GET /api/onboarding :: {"error":"Unauthorized"}
+[workspaces.get] 401 GET /api/workspaces :: {"error":"Unauthorized"}
+[transactions.get] 401 GET /api/transactions :: {"error":"Unauthorized"}
+[goals.get] 401 GET /api/goals :: {"error":"Unauthorized"}
+[debts.get] 401 GET /api/debts :: {"error":"Unauthorized"}
+[investments.get] 401 GET /api/investments :: {"error":"Unauthorized"}
+[suggest-category.get] 401 GET /api/transactions/suggest-category?description=uber :: {"error":"Unauthorized"}
+[whatsapp.webhook.get] 403 GET /api/whatsapp/webhook :: Forbidden
+[stripe.checkout.post] 401 POST /api/stripe/checkout :: {"error":"Unauthorized"}
+[stripe.portal.post] 401 POST /api/stripe/portal :: {"error":"Unauthorized"}
+[stripe.webhook.post] 400 POST /api/stripe/webhook :: {"error":"Missing Stripe-Signature header"}
+[setup-user.post] 401 POST /api/setup-user :: {"error":"Missing bearer token"}
+[auth.setup.post] 401 POST /api/auth/setup :: {"error":"Missing bearer token"}
+[onboarding.post] 401 POST /api/onboarding :: {"error":"Unauthorized"}
+[workspaces.post] 401 POST /api/workspaces :: {"error":"Unauthorized"}
+[transactions.post] 401 POST /api/transactions :: {"error":"Unauthorized"}
+[transactions.patch] 401 PATCH /api/transactions :: {"error":"Unauthorized"}
+[transactions.delete] 401 DELETE /api/transactions :: {"error":"Unauthorized"}
+[goals.post] 401 POST /api/goals :: {"error":"Unauthorized"}
+[goals.patch] 401 PATCH /api/goals :: {"error":"Unauthorized"}
+[goals.delete] 401 DELETE /api/goals :: {"error":"Unauthorized"}
+[debts.post] 401 POST /api/debts :: {"error":"Unauthorized"}
+[debts.patch] 401 PATCH /api/debts :: {"error":"Unauthorized"}
+[debts.delete] 401 DELETE /api/debts :: {"error":"Unauthorized"}
+[investments.post] 401 POST /api/investments :: {"error":"Unauthorized"}
+[investments.patch] 401 PATCH /api/investments :: {"error":"Unauthorized"}
+[investments.delete] 401 DELETE /api/investments :: {"error":"Unauthorized"}
+[transactions.ocr.post] 401 POST /api/transactions/ocr :: {"error":"Unauthorized"}
+[workspace.whatsapp.post] 401 POST /api/workspace/whatsapp :: {"error":"Unauthorized"}
+[ai.classify.post] 401 POST /api/ai/classify :: {"error":"Unauthorized"}
+[ai.chat.post] 401 POST /api/ai/chat :: {"error":"Unauthorized"}

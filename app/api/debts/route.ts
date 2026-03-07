@@ -1,0 +1,257 @@
+import { Prisma } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import {
+  HttpError,
+  logWorkspaceEventSafe,
+  resolveWorkspaceContext,
+} from '@/lib/server/multi-tenant';
+
+type DebtBody = {
+  id?: string;
+  creditor?: string;
+  originalAmount?: number | string;
+  remainingAmount?: number | string;
+  interestRateMonthly?: number | string;
+  dueDay?: number | string;
+  category?: string;
+  status?: string;
+};
+
+const parseAmount = (value: unknown) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const parseInteger = (value: unknown) => {
+  if (typeof value === 'number') return Number.isInteger(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const normalizeDebtStatus = (value: string | undefined) => {
+  const normalized = String(value || '')
+    .trim()
+    .toUpperCase();
+  if (normalized === 'QUITADA' || normalized === 'PAID') return 'PAID';
+  return 'ACTIVE';
+};
+
+const isMissingTableError = (error: unknown) => {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021';
+  }
+  return false;
+};
+
+const buildMissingTableResponse = () =>
+  NextResponse.json(
+    {
+      error: 'Tabela de dívidas indisponível. Execute `npx prisma db push` para aplicar o schema atual.',
+    },
+    { status: 503 }
+  );
+
+export async function GET(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const debts = await prisma.debt.findMany({
+      where: { workspace_id: context.workspaceId },
+      orderBy: { created_at: 'desc' },
+    });
+    return NextResponse.json(debts);
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    if (isMissingTableError(error)) {
+      return NextResponse.json([]);
+    }
+    console.error('Debts GET Error:', error);
+    return NextResponse.json({ error: error?.message || 'Failed to fetch debts' }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const body = (await req.json().catch(() => null)) as DebtBody | null;
+    if (!body) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const creditor = (body.creditor || '').trim();
+    const originalAmount = parseAmount(body.originalAmount);
+    const remainingAmount = parseAmount(body.remainingAmount);
+    const interestRateMonthly = parseAmount(body.interestRateMonthly);
+    const dueDay = parseInteger(body.dueDay);
+    const category = (body.category || '').trim() || 'Outros';
+    const status = normalizeDebtStatus(body.status);
+
+    if (!creditor) {
+      return NextResponse.json({ error: 'Creditor is required' }, { status: 400 });
+    }
+    if (!originalAmount || originalAmount <= 0) {
+      return NextResponse.json({ error: 'Invalid original amount' }, { status: 400 });
+    }
+    if (remainingAmount === null || remainingAmount < 0) {
+      return NextResponse.json({ error: 'Invalid remaining amount' }, { status: 400 });
+    }
+    if (interestRateMonthly === null || interestRateMonthly < 0) {
+      return NextResponse.json({ error: 'Invalid monthly interest rate' }, { status: 400 });
+    }
+    if (!dueDay || dueDay < 1 || dueDay > 31) {
+      return NextResponse.json({ error: 'Invalid due day' }, { status: 400 });
+    }
+
+    const debt = await prisma.debt.create({
+      data: {
+        workspace_id: context.workspaceId,
+        creditor,
+        original_amount: originalAmount,
+        remaining_amount: remainingAmount,
+        interest_rate_monthly: interestRateMonthly,
+        due_day: dueDay,
+        category,
+        status,
+      },
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      type: 'debt.created',
+      payload: {
+        debtId: debt.id,
+      },
+    });
+
+    return NextResponse.json(debt, { status: 201 });
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    if (isMissingTableError(error)) {
+      return buildMissingTableResponse();
+    }
+    console.error('Debts POST Error:', error);
+    return NextResponse.json({ error: error?.message || 'Failed to create debt' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const body = (await req.json().catch(() => null)) as DebtBody | null;
+    if (!body?.id) {
+      return NextResponse.json({ error: 'Debt id is required' }, { status: 400 });
+    }
+
+    const existing = await prisma.debt.findFirst({
+      where: {
+        id: body.id,
+        workspace_id: context.workspaceId,
+      },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Debt not found' }, { status: 404 });
+    }
+
+    const creditor = body.creditor?.trim();
+    const originalAmount = parseAmount(body.originalAmount);
+    const remainingAmount = parseAmount(body.remainingAmount);
+    const interestRateMonthly = parseAmount(body.interestRateMonthly);
+    const dueDay = parseInteger(body.dueDay);
+    const category = body.category?.trim();
+    const status = body.status ? normalizeDebtStatus(body.status) : undefined;
+
+    const debt = await prisma.debt.update({
+      where: { id: existing.id },
+      data: {
+        creditor: creditor || undefined,
+        original_amount: originalAmount !== null && originalAmount > 0 ? originalAmount : undefined,
+        remaining_amount: remainingAmount !== null && remainingAmount >= 0 ? remainingAmount : undefined,
+        interest_rate_monthly:
+          interestRateMonthly !== null && interestRateMonthly >= 0 ? interestRateMonthly : undefined,
+        due_day: dueDay !== null && dueDay >= 1 && dueDay <= 31 ? dueDay : undefined,
+        category: category || undefined,
+        status,
+      },
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      type: 'debt.updated',
+      payload: {
+        debtId: debt.id,
+      },
+    });
+
+    return NextResponse.json(debt);
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    if (isMissingTableError(error)) {
+      return buildMissingTableResponse();
+    }
+    console.error('Debts PATCH Error:', error);
+    return NextResponse.json({ error: error?.message || 'Failed to update debt' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const body = (await req.json().catch(() => null)) as DebtBody | null;
+    if (!body?.id) {
+      return NextResponse.json({ error: 'Debt id is required' }, { status: 400 });
+    }
+
+    const existing = await prisma.debt.findFirst({
+      where: {
+        id: body.id,
+        workspace_id: context.workspaceId,
+      },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Debt not found' }, { status: 404 });
+    }
+
+    await prisma.debt.delete({
+      where: { id: existing.id },
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      type: 'debt.deleted',
+      payload: {
+        debtId: existing.id,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    if (isMissingTableError(error)) {
+      return buildMissingTableResponse();
+    }
+    console.error('Debts DELETE Error:', error);
+    return NextResponse.json({ error: error?.message || 'Failed to delete debt' }, { status: 500 });
+  }
+}

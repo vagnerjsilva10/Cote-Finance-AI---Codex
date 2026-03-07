@@ -1,0 +1,39 @@
+<svg width="880" height="620" viewBox="0 0 880 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="c_bg" x1="120" y1="40" x2="760" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#052E2B" stop-opacity="0.78"/>
+      <stop offset="1" stop-color="#0B1220" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="c_line" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="80" y="60" width="720" height="500" rx="40" fill="url(#c_bg)" stroke="#34D399" stroke-opacity="0.35"/>
+  <rect x="130" y="120" width="620" height="390" rx="28" fill="#0B1220" stroke="#334155" stroke-opacity="0.7"/>
+
+  <line x1="170" y1="470" x2="710" y2="470" stroke="#334155"/>
+  <line x1="170" y1="170" x2="170" y2="470" stroke="#334155"/>
+
+  <path d="M190 430 C250 420, 280 390, 340 365 C390 345, 430 338, 480 300 C530 262, 590 255, 640 220 C670 199, 690 175, 710 150" stroke="url(#c_line)" stroke-width="10" stroke-linecap="round"/>
+
+  <circle cx="710" cy="150" r="10" fill="#34D399"/>
+  <rect x="530" y="170" width="160" height="46" rx="14" fill="#052E2B" stroke="#14532D"/>
+  <rect x="200" y="380" width="190" height="58" rx="16" fill="#082F49" stroke="#0E7490"/>
+  <text x="548" y="190" fill="#86EFAC" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="600">
+    Economia potencial
+  </text>
+  <text x="548" y="206" fill="#DCFCE7" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700">
+    +R$ 1.280/ano
+  </text>
+  <text x="220" y="403" fill="#7DD3FC" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="600">
+    Evolucao financeira
+  </text>
+  <text x="220" y="423" fill="#E0F2FE" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700">
+    4 meses em alta
+  </text>
+
+  <circle cx="155" cy="95" r="8" fill="#34D399" fill-opacity="0.85"/>
+  <circle cx="735" cy="525" r="10" fill="#22D3EE" fill-opacity="0.75"/>
+</svg>

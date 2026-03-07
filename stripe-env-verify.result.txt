@@ -1,0 +1,2 @@
+CHECKOUT_STATUS=request_failed
+CHECKOUT_BODY=Impossível conectar-se ao servidor remoto

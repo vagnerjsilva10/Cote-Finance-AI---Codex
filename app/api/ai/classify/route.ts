@@ -1,0 +1,111 @@
+import { NextResponse } from 'next/server';
+import { Type } from '@google/genai';
+import { getGeminiClient, GEMINI_KEY_MISSING_ERROR } from '@/lib/gemini';
+import {
+  HttpError,
+  PLAN_LIMITS,
+  getWorkspacePlan,
+  logWorkspaceEventSafe,
+  resolveWorkspaceContext,
+} from '@/lib/server/multi-tenant';
+import { prisma } from '@/lib/prisma';
+
+async function getCurrentMonthAiUsage(workspaceId: string) {
+  try {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    return await prisma.workspaceEvent.count({
+      where: {
+        workspace_id: workspaceId,
+        type: {
+          in: ['ai.chat.used', 'ai.classify.used'],
+        },
+        created_at: {
+          gte: monthStart,
+          lt: nextMonthStart,
+        },
+      },
+    });
+  } catch {
+    return 0;
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const plan = await getWorkspacePlan(context.workspaceId, context.userId);
+    const aiLimit = PLAN_LIMITS[plan].aiInteractionsPerMonth;
+
+    if (typeof aiLimit === 'number') {
+      const usage = await getCurrentMonthAiUsage(context.workspaceId);
+      if (usage >= aiLimit) {
+        return NextResponse.json(
+          {
+            error: `AI limit reached for ${plan}. Upgrade your workspace plan to continue.`,
+            code: 'PLAN_LIMIT_REACHED',
+            plan,
+            limit: aiLimit,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    const ai = getGeminiClient();
+    const body = await req.json().catch(() => ({}));
+    const description = typeof body?.description === 'string' ? body.description.trim() : '';
+    const amount = body?.amount;
+
+    if (!description || typeof amount === 'undefined' || amount === null) {
+      return NextResponse.json(
+        { error: 'Description and amount are required' },
+        { status: 400 }
+      );
+    }
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Classifique a seguinte transação financeira:
+Descrição: ${description}
+Valor: ${amount}
+
+Retorne a categoria mais provável e um score de confiança (0-1).`,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            category: { type: Type.STRING },
+            confidence: { type: Type.NUMBER },
+          },
+          required: ['category', 'confidence'],
+        },
+      },
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      type: 'ai.classify.used',
+      payload: {
+        descriptionChars: description.length,
+      },
+    });
+
+    return NextResponse.json(JSON.parse(response.text || '{}'));
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    if (error instanceof Error && error.message === GEMINI_KEY_MISSING_ERROR) {
+      return NextResponse.json({ error: GEMINI_KEY_MISSING_ERROR }, { status: 500 });
+    }
+
+    console.error('AI Classify Error:', error);
+    return NextResponse.json({ error: 'Falha ao classificar transação' }, { status: 500 });
+  }
+}
