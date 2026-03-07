@@ -16,29 +16,32 @@ export const BILLING_PLAN_DETAILS: Record<BillingPlanCode, BillingPlanDetails> =
     name: 'Pro',
     monthlyPrice: 29,
     annualPrice: 290,
-    description: 'Para quem quer análises mais profundas, IA útil no dia a dia e gestão sem limite artificial.',
+    description: 'Para quem quer analises mais profundas, IA util no dia a dia e gestao sem limite artificial.',
     features: [
-      'Lançamentos ilimitados',
-      'Relatórios completos e gráficos avançados',
-      'Análises inteligentes com IA',
-      'Metas, dívidas e investimentos ilimitados',
-      'Suporte prioritário por e-mail',
+      'Lancamentos ilimitados',
+      'Relatorios completos e graficos avancados',
+      'Analises inteligentes com IA',
+      'Metas financeiras ilimitadas',
+      'Acompanhamento de dividas',
+      'Controle de investimentos',
+      'Suporte prioritario por e-mail',
     ],
-    trustBadges: ['Cobrança recorrente segura', 'Sem fidelidade', 'Portal do cliente disponível'],
+    trustBadges: ['Cobranca recorrente automatica', 'Cancele quando quiser', 'Pagamento protegido pela Stripe'],
   },
   PREMIUM: {
     name: 'Premium',
     monthlyPrice: 49,
     annualPrice: 490,
-    description: 'Para operações que querem previsões, alertas automáticos e uma camada mais estratégica de inteligência financeira.',
+    description:
+      'Para operacoes que querem previsoes, alertas automaticos e uma camada mais estrategica de inteligencia financeira.',
     features: [
       'Tudo do Pro',
-      'Insights financeiros mais avançados',
-      'Previsão de saldo e alertas inteligentes',
-      'Análises profundas de despesas',
-      'Suporte prioritário com SLA mais rápido',
+      'Insights financeiros mais avancados',
+      'Previsao de saldo e alertas inteligentes',
+      'Analises profundas de despesas',
+      'Suporte prioritario com SLA mais rapido',
     ],
-    trustBadges: ['Checkout PCI via Stripe', 'Cancele quando quiser', 'Cobrança protegida por SSL'],
+    trustBadges: ['Checkout PCI via Stripe', 'Cancele quando quiser', 'Cobranca protegida por SSL'],
   },
 };
 
@@ -98,7 +101,7 @@ export function formatBillingPrice(plan: BillingPlanCode, interval: BillingInter
     interval === 'ANNUAL'
       ? BILLING_PLAN_DETAILS[plan].annualPrice
       : BILLING_PLAN_DETAILS[plan].monthlyPrice;
-  return `R$ ${amount.toLocaleString('pt-BR')}/${interval === 'ANNUAL' ? 'ano' : 'mês'}`;
+  return `R$ ${amount.toLocaleString('pt-BR')}/${interval === 'ANNUAL' ? 'ano' : 'mes'}`;
 }
 
 export function getCheckoutPath(params: {

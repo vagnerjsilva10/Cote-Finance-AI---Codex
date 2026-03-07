@@ -69,6 +69,7 @@ type Tab =
   | 'reports'
   | 'assistant'
   | 'integrations'
+  | 'subscription'
   | 'settings'
   | 'agenda';
 
@@ -199,6 +200,26 @@ type WorkspaceEventItem = {
   created_at: string;
   user_id?: string | null;
   payload?: Record<string, unknown> | null;
+};
+
+type SubscriptionOverview = {
+  workspaceId: string;
+  workspaceName: string;
+  plan: SubscriptionPlan;
+  planLabel: string;
+  billingLabel: string;
+  status: 'FREE' | 'ACTIVE' | 'TRIALING' | 'CANCELED' | 'PENDING';
+  statusLabel: string;
+  statusMessage: string;
+  nextBillingDate: string | null;
+  cancelAtPeriodEnd: boolean;
+  features: string[];
+  stripeConfigured: boolean;
+  hasStripeCustomer: boolean;
+  hasStripeSubscription: boolean;
+  canCancel: boolean;
+  canReactivate: boolean;
+  canManageBilling: boolean;
 };
 
 const FREE_TRANSACTION_LIMIT_PER_MONTH = 50;
@@ -467,6 +488,17 @@ const formatEventTimestamp = (isoString: string) => {
     month: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+  });
+};
+
+const formatSubscriptionDate = (isoString?: string | null) => {
+  if (!isoString) return 'Sem cobranca futura definida';
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return 'Sem cobranca futura definida';
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
   });
 };
 
@@ -773,6 +805,229 @@ const StatCard = ({
 );
 
 // --- Views ---
+
+type SubscriptionViewProps = {
+  summary: SubscriptionOverview | null;
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
+  onChangePlan: () => void;
+  onCancel: () => void;
+  onReactivate: () => void;
+  onOpenPaymentMethod: () => void;
+  onOpenBillingHistory: () => void;
+  actionLoading: 'cancel' | 'reactivate' | 'payment' | 'history' | null;
+};
+
+const SubscriptionView = ({
+  summary,
+  isLoading,
+  error,
+  onRetry,
+  onChangePlan,
+  onCancel,
+  onReactivate,
+  onOpenPaymentMethod,
+  onOpenBillingHistory,
+  actionLoading,
+}: SubscriptionViewProps) => {
+  const statusTone =
+    summary?.status === 'PENDING'
+      ? 'border-amber-400/20 bg-amber-500/10 text-amber-100'
+      : summary?.status === 'CANCELED'
+        ? 'border-rose-400/20 bg-rose-500/10 text-rose-100'
+        : summary?.status === 'TRIALING'
+          ? 'border-cyan-400/20 bg-cyan-500/10 text-cyan-100'
+          : 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100';
+
+  return (
+    <div className="max-w-6xl space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-2">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-emerald-200">
+            <Sparkles size={14} />
+            Billing interno
+          </span>
+          <div>
+            <h3 className="text-2xl font-black text-white">Minha assinatura</h3>
+            <p className="text-sm text-slate-400">
+              Gerencie seu plano, cobranca e status da assinatura sem sair do Cote Finance AI.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onChangePlan}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-400"
+        >
+          <ArrowUpRight size={16} />
+          Alterar plano
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-8 text-center">
+          <p className="text-base font-semibold text-white">Carregando assinatura...</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Estamos sincronizando o status do workspace e a cobranca atual.
+          </p>
+        </div>
+      ) : error ? (
+        <div className="rounded-[1.75rem] border border-rose-400/20 bg-rose-500/10 p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-rose-200">Falha ao carregar</p>
+          <p className="mt-3 text-sm text-slate-100">{error}</p>
+          <button
+            onClick={onRetry}
+            className="mt-4 inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/5"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      ) : summary ? (
+        <>
+          <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-3">
+                  <span className={cn('inline-flex w-fit rounded-full border px-3 py-1 text-xs font-bold', statusTone)}>
+                    {summary.statusLabel}
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano atual</p>
+                    <h4 className="mt-2 text-3xl font-black text-white">{summary.planLabel}</h4>
+                    <p className="mt-2 max-w-2xl text-sm text-slate-300">{summary.statusMessage}</p>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Proxima cobranca</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{formatSubscriptionDate(summary.nextBillingDate)}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Status da assinatura</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{summary.statusLabel}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobranca</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{summary.billingLabel}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Workspace vinculado</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{summary.workspaceName}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rapido</p>
+                <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
+                <p className="mt-2 text-sm text-slate-400">
+                  Tudo o que importa para este workspace fica visivel aqui. Quando uma acao exigir a Stripe,
+                  abrimos apenas a etapa necessaria.
+                </p>
+              </div>
+
+              <div className="space-y-3 rounded-[1.4rem] border border-emerald-500/15 bg-emerald-500/8 p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 size={18} className="mt-0.5 text-emerald-300" />
+                  <div>
+                    <p className="text-sm font-semibold text-white">Pagamento seguro</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Seus dados continuam protegidos pela Stripe e sincronizados com o billing do workspace.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CreditCard size={18} className="mt-0.5 text-emerald-300" />
+                  <div>
+                    <p className="text-sm font-semibold text-white">Gestao sem sair do app</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Status, plano e proximas cobrancas aparecem dentro do SaaS. Portal externo so quando preciso.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Recursos do plano</p>
+                  <h4 className="mt-2 text-xl font-black text-white">Beneficios ativos</h4>
+                </div>
+                <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+                  {summary.planLabel}
+                </span>
+              </div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {summary.features.map((feature) => (
+                  <div key={feature} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-sm text-slate-200">
+                    {feature}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Acoes disponiveis</p>
+              <h4 className="mt-2 text-xl font-black text-white">Gerenciar assinatura</h4>
+              <div className="mt-5 space-y-3">
+                <button
+                  onClick={onChangePlan}
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-emerald-500/30 hover:bg-slate-900"
+                >
+                  <span>Alterar plano</span>
+                  <ArrowUpRight size={16} className="text-emerald-300" />
+                </button>
+                <button
+                  onClick={onCancel}
+                  disabled={!summary.canCancel || actionLoading !== null}
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-rose-400/30 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>{actionLoading === 'cancel' ? 'Cancelando...' : 'Cancelar assinatura'}</span>
+                </button>
+                <button
+                  onClick={onReactivate}
+                  disabled={!summary.canReactivate || actionLoading !== null}
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-emerald-400/30 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>{actionLoading === 'reactivate' ? 'Reativando...' : 'Reativar assinatura'}</span>
+                </button>
+                <button
+                  onClick={onOpenPaymentMethod}
+                  disabled={!summary.canManageBilling || actionLoading !== null}
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>{actionLoading === 'payment' ? 'Abrindo...' : 'Atualizar forma de pagamento'}</span>
+                  <ExternalLink size={16} className="text-slate-400" />
+                </button>
+                <button
+                  onClick={onOpenBillingHistory}
+                  disabled={!summary.canManageBilling || actionLoading !== null}
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver historico de cobranca'}</span>
+                  <ExternalLink size={16} className="text-slate-400" />
+                </button>
+              </div>
+
+              {summary.cancelAtPeriodEnd ? (
+                <p className="mt-4 text-sm text-amber-200">
+                  O cancelamento esta agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
+                  da data de encerramento.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+};
 
 type DashboardViewProps = {
   transactions: Transaction[];
@@ -3838,12 +4093,28 @@ export default function App() {
     const searchParams = new URLSearchParams(window.location.search);
     const authMode = searchParams.get('auth');
     const pendingPlan = searchParams.get('plan');
+    const requestedTab = searchParams.get('tab');
     if (authMode === 'signup' || authMode === 'login') {
       setLoginModeFromQuery(authMode);
     }
     if (pendingPlan) {
       setPendingPlanFromQuery(pendingPlan);
       setPendingPlanHandled(false);
+    }
+    if (
+      requestedTab === 'dashboard' ||
+      requestedTab === 'transactions' ||
+      requestedTab === 'goals' ||
+      requestedTab === 'debts' ||
+      requestedTab === 'investments' ||
+      requestedTab === 'reports' ||
+      requestedTab === 'assistant' ||
+      requestedTab === 'integrations' ||
+      requestedTab === 'subscription' ||
+      requestedTab === 'settings' ||
+      requestedTab === 'agenda'
+    ) {
+      setActiveTab(requestedTab);
     }
   }, []);
 
@@ -4065,6 +4336,12 @@ export default function App() {
   const [settingsWhatsApp, setSettingsWhatsApp] = React.useState('+551199999999');
   const [settingsSavedAt, setSettingsSavedAt] = React.useState<string | null>(null);
   const [workspaceEvents, setWorkspaceEvents] = React.useState<WorkspaceEventItem[]>([]);
+  const [subscriptionSummary, setSubscriptionSummary] = React.useState<SubscriptionOverview | null>(null);
+  const [subscriptionError, setSubscriptionError] = React.useState<string | null>(null);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = React.useState(false);
+  const [subscriptionActionLoading, setSubscriptionActionLoading] = React.useState<
+    'cancel' | 'reactivate' | 'payment' | 'history' | null
+  >(null);
   const [onboardingWorkspaceName, setOnboardingWorkspaceName] = React.useState('Minha Conta');
   const [onboardingObjective, setOnboardingObjective] = React.useState(ONBOARDING_OBJECTIVES[0]);
   const [onboardingProfile, setOnboardingProfile] = React.useState(ONBOARDING_USAGE_LEVELS[1]);
@@ -4136,6 +4413,10 @@ export default function App() {
       setDebts([]);
       setBills([]);
       setWorkspaceEvents([]);
+      setSubscriptionSummary(null);
+      setSubscriptionError(null);
+      setIsSubscriptionLoading(false);
+      setSubscriptionActionLoading(null);
       setDashboardInsights([]);
       setTotalBalance(0);
       setCurrentMonthTransactionCount(0);
@@ -4164,6 +4445,10 @@ export default function App() {
     setInvestments([]);
     setDebts([]);
     setWorkspaceEvents([]);
+    setSubscriptionSummary(null);
+    setSubscriptionError(null);
+    setIsSubscriptionLoading(false);
+    setSubscriptionActionLoading(null);
     setDashboardInsights([]);
     setTotalBalance(0);
     setCurrentMonthTransactionCount(0);
@@ -4674,45 +4959,118 @@ export default function App() {
     [activeWorkspaceId]
   );
 
-  const handleManageSubscription = async () => {
+  const fetchSubscriptionData = React.useCallback(async () => {
+    if (!user || !activeWorkspaceId) return;
+
+    setIsSubscriptionLoading(true);
+    setSubscriptionError(null);
+
     try {
-      
-      const response = await fetch('/api/stripe/portal', {
-        method: 'POST',
+      const response = await fetch('/api/stripe/subscription', {
         headers: await getAuthHeaders(),
       });
-      const raw = await response.text();
-      const data = raw ? JSON.parse(raw) : {};
+      const payload = (await response.json().catch(() => ({}))) as SubscriptionOverview & { error?: string };
 
       if (!response.ok) {
-        const message =
-          typeof data?.error === 'string'
-            ? data.error
-            : `Falha ao abrir portal (HTTP ${response.status}).`;
-        if (response.status === 404 || message.toLowerCase().includes('customer')) {
-          if (isFreePlan) {
+        throw new Error(payload.error || `Falha ao carregar assinatura (HTTP ${response.status}).`);
+      }
+
+      setSubscriptionSummary(payload);
+    } catch (error) {
+      console.error('Subscription fetch error:', error);
+      setSubscriptionSummary(null);
+      setSubscriptionError(error instanceof Error ? error.message : 'Falha ao carregar assinatura.');
+    } finally {
+      setIsSubscriptionLoading(false);
+    }
+  }, [activeWorkspaceId, getAuthHeaders, user]);
+
+  const openStripePortal = React.useCallback(
+    async (target: 'payment' | 'history') => {
+      try {
+        setSubscriptionActionLoading(target);
+
+        const response = await fetch('/api/stripe/portal', {
+          method: 'POST',
+          headers: await getAuthHeaders(),
+        });
+        const raw = await response.text();
+        const data = raw ? JSON.parse(raw) : {};
+
+        if (!response.ok) {
+          const message =
+            typeof data?.error === 'string'
+              ? data.error
+              : `Falha ao abrir portal (HTTP ${response.status}).`;
+          if ((response.status === 404 || message.toLowerCase().includes('customer')) && isFreePlan) {
             const shouldUpgrade = window.confirm(
-              'Sua conta ainda não possui assinatura ativa. Deseja iniciar upgrade agora?'
+              'Seu workspace ainda nao possui assinatura paga. Deseja iniciar upgrade agora?'
             );
             if (shouldUpgrade) {
               void handleUpgrade('Pro Mensal');
             }
             return;
           }
+          throw new Error(message);
         }
-        alert(message);
-        return;
-      }
 
-      if (data.url) {
-        window.location.href = data.url;
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch (error) {
+        console.error('Portal error:', error);
+        const message = error instanceof Error ? error.message : 'erro desconhecido';
+        alert(`Erro ao abrir assinatura: ${message}`);
+      } finally {
+        setSubscriptionActionLoading(null);
       }
-    } catch (error) {
-      console.error('Portal error:', error);
-      const message = error instanceof Error ? error.message : 'erro desconhecido';
-      alert(`Erro ao abrir assinatura: ${message}`);
+    },
+    [getAuthHeaders, handleUpgrade, isFreePlan]
+  );
+
+  const handleManageSubscription = React.useCallback(() => {
+    setActiveTab('subscription');
+    setIsProfileMenuOpen(false);
+    setIsSidebarOpen(false);
+  }, []);
+
+  const handleSubscriptionAction = React.useCallback(
+    async (action: 'cancel' | 'reactivate') => {
+      try {
+        setSubscriptionActionLoading(action);
+        setSubscriptionError(null);
+
+        const response = await fetch('/api/stripe/subscription', {
+          method: 'POST',
+          headers: await getAuthHeaders(true),
+          body: JSON.stringify({ action }),
+        });
+        const payload = (await response.json().catch(() => ({}))) as SubscriptionOverview & { error?: string };
+
+        if (!response.ok) {
+          throw new Error(payload.error || `Falha ao atualizar assinatura (HTTP ${response.status}).`);
+        }
+
+        setSubscriptionSummary(payload);
+        await fetchDashboardData();
+      } catch (error) {
+        console.error('Subscription action error:', error);
+        setSubscriptionError(error instanceof Error ? error.message : 'Falha ao atualizar assinatura.');
+      } finally {
+        setSubscriptionActionLoading(null);
+      }
+    },
+    [fetchDashboardData, getAuthHeaders]
+  );
+
+  const handleChangePlan = React.useCallback(() => {
+    if (currentPlan === 'FREE') {
+      void handleUpgrade('Pro Mensal');
+      return;
     }
-  };
+
+    void openStripePortal('history');
+  }, [currentPlan, handleUpgrade, openStripePortal]);
 
   React.useEffect(() => {
     if (!user || !pendingPlanFromQuery || pendingPlanHandled || !activeWorkspaceId) {
@@ -4728,6 +5086,11 @@ export default function App() {
 
     setPendingPlanHandled(true);
   }, [activeWorkspaceId, handleUpgrade, pendingPlanFromQuery, pendingPlanHandled, user]);
+
+  React.useEffect(() => {
+    if (!user || activeTab !== 'subscription') return;
+    void fetchSubscriptionData();
+  }, [activeTab, fetchSubscriptionData, user]);
 
   const handleExportPDF = async () => {
     const { jsPDF } = await import('jspdf');
@@ -5872,7 +6235,7 @@ export default function App() {
                   void handleUpgrade('Pro Mensal');
                   return;
                 }
-                void handleManageSubscription();
+                handleManageSubscription();
               }}
               className="w-full bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
             >
@@ -5917,6 +6280,8 @@ export default function App() {
                 ? 'Dividas'
                 : activeTab === 'integrations'
                 ? 'Integrações'
+                : activeTab === 'subscription'
+                ? 'Minha assinatura'
                 : 'Configurações'}
             </h2>
             {workspaces.length > 0 && (
@@ -5956,7 +6321,7 @@ export default function App() {
                   void handleUpgrade('Pro Mensal');
                   return;
                 }
-                void handleManageSubscription();
+                handleManageSubscription();
               }}
               className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-all"
             >
@@ -6065,7 +6430,6 @@ export default function App() {
                         <button
                           onClick={() => {
                             handleManageSubscription();
-                            setIsProfileMenuOpen(false);
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
                         >
@@ -6203,6 +6567,21 @@ export default function App() {
                 />
               )}
 
+              {activeTab === 'subscription' && (
+                <SubscriptionView
+                  summary={subscriptionSummary}
+                  isLoading={isSubscriptionLoading}
+                  error={subscriptionError}
+                  onRetry={() => void fetchSubscriptionData()}
+                  onChangePlan={handleChangePlan}
+                  onCancel={() => void handleSubscriptionAction('cancel')}
+                  onReactivate={() => void handleSubscriptionAction('reactivate')}
+                  onOpenPaymentMethod={() => void openStripePortal('payment')}
+                  onOpenBillingHistory={() => void openStripePortal('history')}
+                  actionLoading={subscriptionActionLoading}
+                />
+              )}
+
               {activeTab === 'settings' && (
                 <div className="max-w-3xl space-y-6 animate-in fade-in duration-500">
                   <div className="flex items-center justify-between gap-4">
@@ -6273,7 +6652,7 @@ export default function App() {
                           void handleUpgrade('Pro Mensal');
                           return;
                         }
-                        void handleManageSubscription();
+                        handleManageSubscription();
                       }}
                       className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm font-bold text-slate-200 hover:text-white hover:border-emerald-500 transition-all"
                     >

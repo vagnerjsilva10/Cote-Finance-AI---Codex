@@ -92,6 +92,8 @@ function clearCachedCheckout(plan: BillingPlanCode, interval: BillingIntervalCod
 function EmbeddedPaymentForm(props: {
   intentType: CheckoutIntentType;
   returnUrl: string;
+  submitLabel: string;
+  helperText: string;
   onSuccess: () => void;
   onError: (message: string) => void;
 }) {
@@ -160,8 +162,9 @@ function EmbeddedPaymentForm(props: {
         className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-bold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === 'submitting' ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
-        {status === 'submitting' ? 'Confirmando pagamento...' : 'Confirmar assinatura'}
+        {status === 'submitting' ? 'Confirmando pagamento...' : props.submitLabel}
       </button>
+      <p className="text-center text-xs text-slate-400">{props.helperText}</p>
     </form>
   );
 }
@@ -174,7 +177,7 @@ function CheckoutLoadingShell() {
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/app" className="inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-white">
             <ArrowLeft className="size-4" />
-            Voltar ao app
+            Voltar ao painel
           </Link>
           <Link href="/" className="flex items-center">
             <Image
@@ -192,7 +195,7 @@ function CheckoutLoadingShell() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
                 <Sparkles className="size-3.5" />
-                Checkout transparente
+                Cote Finance AI
               </div>
               <div className="space-y-3">
                 <div className="h-12 w-4/5 animate-pulse rounded-2xl bg-white/10" />
@@ -491,6 +494,39 @@ function CheckoutPageContent() {
 
   const summaryPlan = plan ? BILLING_PLAN_DETAILS[plan] : null;
   const showLegacyFallback = !publishableKey;
+  const checkoutPlanName = checkoutData?.planName || summaryPlan?.name || 'Pro';
+  const checkoutPriceLabel = checkoutData?.priceLabel || (plan && interval ? formatBillingPrice(plan, interval) : 'R$ 29 / mês');
+  const checkoutWorkspaceName = checkoutData?.workspaceName || 'Meu Workspace';
+  const checkoutPlanDescription =
+    plan === 'PREMIUM'
+      ? 'Camada avancada de inteligencia financeira para quem quer mais previsibilidade e acompanhamento proativo.'
+      : 'Controle financeiro completo com inteligencia artificial.';
+  const checkoutBenefits =
+    plan === 'PREMIUM'
+      ? [
+          'Tudo do plano Pro',
+          'Insights financeiros mais profundos',
+          'Previsoes de saldo e alertas inteligentes',
+          'Analises avancadas de despesas',
+          'Suporte prioritario com acompanhamento acelerado',
+        ]
+      : [
+          'Lancamentos ilimitados',
+          'Relatorios completos e graficos avancados',
+          'Analises inteligentes com IA',
+          'Metas financeiras ilimitadas',
+          'Acompanhamento de dividas',
+          'Controle de investimentos',
+          'Suporte prioritario por e-mail',
+        ];
+  const checkoutSecurityItems = [
+    'Cobranca recorrente automatica',
+    'Cancele quando quiser',
+    'Pagamento protegido pela Stripe',
+    'Seus dados sao criptografados',
+  ];
+  const subscriptionCenterPath = '/app?tab=subscription';
+  const submitLabel = `Comecar meu plano ${checkoutPlanName}`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -500,7 +536,7 @@ function CheckoutPageContent() {
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/app" className="inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-white">
             <ArrowLeft className="size-4" />
-            Voltar ao app
+            Voltar ao painel
           </Link>
 
           <Link href="/" className="flex items-center">
@@ -521,15 +557,15 @@ function CheckoutPageContent() {
             <div className="relative space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
                 <Sparkles className="size-3.5" />
-                Checkout transparente
+                Cote Finance AI
               </div>
 
               <div className="space-y-3">
                 <h1 className="max-w-xl text-4xl font-black tracking-tight text-white md:text-5xl">
-                  Feche a assinatura dentro do seu proprio SaaS.
+                  Checkout seguro
                 </h1>
                 <p className="max-w-2xl text-base text-slate-300 md:text-lg">
-                  Resumo claro do plano, formulario seguro da Stripe e cobranca recorrente associada ao workspace certo.
+                  Finalize sua assinatura em poucos segundos. Seu pagamento e processado com seguranca pela Stripe.
                 </p>
               </div>
 
@@ -537,20 +573,19 @@ function CheckoutPageContent() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Plano selecionado</p>
                   <h2 className="mt-3 text-3xl font-black text-white">
-                    {summaryPlan ? summaryPlan.name : 'Plano indisponivel'}
+                    {checkoutPlanName}
                   </h2>
-                  <p className="mt-2 text-sm text-slate-400">
-                    {plan && interval ? formatBillingPrice(plan, interval) : 'Selecione um plano valido.'}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-300">{checkoutPlanDescription}</p>
+                  <p className="mt-3 text-base font-semibold text-emerald-200">{checkoutPriceLabel}</p>
                 </div>
 
                 <div className="rounded-2xl border border-emerald-400/15 bg-emerald-500/8 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">Workspace</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">Workspace selecionado</p>
                   <p className="mt-3 text-xl font-semibold text-white">
-                    {checkoutData?.workspaceName || 'Confirmando workspace...'}
+                    {checkoutWorkspaceName}
                   </p>
                   <p className="mt-2 text-sm text-slate-300">
-                    A assinatura sera vinculada a este workspace e o webhook continua sendo a fonte de verdade.
+                    Esta assinatura sera vinculada a este workspace. Voce podera gerenciar tudo depois na sua area de assinatura.
                   </p>
                 </div>
               </div>
@@ -558,9 +593,9 @@ function CheckoutPageContent() {
               {summaryPlan ? (
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-5">
-                    <p className="text-sm font-semibold text-white">O que entra neste plano</p>
+                    <p className="text-sm font-semibold text-white">O que voce desbloqueia com o {checkoutPlanName}</p>
                     <ul className="mt-4 space-y-3">
-                      {summaryPlan.features.map((feature) => (
+                      {checkoutBenefits.map((feature) => (
                         <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
                           <CheckCircle2 className="mt-0.5 size-4 text-emerald-300" />
                           <span>{feature}</span>
@@ -570,15 +605,15 @@ function CheckoutPageContent() {
                   </div>
 
                   <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-5">
-                    <p className="text-sm font-semibold text-white">Selos de confianca</p>
+                    <p className="text-sm font-semibold text-white">Pagamento seguro</p>
                     <div className="mt-4 grid gap-3">
-                      {summaryPlan.trustBadges.map((badge) => (
+                      {checkoutSecurityItems.map((item) => (
                         <div
-                          key={badge}
+                          key={item}
                           className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-slate-200"
                         >
                           <BadgeCheck className="size-4 text-cyan-300" />
-                          {badge}
+                          {item}
                         </div>
                       ))}
                     </div>
@@ -605,10 +640,13 @@ function CheckoutPageContent() {
           <section className="rounded-[2rem] border border-white/10 bg-slate-900/72 p-7 backdrop-blur-xl">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento protegido</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento seguro</p>
                 <h2 className="text-3xl font-black text-white">Finalize sua assinatura</h2>
                 <p className="text-sm text-slate-400">
-                  Formulario embutido com Stripe Payment Element, pronto para cartao e metodos compativeis.
+                  Preencha os dados de pagamento para ativar seu plano {checkoutPlanName} com seguranca.
+                </p>
+                <p className="text-sm text-slate-300">
+                  Comece hoje a ter mais clareza sobre seu dinheiro e acesso a analises mais inteligentes.
                 </p>
               </div>
 
@@ -630,10 +668,10 @@ function CheckoutPageContent() {
                   <p className="text-base text-slate-100">{successMessage}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link
-                      href="/app"
+                      href={subscriptionCenterPath}
                       className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-400"
                     >
-                      Ir para o painel
+                      Abrir minha assinatura
                     </Link>
                     <button
                       type="button"
@@ -641,7 +679,7 @@ function CheckoutPageContent() {
                       disabled={isPortalLoading}
                       className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 disabled:opacity-60"
                     >
-                      {isPortalLoading ? 'Abrindo portal...' : 'Abrir portal do cliente'}
+                      {isPortalLoading ? 'Abrindo portal...' : 'Atualizar forma de pagamento'}
                     </button>
                   </div>
                 </div>
@@ -650,14 +688,12 @@ function CheckoutPageContent() {
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-rose-200">Checkout indisponivel</p>
                   <p className="text-base text-slate-100">{error}</p>
                   <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={handleOpenPortal}
-                      disabled={isPortalLoading}
-                      className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 disabled:opacity-60"
+                    <Link
+                      href={subscriptionCenterPath}
+                      className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
                     >
-                      {isPortalLoading ? 'Abrindo portal...' : 'Gerenciar assinatura'}
-                    </button>
+                      Abrir minha assinatura
+                    </Link>
                     <button
                       type="button"
                       onClick={handleLegacyCheckout}
@@ -679,6 +715,8 @@ function CheckoutPageContent() {
                   <EmbeddedPaymentForm
                     intentType={checkoutData.intentType}
                     returnUrl={checkoutReturnUrl}
+                    submitLabel={submitLabel}
+                    helperText="Voce pode cancelar sua assinatura a qualquer momento."
                     onSuccess={() => {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
                       setSuccessMessage('Pagamento enviado. O Stripe esta finalizando a assinatura deste workspace.');
@@ -697,10 +735,10 @@ function CheckoutPageContent() {
                     plano automaticamente.
                   </p>
                   <Link
-                    href="/app"
+                    href={subscriptionCenterPath}
                     className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-400"
                   >
-                    Voltar ao painel
+                    Abrir minha assinatura
                   </Link>
                 </div>
               ) : (
@@ -716,17 +754,12 @@ function CheckoutPageContent() {
                     >
                       Abrir checkout legado
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleOpenPortal}
-                      disabled={isPortalLoading}
-                      className={cn(
-                        'inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5',
-                        isPortalLoading && 'opacity-60'
-                      )}
+                    <Link
+                      href={subscriptionCenterPath}
+                      className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
                     >
-                      {isPortalLoading ? 'Abrindo portal...' : 'Gerenciar assinatura'}
-                    </button>
+                      Abrir minha assinatura
+                    </Link>
                   </div>
                 </div>
               )}
@@ -738,22 +771,27 @@ function CheckoutPageContent() {
                 </div>
               ) : null}
 
-              <div className="grid gap-3 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5 sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Plano</p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {summaryPlan ? summaryPlan.name : 'Indisponivel'}
-                  </p>
+              <div className="space-y-3 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Resumo da assinatura</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Cobranca</p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {plan && interval ? formatBillingPrice(plan, interval) : '--'}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Workspace</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{checkoutData?.workspaceName || 'Atual'}</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Plano</p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {checkoutPlanName}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Cobranca</p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {checkoutPriceLabel}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Workspace</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{checkoutWorkspaceName}</p>
+                  </div>
                 </div>
               </div>
             </div>
