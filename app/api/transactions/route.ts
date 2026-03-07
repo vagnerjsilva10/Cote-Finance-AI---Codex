@@ -406,17 +406,18 @@ export async function POST(req: Request) {
       }
     }
 
-    const walletId = await getOrCreateWalletId(context.workspaceId, body.wallet);
     const destinationWalletName = (body.destinationWallet || '').trim();
     if (type === 'TRANSFER' && !destinationWalletName) {
       return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
     }
-    const destinationWalletId =
-      type === 'TRANSFER'
-        ? await getOrCreateWalletId(context.workspaceId, destinationWalletName)
-        : null;
     const normalizedCategoryName = (body.category || '').trim() || 'Outros';
-    const categoryId = await getOrCreateCategoryId(normalizedCategoryName);
+    const [walletId, categoryId, destinationWalletId] = await Promise.all([
+      getOrCreateWalletId(context.workspaceId, body.wallet),
+      getOrCreateCategoryId(normalizedCategoryName),
+      type === 'TRANSFER'
+        ? getOrCreateWalletId(context.workspaceId, destinationWalletName)
+        : Promise.resolve<string | null>(null),
+    ]);
     const paymentMethod = normalizePaymentMethod(body.paymentMethod, type);
 
     const ledgerEffects = buildLedgerEffects({

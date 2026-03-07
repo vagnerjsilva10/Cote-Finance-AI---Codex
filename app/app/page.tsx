@@ -330,16 +330,16 @@ const ASSISTANT_SUGGESTIONS = [
 const ONBOARDING_OBJECTIVES = [
   'Organizar meus gastos',
   'Economizar mais dinheiro',
-  'Sair das dividas',
+  'Sair das dívidas',
   'Acompanhar investimentos',
   'Ter mais controle financeiro',
 ];
 
 const ONBOARDING_USAGE_LEVELS = [
-  'Ate 20 lancamentos',
-  '20 a 50 lancamentos',
-  '50 a 100 lancamentos',
-  'Mais de 100 lancamentos',
+  'Até 20 lançamentos',
+  '20 a 50 lançamentos',
+  '50 a 100 lançamentos',
+  'Mais de 100 lançamentos',
 ];
 
 const createInitialOnboardingTransaction = (): TransactionFormData => ({
@@ -626,6 +626,71 @@ const parseTransactionDate = (value: string): Date | null => {
   const parsed = new Date(year, monthMap[monthKey], day);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
+
+const formatTransactionDisplayDate = (value: unknown) => {
+  const direct = new Date(String(value || ''));
+  const parsed = Number.isNaN(direct.getTime()) ? parseTransactionDate(String(value || '')) : direct;
+  if (!parsed) return '';
+  return parsed.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+};
+
+const formatTransactionDisplayAmount = (flowType: TransactionFlowType, amount: number) => {
+  return `${getTransactionAmountSignal(mapFlowTypeToBaseType(flowType))}${formatCurrency(amount)}`;
+};
+
+const mapApiTransactionToClientTransaction = (tx: any): Transaction => {
+  const flowType = mapBackendTypeToFlowType(String(tx?.type || ''));
+  return {
+    flowType,
+    id: tx.id,
+    date: formatTransactionDisplayDate(tx.date),
+    desc: String(tx.description || ''),
+    cat: tx.category?.name || 'Geral',
+    amount: formatTransactionDisplayAmount(flowType, Number(tx.amount || 0)),
+    type: mapFlowTypeToBaseType(flowType),
+    paymentMethod: normalizePaymentMethodLabel(
+      tx.payment_method || (tx.type === 'PIX_IN' || tx.type === 'PIX_OUT' ? 'PIX' : undefined)
+    ),
+    wallet: tx.wallet?.name || 'Carteira',
+    destinationWallet: tx.destination_wallet?.name || null,
+    receiptUrl: tx.receipt_url || null,
+  };
+};
+
+const sortTransactionsByNewest = (items: Transaction[]) =>
+  [...items].sort((left, right) => {
+    const leftTime = parseTransactionDate(left.date)?.getTime() || 0;
+    const rightTime = parseTransactionDate(right.date)?.getTime() || 0;
+    return rightTime - leftTime;
+  });
+
+const getTransactionBalanceDelta = (transaction: Pick<Transaction, 'type' | 'amount'>) => {
+  const amount = parseCurrency(transaction.amount);
+  if (transaction.type === 'income') return amount;
+  if (transaction.type === 'expense') return -amount;
+  return 0;
+};
+
+const isTransactionInCurrentMonth = (transaction: Pick<Transaction, 'date'>) =>
+  isInCurrentMonth(parseTransactionDate(transaction.date));
+
+const buildOptimisticTransaction = (
+  formData: TransactionFormData,
+  category: string,
+  id: string | number
+): Transaction => ({
+  id,
+  date: formatTransactionDisplayDate(formData.date),
+  desc: formData.description.trim(),
+  cat: category,
+  amount: formatTransactionDisplayAmount(formData.flowType, parseMoneyInput(formData.amount)),
+  type: mapFlowTypeToBaseType(formData.flowType),
+  flowType: formData.flowType,
+  paymentMethod: formData.paymentMethod,
+  wallet: formData.wallet,
+  destinationWallet: formData.flowType === 'Transferência' ? formData.destinationWallet || null : null,
+  receiptUrl: formData.receiptUrl || null,
+});
 
 const renderInlineAssistantText = (text: string) => {
   return text
@@ -3775,7 +3840,7 @@ const LoginView = ({
     setNotice(null);
     setLoading(true);
     try {
-      const callbackUrl = buildClientRedirectUrl('/auth/callback');
+      const callbackUrl = buildClientRedirectUrl('/dashboard');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -3790,10 +3855,10 @@ const LoginView = ({
     } catch (err: any) {
       const rawMessage = String(err?.message || '');
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
-        setError('Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.');
+        setError('Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /dashboard.');
       } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
         setError(
-          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase e do Google.`
+          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/dashboard')} nas URLs permitidas do Supabase.`
         );
       } else {
         setError(rawMessage || 'Falha ao iniciar login com Google.');
@@ -3896,7 +3961,7 @@ const LoginView = ({
                   className="mt-0.5 rounded border-slate-600 bg-slate-900"
                 />
                 <span>
-                  Aceito os termos de uso e politica de privacidade.
+                  Aceito os termos de uso e política de privacidade.
                 </span>
               </label>
             </>
@@ -3920,7 +3985,7 @@ const LoginView = ({
               disabled={loading}
               className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
             >
-              Nao recebeu o e-mail? Reenviar confirmacao
+              Não recebeu o e-mail? Reenviar confirmação
             </button>
           ) : null}
         </form>
@@ -3961,7 +4026,7 @@ const LoginView = ({
         </button>
 
         <p className="mt-7 text-center text-sm text-slate-500">
-          {isLogin ? 'Nao tem uma conta?' : 'Ja tem uma conta?'}
+          {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
           <button
             onClick={() => {
               setError(null);
@@ -4129,9 +4194,12 @@ export default function App() {
     [activeWorkspaceId]
   );
 
-  const fetchDashboardData = React.useCallback(async () => {
+  const fetchDashboardData = React.useCallback(async (options?: { silent?: boolean }) => {
     if (!user) return;
-    setDataLoading(true);
+    const silent = Boolean(options?.silent);
+    if (!silent) {
+      setDataLoading(true);
+    }
     const usageStorageKey = user?.id ? `cote-ai-usage-${user.id}-${getCurrentMonthKey()}` : null;
     try {
       let response = await fetch('/api/dashboard', {
@@ -4220,21 +4288,7 @@ export default function App() {
         setDashboardInsights([]);
       }
       if (data.transactions) {
-        const mappedTransactions = data.transactions.map((tx: any) => ({
-          flowType: mapBackendTypeToFlowType(tx.type),
-          id: tx.id,
-          date: new Date(tx.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' }),
-          desc: tx.description,
-          cat: tx.category?.name || 'Geral',
-          amount: `${getTransactionAmountSignal(mapFlowTypeToBaseType(mapBackendTypeToFlowType(tx.type)))}R$ ${Number(tx.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-          type: mapFlowTypeToBaseType(mapBackendTypeToFlowType(tx.type)),
-          paymentMethod: normalizePaymentMethodLabel(
-            tx.payment_method || (tx.type === 'PIX_IN' || tx.type === 'PIX_OUT' ? 'PIX' : undefined)
-          ),
-          wallet: tx.wallet?.name || 'Carteira',
-          destinationWallet: tx.destination_wallet?.name || null,
-          receiptUrl: tx.receipt_url || null,
-        }));
+        const mappedTransactions = data.transactions.map((tx: any) => mapApiTransactionToClientTransaction(tx));
         setTransactions(mappedTransactions);
         if (typeof data.currentMonthTransactionCount !== 'number') {
           const localMonthCount = mappedTransactions.filter((tx: Transaction) =>
@@ -4294,13 +4348,17 @@ export default function App() {
       // Update other states as needed
     } catch (error) {
       console.error('Fetch error:', error);
-      setTransactions([]);
-      setGoals([]);
-      setInvestments([]);
-      setDebts([]);
-      setDashboardInsights(['Não foi possível carregar os insights no momento.']);
+      if (!silent) {
+        setTransactions([]);
+        setGoals([]);
+        setInvestments([]);
+        setDebts([]);
+        setDashboardInsights(['Não foi possível carregar os insights no momento.']);
+      }
     } finally {
-      setDataLoading(false);
+      if (!silent) {
+        setDataLoading(false);
+      }
     }
   }, [getAuthHeaders, setupUserOnServer, user]);
 
@@ -5273,8 +5331,13 @@ export default function App() {
       }
     }
 
+    const previousTransactionsSnapshot = transactions;
+    const previousTotalBalance = totalBalance;
+    const previousMonthCount = currentMonthTransactionCount;
+
     try {
       const method = editingTransactionId ? 'PATCH' : 'POST';
+      const optimisticId = editingTransactionId || `temp-${Date.now()}`;
       const payload = {
         ...(editingTransactionId ? { id: String(editingTransactionId) } : {}),
         description: tx.description.trim(),
@@ -5288,6 +5351,23 @@ export default function App() {
         receiptUrl: tx.receiptUrl || null,
         date: tx.date,
       };
+      const optimisticTransaction = buildOptimisticTransaction(tx, resolvedCategory, optimisticId);
+      const previousBalanceDelta = previousTransaction ? getTransactionBalanceDelta(previousTransaction) : 0;
+      const nextBalanceDelta = getTransactionBalanceDelta(optimisticTransaction);
+      const previousMonthContribution = previousTransaction && isTransactionInCurrentMonth(previousTransaction) ? 1 : 0;
+      const nextMonthContribution = isTransactionInCurrentMonth(optimisticTransaction) ? 1 : 0;
+
+      setTransactions((current) =>
+        sortTransactionsByNewest(
+          editingTransactionId
+            ? current.map((item) => (item.id === editingTransactionId ? optimisticTransaction : item))
+            : [optimisticTransaction, ...current]
+        )
+      );
+      setTotalBalance(previousTotalBalance - previousBalanceDelta + nextBalanceDelta);
+      setCurrentMonthTransactionCount(
+        Math.max(0, previousMonthCount - previousMonthContribution + nextMonthContribution)
+      );
 
       const response = await fetch('/api/transactions', {
         method,
@@ -5301,14 +5381,24 @@ export default function App() {
           typeof responseData?.error === 'string'
             ? responseData.error
             : 'Falha ao salvar transação.';
+        setTransactions(previousTransactionsSnapshot);
+        setTotalBalance(previousTotalBalance);
+        setCurrentMonthTransactionCount(previousMonthCount);
         alert(message);
         return false;
       }
 
+      const savedTransaction = mapApiTransactionToClientTransaction(responseData);
+      setTransactions((current) =>
+        sortTransactionsByNewest(current.map((item) => (item.id === optimisticId ? savedTransaction : item)))
+      );
       setEditingTransactionId(null);
-      await fetchDashboardData();
+      void fetchDashboardData({ silent: true });
       return true;
     } catch (error) {
+      setTransactions(previousTransactionsSnapshot);
+      setTotalBalance(previousTotalBalance);
+      setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Save transaction error:', error);
       alert('Falha ao salvar transação. Tente novamente.');
       return false;
@@ -5330,7 +5420,22 @@ export default function App() {
   };
 
   const handleDeleteTransaction = async (id: string | number) => {
+    const previousTransactionsSnapshot = transactions;
+    const previousTotalBalance = totalBalance;
+    const previousMonthCount = currentMonthTransactionCount;
+    const transactionToDelete = transactions.find((item) => item.id === id) ?? null;
+
+    if (!transactionToDelete) {
+      return;
+    }
+
     try {
+      setTransactions((current) => current.filter((item) => item.id !== id));
+      setTotalBalance(previousTotalBalance - getTransactionBalanceDelta(transactionToDelete));
+      setCurrentMonthTransactionCount(
+        Math.max(0, previousMonthCount - (isTransactionInCurrentMonth(transactionToDelete) ? 1 : 0))
+      );
+
       const response = await fetch('/api/transactions', {
         method: 'DELETE',
         headers: await getAuthHeaders(true),
@@ -5343,6 +5448,9 @@ export default function App() {
           typeof responseData?.error === 'string'
             ? responseData.error
             : 'Falha ao excluir transação.';
+        setTransactions(previousTransactionsSnapshot);
+        setTotalBalance(previousTotalBalance);
+        setCurrentMonthTransactionCount(previousMonthCount);
         alert(message);
         return;
       }
@@ -5352,8 +5460,11 @@ export default function App() {
         setIsTransactionModalOpen(false);
       }
 
-      await fetchDashboardData();
+      void fetchDashboardData({ silent: true });
     } catch (error) {
+      setTransactions(previousTransactionsSnapshot);
+      setTotalBalance(previousTotalBalance);
+      setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Delete transaction error:', error);
       alert('Falha ao excluir transação. Tente novamente.');
     }
@@ -5731,8 +5842,8 @@ export default function App() {
                   <div className="rounded-2xl border border-slate-800 bg-slate-800/40 p-6">
                     <h4 className="text-2xl font-bold text-white mb-2">Bem-vindo ao Cote Finance AI</h4>
                     <p className="text-sm text-slate-300 leading-relaxed">
-                      Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas financas e
-                      gerar insights mais uteis para voce.
+                      Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanças e
+                      gerar insights mais úteis para você.
                     </p>
                   </div>
                   <div className="flex justify-end">
@@ -5740,7 +5851,7 @@ export default function App() {
                       onClick={() => setOnboardingStep(1)}
                       className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
-                      Comecar
+                      Começar
                     </button>
                   </div>
                 </div>
@@ -5749,7 +5860,7 @@ export default function App() {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Qual e seu principal objetivo financeiro?</h4>
+                    <h4 className="text-xl font-bold text-white mb-1">Qual é seu principal objetivo financeiro?</h4>
                     <p className="text-sm text-slate-400">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
@@ -5791,9 +5902,9 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">
-                      Quantos lancamentos voce pretende registrar por mes?
+                      Quantos lançamentos você pretende registrar por mês?
                     </h4>
-                    <p className="text-sm text-slate-400">Isso ajuda a ajustar recomendacoes e limites iniciais.</p>
+                    <p className="text-sm text-slate-400">Isso ajuda a ajustar recomendações e limites iniciais.</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {ONBOARDING_USAGE_LEVELS.map((rangeLabel) => (
@@ -5900,7 +6011,7 @@ export default function App() {
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                      Descricao (opcional)
+                      Descrição (opcional)
                     </label>
                     <input
                       value={onboardingFirstRecord.description}
@@ -5910,14 +6021,14 @@ export default function App() {
                           description: event.target.value,
                         }))
                       }
-                      placeholder="Ex: Mercado do mes"
+                      placeholder="Ex: Mercado do mês"
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
                   {onboardingFirstRecordAdded && (
                     <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                      Parabens! Seu primeiro registro foi adicionado.
+                      Parabéns! Seu primeiro registro foi adicionado.
                     </div>
                   )}
 
@@ -5942,16 +6053,16 @@ export default function App() {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Este e seu painel financeiro</h4>
-                    <p className="text-sm text-slate-400">Aqui voce acompanha tudo em um unico lugar.</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Este é seu painel financeiro</h4>
+                    <p className="text-sm text-slate-400">Aqui você acompanha tudo em um único lugar.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
-                    <p className="text-sm text-slate-200">Aqui voce pode ver:</p>
+                    <p className="text-sm text-slate-200">Aqui você pode ver:</p>
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li>• saldo atual</li>
                       <li>• despesas por categoria</li>
-                      <li>• evolucao dos gastos</li>
-                      <li>• insights da inteligencia artificial</li>
+                      <li>• evolução dos gastos</li>
+                      <li>• insights da inteligência artificial</li>
                     </ul>
                   </div>
                   <div className="flex justify-between">
@@ -5974,14 +6085,14 @@ export default function App() {
               {onboardingStep === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Sua primeira analise financeira</h4>
+                    <h4 className="text-xl font-bold text-white mb-1">Sua primeira análise financeira</h4>
                     <p className="text-sm text-slate-400">A IA analisou seus primeiros dados.</p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
                     Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
-                    {String(onboardingPrimaryInsight.category || 'alimentacao').toLowerCase()}. Se reduzir esse gasto em
+                    {String(onboardingPrimaryInsight.category || 'alimentação').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
-                    {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mes.
+                    {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mês.
                   </div>
                   <div className="flex justify-between">
                     <button
@@ -6007,7 +6118,7 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">Complete seu setup</h4>
-                    <p className="text-sm text-slate-400">Conclua estas acoes para ativar todo o potencial da IA.</p>
+                    <p className="text-sm text-slate-400">Conclua estas ações para ativar todo o potencial da IA.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
                     <div className="h-2 w-full rounded-full bg-slate-700">
@@ -6016,7 +6127,7 @@ export default function App() {
                         style={{ width: `${onboardingChecklistProgress}%` }}
                       />
                     </div>
-                    <p className="text-sm text-slate-300">Voce completou {onboardingChecklistProgress}% do setup.</p>
+                    <p className="text-sm text-slate-300">Você completou {onboardingChecklistProgress}% do setup.</p>
                     <div className="space-y-2">
                       {onboardingChecklist.map((item) => (
                         <div key={item.label} className="flex items-center gap-2 text-sm text-slate-200">
@@ -6047,11 +6158,11 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">Insight detectado</h4>
-                    <p className="text-sm text-slate-400">A IA encontrou um padrao para economizar mais.</p>
+                    <p className="text-sm text-slate-400">A IA encontrou um padrão para economizar mais.</p>
                   </div>
                   <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 p-5 text-sm leading-relaxed text-cyan-100">
-                    Voce gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
-                    {onboardingAutomaticInsight.categoryLabel} neste mes. Se reduzir 15% desse valor, pode economizar
+                    Você gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
+                    {onboardingAutomaticInsight.categoryLabel} neste mês. Se reduzir 15% desse valor, pode economizar
                     aproximadamente {formatCurrency(onboardingAutomaticInsight.annualSaving)} por ano.
                   </div>
                   <div className="flex justify-between">
@@ -6065,7 +6176,7 @@ export default function App() {
                       onClick={() => setOnboardingStep(8)}
                       className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
-                      Ver analise completa
+                      Ver análise completa
                     </button>
                   </div>
                 </div>
@@ -6075,16 +6186,16 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">
-                      Desbloqueie analises financeiras avancadas
+                      Desbloqueie análises financeiras avançadas
                     </h4>
-                    <p className="text-sm text-slate-400">Com o plano Pro voce tera:</p>
+                    <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
                     <ul className="space-y-2 text-sm text-emerald-100">
                       <li>• insights financeiros completos</li>
-                      <li>• previsoes de saldo</li>
-                      <li>• alertas de gastos fora do padrao</li>
-                      <li>• relatorios avancados</li>
+                      <li>• previsões de saldo</li>
+                      <li>• alertas de gastos fora do padrão</li>
+                      <li>• relatórios avançados</li>
                     </ul>
                   </div>
                   <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -6093,7 +6204,7 @@ export default function App() {
                       checked={onboardingAiSuggestionsEnabled}
                       onChange={(event) => setOnboardingAiSuggestionsEnabled(event.target.checked)}
                     />
-                    Ativar sugestoes de IA para este workspace
+                    Ativar sugestões de IA para este workspace
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button

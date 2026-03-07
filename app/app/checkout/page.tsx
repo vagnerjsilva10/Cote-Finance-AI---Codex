@@ -95,30 +95,31 @@ function EmbeddedPaymentForm(props: {
   submitLabel: string;
   helperText: string;
   onSuccess: () => void;
-  onError: (message: string) => void;
 }) {
   const stripe = useStripe();
   const elements = useElements();
   const [status, setStatus] = React.useState<FormStatus>('idle');
   const [isPaymentElementReady, setIsPaymentElementReady] = React.useState(false);
+  const [inlineError, setInlineError] = React.useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!stripe || !elements || status === 'submitting') return;
 
     setStatus('submitting');
+    setInlineError(null);
 
     try {
       const paymentElement = elements.getElement(PaymentElement);
       if (!paymentElement) {
-        props.onError('O formulario de pagamento ainda nao terminou de carregar. Aguarde alguns segundos e tente novamente.');
+        setInlineError('O formulario de pagamento ainda nao terminou de carregar. Aguarde alguns segundos e tente novamente.');
         setStatus('idle');
         return;
       }
 
       const submission = await elements.submit();
       if (submission.error) {
-        props.onError(submission.error.message || 'Nao foi possivel validar o formulario de pagamento.');
+        setInlineError(submission.error.message || 'Nao foi possivel validar o formulario de pagamento.');
         setStatus('idle');
         return;
       }
@@ -141,7 +142,7 @@ function EmbeddedPaymentForm(props: {
             });
 
       if (result.error) {
-        props.onError(result.error.message || 'Nao foi possivel confirmar o pagamento.');
+        setInlineError(result.error.message || 'Nao foi possivel confirmar o pagamento.');
         setStatus('idle');
         return;
       }
@@ -149,14 +150,14 @@ function EmbeddedPaymentForm(props: {
       setStatus('success');
       props.onSuccess();
     } catch (error) {
-      props.onError(error instanceof Error ? error.message : 'Falha ao processar pagamento.');
+      setInlineError(error instanceof Error ? error.message : 'Falha ao processar pagamento.');
       setStatus('idle');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4">
+      <div className="min-h-[220px] rounded-3xl border border-white/10 bg-slate-950/55 p-4">
         <PaymentElement
           options={{
             layout: 'tabs',
@@ -183,6 +184,7 @@ function EmbeddedPaymentForm(props: {
       {!isPaymentElementReady ? (
         <p className="text-center text-xs text-slate-500">Carregando formulario de pagamento seguro...</p>
       ) : null}
+      {inlineError ? <p className="text-center text-sm text-rose-300">{inlineError}</p> : null}
       <p className="text-center text-xs text-slate-400">{props.helperText}</p>
     </form>
   );
@@ -724,6 +726,7 @@ function CheckoutPageContent() {
                 </div>
               ) : checkoutData?.clientSecret && publishableKey ? (
                 <Elements
+                  key={checkoutData.clientSecret}
                   stripe={stripePromise}
                   options={{
                     clientSecret: checkoutData.clientSecret,
@@ -740,7 +743,6 @@ function CheckoutPageContent() {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
                       setSuccessMessage('Pagamento enviado. O Stripe esta finalizando a assinatura deste workspace.');
                     }}
-                    onError={(message) => setError(message)}
                   />
                 </Elements>
               ) : checkoutData && !checkoutData.requiresConfirmation ? (
