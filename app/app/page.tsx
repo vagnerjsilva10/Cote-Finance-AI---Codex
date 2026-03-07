@@ -3706,10 +3706,13 @@ const LoginView = ({
   onLoginSuccess: (user: any) => void;
   initialMode?: 'login' | 'signup';
 }) => {
+  const [loginMethod, setLoginMethod] = React.useState<'password' | 'otp'>('password');
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [otpCode, setOtpCode] = React.useState('');
+  const [otpRequestedEmail, setOtpRequestedEmail] = React.useState('');
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   const [isLogin, setIsLogin] = React.useState(initialMode !== 'signup');
   const [loading, setLoading] = React.useState(false);
@@ -3719,6 +3722,11 @@ const LoginView = ({
 
   React.useEffect(() => {
     setIsLogin(initialMode !== 'signup');
+    if (initialMode === 'signup') {
+      setLoginMethod('password');
+      setOtpCode('');
+      setOtpRequestedEmail('');
+    }
   }, [initialMode]);
 
   const validateSignup = () => {
@@ -3770,6 +3778,62 @@ const LoginView = ({
     }
   };
 
+  const requestEmailCode = async (normalizedEmail: string) => {
+    if (!normalizedEmail) {
+      throw new Error('Informe seu e-mail para receber o código.');
+    }
+
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail,
+      options: {
+        shouldCreateUser: false,
+      },
+    });
+
+    if (otpError) {
+      throw otpError;
+    }
+
+    setOtpRequestedEmail(normalizedEmail);
+    setOtpCode('');
+    setNotice(
+      'Enviamos um código de acesso para seu e-mail. Se o template estiver com link mágico, você também pode entrar clicando no link recebido.'
+    );
+  };
+
+  const verifyEmailCode = async (normalizedEmail: string) => {
+    const token = otpCode.trim();
+
+    if (!normalizedEmail) {
+      throw new Error('Informe seu e-mail para validar o código.');
+    }
+
+    if (token.length < 6) {
+      throw new Error('Digite o código recebido no e-mail para continuar.');
+    }
+
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      email: normalizedEmail,
+      token,
+      type: 'email',
+    });
+
+    if (verifyError) {
+      throw verifyError;
+    }
+
+    const accessToken =
+      data.session?.access_token || (await supabase.auth.getSession()).data.session?.access_token;
+    const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
+
+    if (!accessToken || !resolvedUser) {
+      throw new Error('Não foi possível validar o código. Solicite um novo e tente novamente.');
+    }
+
+    await runSetupForToken(accessToken);
+    onLoginSuccess(resolvedUser);
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -3778,6 +3842,15 @@ const LoginView = ({
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
+
+      if (isLogin && loginMethod === 'otp') {
+        if (otpRequestedEmail) {
+          await verifyEmailCode(otpRequestedEmail || normalizedEmail);
+        } else {
+          await requestEmailCode(normalizedEmail);
+        }
+        return;
+      }
 
       if (!isLogin) {
         const validationError = validateSignup();
@@ -3893,13 +3966,55 @@ const LoginView = ({
             </h1>
             <p className="text-sm text-slate-400">
               {isLogin
-                ? 'Acesse seu workspace com segurança e continue de onde parou.'
+                ? loginMethod === 'otp'
+                  ? 'Entre com um código enviado para o seu e-mail, sem precisar da senha.'
+                  : 'Acesse seu workspace com segurança e continue de onde parou.'
                 : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
+          {isLogin ? (
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-800 bg-slate-950/50 p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMethod('password');
+                  setOtpCode('');
+                  setOtpRequestedEmail('');
+                  setError(null);
+                  setNotice(null);
+                }}
+                className={cn(
+                  'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
+                  loginMethod === 'password'
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-slate-400 hover:text-white'
+                )}
+              >
+                Senha
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMethod('otp');
+                  setPassword('');
+                  setError(null);
+                  setNotice(null);
+                }}
+                className={cn(
+                  'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
+                  loginMethod === 'otp'
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-slate-400 hover:text-white'
+                )}
+              >
+                Código por e-mail
+              </button>
+            </div>
+          ) : null}
+
           {!isLogin && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -3938,17 +4053,49 @@ const LoginView = ({
               placeholder="seuemail@exemplo.com"
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Senha</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
-              placeholder={isLogin ? 'Digite sua senha' : 'Crie uma senha segura'}
-            />
-          </div>
+          {!isLogin || loginMethod === 'password' ? (
+            <div className="space-y-2">
+              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Senha</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                placeholder={isLogin ? 'Digite sua senha' : 'Crie uma senha segura'}
+              />
+            </div>
+          ) : (
+            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-800/30 p-4">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-white">
+                  {otpRequestedEmail ? 'Digite o código recebido' : 'Receba um código de acesso'}
+                </p>
+                <p className="text-xs leading-relaxed text-slate-400">
+                  {otpRequestedEmail
+                    ? `Enviamos o código para ${otpRequestedEmail}. Você também pode usar o link recebido no e-mail.`
+                    : 'Vamos enviar um código para o seu e-mail para validar sua entrada no app.'}
+                </p>
+              </div>
+
+              {otpRequestedEmail ? (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Código
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                    placeholder="Digite o código recebido"
+                  />
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {!isLogin && (
             <>
@@ -3994,7 +4141,15 @@ const LoginView = ({
             disabled={loading}
             className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
           >
-            {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar conta gratuita'}
+            {loading
+              ? 'Processando...'
+              : !isLogin
+                ? 'Criar conta gratuita'
+                : loginMethod === 'otp'
+                  ? otpRequestedEmail
+                    ? 'Validar código e entrar'
+                    : 'Receber código por e-mail'
+                  : 'Entrar'}
           </button>
 
           {pendingConfirmationEmail ? (
@@ -4006,6 +4161,42 @@ const LoginView = ({
             >
               Não recebeu o e-mail? Reenviar confirmação
             </button>
+          ) : null}
+
+          {isLogin && loginMethod === 'otp' && otpRequestedEmail ? (
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (loading) return;
+                  setLoading(true);
+                  setError(null);
+                  setNotice(null);
+                  try {
+                    await requestEmailCode(otpRequestedEmail);
+                  } catch (err: any) {
+                    setError(err?.message || 'Não foi possível reenviar o código.');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
+              >
+                Reenviar código
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOtpRequestedEmail('');
+                  setOtpCode('');
+                  setError(null);
+                  setNotice(null);
+                }}
+                className="text-xs font-semibold text-slate-400 transition hover:text-white"
+              >
+                Alterar e-mail
+              </button>
+            </div>
           ) : null}
         </form>
 
@@ -4051,6 +4242,9 @@ const LoginView = ({
               setError(null);
               setNotice(null);
               setIsLogin(!isLogin);
+              setLoginMethod('password');
+              setOtpCode('');
+              setOtpRequestedEmail('');
             }}
             className="ml-1 font-bold text-emerald-500 hover:underline"
           >

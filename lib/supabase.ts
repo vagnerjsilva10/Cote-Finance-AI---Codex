@@ -50,6 +50,7 @@ function createUnavailableSupabaseClient(message: string) {
       getSession: async () => authErrorResponse,
       getUser: async () => authErrorResponse,
       signInWithPassword: async () => authErrorResponse,
+      signInWithOtp: async () => ({ data: { session: null, user: null }, error }),
       signUp: async () => authErrorResponse,
       resend: async () => ({ data: { user: null, session: null }, error }),
       signInWithOAuth: async () => ({ data: { provider: null, url: null }, error }),
