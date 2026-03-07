@@ -10,6 +10,9 @@ import {
   upsertWorkspaceSubscriptionSafe,
 } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);

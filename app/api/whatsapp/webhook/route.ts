@@ -10,6 +10,9 @@ import {
   WHATSAPP_VERIFY_TOKEN_MISSING_ERROR,
 } from '@/lib/whatsapp';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type TransactionType = 'INCOME' | 'EXPENSE';
 type PaymentMethod = 'PIX' | 'CARD' | 'CASH' | 'BANK_TRANSFER' | 'BOLETO' | 'OTHER';
 

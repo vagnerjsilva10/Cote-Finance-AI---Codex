@@ -9,6 +9,9 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const isMissingTableError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';

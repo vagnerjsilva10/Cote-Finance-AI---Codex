@@ -7,6 +7,9 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type InvestmentBody = {
   id?: string;
   name?: string;

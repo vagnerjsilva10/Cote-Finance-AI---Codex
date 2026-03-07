@@ -9,6 +9,9 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER';
 type PaymentMethod = 'PIX' | 'CARD' | 'CASH' | 'BANK_TRANSFER' | 'BOLETO' | 'DEBIT' | 'OTHER';
 

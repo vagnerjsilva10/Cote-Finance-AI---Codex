@@ -3,6 +3,9 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const KEYWORD_CATEGORY_RULES: Array<{ keywords: string[]; category: string; confidence: number }> = [
   { keywords: ['uber', '99', 'combustivel', 'gasolina', 'onibus', 'metro', 'pedagio'], category: 'Transporte', confidence: 0.88 },
   { keywords: ['ifood', 'mercado', 'supermercado', 'restaurante', 'padaria', 'lanche'], category: 'Alimentação', confidence: 0.9 },

@@ -8,6 +8,9 @@ import { prisma } from '@/lib/prisma';
 import { HttpError, logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 import { Prisma } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type ProfilePlan = 'FREE' | 'PRO' | 'PREMIUM';
 
 const isMissingTableError = (error: unknown) => {

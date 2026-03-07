@@ -12,6 +12,9 @@ import {
   upsertWorkspacePreferenceSafe,
 } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type OnboardingBody = {
   workspaceName?: string;
   objective?: string;

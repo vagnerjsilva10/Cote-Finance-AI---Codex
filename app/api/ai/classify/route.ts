@@ -10,6 +10,9 @@ import {
 } from '@/lib/server/multi-tenant';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 async function getCurrentMonthAiUsage(workspaceId: string) {
   try {
     const now = new Date();

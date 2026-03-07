@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
 import { getWorkspacePlan, getWorkspacePreference } from '@/lib/server/multi-tenant';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const isMissingTableError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -15,6 +18,7 @@ const isMissingTableError = (error: unknown) => {
 
 export async function POST(req: Request) {
   try {
+    const supabase = getSupabaseClient();
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.startsWith('Bearer ')
       ? authHeader.slice('Bearer '.length)

@@ -6,6 +6,9 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type GoalBody = {
   id?: string;
   title?: string;

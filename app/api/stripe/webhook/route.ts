@@ -5,6 +5,9 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { logWorkspaceEventSafe, upsertWorkspaceSubscriptionSafe } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type AppPlan = 'FREE' | 'PRO' | 'PREMIUM';
 type EntitlementStatus = 'ACTIVE' | 'CANCELED';
 

@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { setupUser } from '@/lib/auth-setup';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
+    const supabase = getSupabaseClient();
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.startsWith('Bearer ')
       ? authHeader.slice('Bearer '.length)

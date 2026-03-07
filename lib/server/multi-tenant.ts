@@ -1,7 +1,7 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export type WorkspacePlan = 'FREE' | 'PRO' | 'PREMIUM';
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -130,6 +130,8 @@ export async function requireAuthenticatedUser(req: Request) {
   if (!token) {
     throw new HttpError(401, 'Unauthorized');
   }
+
+  const supabase = getSupabaseClient();
 
   const {
     data: { user },

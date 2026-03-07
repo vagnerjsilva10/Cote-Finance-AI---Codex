@@ -3,6 +3,9 @@ import { Type } from '@google/genai';
 import { getGeminiClient, GEMINI_KEY_MISSING_ERROR } from '@/lib/gemini';
 import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type OcrPayload = {
   amount?: number | null;
   date?: string | null;

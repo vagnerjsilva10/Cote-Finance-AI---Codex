@@ -13,6 +13,9 @@ import {
 } from '@/lib/server/multi-tenant';
 import { Prisma } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type CheckoutBody = {
   priceId?: string;
   plan?: string;
