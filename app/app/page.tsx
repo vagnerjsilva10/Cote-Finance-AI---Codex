@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   LayoutDashboard,
   ReceiptText,
@@ -3953,17 +3954,33 @@ const LoginView = ({
                 Empresa, telefone, segmento, quantidade de contas e objetivo financeiro podem ser definidos depois, no onboarding.
               </p>
 
-              <label className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3 text-xs text-slate-300">
+              <div className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3 text-xs text-slate-300">
                 <input
+                  id="accepted-terms"
                   type="checkbox"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
                   className="mt-0.5 rounded border-slate-600 bg-slate-900"
                 />
-                <span>
-                  Aceito os termos de uso e política de privacidade.
-                </span>
-              </label>
+                <div className="leading-relaxed">
+                  <label htmlFor="accepted-terms" className="cursor-pointer">
+                    Aceito os{' '}
+                  </label>
+                  <Link href="/termos-de-uso" target="_blank" rel="noreferrer" className="font-semibold text-emerald-300 hover:text-emerald-200">
+                    termos de uso
+                  </Link>
+                  <span>{' '}e{' '}</span>
+                  <Link
+                    href="/politica-de-privacidade"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-emerald-300 hover:text-emerald-200"
+                  >
+                    política de privacidade
+                  </Link>
+                  <span>.</span>
+                </div>
+              </div>
             </>
           )}
 
