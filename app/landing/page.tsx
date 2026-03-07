@@ -145,7 +145,7 @@ export default function LandingPage() {
       const search = new URLSearchParams();
       search.set('auth', mode);
       if (plan) search.set('plan', plan);
-      router.push(`/?${search.toString()}`);
+      router.push(`/app?${search.toString()}`);
     },
     [router]
   );
@@ -174,7 +174,7 @@ export default function LandingPage() {
         console.error('setup-user warmup failed:', setupError);
       });
 
-      router.push('/');
+      router.push('/app');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao iniciar cadastro.');
     } finally {
@@ -270,7 +270,7 @@ export default function LandingPage() {
 
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/landing" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <Image
               src="/brand/cote-finance-ai-logo.svg"
               alt="Cote Finance AI - By Cote Juros"
@@ -952,7 +952,7 @@ export default function LandingPage() {
         <div className="mx-auto flex w-full max-w-7xl flex-col justify-between gap-3 px-6 text-xs text-slate-500 sm:flex-row">
           <p>© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
-            <Link href="/" className="hover:text-slate-300">
+            <Link href="/app" className="hover:text-slate-300">
               App
             </Link>
             <button onClick={() => openAuth('signup')} className="hover:text-slate-300">

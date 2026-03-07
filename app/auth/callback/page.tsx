@@ -93,7 +93,7 @@ export default function AuthCallbackPage() {
         }
 
         if (!cancelled) {
-          router.replace('/');
+          router.replace('/app');
         }
       } catch (err) {
         if (!cancelled) {
@@ -116,7 +116,7 @@ export default function AuthCallbackPage() {
             <h1 className="text-lg font-bold text-white mb-2">Falha na autenticação</h1>
             <p className="text-sm text-rose-400 mb-4">{error}</p>
             <button
-              onClick={() => router.replace('/?auth=login')}
+              onClick={() => router.replace('/app?auth=login')}
               className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
             >
               Voltar para login

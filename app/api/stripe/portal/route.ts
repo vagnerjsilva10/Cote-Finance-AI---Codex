@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
     const requestUrl = new URL(req.url);
     const baseUrl = process.env.APP_URL || requestUrl.origin;
-    const returnUrl = new URL('/', baseUrl).toString();
+    const returnUrl = new URL('/app', baseUrl).toString();
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,

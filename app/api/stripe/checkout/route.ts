@@ -151,8 +151,8 @@ export async function POST(req: Request) {
 
     const requestUrl = new URL(req.url);
     const baseUrl = process.env.APP_URL || requestUrl.origin;
-    const successUrl = new URL('/?checkout=success', baseUrl).toString();
-    const cancelUrl = new URL('/?checkout=canceled', baseUrl).toString();
+    const successUrl = new URL('/app?checkout=success', baseUrl).toString();
+    const cancelUrl = new URL('/app?checkout=canceled', baseUrl).toString();
     const normalizedPlan = normalizePlan(body.plan);
     const normalizedInterval = normalizeInterval(body.interval);
     const derived = resolvePlanAndIntervalFromPriceId(priceId);
