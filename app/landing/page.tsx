@@ -259,12 +259,20 @@ export default function LandingPage() {
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:gap-6 lg:py-4">
           <Link href="/" className="flex min-w-0 items-center">
             <Image
+              src="/brand/cote-favicon.svg"
+              alt="Cote Finance AI"
+              width={96}
+              height={96}
+              priority
+              className="h-11 w-11 sm:hidden"
+            />
+            <Image
               src="/brand/cote-finance-ai-logo.svg"
               alt="Cote Finance AI - By Cote Juros"
               width={560}
               height={150}
               priority
-              className="h-12 w-auto sm:h-16 lg:h-20"
+              className="hidden h-16 w-auto sm:block lg:h-20"
             />
           </Link>
 
@@ -319,8 +327,8 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
               <Sparkles size={14} /> Controle financeiro com IA
             </span>
-            <h1 className="text-4xl font-bold leading-tight text-white md:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Entenda para onde seu dinheiro está indo em minutos.
+            <h1 className="text-[2.35rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
+              Entenda para onde o seu dinheiro está indo em minutos
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-slate-300">
               O Cote Finance AI organiza suas finanças automaticamente e usa inteligência artificial para mostrar como
