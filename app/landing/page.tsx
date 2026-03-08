@@ -741,7 +741,7 @@ export default function LandingPage() {
               <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -right-4 bottom-10 hidden rounded-xl border border-emerald-300/30 bg-slate-900/92 px-3 py-2 text-xs text-emerald-200 xl:block"
+                className="absolute -right-4 -bottom-5 hidden rounded-xl border border-emerald-300/30 bg-slate-900/92 px-3 py-2 text-xs text-emerald-200 xl:block"
               >
                 Atualização em tempo real
               </motion.div>
