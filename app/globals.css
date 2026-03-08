@@ -57,50 +57,6 @@ html[data-theme='dark'] .theme-toggle-surface {
   color: #cbd5e1 !important;
 }
 
-html[data-theme='dark'] .theme-blog-shell {
-  background: #020617;
-  color: #e2e8f0;
-}
-
-html[data-theme='dark'] .theme-blog-backdrop {
-  background:
-    radial-gradient(circle at top, rgba(16, 185, 129, 0.1), transparent 30%),
-    linear-gradient(180deg, #020617 0%, #020617 48%, #0b1120 100%) !important;
-}
-
-html[data-theme='dark'] .theme-blog-header,
-html[data-theme='dark'] .theme-blog-footer {
-  background: rgba(2, 6, 23, 0.9) !important;
-  border-color: rgba(148, 163, 184, 0.18) !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell :is(.text-slate-950, .text-slate-900) {
-  color: #f8fafc !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell :is(.text-slate-700, .text-slate-600, .text-slate-500) {
-  color: #94a3b8 !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell :is(.border-slate-200, .border-slate-300) {
-  border-color: rgba(148, 163, 184, 0.18) !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell :is(.bg-white, .bg-white\/80) {
-  background: rgba(15, 23, 42, 0.88) !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell [class*='bg-[#f7f8f3]'],
-html[data-theme='dark'] .theme-blog-shell [class*='bg-[#fbfcf8]'] {
-  background: rgba(15, 23, 42, 0.88) !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell .theme-blog-action {
-  color: #cbd5e1 !important;
-  border-color: rgba(148, 163, 184, 0.25) !important;
-}
-
-html[data-theme='dark'] .theme-blog-shell .theme-blog-action:hover {
-  color: #ffffff !important;
-  border-color: rgba(148, 163, 184, 0.42) !important;
+.theme-public-light {
+  color-scheme: light;
 }

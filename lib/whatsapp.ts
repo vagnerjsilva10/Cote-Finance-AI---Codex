@@ -1,4 +1,4 @@
-import 'server-only';
+﻿import 'server-only';
 import crypto from 'crypto';
 
 const DEFAULT_WHATSAPP_API_VERSION = 'v21.0';
@@ -163,3 +163,4 @@ export async function sendWhatsAppTextMessage(params: { to: string; text: string
 
   return parsedBody;
 }
+

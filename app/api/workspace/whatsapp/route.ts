@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import {
   normalizeWhatsappPhone,
@@ -7,6 +7,7 @@ import {
   WHATSAPP_VERIFY_TOKEN_MISSING_ERROR,
 } from '@/lib/whatsapp';
 import { HttpError, logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
+import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     const context = await resolveWorkspaceContext(req);
 
     const { action, phoneNumber } = await req.json();
-    if (action !== 'connect' && action !== 'disconnect') {
+    if (action !== 'connect' && action !== 'disconnect' && action !== 'send_test') {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
 
       await sendWhatsAppTextMessage({
         to: normalizedPhone,
-        text: 'Cote Finance AI conectado com sucesso. Voce ja pode enviar: "gastei 50 mercado".',
+        text: 'Cote Finance AI conectado com sucesso. Voc\u00ea j\u00e1 pode enviar: "gastei 50 mercado".',
       });
 
       await prisma.workspace.update({
@@ -86,6 +87,40 @@ export async function POST(req: Request) {
       });
     }
 
+    if (action === 'send_test') {
+      const result = await sendWorkspaceWhatsAppDigest({
+        workspaceId: context.workspaceId,
+        force: true,
+        source: 'manual',
+      });
+
+      if (!result.sent) {
+        const status =
+          result.reason === 'not_connected'
+            ? 400
+            : result.reason === 'workspace_not_found'
+            ? 404
+            : 409;
+
+        return NextResponse.json(
+          {
+            error:
+              result.reason === 'not_connected'
+                ? 'Conecte o WhatsApp deste workspace antes de enviar um teste.'
+                : result.reason === 'no_content'
+                ? 'Ainda n\u00e3o h\u00e1 dados suficientes para montar um resumo de teste.'
+                : 'N\u00e3o foi poss\u00edvel enviar o teste agora.',
+          },
+          { status }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        preview: result.preview,
+      });
+    }
+
     return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
   } catch (error: any) {
     if (error instanceof HttpError) {
@@ -104,3 +139,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to update WhatsApp status' }, { status: 500 });
   }
 }
+

@@ -17,8 +17,16 @@ type LegalPageProps = {
 };
 
 export function LegalPage({ eyebrow, title, description, lastUpdated, sections, currentPage }: LegalPageProps) {
+  const navItems = [
+    { href: '/', label: 'Início', active: false },
+    { href: '/blog', label: 'Blog', active: false },
+    { href: '/central-de-ajuda', label: 'Ajuda', active: false },
+    { href: '/termos-de-uso', label: 'Termos', active: currentPage === 'termos' },
+    { href: '/politica-de-privacidade', label: 'Privacidade', active: currentPage === 'privacidade' },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f7f8f3] text-slate-900">
+    <div className="theme-public-light min-h-screen bg-[#f7f8f3] text-slate-900">
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(16,185,129,.10),transparent_30%),linear-gradient(180deg,#fbfcf8_0%,#f7f8f3_100%)]" />
 
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
@@ -33,7 +41,7 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
               className="hidden h-16 w-auto sm:block lg:h-[5.5rem]"
             />
             <Image
-              src="/brand/cote-favicon.svg"
+              src="/brand/cote-favicon-black.svg"
               alt="Cote Finance AI"
               width={64}
               height={64}
@@ -43,35 +51,19 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
-            <Link href="/" className="transition-colors hover:text-slate-950">
-              Início
-            </Link>
-            <Link href="/blog" className="transition-colors hover:text-slate-950">
-              Blog
-            </Link>
-            <Link href="/central-de-ajuda" className="transition-colors hover:text-slate-950">
-              Ajuda
-            </Link>
-            <Link
-              href="/termos-de-uso"
-              className={
-                currentPage === 'termos'
-                  ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
-                  : 'transition-colors hover:text-slate-950'
-              }
-            >
-              Termos
-            </Link>
-            <Link
-              href="/politica-de-privacidade"
-              className={
-                currentPage === 'privacidade'
-                  ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
-                  : 'transition-colors hover:text-slate-950'
-              }
-            >
-              Privacidade
-            </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={
+                  item.active
+                    ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
+                    : 'transition-colors hover:text-slate-950'
+                }
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -88,6 +80,24 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
               Começar grátis
             </Link>
           </div>
+        </div>
+
+        <div className="border-t border-slate-200/80 md:hidden">
+          <nav className="mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={
+                  item.active
+                    ? 'whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700'
+                    : 'whitespace-nowrap rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700'
+                }
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </header>
 
@@ -126,6 +136,26 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
           ))}
         </section>
       </main>
+
+      <footer className="border-t border-slate-200/80 bg-white/80 py-8 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-sm text-slate-500 sm:flex-row sm:px-6 sm:text-left">
+          <p>© 2026 Cote Finance AI. Blog e plataforma financeira integrados.</p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/blog" className="hover:text-slate-900">
+              Blog
+            </Link>
+            <Link href="/central-de-ajuda" className="hover:text-slate-900">
+              Ajuda
+            </Link>
+            <Link href="/termos-de-uso" className="hover:text-slate-900">
+              Termos
+            </Link>
+            <Link href="/politica-de-privacidade" className="hover:text-slate-900">
+              Privacidade
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -8,6 +8,14 @@ type BlogHeaderProps = {
 };
 
 export function BlogHeader({ activeItem = 'blog' }: BlogHeaderProps) {
+  const navItems = [
+    { href: '/', label: 'Início', active: false },
+    { href: '/blog', label: 'Blog', active: activeItem === 'blog' },
+    { href: '/central-de-ajuda', label: 'Ajuda', active: activeItem === 'help' },
+    { href: '/termos-de-uso', label: 'Termos', active: false },
+    { href: '/politica-de-privacidade', label: 'Privacidade', active: false },
+  ];
+
   return (
     <header className="theme-blog-header sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
@@ -21,7 +29,7 @@ export function BlogHeader({ activeItem = 'blog' }: BlogHeaderProps) {
             className="hidden h-[4.75rem] w-auto sm:block lg:h-24"
           />
           <Image
-            src="/brand/cote-favicon.svg"
+            src="/brand/cote-favicon-black.svg"
             alt="Cote Finance AI"
             width={72}
             height={72}
@@ -31,35 +39,19 @@ export function BlogHeader({ activeItem = 'blog' }: BlogHeaderProps) {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
-          <Link href="/" className="transition-colors hover:text-slate-950">
-            Início
-          </Link>
-          <Link
-            href="/blog"
-            className={
-              activeItem === 'blog'
-                ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
-                : 'transition-colors hover:text-slate-950'
-            }
-          >
-            Blog
-          </Link>
-          <Link
-            href="/central-de-ajuda"
-            className={
-              activeItem === 'help'
-                ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
-                : 'transition-colors hover:text-slate-950'
-            }
-          >
-            Ajuda
-          </Link>
-          <Link href="/termos-de-uso" className="transition-colors hover:text-slate-950">
-            Termos
-          </Link>
-          <Link href="/politica-de-privacidade" className="transition-colors hover:text-slate-950">
-            Privacidade
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={
+                item.active
+                  ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
+                  : 'transition-colors hover:text-slate-950'
+              }
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-3">
@@ -76,6 +68,24 @@ export function BlogHeader({ activeItem = 'blog' }: BlogHeaderProps) {
             Começar grátis
           </Link>
         </div>
+      </div>
+
+      <div className="border-t border-slate-200/80 md:hidden">
+        <nav className="mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={
+                item.active
+                  ? 'whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700'
+                  : 'whitespace-nowrap rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700'
+              }
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );

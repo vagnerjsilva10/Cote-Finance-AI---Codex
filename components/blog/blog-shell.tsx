@@ -8,7 +8,7 @@ type BlogShellProps = {
 
 export function BlogShell({ children, activeItem = 'blog' }: BlogShellProps) {
   return (
-    <div className="theme-blog-shell min-h-screen bg-[#f7f8f3] text-slate-900">
+    <div className="theme-blog-shell theme-public-light min-h-screen bg-[#f7f8f3] text-slate-900">
       <div className="theme-blog-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(16,185,129,.10),transparent_30%),linear-gradient(180deg,#fbfcf8_0%,#f7f8f3_100%)]" />
       <BlogHeader activeItem={activeItem} />
       <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10 sm:px-6 sm:pb-24 sm:pt-14">{children}</main>

@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import {
   ArrowRight,
   BadgeHelp,
@@ -192,11 +191,7 @@ const faqCategoryMap: Record<string, string[]> = {
 };
 
 function normalizeValue(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .trim();
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 }
 
 function rankSearchItem(item: SearchItem, query: string) {
@@ -262,14 +257,9 @@ export function HelpCenterExperience() {
 
     const mailtoSubject = encodeURIComponent(`[Ticket] ${ticketCategory} - ${subject}`);
     const mailtoBody = encodeURIComponent(
-      [
-        `Nome: ${name}`,
-        `E-mail: ${email}`,
-        `Categoria: ${ticketCategory}`,
-        '',
-        'Detalhes do pedido:',
-        message,
-      ].join('\n')
+      [`Nome: ${name}`, `E-mail: ${email}`, `Categoria: ${ticketCategory}`, '', 'Detalhes do pedido:', message].join(
+        '\n'
+      )
     );
 
     window.location.href = `mailto:suporte@cotejuros.com.br?subject=${mailtoSubject}&body=${mailtoBody}`;
@@ -379,10 +369,7 @@ export function HelpCenterExperience() {
           {categories.map((category) => {
             const Icon = category.icon;
             return (
-              <article
-                key={category.id}
-                className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"
-              >
+              <article key={category.id} className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
                   <Icon size={20} />
                 </div>
@@ -429,11 +416,7 @@ export function HelpCenterExperience() {
             const relatedFaqs = faqs.filter((faq) => faqCategoryMap[category.id]?.includes(faq.id));
 
             return (
-              <section
-                key={category.id}
-                id={category.id}
-                className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
-              >
+              <section key={category.id} id={category.id} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex items-start gap-4">
                   <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
                     <Icon size={22} />
@@ -447,11 +430,7 @@ export function HelpCenterExperience() {
                 {categoryGuides.length ? (
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
                     {categoryGuides.map((guide) => (
-                      <article
-                        key={guide.id}
-                        id={guide.id}
-                        className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5"
-                      >
+                      <article key={guide.id} id={guide.id} className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5">
                         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
                           <BookOpenText size={14} /> Guia
                         </div>
@@ -465,10 +444,7 @@ export function HelpCenterExperience() {
                 {relatedFaqs.length ? (
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
                     {relatedFaqs.map((faq) => (
-                      <article
-                        key={faq.id}
-                        className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5"
-                      >
+                      <article key={faq.id} className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5">
                         <p className="text-sm font-semibold text-slate-950">{faq.question}</p>
                         <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
                           {faq.answer.map((paragraph) => (
@@ -489,10 +465,7 @@ export function HelpCenterExperience() {
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
               {popularGuides.map((guide) => (
-                <article
-                  key={guide.id}
-                  className="rounded-[1.6rem] border border-slate-200 bg-[#f7f8f3] p-6"
-                >
+                <article key={guide.id} className="rounded-[1.6rem] border border-slate-200 bg-[#f7f8f3] p-6">
                   <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
                     <BookOpenText size={14} /> Guia
                   </div>
@@ -510,10 +483,7 @@ export function HelpCenterExperience() {
 
             <div className="space-y-4">
               {faqs.map((faq) => (
-                <details
-                  key={faq.id}
-                  className="group rounded-[1.4rem] border border-slate-200 bg-[#f7f8f3] px-5 py-4"
-                >
+                <details key={faq.id} className="group rounded-[1.4rem] border border-slate-200 bg-[#f7f8f3] px-5 py-4">
                   <summary className="cursor-pointer list-none text-base font-semibold text-slate-950 marker:hidden">
                     {faq.question}
                   </summary>
@@ -537,8 +507,8 @@ export function HelpCenterExperience() {
             </p>
             <h2 className="text-3xl font-black tracking-tight text-slate-950">Ainda precisa de ajuda?</h2>
             <p className="max-w-2xl text-base leading-8 text-slate-600">
-              Se você não encontrou o que procurava, envie um ticket para nossa equipe. Vamos receber sua solicitação
-              no e-mail de suporte com o contexto já organizado.
+              Se você não encontrou o que procurava, envie um ticket para nossa equipe. Vamos receber sua solicitação no
+              e-mail de suporte com o contexto já organizado.
             </p>
             <div className="rounded-[1.5rem] border border-emerald-200 bg-white/90 p-5">
               <p className="text-sm font-semibold text-slate-950">Atendimento por e-mail</p>
@@ -614,7 +584,8 @@ export function HelpCenterExperience() {
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs leading-6 text-slate-500">
-                Ao enviar, abriremos seu aplicativo de e-mail com o ticket preenchido para <span className="font-semibold text-slate-700">suporte@cotejuros.com.br</span>.
+                Ao enviar, abriremos seu aplicativo de e-mail com o ticket preenchido para{' '}
+                <span className="font-semibold text-slate-700">suporte@cotejuros.com.br</span>.
               </p>
               <button
                 type="submit"
