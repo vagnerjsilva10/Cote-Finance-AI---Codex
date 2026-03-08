@@ -541,9 +541,10 @@ export function HelpCenterExperience() {
               no e-mail de suporte com o contexto já organizado.
             </p>
             <div className="rounded-[1.5rem] border border-emerald-200 bg-white/90 p-5">
-              <p className="text-sm font-semibold text-slate-950">Canal recomendado</p>
+              <p className="text-sm font-semibold text-slate-950">Atendimento por e-mail</p>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                O e-mail ideal para esse fluxo é <span className="font-semibold text-slate-950">suporte@cotejuros.com.br</span>.
+                Preencha o formulário ao lado e envie sua dúvida. Nossa equipe vai responder pelo e-mail{' '}
+                <span className="font-semibold text-slate-950">suporte@cotejuros.com.br</span>.
               </p>
             </div>
           </div>
