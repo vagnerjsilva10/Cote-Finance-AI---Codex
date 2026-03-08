@@ -13,69 +13,107 @@ type LegalPageProps = {
   description: string;
   lastUpdated: string;
   sections: LegalSection[];
+  currentPage: 'termos' | 'privacidade';
 };
 
-export function LegalPage({ eyebrow, title, description, lastUpdated, sections }: LegalPageProps) {
+export function LegalPage({ eyebrow, title, description, lastUpdated, sections, currentPage }: LegalPageProps) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,.18),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(59,130,246,.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
+    <div className="min-h-screen bg-[#f7f8f3] text-slate-900">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(16,185,129,.10),transparent_30%),linear-gradient(180deg,#fbfcf8_0%,#f7f8f3_100%)]" />
 
-      <header className="border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-4">
             <Image
-              src="/brand/cote-finance-ai-logo.svg"
+              src="/brand/cote-finance-ai-logo-black.svg"
               alt="Cote Finance AI - By Cote Juros"
-              width={420}
-              height={112}
+              width={720}
+              height={192}
               priority
-              className="h-12 w-auto"
+              className="hidden h-16 w-auto sm:block lg:h-[5.5rem]"
+            />
+            <Image
+              src="/brand/cote-favicon.svg"
+              alt="Cote Finance AI"
+              width={64}
+              height={64}
+              priority
+              className="h-14 w-14 sm:hidden"
             />
           </Link>
 
-          <div className="flex items-center gap-3 text-sm">
-            <Link href="/" className="text-slate-300 transition-colors hover:text-white">
-              Landing
+          <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
+            <Link href="/" className="transition-colors hover:text-slate-950">
+              Início
             </Link>
-            <Link href="/blog" className="text-slate-300 transition-colors hover:text-white">
+            <Link href="/blog" className="transition-colors hover:text-slate-950">
               Blog
             </Link>
-            <Link href="/central-de-ajuda" className="text-slate-300 transition-colors hover:text-white">
+            <Link href="/central-de-ajuda" className="transition-colors hover:text-slate-950">
               Ajuda
             </Link>
             <Link
-              href="/app"
-              className="rounded-xl border border-slate-700 px-4 py-2 font-semibold text-slate-200 transition-colors hover:border-slate-500"
+              href="/termos-de-uso"
+              className={
+                currentPage === 'termos'
+                  ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
+                  : 'transition-colors hover:text-slate-950'
+              }
             >
-              Entrar no app
+              Termos
+            </Link>
+            <Link
+              href="/politica-de-privacidade"
+              className={
+                currentPage === 'privacidade'
+                  ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
+                  : 'transition-colors hover:text-slate-950'
+              }
+            >
+              Privacidade
+            </Link>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/app"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
+            >
+              Entrar
+            </Link>
+            <Link
+              href="/signup"
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+            >
+              Começar grátis
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl px-4 pb-20 pt-10 sm:px-6 sm:pb-24 sm:pt-14">
-        <section className="rounded-[2rem] border border-white/10 bg-slate-900/55 p-6 shadow-[0_28px_90px_-46px_rgba(16,185,129,.34)] sm:p-8 md:p-10">
-          <span className="inline-flex items-center rounded-full border border-emerald-300/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
+      <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10 sm:px-6 sm:pb-24 sm:pt-14">
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8 md:p-10">
+          <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
             {eyebrow}
           </span>
-          <h1 className="mt-5 text-4xl font-bold text-white sm:text-5xl">{title}</h1>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">{description}</p>
-          <p className="mt-4 text-sm text-slate-500">{'\u00daltima atualiza\u00e7\u00e3o:'} {lastUpdated}</p>
+          <h1 className="mt-5 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">{title}</h1>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">{description}</p>
+          <p className="mt-4 text-sm text-slate-500">Última atualização: {lastUpdated}</p>
         </section>
 
         <section className="mt-8 space-y-6">
           {sections.map((section) => (
             <article
               key={section.title}
-              className="rounded-[1.75rem] border border-white/10 bg-slate-900/45 p-6 sm:p-8"
+              className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
             >
-              <h2 className="text-2xl font-semibold text-white">{section.title}</h2>
-              <div className="mt-4 space-y-4 text-sm leading-7 text-slate-300 sm:text-base">
+              <h2 className="text-2xl font-black tracking-tight text-slate-950">{section.title}</h2>
+              <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-base">
                 {section.paragraphs.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
                 {section.bullets ? (
-                  <ul className="space-y-2 pl-5 text-slate-200">
+                  <ul className="space-y-2 pl-5 text-slate-700">
                     {section.bullets.map((bullet) => (
                       <li key={bullet} className="list-disc">
                         {bullet}

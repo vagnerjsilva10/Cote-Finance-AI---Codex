@@ -91,7 +91,6 @@ function getTopicLabel(seed: ArticleSeed) {
 function createProblemSection(seed: ArticleSeed): BlogSection {
   const primaryKeyword = getPrimaryKeyword(seed);
   const secondaryKeyword = getSecondaryKeyword(seed);
-  const topicLabel = getTopicLabel(seed);
 
   const paragraphs =
     seed.category === 'Ferramenta'
@@ -109,10 +108,7 @@ function createProblemSection(seed: ArticleSeed): BlogSection {
         ];
 
   return {
-    title:
-      seed.category === 'Ferramenta'
-        ? `Por que ${topicLabel} ainda é difícil`
-        : `Por que ${topicLabel} ainda desafia tanta gente`,
+    title: 'Por que esse problema financeiro é tão comum',
     paragraphs,
   };
 }
@@ -120,13 +116,8 @@ function createProblemSection(seed: ArticleSeed): BlogSection {
 function createExplanationSection(seed: ArticleSeed): BlogSection {
   const primaryKeyword = getPrimaryKeyword(seed);
   const secondaryKeyword = getSecondaryKeyword(seed);
-  const topicLabel = getTopicLabel(seed);
-
   return {
-    title:
-      seed.category === 'Ferramenta'
-        ? `Como o Cote Finance AI ajuda a melhorar ${topicLabel}`
-        : `O que ajuda a melhorar ${topicLabel}`,
+    title: 'Como resolver esse problema',
     paragraphs: [
       ...seed.explanation,
       `Na prática, ${primaryKeyword} melhora quando você para de olhar só para o resultado final e passa a observar o caminho que levou até ele. Isso inclui entender categorias, frequência de compra, recorrências, sazonalidade e o efeito acumulado das pequenas decisões.`,
@@ -137,21 +128,21 @@ function createExplanationSection(seed: ArticleSeed): BlogSection {
     bullets: seed.focusBullets,
     subSections: [
       {
-        title: seed.category === 'Ferramenta' ? 'Leitura automática do que entra e sai' : 'Visibilidade do que realmente pesa no orçamento',
+        title: 'Passo 1',
         paragraphs: [
           'O primeiro ganho de um processo melhor é parar de decidir no escuro. Quando entradas, saídas e categorias aparecem de forma organizada, você consegue entender o mês com menos esforço e mais contexto.',
           'Essa visibilidade evita a sensação de que o dinheiro “sumiu”, porque mostra como as pequenas decisões se acumulam e onde está o peso real do orçamento.',
         ],
       },
       {
-        title: seed.category === 'Ferramenta' ? 'Identificação de desperdícios e padrões' : 'Correção de hábitos que drenam dinheiro',
+        title: 'Passo 2',
         paragraphs: [
           'Nem todo excesso é óbvio quando você olha apenas para a fatura total. O que faz diferença é identificar padrões recorrentes, categorias que cresceram e comportamentos que parecem pequenos, mas drenam caixa com frequência.',
           'Quando esse padrão fica visível, você deixa de cortar no escuro e passa a agir em cima do que realmente gera impacto.',
         ],
       },
       {
-        title: seed.category === 'Ferramenta' ? 'Planejamento financeiro com mais contexto' : 'Planejamento financeiro com menos improviso',
+        title: 'Passo 3',
         paragraphs: [
           'Entender o que aconteceu no mês serve para tomar decisões melhores no próximo. Essa ponte entre leitura e ação é o que transforma controle financeiro em estratégia prática.',
           'Com mais contexto, fica mais simples ajustar metas, rever categorias, priorizar pagamentos e criar um planejamento que caiba de verdade na sua rotina.',
@@ -165,10 +156,7 @@ function createExamplesSection(seed: ArticleSeed): BlogSection {
   const primaryKeyword = getPrimaryKeyword(seed);
 
   return {
-    title:
-      seed.category === 'Ferramenta'
-        ? `Exemplo prático de ${getTopicLabel(seed)}`
-        : `Exemplo prático para melhorar ${getTopicLabel(seed)}`,
+    title: 'Exemplo prático do dia a dia',
     paragraphs: [
       ...seed.example,
       `Também vale pensar nos gastos que parecem inofensivos quando vistos sozinhos. Um café, um app, uma corrida por aplicativo, um pedido de delivery ou uma compra de conveniência dificilmente assustam no instante da decisão. Mas, quando entram em sequência, acabam roubando espaço de metas que seriam muito mais valiosas no médio prazo.`,
@@ -180,10 +168,7 @@ function createExamplesSection(seed: ArticleSeed): BlogSection {
 
 function createPracticalTipsSection(seed: ArticleSeed): BlogSection {
   return {
-    title:
-      seed.category === 'Ferramenta'
-        ? `Dicas práticas para aplicar ${getTopicLabel(seed)} no dia a dia`
-        : `Dicas práticas para melhorar ${getTopicLabel(seed)} no dia a dia`,
+    title: 'Dicas práticas para aplicar hoje',
     paragraphs: [
       'Na vida real, o que se sustenta é o que cabe na rotina. Por isso, o melhor plano não é o mais complexo. É o que você consegue executar mesmo em semanas corridas, sem depender de motivação extraordinária para continuar.',
       'As orientações abaixo funcionam como uma forma de reduzir atrito. Em vez de tentar controlar tudo ao mesmo tempo, você foca nos pontos com maior impacto e cria repetição. Esse tipo de consistência vale muito mais do que uma mudança radical que dura pouco.',

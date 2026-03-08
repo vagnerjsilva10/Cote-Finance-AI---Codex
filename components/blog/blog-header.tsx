@@ -12,15 +12,15 @@ export function BlogHeader() {
             width={720}
             height={192}
             priority
-            className="hidden h-14 w-auto sm:block lg:h-[4.5rem]"
+            className="hidden h-16 w-auto sm:block lg:h-[5.5rem]"
           />
           <Image
             src="/brand/cote-favicon.svg"
             alt="Cote Finance AI"
-            width={56}
-            height={56}
+            width={64}
+            height={64}
             priority
-            className="h-12 w-12 sm:hidden"
+            className="h-14 w-14 sm:hidden"
           />
         </Link>
 
