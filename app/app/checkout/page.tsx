@@ -29,10 +29,12 @@ import {
 } from '@/lib/billing/plans';
 
 type CheckoutIntentType = 'payment' | 'setup' | 'none';
+type StripeMode = 'live' | 'test' | 'unknown';
 
 type EmbeddedCheckoutResponse = {
   clientSecret: string | null;
   intentType: CheckoutIntentType;
+  stripeMode: StripeMode;
   subscriptionId: string;
   customerId: string;
   workspaceId: string;
@@ -50,6 +52,13 @@ type FormStatus = 'idle' | 'submitting' | 'success';
 
 const stripePromise = getStripeJs();
 const CHECKOUT_INIT_TIMEOUT_MS = 20000;
+
+function getPublishableKeyMode(key: string | null): StripeMode {
+  if (!key) return 'unknown';
+  if (key.startsWith('pk_live_')) return 'live';
+  if (key.startsWith('pk_test_')) return 'test';
+  return 'unknown';
+}
 
 function createTimeoutError(message: string) {
   const error = new Error(message);
@@ -343,6 +352,7 @@ function CheckoutPageContent() {
   const paymentIntentClientSecret = searchParams.get('payment_intent_client_secret');
   const setupIntentClientSecret = searchParams.get('setup_intent_client_secret');
   const publishableKey = getStripePublishableKey();
+  const publishableKeyMode = React.useMemo(() => getPublishableKeyMode(publishableKey), [publishableKey]);
 
   const [checkoutData, setCheckoutData] = React.useState<EmbeddedCheckoutResponse | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -572,6 +582,21 @@ function CheckoutPageContent() {
           CHECKOUT_INIT_TIMEOUT_MS
         );
 
+        if (
+          typedPayload.stripeMode !== 'unknown' &&
+          publishableKeyMode !== 'unknown' &&
+          typedPayload.stripeMode !== publishableKeyMode
+        ) {
+          clearCachedCheckout(plan, interval, typedPayload.workspaceId);
+          throw new Error(
+            `Stripe configurado com chaves de ambientes diferentes. Use ${
+              typedPayload.stripeMode === 'live'
+                ? 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...'
+                : 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...'
+            } para combinar com STRIPE_SECRET_KEY.`
+          );
+        }
+
         cacheCheckout(typedPayload);
 
         if (!isCancelled) {
@@ -611,6 +636,7 @@ function CheckoutPageContent() {
     interval,
     paymentIntentClientSecret,
     plan,
+    publishableKeyMode,
     setupIntentClientSecret,
     publishableKey,
     workspaceId,

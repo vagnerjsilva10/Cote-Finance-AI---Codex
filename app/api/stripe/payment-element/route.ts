@@ -36,6 +36,7 @@ type PaymentElementBody = {
 };
 
 type CheckoutIntentType = 'payment' | 'setup' | 'none';
+type StripeMode = 'live' | 'test' | 'unknown';
 const STRIPE_REQUEST_TIMEOUT_MS = 15000;
 
 class StripeRequestTimeoutError extends Error {
@@ -77,6 +78,14 @@ function getExpandedInvoice(invoice: string | Stripe.Invoice | null) {
   return invoice;
 }
 
+function getExpandedPaymentIntent(paymentIntent: string | Stripe.PaymentIntent | null | undefined) {
+  if (!paymentIntent || typeof paymentIntent === 'string') {
+    return null;
+  }
+
+  return paymentIntent;
+}
+
 function getExpandedSetupIntent(setupIntent: string | Stripe.SetupIntent | null) {
   if (!setupIntent || typeof setupIntent === 'string') {
     return null;
@@ -95,8 +104,9 @@ function serializeSubscriptionState(params: {
   priceId: string;
 }) {
   const invoice = getExpandedInvoice(params.subscription.latest_invoice);
+  const paymentIntent = getExpandedPaymentIntent(invoice?.payment_intent ?? null);
   const setupIntent = getExpandedSetupIntent(params.subscription.pending_setup_intent);
-  const paymentClientSecret = invoice?.confirmation_secret?.client_secret ?? null;
+  const paymentClientSecret = paymentIntent?.client_secret ?? invoice?.confirmation_secret?.client_secret ?? null;
   const setupClientSecret = setupIntent?.client_secret ?? null;
   const clientSecret = paymentClientSecret || setupClientSecret;
   const intentType: CheckoutIntentType = paymentClientSecret
@@ -108,6 +118,7 @@ function serializeSubscriptionState(params: {
   return {
     clientSecret,
     intentType,
+    stripeMode: params.subscription.livemode ? ('live' as StripeMode) : ('test' as StripeMode),
     subscriptionId: params.subscription.id,
     customerId: params.customerId,
     workspaceId: params.workspaceId,
@@ -179,7 +190,7 @@ export async function POST(req: Request) {
       try {
         const existingSubscription = await withStripeTimeout(
           stripe.subscriptions.retrieve(existingSubscriptionId, {
-            expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+            expand: ['latest_invoice.payment_intent', 'latest_invoice.confirmation_secret', 'pending_setup_intent'],
           }),
           'A validação da assinatura atual demorou demais. Tente novamente.'
         );
@@ -277,7 +288,7 @@ export async function POST(req: Request) {
           interval: resolved.interval,
           priceId: resolved.priceId,
         },
-        expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+        expand: ['latest_invoice.payment_intent', 'latest_invoice.confirmation_secret', 'pending_setup_intent'],
       }),
       'A criação da assinatura no Stripe demorou demais. Tente novamente.'
     );
