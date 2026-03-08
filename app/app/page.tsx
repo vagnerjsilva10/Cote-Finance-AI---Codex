@@ -1965,7 +1965,7 @@ type AgendaViewProps = {
 const AgendaView = ({ bills }: AgendaViewProps) => {
   const upcomingBills = bills.filter((bill) => bill.status !== 'paid');
   const overdueCount = upcomingBills.filter((bill) => bill.status === 'overdue').length;
-  const nextSevenDays = upcomingBills.filter((bill) => (bill.daysUntil ? 99) <= 7);
+  const nextSevenDays = upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7);
   const totalScheduled = upcomingBills.reduce((acc, bill) => acc + bill.amount, 0);
 
   const groupedBills = React.useMemo(
@@ -1973,12 +1973,12 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
       {
         key: 'urgent',
         title: 'Mais próximos',
-        items: upcomingBills.filter((bill) => (bill.daysUntil ? 99) <= 7),
+        items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7),
       },
       {
         key: 'later',
         title: 'Próximos 30 dias',
-        items: upcomingBills.filter((bill) => (bill.daysUntil ? 99) > 7),
+        items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) > 7),
       },
     ].filter((group) => group.items.length > 0),
     [upcomingBills]
@@ -2093,7 +2093,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                             >
                               {bill.status === 'overdue'
                                 ? 'Atrasado'
-                                : (bill.daysUntil ? 0) === 0
+                                : (bill.daysUntil ?? 0) === 0
                                 ? 'Hoje'
                                 : `${bill.daysUntil}d`}
                             </span>
