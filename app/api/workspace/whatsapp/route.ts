@@ -16,6 +16,8 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
+    const activeWorkspaceName =
+      context.workspaces.find((workspace) => workspace.id === context.workspaceId)?.name || 'Meu Workspace';
 
     const { action, phoneNumber } = await req.json();
     if (action !== 'connect' && action !== 'disconnect' && action !== 'send_test') {
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
         await sendWhatsAppTemplateMessage({
           to: normalizedPhone,
           name: connectTemplateName,
-          bodyParameters: [context.workspace.name],
+          bodyParameters: [activeWorkspaceName],
         });
       } else {
         await sendWhatsAppTextMessage({
