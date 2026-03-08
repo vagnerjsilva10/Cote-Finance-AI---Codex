@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
   color-scheme: dark;
@@ -45,186 +45,16 @@ html[data-theme='light'] body {
   color: #0f172a;
 }
 
-html[data-theme='light'] .theme-app-shell,
-html[data-theme='light'] .theme-landing-shell,
-html[data-theme='light'] .theme-checkout-shell {
-  color: #0f172a;
-}
-
 html[data-theme='light'] .theme-toggle-surface {
   background-color: rgba(255, 255, 255, 0.88) !important;
   border-color: rgba(148, 163, 184, 0.35) !important;
   color: #475569 !important;
 }
 
-html[data-theme='light'] .theme-landing-backdrop {
-  background:
-    radial-gradient(circle at 10% 10%, rgba(16, 185, 129, 0.12), transparent 32%),
-    radial-gradient(circle at 90% 8%, rgba(59, 130, 246, 0.1), transparent 28%),
-    linear-gradient(180deg, #f8fafc 0%, #f8fafc 52%, #eef6ff 100%) !important;
-}
-
-html[data-theme='light'] .theme-checkout-backdrop {
-  background:
-    radial-gradient(circle at 12% 14%, rgba(16, 185, 129, 0.12), transparent 30%),
-    radial-gradient(circle at 86% 10%, rgba(59, 130, 246, 0.1), transparent 24%),
-    linear-gradient(180deg, #f8fafc 0%, #eef5ff 52%, #edf7f1 100%) !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(
-  .bg-slate-950,
-  .bg-slate-950\/95,
-  .bg-slate-950\/85,
-  .bg-slate-950\/80,
-  .bg-slate-950\/75,
-  .bg-slate-950\/70,
-  .bg-slate-950\/60,
-  .bg-slate-950\/55,
-  .bg-slate-950\/50
-) {
-  background-color: #f8fafc !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(
-  .bg-slate-900,
-  .bg-slate-900\/95,
-  .bg-slate-900\/92,
-  .bg-slate-900\/90,
-  .bg-slate-900\/88,
-  .bg-slate-900\/80,
-  .bg-slate-900\/75,
-  .bg-slate-900\/70,
-  .bg-slate-900\/60,
-  .bg-slate-900\/55,
-  .bg-slate-900\/50
-) {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(
-  .bg-slate-800,
-  .bg-slate-800\/50,
-  .bg-slate-800\/40,
-  .bg-slate-800\/30
-) {
-  background-color: #e2e8f0 !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(
-  .border-slate-900,
-  .border-slate-800,
-  .border-slate-700,
-  .border-white\/10
-) {
-  border-color: rgba(148, 163, 184, 0.28) !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(
-  .text-slate-600,
-  .text-slate-500,
-  .text-slate-400
-) {
-  color: #64748b !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(
-  .text-slate-300,
-  .text-slate-200,
-  .text-slate-100
-) {
-  color: #334155 !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(h1, h2, h3, h4, h5, h6) {
-  color: #0f172a !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(div, span, p, li, label, td, th).text-white {
-  color: #0f172a !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(input, select, textarea).text-white {
-  color: #0f172a !important;
-}
-
-html[data-theme='light'] :is(.theme-app-shell, .theme-landing-shell, .theme-checkout-shell) :is(input, select, textarea)::placeholder {
-  color: #94a3b8 !important;
-}
-
-html[data-theme='light'] .theme-app-shell :is(button, a):is(.bg-slate-900, .bg-slate-900\/95, .bg-slate-800) {
-  color: #0f172a !important;
-}
-
-html[data-theme='light'] .theme-app-shell .hover\:bg-slate-800:hover,
-html[data-theme='light'] .theme-app-shell .hover\:bg-slate-700:hover,
-html[data-theme='light'] .theme-landing-shell .hover\:bg-slate-100:hover,
-html[data-theme='light'] .theme-checkout-shell .hover\:bg-slate-100:hover {
-  background-color: #e2e8f0 !important;
-}
-
-html[data-theme='light'] .theme-app-shell .hover\:text-white:hover,
-html[data-theme='light'] .theme-landing-shell .hover\:text-white:hover,
-html[data-theme='light'] .theme-checkout-shell .hover\:text-white:hover {
-  color: #0f172a !important;
-}
-
-html[data-theme='light'] .theme-app-shell .shadow-2xl,
-html[data-theme='light'] .theme-app-shell .shadow-lg,
-html[data-theme='light'] .theme-landing-shell .shadow-2xl,
-html[data-theme='light'] .theme-landing-shell .shadow-lg,
-html[data-theme='light'] .theme-checkout-shell .shadow-2xl,
-html[data-theme='light'] .theme-checkout-shell .shadow-lg {
-  box-shadow: 0 20px 60px -35px rgba(15, 23, 42, 0.2) !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-modal-backdrop {
-  background: rgba(241, 245, 249, 0.78) !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-modal-surface {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(148, 163, 184, 0.28) !important;
-  box-shadow: 0 28px 80px -40px rgba(15, 23, 42, 0.24) !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-modal-surface :is(input, select, textarea) {
-  background: #f8fafc !important;
-  border-color: rgba(148, 163, 184, 0.34) !important;
-  color: #0f172a !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-modal-surface :is(input, select, textarea)::placeholder {
-  color: #94a3b8 !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-table-surface,
-html[data-theme='light'] .theme-app-shell .theme-report-card {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(148, 163, 184, 0.28) !important;
-  box-shadow: 0 22px 60px -42px rgba(15, 23, 42, 0.22);
-}
-
-html[data-theme='light'] .theme-app-shell .theme-table-surface thead tr {
-  background: rgba(226, 232, 240, 0.55) !important;
-  border-color: rgba(148, 163, 184, 0.22) !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-table-surface tbody {
-  color: #334155;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-table-surface tbody tr:hover {
-  background: rgba(226, 232, 240, 0.38) !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-report-card .recharts-cartesian-grid-horizontal line,
-html[data-theme='light'] .theme-app-shell .theme-report-card .recharts-cartesian-grid-vertical line {
-  stroke: rgba(148, 163, 184, 0.28) !important;
-}
-
-html[data-theme='light'] .theme-app-shell .theme-report-card .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #ffffff !important;
-  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+html[data-theme='dark'] .theme-toggle-surface {
+  background-color: rgba(15, 23, 42, 0.78) !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  color: #cbd5e1 !important;
 }
 
 html[data-theme='dark'] .theme-blog-shell {

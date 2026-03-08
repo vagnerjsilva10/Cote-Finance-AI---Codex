@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeScript } from '@/components/theme/theme-script';
@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Cote Finance AI | Seu Assistente Financeiro Inteligente',
-  description: 'Organize, analise, preveja e oriente automaticamente suas finan�as com o Cote Finance AI.',
+  description: 'Organize, analise, preveja e oriente automaticamente suas finanças com o Cote Finance AI.',
   icons: {
     icon: [{ url: '/brand/cote-favicon.svg', type: 'image/svg+xml' }],
     shortcut: ['/brand/cote-favicon.svg'],
@@ -26,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <meta charSet="utf-8" />
         <ThemeScript />
       </head>
       <body

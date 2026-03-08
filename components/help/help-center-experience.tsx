@@ -183,6 +183,14 @@ const searchItems: SearchItem[] = [
   })),
 ];
 
+const faqCategoryMap: Record<string, string[]> = {
+  'primeiros-passos': ['faq-comecar'],
+  'controle-de-gastos': ['faq-blog'],
+  'metas-e-planejamento-financeiro': ['faq-blog'],
+  'conta-e-seguranca': ['faq-google', 'faq-seguro'],
+  'planos-e-pagamentos': ['faq-cancelar'],
+};
+
 function normalizeValue(value: string) {
   return value
     .normalize('NFD')
@@ -238,76 +246,100 @@ export function HelpCenterExperience() {
   return (
     <BlogShell activeItem="help">
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8 lg:p-10">
-        <div className="max-w-4xl space-y-5">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-            <ShieldCheck size={14} /> Central de ajuda
-          </span>
-          <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">Como podemos ajudar?</h1>
-            <p className="max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-              Encontre respostas rápidas sobre como usar o Cote Finance AI, organizar suas finanças e resolver dúvidas
-              sobre sua conta.
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_320px] lg:items-end">
+          <div className="max-w-4xl space-y-5">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+              <ShieldCheck size={14} /> Central de ajuda
+            </span>
+            <div className="space-y-4">
+              <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">Como podemos ajudar?</h1>
+              <p className="max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
+                Encontre respostas rápidas sobre como usar o Cote Finance AI, organizar suas finanças e resolver dúvidas
+                sobre sua conta.
+              </p>
+            </div>
+
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar ajuda..."
+                className="w-full rounded-2xl border border-slate-300 bg-[#f7f8f3] py-4 pl-12 pr-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+              />
+            </div>
+
+            <p className="text-sm text-slate-500">
+              Digite palavras como &quot;conta&quot;, &quot;gastos&quot;, &quot;pagamento&quot; ou &quot;assinatura&quot;.
             </p>
           </div>
 
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar ajuda..."
-              className="w-full rounded-2xl border border-slate-300 bg-[#f7f8f3] py-4 pl-12 pr-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-            />
-          </div>
-
-          <p className="text-sm text-slate-500">
-            Digite palavras como &quot;conta&quot;, &quot;gastos&quot;, &quot;pagamento&quot; ou &quot;assinatura&quot;.
-          </p>
-
-          {trimmedQuery ? (
-            <div className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-4 shadow-sm">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-slate-950">Resultados da busca</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                  {results.length} resultado{results.length === 1 ? '' : 's'}
-                </p>
-              </div>
-
-              {results.length ? (
-                <div className="space-y-3">
-                  {results.map((result) => (
-                    <button
-                      key={result.id}
-                      type="button"
-                      onClick={() => scrollToAnchor(result.anchor)}
-                      className="flex w-full items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-300"
-                    >
-                      <div className="space-y-1">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{result.kind}</p>
-                        <p className="text-sm font-semibold text-slate-950">{result.title}</p>
-                        <p className="text-sm leading-6 text-slate-600">{result.body}</p>
-                      </div>
-                      <ArrowRight className="mt-1 shrink-0 text-slate-400" size={16} />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-sm leading-7 text-slate-600">
-                  Nenhum resultado encontrado para essa busca. Tente palavras como &quot;login&quot;, &quot;gastos&quot;,
-                  &quot;metas&quot; ou &quot;assinatura&quot;.
-                </div>
-              )}
+          <div className="rounded-[1.75rem] border border-slate-200 bg-[#f7f8f3] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Atalhos rápidos</p>
+            <div className="mt-4 space-y-3">
+              {categories.slice(0, 4).map((category) => {
+                const Icon = category.icon;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => scrollToAnchor(category.id)}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:text-slate-950"
+                  >
+                    <span className="inline-flex rounded-xl border border-emerald-200 bg-emerald-50 p-2 text-emerald-700">
+                      <Icon size={16} />
+                    </span>
+                    <span>{category.title}</span>
+                  </button>
+                );
+              })}
             </div>
-          ) : null}
+          </div>
         </div>
+
+        {trimmedQuery ? (
+          <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-950">Resultados da busca</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                {results.length} resultado{results.length === 1 ? '' : 's'}
+              </p>
+            </div>
+
+            {results.length ? (
+              <div className="space-y-3">
+                {results.map((result) => (
+                  <button
+                    key={result.id}
+                    type="button"
+                    onClick={() => scrollToAnchor(result.anchor)}
+                    className="flex w-full items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-300"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{result.kind}</p>
+                      <p className="text-sm font-semibold text-slate-950">{result.title}</p>
+                      <p className="text-sm leading-6 text-slate-600">{result.body}</p>
+                    </div>
+                    <ArrowRight className="mt-1 shrink-0 text-slate-400" size={16} />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-sm leading-7 text-slate-600">
+                Nenhum resultado encontrado para essa busca. Tente palavras como &quot;login&quot;, &quot;gastos&quot;,
+                &quot;metas&quot; ou &quot;assinatura&quot;.
+              </div>
+            )}
+          </div>
+        ) : null}
       </section>
 
       <section className="mt-10">
         <div className="mb-6">
           <h2 className="text-3xl font-black tracking-tight text-slate-950">Categorias principais</h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-            Encontre o assunto certo mais rápido e vá direto ao que você precisa resolver.
+            Escolha o assunto certo e vá direto ao que você precisa resolver.
           </p>
         </div>
 
@@ -317,7 +349,6 @@ export function HelpCenterExperience() {
             return (
               <article
                 key={category.id}
-                id={category.id}
                 className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"
               >
                 <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
@@ -331,50 +362,138 @@ export function HelpCenterExperience() {
         </div>
       </section>
 
-      <section className="mt-14">
-        <div className="mb-6">
-          <h2 className="text-3xl font-black tracking-tight text-slate-950">Guias mais acessados</h2>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-2">
-          {popularGuides.map((guide) => (
-            <article
-              key={guide.id}
-              id={guide.id}
-              className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm"
+      <section className="mt-14 grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-24 lg:h-fit">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Navegação</p>
+          <nav className="mt-4 flex flex-col gap-3 text-sm">
+            {categories.map((category) => (
+              <a
+                key={category.id}
+                href={`#${category.id}`}
+                className="rounded-xl border border-slate-200 px-4 py-3 font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-950"
+              >
+                {category.title}
+              </a>
+            ))}
+            <a
+              href="#guias-populares"
+              className="rounded-xl border border-slate-200 px-4 py-3 font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-950"
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#f7f8f3] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-                <BookOpenText size={14} /> Guia
-              </div>
-              <h3 className="mt-4 text-xl font-black tracking-tight text-slate-950">{guide.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{guide.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-14" id="faq">
-        <div className="mb-6">
-          <h2 className="text-3xl font-black tracking-tight text-slate-950">Perguntas frequentes</h2>
-        </div>
-
-        <div className="space-y-4">
-          {faqs.map((faq) => (
-            <details
-              key={faq.id}
-              id={faq.id}
-              className="group rounded-[1.4rem] border border-slate-200 bg-white px-5 py-4 shadow-sm"
+              Guias mais acessados
+            </a>
+            <a
+              href="#faq"
+              className="rounded-xl border border-slate-200 px-4 py-3 font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-950"
             >
-              <summary className="cursor-pointer list-none text-base font-semibold text-slate-950 marker:hidden">
-                {faq.question}
-              </summary>
-              <div className="mt-3 space-y-3 text-sm leading-7 text-slate-600">
-                {faq.answer.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            </details>
-          ))}
+              Perguntas frequentes
+            </a>
+          </nav>
+        </aside>
+
+        <div className="space-y-8">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            const categoryGuides = popularGuides.filter((guide) => guide.categoryId === category.id);
+            const relatedFaqs = faqs.filter((faq) => faqCategoryMap[category.id]?.includes(faq.id));
+
+            return (
+              <section
+                key={category.id}
+                id={category.id}
+                className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                    <Icon size={22} />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-2xl font-black tracking-tight text-slate-950">{category.title}</h2>
+                    <p className="mt-3 text-base leading-8 text-slate-700">{category.description}</p>
+                  </div>
+                </div>
+
+                {categoryGuides.length ? (
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    {categoryGuides.map((guide) => (
+                      <article
+                        key={guide.id}
+                        id={guide.id}
+                        className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5"
+                      >
+                        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                          <BookOpenText size={14} /> Guia
+                        </div>
+                        <h3 className="mt-4 text-lg font-black tracking-tight text-slate-950">{guide.title}</h3>
+                        <p className="mt-3 text-sm leading-7 text-slate-600">{guide.description}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+
+                {relatedFaqs.length ? (
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    {relatedFaqs.map((faq) => (
+                      <article
+                        key={faq.id}
+                        className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5"
+                      >
+                        <p className="text-sm font-semibold text-slate-950">{faq.question}</p>
+                        <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
+                          {faq.answer.map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                          ))}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            );
+          })}
+
+          <section id="guias-populares" className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black tracking-tight text-slate-950">Guias mais acessados</h2>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              {popularGuides.map((guide) => (
+                <article
+                  key={guide.id}
+                  className="rounded-[1.6rem] border border-slate-200 bg-[#f7f8f3] p-6"
+                >
+                  <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                    <BookOpenText size={14} /> Guia
+                  </div>
+                  <h3 className="mt-4 text-xl font-black tracking-tight text-slate-950">{guide.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">{guide.description}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section id="faq" className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black tracking-tight text-slate-950">Perguntas frequentes</h2>
+            </div>
+
+            <div className="space-y-4">
+              {faqs.map((faq) => (
+                <details
+                  key={faq.id}
+                  className="group rounded-[1.4rem] border border-slate-200 bg-[#f7f8f3] px-5 py-4"
+                >
+                  <summary className="cursor-pointer list-none text-base font-semibold text-slate-950 marker:hidden">
+                    {faq.question}
+                  </summary>
+                  <div className="mt-3 space-y-3 text-sm leading-7 text-slate-600">
+                    {faq.answer.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
 

@@ -18,8 +18,6 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { getStripeJs, getStripePublishableKey } from '@/lib/stripe-client';
-import { ThemeToggleButton } from '@/components/theme/theme-toggle-button';
-import { useTheme } from '@/components/theme/theme-provider';
 import {
   BILLING_PLAN_DETAILS,
   formatBillingPrice,
@@ -301,11 +299,7 @@ function EmbeddedPaymentForm(props: {
 }
 
 function CheckoutLoadingShell() {
-  const { theme, mounted } = useTheme();
-  const isDarkTheme = !mounted || theme === 'dark';
-  const brandLogo = isDarkTheme
-    ? '/brand/cote-finance-ai-logo.svg'
-    : '/brand/cote-finance-ai-logo-black.svg';
+  const brandLogo = '/brand/cote-finance-ai-logo.svg';
 
   return (
     <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
@@ -317,7 +311,6 @@ function CheckoutLoadingShell() {
             Voltar ao painel
           </Link>
           <div className="flex items-center gap-3">
-            <ThemeToggleButton className="theme-toggle-surface" />
             <Link href="/" className="flex items-center">
               <Image
                 src={brandLogo}
@@ -357,8 +350,6 @@ function CheckoutLoadingShell() {
 }
 
 function CheckoutPageContent() {
-  const { theme, mounted } = useTheme();
-  const isDarkTheme = !mounted || theme === 'dark';
   const searchParams = useSearchParams();
   const plan = normalizeBillingPlan(searchParams.get('plan'));
   const interval = normalizeBillingInterval(searchParams.get('interval'));
@@ -385,35 +376,31 @@ function CheckoutPageContent() {
 
   const appearance = React.useMemo<Appearance>(
     () => ({
-      theme: isDarkTheme ? 'night' : 'stripe',
+      theme: 'night',
       variables: {
         colorPrimary: '#10b981',
-        colorBackground: isDarkTheme ? '#020617' : '#ffffff',
-        colorText: isDarkTheme ? '#e2e8f0' : '#0f172a',
+        colorBackground: '#020617',
+        colorText: '#e2e8f0',
         colorDanger: '#fb7185',
-        colorTextSecondary: isDarkTheme ? '#94a3b8' : '#64748b',
+        colorTextSecondary: '#94a3b8',
         borderRadius: '18px',
         fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       },
       rules: {
         '.Input, .Block, .Tab': {
-          backgroundColor: isDarkTheme ? '#0f172a' : '#f8fafc',
-          border: isDarkTheme
-            ? '1px solid rgba(148, 163, 184, 0.16)'
-            : '1px solid rgba(148, 163, 184, 0.24)',
+          backgroundColor: '#0f172a',
+          border: '1px solid rgba(148, 163, 184, 0.16)',
           boxShadow: 'none',
         },
         '.Label': {
-          color: isDarkTheme ? '#cbd5e1' : '#334155',
+          color: '#cbd5e1',
         },
       },
     }),
-    [isDarkTheme]
+    []
   );
 
-  const brandLogo = isDarkTheme
-    ? '/brand/cote-finance-ai-logo.svg'
-    : '/brand/cote-finance-ai-logo-black.svg';
+  const brandLogo = '/brand/cote-finance-ai-logo.svg';
 
   const handleLegacyCheckout = React.useCallback(async () => {
     if (!plan || !interval) return;
@@ -717,7 +704,6 @@ function CheckoutPageContent() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <ThemeToggleButton className="theme-toggle-surface" />
             <Link href="/" className="flex items-center">
               <Image
                 src={brandLogo}
