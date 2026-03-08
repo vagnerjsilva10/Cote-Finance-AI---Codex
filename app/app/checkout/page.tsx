@@ -672,6 +672,7 @@ function CheckoutPageContent() {
           'Insights financeiros mais profundos',
           'Previsões de saldo e alertas inteligentes',
           'Análises avançadas de despesas',
+          'Alertas e resumos automáticos no WhatsApp',
           'Suporte prioritário com acompanhamento acelerado',
         ]
       : [
@@ -681,6 +682,7 @@ function CheckoutPageContent() {
           'Metas financeiras ilimitadas',
           'Acompanhamento de dívidas',
           'Controle de investimentos',
+          'Resumos e alertas no WhatsApp',
           'Suporte prioritário por e-mail',
         ];
   const checkoutSecurityItems = [

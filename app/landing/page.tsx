@@ -14,6 +14,7 @@ import {
   CircleDollarSign,
   CreditCard,
   LayoutDashboard,
+  MessageCircle,
   ShieldCheck,
   Sparkles,
   Target,
@@ -64,6 +65,7 @@ const plans: PlanCard[] = [
       'gráficos avançados',
       'análise inteligente da IA',
       'insights financeiros automáticos',
+      'resumos e alertas no WhatsApp',
     ],
   },
   {
@@ -77,6 +79,7 @@ const plans: PlanCard[] = [
       'previsões de saldo',
       'alertas inteligentes',
       'análises profundas de despesas',
+      'automação financeira no WhatsApp',
       'suporte prioritário',
     ],
   },
@@ -112,6 +115,11 @@ const features = [
     icon: Wallet,
     title: 'Multi-contas',
     text: 'Gerencie contas e carteiras separadas sem misturar seus dados.',
+  },
+  {
+    icon: MessageCircle,
+    title: 'WhatsApp inteligente',
+    text: 'Receba resumos, alertas e lembretes financeiros direto no seu WhatsApp.',
   },
 ];
 
@@ -569,7 +577,7 @@ export default function LandingPage() {
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
               <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Passo 3</p>
               <p className="text-slate-200">
-                Receba insights da inteligência artificial que ajudam você a melhorar suas finanças.
+                Receba insights da inteligência artificial e alertas no WhatsApp para agir mais rápido.
               </p>
             </div>
           </div>
@@ -604,6 +612,9 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center justify-center gap-2">
                   <Check size={16} className="text-blue-300" /> insights acionáveis da IA
+                </li>
+                <li className="flex items-center justify-center gap-2">
+                  <Check size={16} className="text-emerald-300" /> alertas e resumos financeiros no WhatsApp
                 </li>
               </ul>
               <button
@@ -702,6 +713,18 @@ export default function LandingPage() {
                       <p className="mb-1 text-[11px] text-slate-400">Insight IA</p>
                       <p className="text-sm text-slate-200">
                         Transporte subiu 18%. Reduzindo 10% você recupera R$ 146/mês.
+                      </p>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.35, delay: 0.28 }}
+                      className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-3"
+                    >
+                      <p className="mb-1 text-[11px] text-emerald-200">WhatsApp</p>
+                      <p className="text-sm text-emerald-50">
+                        Receba lembretes de vencimento, resumo diário e alertas do que merece atenção.
                       </p>
                     </motion.div>
                   </div>
@@ -923,6 +946,9 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
               <CircleDollarSign size={14} className="text-amber-300" /> Sem fidelidade
             </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
+              <MessageCircle size={14} className="text-emerald-300" /> Alertas no WhatsApp
+            </span>
           </div>
         </motion.section>
 
@@ -938,7 +964,7 @@ export default function LandingPage() {
             Seu dinheiro merece mais clareza.
           </h2>
           <p className="mx-auto mb-6 max-w-2xl text-slate-100/90">
-            Comece hoje e descubra exatamente para onde seu dinheiro está indo.
+            Comece hoje, descubra exatamente para onde seu dinheiro está indo e receba alertas importantes no WhatsApp.
           </p>
           <button
             onClick={startFree}

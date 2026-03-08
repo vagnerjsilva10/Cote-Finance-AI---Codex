@@ -434,17 +434,17 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃO') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CART?O') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
     normalized === 'TRANSFERENCIA_BANCARIA' ||
-    normalized === 'TRANSFERÊNCIA BANCÁRIA'
+    normalized === 'TRANSFER?NCIA BANC?RIA'
   ) {
     return 'Transferência bancária';
   }
   if (normalized === 'BOLETO') return 'Boleto';
-  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'DÉBITO') return 'Débito';
+  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'D?BITO') return 'Débito';
   return 'Outro';
 };
 
@@ -514,7 +514,7 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'ai.classify.used': 'Classificação automática usada',
   };
 
-  return labels[eventType] || eventType.replace(/\./g, ' · ');
+  return labels[eventType] || eventType.replace(/\./g, ' ? ');
 };
 
 const formatEventTimestamp = (isoString: string) => {
@@ -1031,7 +1031,7 @@ const SubscriptionView = ({
                   <p className="mt-2 text-lg font-semibold text-white">{summary.statusLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobrança</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobran?a</p>
                   <p className="mt-2 text-lg font-semibold text-white">{summary.billingLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
@@ -1043,7 +1043,7 @@ const SubscriptionView = ({
 
             <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo r?pido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
                   Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
@@ -1132,7 +1132,7 @@ const SubscriptionView = ({
                   disabled={!summary.canManageBilling || actionLoading !== null}
                   className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histórico de cobrança'}</span>
+                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver hist?rico de cobrança'}</span>
                   <ExternalLink size={16} className="text-slate-400" />
                 </button>
               </div>
@@ -1588,7 +1588,7 @@ const TransactionsView = ({
                 </span>
                 {tx.flowType === 'Transferência' && tx.destinationWallet && (
                   <span className="text-[10px] text-cyan-400/80 font-bold uppercase tracking-widest">
-                    → {tx.destinationWallet}
+                    ? {tx.destinationWallet}
                   </span>
                 )}
               </div>
@@ -1651,7 +1651,7 @@ const TransactionsView = ({
                   <td className="px-6 py-4 text-xs text-slate-300">{tx.paymentMethod}</td>
                   <td className="px-6 py-4 text-xs text-slate-400">
                     {tx.wallet}
-                    {tx.flowType === 'Transferência' && tx.destinationWallet ? ` → ${tx.destinationWallet}` : ''}
+                    {tx.flowType === 'Transferência' && tx.destinationWallet ? ` -> ${tx.destinationWallet}` : ''}
                   </td>
                   <td
                     className={cn(
@@ -1722,7 +1722,7 @@ const IntegrationsView = ({
       annualPrice: 290,
       active: false,
       features: [
-        'Lançamentos ilimitados',
+        'Lan?amentos ilimitados',
         'IA completa',
         'Relatórios avançados',
         'Metas ilimitadas',
@@ -1738,7 +1738,7 @@ const IntegrationsView = ({
         'Tudo do Pro',
         'Insights semanais automáticos',
         'Planejamento estratégico',
-        'Suporte prioritário',
+        'Suporte priorit?rio',
       ],
     },
   ];
@@ -1766,7 +1766,7 @@ const IntegrationsView = ({
               billingCycle === 'annually' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400'
             )}
           >
-            Anual <span className="text-[10px] ml-1 opacity-70">(2 meses grátis)</span>
+            Anual <span className="text-[10px] ml-1 opacity-70">(2 meses gr?tis)</span>
           </button>
         </div>
 
@@ -1813,9 +1813,9 @@ const IntegrationsView = ({
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white">Integra??o com WhatsApp</h3>
+              <h3 className="text-xl font-bold text-white">Integração com WhatsApp</h3>
               <p className="text-sm text-slate-500">
-                Alertas e resumos autom?ticos direto no seu celular
+                Alertas e resumos automáticos direto no seu celular
               </p>
             </div>
           </div>
@@ -1838,13 +1838,13 @@ const IntegrationsView = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-6">
             <p className="text-slate-400 leading-relaxed">
-              Receba um resumo autom?tico com insights do m?s e pr?ximos vencimentos no WhatsApp
-              assim que sua integra??o estiver ativa.
+              Receba um resumo automático com insights do mês e próximos vencimentos no WhatsApp
+              assim que sua integração estiver ativa.
             </p>
 
             <div className="space-y-4">
               {[
-                'Informe o n?mero que vai receber os alertas',
+                'Informe o número que vai receber os alertas',
                 'Conecte o WhatsApp do workspace',
                 'Envie um teste e confirme que as mensagens chegaram',
               ].map((step, i) => (
@@ -1859,7 +1859,7 @@ const IntegrationsView = ({
 
             {!isWhatsAppConnected && (
               <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">N?mero do WhatsApp</label>
+                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Número do WhatsApp</label>
                 <input
                   type="tel"
                   value={phoneNumber}
@@ -1932,7 +1932,7 @@ const IntegrationsView = ({
                     : 'bg-slate-800 text-slate-400'
                 )}
               >
-                {isWhatsAppConnected ? 'Ativo' : isConnectingWhatsApp ? 'Conectando' : 'Aguardando conex?o'}
+                {isWhatsAppConnected ? 'Ativo' : isConnectingWhatsApp ? 'Conectando' : 'Aguardando conexão'}
               </span>
             </div>
 
@@ -1941,15 +1941,15 @@ const IntegrationsView = ({
                 Quais alertas vou receber no WhatsApp?
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
-                Resumo di?rio com saldo, entradas, sa?das, pr?ximos vencimentos e insights pr?ticos para agir mais r?pido.
+                Resumo diário com saldo, entradas, saídas, próximos vencimentos e insights práticos para agir mais r?pido.
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
-                Exemplo: <span className="font-semibold text-white">Maior gasto do m?s</span>, contas pr?ximas do vencimento e um resumo do que merece aten??o no caixa.
+                Exemplo: <span className="font-semibold text-white">Maior gasto do mês</span>, contas próximas do vencimento e um resumo do que merece atenção no caixa.
               </div>
             </div>
 
             <p className="mt-4 text-xs leading-relaxed text-slate-500">
-              Depois de conectar, o workspace passa a receber um resumo autom?tico por dia e voc? ainda pode disparar um teste manual imediatamente.
+              Depois de conectar, o workspace passa a receber um resumo automático por dia e você ainda pode disparar um teste manual imediatamente.
             </p>
           </div>
         </div>
@@ -1972,12 +1972,12 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
     () => [
       {
         key: 'urgent',
-        title: 'Mais pr?ximos',
+        title: 'Mais próximos',
         items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7),
       },
       {
         key: 'later',
-        title: 'Pr?ximos 30 dias',
+        title: 'Próximos 30 dias',
         items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) > 7),
       },
     ].filter((group) => group.items.length > 0),
@@ -1991,15 +1991,15 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
           <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300/80">
             Agenda financeira
           </p>
-          <h3 className="text-2xl font-black text-white">Pr?ximos compromissos do seu caixa</h3>
+          <h3 className="text-2xl font-black text-white">Próximos compromissos do seu caixa</h3>
           <p className="max-w-2xl text-sm leading-relaxed text-slate-400">
-            Veja o que vence primeiro, o que merece aten??o nesta semana e quanto do seu
-            caixa j? est? comprometido nos pr?ximos 30 dias.
+            Veja o que vence primeiro, o que merece atenção nesta semana e quanto do seu
+            caixa já está comprometido nos próximos 30 dias.
           </p>
         </div>
         <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-300">
           <Calendar size={16} className="text-emerald-400" />
-          Pr?ximos 30 dias
+          Próximos 30 dias
         </div>
       </div>
 
@@ -2011,7 +2011,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
             helper: overdueCount > 0 ? `${overdueCount} em atraso` : 'Tudo dentro do prazo',
           },
           {
-            label: 'Pr?ximos 7 dias',
+            label: 'Próximos 7 dias',
             value: nextSevenDays.length,
             helper:
               nextSevenDays.length > 0
@@ -2040,9 +2040,9 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
           <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
             <Calendar size={26} />
           </div>
-          <h4 className="text-lg font-bold text-white">Sua agenda est? limpa por enquanto</h4>
+          <h4 className="text-lg font-bold text-white">Sua agenda está limpa por enquanto</h4>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">
-            Adicione d?vidas com vencimento ou metas com prazo para acompanhar compromissos sem
+            Adicione dívidas com vencimento ou metas com prazo para acompanhar compromissos sem
             perder o timing do seu caixa.
           </p>
         </div>
@@ -2140,7 +2140,7 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
           onClick={onAddDebt}
           className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={18} /> Nova Dívida
+          <Plus size={18} /> Nova D?vida
         </button>
       </div>
 
@@ -2178,7 +2178,7 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
               {debts.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Nenhuma dívida cadastrada.
+                    Nenhuma d?vida cadastrada.
                   </td>
                 </tr>
               )}
@@ -2584,7 +2584,7 @@ const ReportsView = ({
 
     setIsGeneratingInsight(true);
     try {
-      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionáveis:
+      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acion?veis:
 Receitas: ${formatCurrency(totalIncome)}
 Despesas: ${formatCurrency(totalExpenses)}
 Saldo: ${formatCurrency(balance)}
@@ -2642,7 +2642,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo l?quido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
         </div>
       </div>
@@ -3204,7 +3204,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar dívida.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar d?vida.');
     } finally {
       setIsSubmitting(false);
     }
@@ -3218,7 +3218,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
         className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Dívida' : 'Nova Dívida'}</h3>
+          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar D?vida' : 'Nova D?vida'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -3320,7 +3320,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar d?vida'}
           </button>
         </div>
       </motion.div>
@@ -3745,13 +3745,13 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       target: 'dashboard-stats',
     },
     {
-      title: 'Previsões de IA',
-      description: 'Nossa IA analisa seus padrões e prevê seu saldo futuro, ajudando você a se planejar.',
+      title: 'Previs?es de IA',
+      description: 'Nossa IA analisa seus padr?es e prevê seu saldo futuro, ajudando você a se planejar.',
       target: 'ai-forecast',
     },
     {
       title: 'Assistente Cote',
-      description: 'Converse com nossa IA para tirar dúvidas sobre seus gastos e receber dicas personalizadas.',
+      description: 'Converse com nossa IA para tirar dívidas sobre seus gastos e receber dicas personalizadas.',
       target: 'ai-assistant',
     },
     {
@@ -3817,7 +3817,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               onClick={nextStep}
               className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
             >
-              {step === steps.length - 1 ? 'Começar agora' : 'Próximo'}
+              {step === steps.length - 1 ? 'Começar agora' : 'Pr?ximo'}
             </button>
           </div>
         </div>
@@ -3870,7 +3870,7 @@ const LoginView = ({
     if (!firstName.trim()) return 'Informe seu nome.';
     if (!lastName.trim()) return 'Informe seu sobrenome.';
     if (!email.trim()) return 'Informe seu e-mail.';
-    if (password.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
+    if (password.length < 8) return 'A senha deve ter no m?nimo 8 caracteres.';
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
       return 'A senha deve conter letras e números.';
     }
@@ -4104,7 +4104,7 @@ const LoginView = ({
               {isLogin
                 ? loginMethod === 'otp'
                   ? 'Receba um código no e-mail e valide sua entrada sem depender da senha.'
-                  : 'Acesse seu workspace com segurança e continue de onde parou.'
+                  : 'Acesse seu workspace com seguran?a e continue de onde parou.'
                 : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
@@ -4147,7 +4147,7 @@ const LoginView = ({
                     : 'text-slate-400 hover:text-white'
                 )}
               >
-                Código por e-mail
+                C?digo por e-mail
               </button>
             </div>
           ) : null}
@@ -4208,7 +4208,7 @@ const LoginView = ({
               ) : (
                 <div className="rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-                    Critérios da senha
+                    Crit?rios da senha
                   </p>
                   <ul className="mt-3 space-y-2 text-sm text-slate-300">
                     {passwordChecks.map((rule) => (
@@ -4221,7 +4221,7 @@ const LoginView = ({
                               : 'bg-slate-700 text-slate-400'
                           )}
                         >
-                          {rule.valid ? 'OK' : '•'}
+                          {rule.valid ? 'OK' : '?'}
                         </span>
                         <span>{rule.label}</span>
                       </li>
@@ -4246,7 +4246,7 @@ const LoginView = ({
               {otpRequestedEmail ? (
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    Código
+                    C?digo
                   </label>
                   <input
                     type="text"
@@ -4595,7 +4595,7 @@ export default function App() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Sessão expirada. Faça login novamente.');
+        throw new Error('Sessão expirada. Fa?a login novamente.');
       }
 
       return {
@@ -5279,7 +5279,7 @@ export default function App() {
       }
 
       setSettingsSavedAt(
-        `Alterações salvas às ${new Date().toLocaleTimeString('pt-BR', {
+        `Alterações salvas ?s ${new Date().toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit',
         })}`
@@ -5454,7 +5454,7 @@ export default function App() {
         ...prev,
         {
           role: 'model',
-          text: `Desculpe, tive um problema técnico ao processar sua mensagem. ${
+          text: `Desculpe, tive um problema t?cnico ao processar sua mensagem. ${
             error instanceof Error ? error.message : 'Tente novamente em alguns instantes.'
           }`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -5651,7 +5651,7 @@ export default function App() {
 
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text('Relatório Financeiro - Cote Finance AI', 20, 20);
+    doc.text('Relatério Financeiro - Cote Finance AI', 20, 20);
     doc.setFontSize(12);
     doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 30);
 
@@ -5664,7 +5664,7 @@ export default function App() {
 
     doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 20, 45);
     doc.text(`Total Despesas: ${formatCurrency(totalExpenses)}`, 20, 55);
-    doc.text(`Saldo Líquido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
+    doc.text(`Saldo L?quido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
 
     const tableData = transactions.map((tx) => [tx.date, tx.desc, tx.cat, tx.amount, tx.wallet]);
 
@@ -6130,7 +6130,7 @@ export default function App() {
       const message =
         typeof responseData?.error === 'string'
           ? responseData.error
-          : 'Falha ao salvar dívida.';
+          : 'Falha ao salvar d?vida.';
       throw new Error(message);
     }
 
@@ -6161,7 +6161,7 @@ export default function App() {
           throw new Error(
             typeof responseData?.error === 'string'
               ? responseData.error
-              : 'Falha ao excluir dívida.'
+              : 'Falha ao excluir d?vida.'
           );
         }
         if (editingDebtId === id) {
@@ -6170,7 +6170,7 @@ export default function App() {
         }
         await fetchDashboardData();
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
+        alert(error instanceof Error ? error.message : 'Falha ao excluir d?vida.');
       }
     })();
   };
@@ -6299,7 +6299,7 @@ export default function App() {
                 {upgradeLimitReason === 'transactions'
                   ? `Você chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês.`
                   : `Você chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interações de IA no mês.`}{' '}
-                Faça upgrade para Pro/Premium e continue sem bloqueios.
+                Fa?a upgrade para Pro/Premium e continue sem bloqueios.
               </p>
               <div className="flex gap-2">
                 <button
@@ -6368,7 +6368,7 @@ export default function App() {
                     <h4 className="text-2xl font-bold text-white mb-2">Bem-vindo ao Cote Finance AI</h4>
                     <p className="text-sm text-slate-300 leading-relaxed">
                       Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanças e
-                      gerar insights mais úteis para você.
+                      gerar insights mais ?teis para você.
                     </p>
                   </div>
                   <div className="flex justify-end">
@@ -6385,7 +6385,7 @@ export default function App() {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Qual é seu principal objetivo financeiro?</h4>
+                    <h4 className="text-xl font-bold text-white mb-1">Qual ? seu principal objetivo financeiro?</h4>
                     <p className="text-sm text-slate-400">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
@@ -6578,16 +6578,16 @@ export default function App() {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Este é seu painel financeiro</h4>
-                    <p className="text-sm text-slate-400">Aqui você acompanha tudo em um único lugar.</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Este ? seu painel financeiro</h4>
+                    <p className="text-sm text-slate-400">Aqui você acompanha tudo em um ?nico lugar.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
                     <p className="text-sm text-slate-200">Aqui você pode ver:</p>
                     <ul className="space-y-2 text-sm text-slate-300">
-                      <li>• saldo atual</li>
-                      <li>• despesas por categoria</li>
-                      <li>• evolução dos gastos</li>
-                      <li>• insights da inteligência artificial</li>
+                      <li>? saldo atual</li>
+                      <li>? despesas por categoria</li>
+                      <li>? evolução dos gastos</li>
+                      <li>? insights da inteligência artificial</li>
                     </ul>
                   </div>
                   <div className="flex justify-between">
@@ -6713,13 +6713,14 @@ export default function App() {
                     <h4 className="text-xl font-bold text-white mb-1">
                       Desbloqueie análises financeiras avançadas
                     </h4>
-                    <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
+                    <p className="text-sm text-slate-400">Com o plano Pro você ter?:</p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
                     <ul className="space-y-2 text-sm text-emerald-100">
                       <li>• insights financeiros completos</li>
                       <li>• previsões de saldo</li>
                       <li>• alertas de gastos fora do padrão</li>
+                      <li>• resumos e lembretes no WhatsApp</li>
                       <li>• relatórios avançados</li>
                     </ul>
                   </div>
@@ -6729,7 +6730,7 @@ export default function App() {
                       checked={onboardingAiSuggestionsEnabled}
                       onChange={(event) => setOnboardingAiSuggestionsEnabled(event.target.checked)}
                     />
-                    Ativar sugestões de IA para este workspace
+                    Ativar sugestáes de IA para este workspace
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
@@ -6841,13 +6842,13 @@ export default function App() {
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
           <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={ReceiptText} label="Transa??es" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={ReceiptText} label="Transações" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={Target} label="Metas" active={activeTab === 'goals'} onClick={() => { setActiveTab('goals'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={CreditCard} label="D?vidas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={CreditCard} label="Dívidas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={TrendingUp} label="Investimentos" active={activeTab === 'investments'} onClick={() => { setActiveTab('investments'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={PieChart} label="Relat?rios" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={PieChart} label="Relatórios" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={MessageSquare} label="Assistente IA" active={activeTab === 'assistant'} onClick={() => { setActiveTab('assistant'); setIsAssistantOpen(true); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={Settings} label="Configura??es" active={activeTab === 'settings'} onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={Settings} label="Configurações" active={activeTab === 'settings'} onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} />
         </nav>
 
         <div className="p-4">
@@ -6857,8 +6858,8 @@ export default function App() {
             </p>
             <p className="text-xs text-slate-400 mb-4 leading-relaxed">
               {isFreePlan
-                ? `Free: at? ${FREE_TRANSACTION_LIMIT_PER_MONTH} transa??es/m?s e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
-                : 'Seu plano atual possui lan?amentos e IA ilimitados.'}
+                ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
+                : 'Seu plano atual possui lançamentos e IA ilimitados.'}
             </p>
             <button
               onClick={() => {
@@ -6897,24 +6898,24 @@ export default function App() {
               {activeTab === 'dashboard'
                 ? 'Dashboard'
                 : activeTab === 'transactions'
-                ? 'Transa??es'
+                ? 'Transações'
                 : activeTab === 'goals'
                 ? 'Metas'
                 : activeTab === 'debts'
-                ? 'D?vidas'
+                ? 'Dívidas'
                 : activeTab === 'investments'
                 ? 'Investimentos'
                 : activeTab === 'reports'
-                ? 'Relat?rios'
+                ? 'Relatórios'
                 : activeTab === 'assistant'
                 ? 'Assistente IA'
                 : activeTab === 'agenda'
                 ? 'Agenda'
                 : activeTab === 'integrations'
-                ? 'Integra??es'
+                ? 'Integrações'
                 : activeTab === 'subscription'
                 ? 'Minha assinatura'
-                : 'Configura??es'}
+                : 'Configurações'}
               </h2>
             {workspaces.length > 0 && (
               <div className="hidden md:flex items-center gap-2">
@@ -6975,7 +6976,14 @@ export default function App() {
               </button>
 
               {isQuickCreateOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-1.5rem))] max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/98 p-3 shadow-2xl backdrop-blur-xl">
+                <>
+                  <button
+                    type="button"
+                    aria-label="Fechar atalhos rápidos"
+                    onClick={() => setIsQuickCreateOpen(false)}
+                    className="fixed inset-0 z-40 bg-slate-950/60 md:hidden"
+                  />
+                  <div className="fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/98 p-3 shadow-2xl backdrop-blur-xl md:absolute md:right-0 md:top-full md:mt-2 md:w-[22rem] md:max-h-[75vh] md:inset-x-auto">
                   <div className="mb-3">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
                       {'Atalhos r\u00e1pidos'}
@@ -6985,7 +6993,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction('Receita')}
@@ -7059,7 +7067,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('debts')}
@@ -7083,7 +7091,8 @@ export default function App() {
                       <p className="text-[11px] font-medium text-slate-400">Registre um ativo e acompanhe rendimento.</p>
                     </button>
                   </div>
-                </div>
+                  </div>
+                </>
               )}
             </div>
 
@@ -7109,7 +7118,7 @@ export default function App() {
             </button>
 
               <button
-              onClick={() => alert('Sem notifica??es novas no momento.')}
+              onClick={() => alert('Sem notificações novas no momento.')}
               className="relative hidden rounded-xl border border-slate-800 bg-slate-900 p-2 text-slate-500 transition-all hover:text-white sm:block"
             >
               <Bell size={18} />
@@ -7170,7 +7179,7 @@ export default function App() {
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
                         >
-                          <Settings size={16} /> Configura??es
+                          <Settings size={16} /> Configurações
                         </button>
                         <button
                           onClick={() => {
@@ -7575,7 +7584,7 @@ export default function App() {
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
               {!hasUserMessages && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Sugestões</p>
+                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Sugestáes</p>
                   <div className="flex flex-wrap gap-2">
                     {ASSISTANT_SUGGESTIONS.map((suggestion) => (
                       <button

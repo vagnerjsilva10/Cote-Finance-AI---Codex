@@ -208,12 +208,12 @@ async function buildSubscriptionResponse(req: Request) {
 
   const billingLabel =
     plan === 'FREE'
-      ? 'R$ 0 / m?s'
+      ? 'R$ 0 / mês'
       : interval
-        ? formatBillingPrice(plan, interval).replace('/ano', ' / ano').replace('/m?s', ' / m?s')
+        ? formatBillingPrice(plan, interval).replace('/ano', ' / ano').replace('/mês', ' / mês')
         : plan === 'PRO'
-          ? 'R$ 29 / m?s'
-          : 'R$ 49 / m?s';
+          ? 'R$ 29 / mês'
+          : 'R$ 49 / mês';
   const hasActiveStripeSubscription = Boolean(
     stripeSubscription && isEntitledStripeStatus(stripeSubscription.status)
   );

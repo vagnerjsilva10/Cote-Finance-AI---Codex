@@ -48,7 +48,7 @@ const VALID_PAYMENT_METHODS = new Set<PaymentMethod>([
 ]);
 
 const SCHEMA_SYNC_REQUIRED_ERROR =
-  'Banco de dados desatualizado para transa??es. Rode a migration/db push para adicionar destination_wallet_id, payment_method e receipt_url.';
+  'Banco de dados desatualizado para transações. Rode a migration/db push para adicionar destination_wallet_id, payment_method e receipt_url.';
 
 const hasOwn = <K extends string>(obj: object, key: K) =>
   Object.prototype.hasOwnProperty.call(obj, key);
@@ -80,7 +80,7 @@ const normalizeTransactionType = (rawType?: string | null, rawFlowType?: string 
   if (normalizedFlowType === 'despesa' || normalizedFlowType === 'pix out') {
     return 'EXPENSE';
   }
-  if (normalizedFlowType === 'transferencia' || normalizedFlowType === 'transfer?ncia') {
+  if (normalizedFlowType === 'transferencia' || normalizedFlowType === 'transferência') {
     return 'TRANSFER';
   }
 
@@ -408,7 +408,7 @@ export async function POST(req: Request) {
 
     const destinationWalletName = (body.destinationWallet || '').trim();
     if (type === 'TRANSFER' && !destinationWalletName) {
-      return NextResponse.json({ error: 'Conta destino ? obrigat?ria para transfer?ncia.' }, { status: 400 });
+      return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
     }
     const normalizedCategoryName = (body.category || '').trim() || 'Outros';
     const [walletId, categoryId, destinationWalletId] = await Promise.all([
@@ -478,7 +478,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
     if (error instanceof Error && error.message.includes('Destination wallet')) {
-      return NextResponse.json({ error: 'Conta destino ? obrigat?ria para transfer?ncia.' }, { status: 400 });
+      return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
     }
     if (error instanceof Error && error.message.includes('Source and destination wallets')) {
       return NextResponse.json(
@@ -554,7 +554,7 @@ export async function PATCH(req: Request) {
         const destinationWalletName = (body.destinationWallet || '').trim();
         if (!destinationWalletName) {
           return NextResponse.json(
-            { error: 'Conta destino ? obrigat?ria para transfer?ncia.' },
+            { error: 'Conta destino é obrigatória para transferência.' },
             { status: 400 }
           );
         }
@@ -650,7 +650,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
     if (error instanceof Error && error.message.includes('Destination wallet')) {
-      return NextResponse.json({ error: 'Conta destino ? obrigat?ria para transfer?ncia.' }, { status: 400 });
+      return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
     }
     if (error instanceof Error && error.message.includes('Source and destination wallets')) {
       return NextResponse.json(

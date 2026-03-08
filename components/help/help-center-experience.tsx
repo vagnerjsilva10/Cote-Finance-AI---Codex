@@ -59,7 +59,7 @@ const categories: HelpCategory[] = [
     icon: Wallet,
     title: 'Controle de gastos',
     description: 'Veja como registrar despesas, acompanhar movimentações e entender seus hábitos financeiros.',
-    keywords: ['gastos', 'despesas', 'movimentações', 'receitas', 'controle'],
+    keywords: ['gastos', 'despesas', 'movimentações', 'receitas', 'controle', 'whatsapp', 'alertas'],
   },
   {
     id: 'metas-e-planejamento-financeiro',
@@ -73,7 +73,7 @@ const categories: HelpCategory[] = [
     icon: LockKeyhole,
     title: 'Conta e segurança',
     description: 'Gerencie informações da conta, login e segurança.',
-    keywords: ['senha', 'segurança', 'google', 'login', 'conta'],
+    keywords: ['senha', 'segurança', 'google', 'login', 'conta', 'whatsapp'],
   },
   {
     id: 'planos-e-pagamentos',
@@ -117,6 +117,14 @@ const popularGuides: PopularGuide[] = [
     categoryId: 'controle-de-gastos',
     keywords: ['relatórios', 'painel', 'gastos mensais', 'receitas e despesas'],
   },
+  {
+    id: 'guia-whatsapp',
+    title: 'Como receber alertas e resumos no WhatsApp',
+    description:
+      'Conecte seu número para receber lembretes de vencimento, resumos do mês e alertas que ajudam você a acompanhar o que merece atenção.',
+    categoryId: 'conta-e-seguranca',
+    keywords: ['whatsapp', 'alertas', 'resumos', 'vencimento', 'notificações'],
+  },
 ];
 
 const faqs: HelpFaq[] = [
@@ -153,6 +161,15 @@ const faqs: HelpFaq[] = [
     answer: ['Sim. O blog ajuda você a aprender mais sobre organização financeira e aproveitar melhor o Cote Finance AI.'],
     keywords: ['blog', 'plataforma', 'ajuda', 'educação financeira'],
   },
+  {
+    id: 'faq-whatsapp',
+    question: 'Posso receber alertas no WhatsApp?',
+    answer: [
+      'Sim. Você pode conectar seu número para receber resumos financeiros, lembretes de vencimento e alertas úteis diretamente no WhatsApp.',
+      'Isso ajuda você a acompanhar o que merece atenção sem depender apenas do painel.',
+    ],
+    keywords: ['whatsapp', 'alertas', 'lembretes', 'resumos'],
+  },
 ];
 
 const searchItems: SearchItem[] = [
@@ -186,7 +203,7 @@ const faqCategoryMap: Record<string, string[]> = {
   'primeiros-passos': ['faq-comecar'],
   'controle-de-gastos': ['faq-blog'],
   'metas-e-planejamento-financeiro': ['faq-blog'],
-  'conta-e-seguranca': ['faq-google', 'faq-seguro'],
+  'conta-e-seguranca': ['faq-google', 'faq-seguro', 'faq-whatsapp'],
   'planos-e-pagamentos': ['faq-cancelar'],
 };
 
@@ -293,7 +310,8 @@ export function HelpCenterExperience() {
             </div>
 
             <p className="text-sm text-slate-500">
-              Digite palavras como &quot;conta&quot;, &quot;gastos&quot;, &quot;pagamento&quot; ou &quot;assinatura&quot;.
+              Digite palavras como &quot;conta&quot;, &quot;gastos&quot;, &quot;pagamento&quot;, &quot;assinatura&quot; ou
+              &quot;WhatsApp&quot;.
             </p>
           </div>
 
