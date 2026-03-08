@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen } from 'lucide-react';
 import { BlogCard } from '@/components/blog/blog-card';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { getAllBlogArticles, getFeaturedBlogArticles } from '@/lib/blog/articles';
@@ -45,7 +45,7 @@ export default function BlogIndexPage() {
   return (
     <BlogShell>
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8">
-        <div className="max-w-4xl space-y-6">
+        <div className="max-w-4xl space-y-5">
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
             <BookOpen size={14} /> Blog Cote Finance AI
           </span>
@@ -57,8 +57,8 @@ export default function BlogIndexPage() {
               Aprenda a organizar suas finanças, entender seus gastos e tomar decisões financeiras mais inteligentes.
             </p>
             <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              O blog do Cote Finance AI reúne guias práticos, educação financeira e estratégias reais para você ter
-              mais clareza sobre seu dinheiro.
+              O blog do Cote Finance AI reúne guias práticos, educação financeira e estratégias reais para ajudar você a
+              ter mais clareza sobre seu dinheiro.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -83,31 +83,26 @@ export default function BlogIndexPage() {
         +12.000 pessoas já usam o Cote Finance AI para organizar suas finanças.
       </section>
 
-      <section className="mt-10 grid gap-6 lg:grid-cols-2">
-        <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-            <Sparkles size={14} /> Valor do blog
-          </div>
-          <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950">
-            Conteúdo feito para melhorar sua vida financeira
-          </h2>
-          <p className="mt-4 text-base leading-8 text-slate-600">
-            Aqui você encontra artigos que explicam dinheiro de forma simples e prática.
-          </p>
-          <p className="mt-3 text-base leading-8 text-slate-600">
-            Desde controle de gastos até planejamento financeiro, o objetivo é transformar conhecimento em decisões
-            melhores no dia a dia.
+      <section className="mt-10 grid gap-4 lg:grid-cols-3">
+        <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-black tracking-tight text-slate-950">Organize suas finanças com mais clareza</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">
+            Guias simples que mostram como controlar gastos, planejar seu dinheiro e melhorar sua vida financeira.
           </p>
         </article>
 
-        <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#f7f8f3] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
-            Conexão com o produto
-          </div>
-          <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950">Conteúdo com aplicação real</h2>
-          <p className="mt-4 text-base leading-8 text-slate-600">
-            Os artigos combinam educação financeira com o uso prático do Cote Finance AI para ajudar você a transformar
-            informação em ações reais no seu dia a dia financeiro.
+        <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-black tracking-tight text-slate-950">Entenda para onde seu dinheiro está indo</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">
+            Aprenda a identificar hábitos financeiros, reduzir desperdícios e tomar decisões melhores com seu dinheiro.
+          </p>
+        </article>
+
+        <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-black tracking-tight text-slate-950">Transforme conhecimento em ação</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">
+            Use o que você aprende no blog junto com o Cote Finance AI para acompanhar gastos, definir metas e melhorar
+            sua saúde financeira.
           </p>
         </article>
       </section>
@@ -130,11 +125,11 @@ export default function BlogIndexPage() {
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Todos os artigos</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Biblioteca completa de educação financeira</h2>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Todos os artigos</h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-slate-500">
-            Explore todos os artigos do blog e descubra estratégias para organizar sua vida financeira, economizar
-            dinheiro e tomar decisões melhores no dia a dia.
+            Explore todos os artigos do blog para organizar sua vida financeira, entender melhor seus gastos e tomar
+            decisões melhores no dia a dia.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">

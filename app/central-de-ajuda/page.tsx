@@ -138,15 +138,15 @@ export default function HelpCenterPage() {
               width={720}
               height={192}
               priority
-              className="hidden h-16 w-auto sm:block lg:h-[5.5rem]"
+              className="hidden h-[4.75rem] w-auto sm:block lg:h-24"
             />
             <Image
               src="/brand/cote-favicon.svg"
               alt="Cote Finance AI"
-              width={64}
-              height={64}
+              width={72}
+              height={72}
               priority
-              className="h-14 w-14 sm:hidden"
+              className="h-16 w-16 sm:hidden"
             />
           </Link>
 
