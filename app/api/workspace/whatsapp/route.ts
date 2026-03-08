@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import {
   normalizeWhatsappPhone,
+  sendWhatsAppTemplateMessage,
   sendWhatsAppTextMessage,
   WHATSAPP_CONFIG_MISSING_ERROR,
   WHATSAPP_VERIFY_TOKEN_MISSING_ERROR,
@@ -40,10 +41,20 @@ export async function POST(req: Request) {
         },
       });
 
-      await sendWhatsAppTextMessage({
-        to: normalizedPhone,
-        text: 'Cote Finance AI conectado com sucesso. Voc\u00ea j\u00e1 pode enviar: "gastei 50 mercado".',
-      });
+      const connectTemplateName = process.env.WHATSAPP_TEMPLATE_CONNECT_NAME?.trim();
+
+      if (connectTemplateName) {
+        await sendWhatsAppTemplateMessage({
+          to: normalizedPhone,
+          name: connectTemplateName,
+          bodyParameters: [context.workspace.name],
+        });
+      } else {
+        await sendWhatsAppTextMessage({
+          to: normalizedPhone,
+          text: 'Cote Finance AI conectado com sucesso. Voc\u00ea j\u00e1 pode enviar: "gastei 50 mercado".',
+        });
+      }
 
       await prisma.workspace.update({
         where: { id: context.workspaceId },
@@ -118,6 +129,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         preview: result.preview,
+        deliveryMode: result.deliveryMode,
       });
     }
 

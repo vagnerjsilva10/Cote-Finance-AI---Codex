@@ -16,6 +16,13 @@ type WhatsAppConfig = {
   appSecret?: string;
 };
 
+type WhatsAppTemplateMessageParams = {
+  to: string;
+  name: string;
+  languageCode?: string;
+  bodyParameters?: string[];
+};
+
 function cleanEnvValue(value: string | undefined | null) {
   if (!value) return '';
   return value.trim();
@@ -41,6 +48,40 @@ function parseErrorBody(rawText: string) {
   } catch {
     return rawText;
   }
+}
+
+async function sendWhatsAppRequest(payload: Record<string, unknown>) {
+  const config = getWhatsAppConfig();
+  const endpoint = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}/messages`;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+
+  const rawBody = await response.text();
+  const parsedBody = (() => {
+    if (!rawBody) return {};
+    try {
+      return JSON.parse(rawBody);
+    } catch {
+      return { raw: rawBody };
+    }
+  })();
+
+  if (!response.ok) {
+    const parsedMessage = parseErrorBody(rawBody);
+    throw new Error(
+      `Falha ao enviar mensagem no WhatsApp (HTTP ${response.status}). ${parsedMessage}`
+    );
+  }
+
+  return parsedBody;
 }
 
 export function normalizeWhatsappPhone(phone: string) {
@@ -118,49 +159,57 @@ export function verifyWhatsAppSignature(rawBody: string, signatureHeader: string
 }
 
 export async function sendWhatsAppTextMessage(params: { to: string; text: string }) {
-  const config = getWhatsAppConfig();
   const normalizedPhone = normalizeWhatsappPhone(params.to);
 
   if (!normalizedPhone) {
     throw new Error('Número de telefone inválido para envio no WhatsApp.');
   }
 
-  const endpoint = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}/messages`;
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${config.accessToken}`,
-      'Content-Type': 'application/json',
+  return sendWhatsAppRequest({
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to: normalizedPhone,
+    type: 'text',
+    text: {
+      body: params.text,
     },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to: normalizedPhone,
-      type: 'text',
-      text: {
-        body: params.text,
-      },
-    }),
-    cache: 'no-store',
   });
+}
 
-  const rawBody = await response.text();
-  const parsedBody = (() => {
-    if (!rawBody) return {};
-    try {
-      return JSON.parse(rawBody);
-    } catch {
-      return { raw: rawBody };
-    }
-  })();
+export async function sendWhatsAppTemplateMessage(params: WhatsAppTemplateMessageParams) {
+  const normalizedPhone = normalizeWhatsappPhone(params.to);
 
-  if (!response.ok) {
-    const parsedMessage = parseErrorBody(rawBody);
-    throw new Error(
-      `Falha ao enviar mensagem no WhatsApp (HTTP ${response.status}). ${parsedMessage}`
-    );
+  if (!normalizedPhone) {
+    throw new Error('Número de telefone inválido para envio no WhatsApp.');
   }
 
-  return parsedBody;
+  const bodyParameters =
+    params.bodyParameters?.filter((value) => typeof value === 'string' && value.trim().length > 0) ?? [];
+
+  return sendWhatsAppRequest({
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to: normalizedPhone,
+    type: 'template',
+    template: {
+      name: params.name,
+      language: {
+        code: (params.languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim(),
+      },
+      ...(bodyParameters.length > 0
+        ? {
+            components: [
+              {
+                type: 'body',
+                parameters: bodyParameters.map((text) => ({
+                  type: 'text',
+                  text,
+                })),
+              },
+            ],
+          }
+        : {}),
+    },
+  });
 }
 

@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
-import { sendWhatsAppTextMessage } from '@/lib/whatsapp';
+import { sendWhatsAppTemplateMessage, sendWhatsAppTextMessage } from '@/lib/whatsapp';
 
 const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
 const UPCOMING_WINDOW_DAYS = 30;
@@ -21,6 +21,7 @@ export type WhatsAppDigestResult =
       preview: string;
       workspaceId: string;
       phoneNumber: string;
+      deliveryMode: 'template' | 'text';
       reason?: never;
     }
   | {
@@ -169,6 +170,24 @@ function buildDigestMessage(params: {
   return lines.join('\n');
 }
 
+function buildDigestHighlights(params: {
+  upcomingItems: DigestAgendaItem[];
+  insights: string[];
+}) {
+  const parts: string[] = [];
+
+  for (const item of params.upcomingItems.slice(0, 2)) {
+    const prefix = item.type === 'debt' ? 'Conta' : 'Meta';
+    parts.push(`${prefix}: ${item.label} em ${formatDateLabel(item.date)}`);
+  }
+
+  for (const insight of params.insights.slice(0, Math.max(0, 3 - parts.length))) {
+    parts.push(insight);
+  }
+
+  return parts.join(' | ').slice(0, 1024);
+}
+
 export async function sendWorkspaceWhatsAppDigest(params: {
   workspaceId: string;
   force?: boolean;
@@ -306,10 +325,29 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     upcomingItems,
   });
 
-  await sendWhatsAppTextMessage({
-    to: workspace.whatsapp_phone_number,
-    text: preview,
-  });
+  const digestTemplateName = process.env.WHATSAPP_TEMPLATE_DIGEST_NAME?.trim();
+  let deliveryMode: 'template' | 'text' = 'text';
+
+  if (digestTemplateName) {
+    await sendWhatsAppTemplateMessage({
+      to: workspace.whatsapp_phone_number,
+      name: digestTemplateName,
+      bodyParameters: [
+        workspace.name,
+        formatCurrency(totalBalance),
+        formatCurrency(monthIncome),
+        formatCurrency(monthExpenses),
+        buildDigestHighlights({ upcomingItems, insights }) ||
+          'Abra o painel para acompanhar tudo com mais detalhes.',
+      ],
+    });
+    deliveryMode = 'template';
+  } else {
+    await sendWhatsAppTextMessage({
+      to: workspace.whatsapp_phone_number,
+      text: preview,
+    });
+  }
 
   await logWorkspaceEventSafe({
     workspaceId: workspace.id,
@@ -329,6 +367,7 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     workspaceId: workspace.id,
     phoneNumber: workspace.whatsapp_phone_number,
     preview,
+    deliveryMode,
   } satisfies WhatsAppDigestResult;
 }
 
