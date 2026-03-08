@@ -1233,7 +1233,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
   const recentTransactions = React.useMemo(
     () =>
       [...enrichedTransactions]
-        .sort((a, b) => (b.parsedDate?.getTime() ? 0) - (a.parsedDate?.getTime() ? 0))
+        .sort((a, b) => (b.parsedDate?.getTime() ?? 0) - (a.parsedDate?.getTime() ?? 0))
         .slice(0, 8),
     [enrichedTransactions]
   );
@@ -5147,7 +5147,7 @@ export default function App() {
       .map(([category, amount]) => ({ category, amount }));
 
     const recentTransactions = [...enrichedTransactions]
-      .sort((a, b) => (b.parsedDate?.getTime() ? 0) - (a.parsedDate?.getTime() ? 0))
+      .sort((a, b) => (b.parsedDate?.getTime() ?? 0) - (a.parsedDate?.getTime() ?? 0))
       .slice(0, 8)
       .map((tx) => ({
         date: tx.date,

@@ -602,7 +602,7 @@ export async function PATCH(req: Request) {
           payment_method: paymentMethod,
           receipt_url: receiptUrlInBody ? nextReceiptUrl : undefined,
           amount: nextAmount,
-          date: nextDate ? undefined,
+          date: nextDate ?? undefined,
           description: nextDescription || undefined,
         },
         include: {
