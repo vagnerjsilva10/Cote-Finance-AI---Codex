@@ -5508,7 +5508,7 @@ export default function App() {
   };
 
   const handleSendMessage = async (presetMessage?: string) => {
-    const messageText = (presetMessage ? input).trim();
+    const messageText = (presetMessage ?? input).trim();
     if (!messageText || isLoading) return;
     if (!consumeAiQuota()) return;
 
