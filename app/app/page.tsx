@@ -434,17 +434,17 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CART?O') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃO') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
     normalized === 'TRANSFERENCIA_BANCARIA' ||
-    normalized === 'TRANSFER?NCIA BANC?RIA'
+    normalized === 'TRANSFERÊNCIA BANCÁRIA'
   ) {
     return 'Transferência bancária';
   }
   if (normalized === 'BOLETO') return 'Boleto';
-  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'D?BITO') return 'Débito';
+  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'DÉBITO') return 'Débito';
   return 'Outro';
 };
 
@@ -514,7 +514,7 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'ai.classify.used': 'Classificação automática usada',
   };
 
-  return labels[eventType] || eventType.replace(/\./g, ' ? ');
+  return labels[eventType] || eventType.replace(/\./g, ' • ');
 };
 
 const formatEventTimestamp = (isoString: string) => {
@@ -1031,7 +1031,7 @@ const SubscriptionView = ({
                   <p className="mt-2 text-lg font-semibold text-white">{summary.statusLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobran?a</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobrança</p>
                   <p className="mt-2 text-lg font-semibold text-white">{summary.billingLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
@@ -1043,7 +1043,7 @@ const SubscriptionView = ({
 
             <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo r?pido</p>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
                   Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
@@ -1132,7 +1132,7 @@ const SubscriptionView = ({
                   disabled={!summary.canManageBilling || actionLoading !== null}
                   className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver hist?rico de cobrança'}</span>
+                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histórico de cobrança'}</span>
                   <ExternalLink size={16} className="text-slate-400" />
                 </button>
               </div>
@@ -1233,7 +1233,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
   const recentTransactions = React.useMemo(
     () =>
       [...enrichedTransactions]
-        .sort((a, b) => (b.parsedDate?.getTime() ?? 0) - (a.parsedDate?.getTime() ?? 0))
+        .sort((a, b) => (b.parsedDate?.getTime() ? 0) - (a.parsedDate?.getTime() ? 0))
         .slice(0, 8),
     [enrichedTransactions]
   );
@@ -1722,7 +1722,7 @@ const IntegrationsView = ({
       annualPrice: 290,
       active: false,
       features: [
-        'Lan?amentos ilimitados',
+        'Lançamentos ilimitados',
         'IA completa',
         'Relatórios avançados',
         'Metas ilimitadas',
@@ -1738,7 +1738,7 @@ const IntegrationsView = ({
         'Tudo do Pro',
         'Insights semanais automáticos',
         'Planejamento estratégico',
-        'Suporte priorit?rio',
+        'Suporte prioritário',
       ],
     },
   ];
@@ -1766,7 +1766,7 @@ const IntegrationsView = ({
               billingCycle === 'annually' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400'
             )}
           >
-            Anual <span className="text-[10px] ml-1 opacity-70">(2 meses gr?tis)</span>
+            Anual <span className="text-[10px] ml-1 opacity-70">(2 meses grátis)</span>
           </button>
         </div>
 
@@ -1941,7 +1941,7 @@ const IntegrationsView = ({
                 Quais alertas vou receber no WhatsApp?
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
-                Resumo diário com saldo, entradas, saídas, próximos vencimentos e insights práticos para agir mais r?pido.
+                Resumo diário com saldo, entradas, saídas, próximos vencimentos e insights práticos para agir mais rápido.
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
                 Exemplo: <span className="font-semibold text-white">Maior gasto do mês</span>, contas próximas do vencimento e um resumo do que merece atenção no caixa.
@@ -1965,7 +1965,7 @@ type AgendaViewProps = {
 const AgendaView = ({ bills }: AgendaViewProps) => {
   const upcomingBills = bills.filter((bill) => bill.status !== 'paid');
   const overdueCount = upcomingBills.filter((bill) => bill.status === 'overdue').length;
-  const nextSevenDays = upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7);
+  const nextSevenDays = upcomingBills.filter((bill) => (bill.daysUntil ? 99) <= 7);
   const totalScheduled = upcomingBills.reduce((acc, bill) => acc + bill.amount, 0);
 
   const groupedBills = React.useMemo(
@@ -1973,12 +1973,12 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
       {
         key: 'urgent',
         title: 'Mais próximos',
-        items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7),
+        items: upcomingBills.filter((bill) => (bill.daysUntil ? 99) <= 7),
       },
       {
         key: 'later',
         title: 'Próximos 30 dias',
-        items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) > 7),
+        items: upcomingBills.filter((bill) => (bill.daysUntil ? 99) > 7),
       },
     ].filter((group) => group.items.length > 0),
     [upcomingBills]
@@ -2093,7 +2093,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                             >
                               {bill.status === 'overdue'
                                 ? 'Atrasado'
-                                : (bill.daysUntil ?? 0) === 0
+                                : (bill.daysUntil ? 0) === 0
                                 ? 'Hoje'
                                 : `${bill.daysUntil}d`}
                             </span>
@@ -2140,7 +2140,7 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
           onClick={onAddDebt}
           className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={18} /> Nova D?vida
+          <Plus size={18} /> Nova Dívida
         </button>
       </div>
 
@@ -2178,7 +2178,7 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
               {debts.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Nenhuma d?vida cadastrada.
+                    Nenhuma dívida cadastrada.
                   </td>
                 </tr>
               )}
@@ -2584,7 +2584,7 @@ const ReportsView = ({
 
     setIsGeneratingInsight(true);
     try {
-      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acion?veis:
+      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionáveis:
 Receitas: ${formatCurrency(totalIncome)}
 Despesas: ${formatCurrency(totalExpenses)}
 Saldo: ${formatCurrency(balance)}
@@ -2642,7 +2642,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo l?quido</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
         </div>
       </div>
@@ -3204,7 +3204,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar d?vida.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar dívida.');
     } finally {
       setIsSubmitting(false);
     }
@@ -3218,7 +3218,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
         className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar D?vida' : 'Nova D?vida'}</h3>
+          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Dívida' : 'Nova Dívida'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -3320,7 +3320,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar d?vida'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida'}
           </button>
         </div>
       </motion.div>
@@ -3373,7 +3373,7 @@ const TransactionModal = ({
       };
     }
 
-    const parsedDate = parseTransactionDate(initialData.date) ?? new Date();
+    const parsedDate = parseTransactionDate(initialData.date) ? new Date();
     const normalizedDate = new Date(parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000)
       .toISOString()
       .split('T')[0];
@@ -3745,13 +3745,13 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       target: 'dashboard-stats',
     },
     {
-      title: 'Previs?es de IA',
-      description: 'Nossa IA analisa seus padr?es e prevê seu saldo futuro, ajudando você a se planejar.',
+      title: 'Previsões de IA',
+      description: 'Nossa IA analisa seus padrões e prevê seu saldo futuro, ajudando você a se planejar.',
       target: 'ai-forecast',
     },
     {
       title: 'Assistente Cote',
-      description: 'Converse com nossa IA para tirar dívidas sobre seus gastos e receber dicas personalizadas.',
+      description: 'Converse com nossa IA para tirar dúvidas sobre seus gastos e receber dicas personalizadas.',
       target: 'ai-assistant',
     },
     {
@@ -3817,7 +3817,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               onClick={nextStep}
               className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
             >
-              {step === steps.length - 1 ? 'Começar agora' : 'Pr?ximo'}
+              {step === steps.length - 1 ? 'Começar agora' : 'Próximo'}
             </button>
           </div>
         </div>
@@ -3870,7 +3870,7 @@ const LoginView = ({
     if (!firstName.trim()) return 'Informe seu nome.';
     if (!lastName.trim()) return 'Informe seu sobrenome.';
     if (!email.trim()) return 'Informe seu e-mail.';
-    if (password.length < 8) return 'A senha deve ter no m?nimo 8 caracteres.';
+    if (password.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
       return 'A senha deve conter letras e números.';
     }
@@ -4104,7 +4104,7 @@ const LoginView = ({
               {isLogin
                 ? loginMethod === 'otp'
                   ? 'Receba um código no e-mail e valide sua entrada sem depender da senha.'
-                  : 'Acesse seu workspace com seguran?a e continue de onde parou.'
+                  : 'Acesse seu workspace com segurança e continue de onde parou.'
                 : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
@@ -4513,7 +4513,7 @@ export default function App() {
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      setUser(session?.user ? null);
       if (session?.access_token) {
         void setupUserOnServer(session.access_token);
       }
@@ -4595,7 +4595,7 @@ export default function App() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Sessão expirada. Fa?a login novamente.');
+        throw new Error('Sessão expirada. Faça login novamente.');
       }
 
       return {
@@ -4758,6 +4758,79 @@ export default function App() {
       } else {
         setDebts([]);
       }
+      const resolvedWorkspaceId = typeof data.activeWorkspaceId === 'string' ? data.activeWorkspaceId : activeWorkspaceId;
+      if (resolvedWorkspaceId) {
+        workspaceDashboardCacheRef.current[resolvedWorkspaceId] = {
+          totalBalance: data.totalBalance !== undefined ? Number(data.totalBalance) : 0,
+          currentPlan: data.plan ? normalizePlan(data.plan) : 'FREE',
+          currentMonthTransactionCount:
+            typeof data.currentMonthTransactionCount === 'number' ? Math.max(0, data.currentMonthTransactionCount) : 0,
+          aiUsageCount: typeof data.currentMonthAiUsage === 'number' ? Math.max(0, data.currentMonthAiUsage) : 0,
+          transactions: data.transactions
+            ? data.transactions.map((tx: any) => mapApiTransactionToClientTransaction(tx))
+            : [],
+          goals: data.goals
+            ? data.goals.map((g: any) => ({
+                id: g.id,
+                name: g.name,
+                target: Number(g.target_amount),
+                current: Number(g.current_amount),
+                category: g.category || 'Outros',
+                deadline: g.deadline || null,
+                icon: Wallet,
+                color: 'text-emerald-500',
+              }))
+            : [],
+          investments: Array.isArray(data.investments)
+            ? data.investments.map((item: any) => ({
+                id: item.id,
+                label: item.name,
+                type: item.type || 'Outros',
+                institution: item.institution || 'Não informado',
+                invested: Number(item.invested_amount || 0),
+                value: Number(item.current_amount || 0),
+                expectedReturnAnnual: Number(item.expected_return_annual || 0),
+                color: getInvestmentColor(item.type || 'Outros'),
+              }))
+            : [],
+          debts: Array.isArray(data.debts)
+            ? data.debts.map((item: any) => ({
+                id: item.id,
+                creditor: item.creditor,
+                originalAmount: Number(item.original_amount || 0),
+                remainingAmount: Number(item.remaining_amount || 0),
+                interestRateMonthly: Number(item.interest_rate_monthly || 0),
+                dueDay: Number(item.due_day || 1),
+                category: item.category || 'Outros',
+                status: String(item.status || '').toUpperCase() === 'PAID' ? 'Quitada' : 'Ativa',
+              }))
+            : [],
+          workspaceEvents: Array.isArray(data.recentEvents)
+            ? data.recentEvents.map((event: any) => ({
+                id: String(event.id),
+                type: String(event.type || 'workspace.event'),
+                created_at: String(event.created_at || new Date().toISOString()),
+                user_id: typeof event.user_id === 'string' ? event.user_id : null,
+                payload:
+                  event.payload && typeof event.payload === 'object'
+                    ? (event.payload as Record<string, unknown>)
+                    : null,
+              }))
+            : [],
+          dashboardInsights: Array.isArray(data.insights)
+            ? data.insights
+                .filter((item: unknown) => typeof item === 'string')
+                .map((item: string) => item.trim())
+                .filter(Boolean)
+            : [],
+          isWhatsAppConnected:
+            data.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED',
+          settingsWhatsApp:
+            data.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
+              ? `+${data.workspace.whatsapp_phone_number}`
+              : settingsWhatsApp,
+        };
+      }
       hasFetchedDashboardRef.current = true;
       // Update other states as needed
     } catch (error) {
@@ -4774,7 +4847,7 @@ export default function App() {
         setDataLoading(false);
       }
     }
-  }, [getAuthHeaders, setupUserOnServer, user]);
+  }, [activeWorkspaceId, getAuthHeaders, settingsWhatsApp, setupUserOnServer, user]);
 
   React.useEffect(() => {
     if (user) {
@@ -4855,29 +4928,49 @@ export default function App() {
   const aiLimitReached = isFreePlan && aiUsageCount >= FREE_AI_LIMIT_PER_MONTH;
   const planLabel = getPlanLabel(currentPlan);
   const editingTransaction = React.useMemo(
-    () => transactions.find((tx) => tx.id === editingTransactionId) ?? null,
+    () => transactions.find((tx) => tx.id === editingTransactionId) ? null,
     [transactions, editingTransactionId]
   );
   const editingGoal = React.useMemo(
-    () => goals.find((goal) => goal.id === editingGoalId) ?? null,
+    () => goals.find((goal) => goal.id === editingGoalId) ? null,
     [goals, editingGoalId]
   );
   const editingInvestment = React.useMemo(
-    () => investments.find((inv) => inv.id === editingInvestmentId) ?? null,
+    () => investments.find((inv) => inv.id === editingInvestmentId) ? null,
     [investments, editingInvestmentId]
   );
   const editingDebt = React.useMemo(
-    () => debts.find((debt) => debt.id === editingDebtId) ?? null,
+    () => debts.find((debt) => debt.id === editingDebtId) ? null,
     [debts, editingDebtId]
   );
   const lastUserIdRef = React.useRef<string | null>(null);
   const lastWorkspaceIdRef = React.useRef<string | null>(null);
   const hasFetchedDashboardRef = React.useRef(false);
   const quickCreateMenuRef = React.useRef<HTMLDivElement | null>(null);
+  const workspaceDashboardCacheRef = React.useRef<
+    Record<
+      string,
+      {
+        totalBalance: number;
+        currentPlan: PlanName;
+        currentMonthTransactionCount: number;
+        aiUsageCount: number;
+        transactions: Transaction[];
+        goals: Goal[];
+        investments: Investment[];
+        debts: Debt[];
+        workspaceEvents: WorkspaceEventItem[];
+        dashboardInsights: string[];
+        isWhatsAppConnected: boolean;
+        settingsWhatsApp: string;
+      }
+    >
+  >({});
 
   React.useEffect(() => {
-    const nextUserId = user?.id ?? null;
+    const nextUserId = user?.id ? null;
     if (lastUserIdRef.current !== nextUserId) {
+      workspaceDashboardCacheRef.current = {};
       setTransactions([]);
       setGoals([]);
       setInvestments([]);
@@ -4913,6 +5006,22 @@ export default function App() {
     if (!user?.id) return;
     if (lastWorkspaceIdRef.current === activeWorkspaceId) return;
     lastWorkspaceIdRef.current = activeWorkspaceId;
+    if (!activeWorkspaceId) return;
+    const cachedWorkspaceData = workspaceDashboardCacheRef.current[activeWorkspaceId];
+    if (!cachedWorkspaceData) return;
+
+    setTotalBalance(cachedWorkspaceData.totalBalance);
+    setCurrentPlan(cachedWorkspaceData.currentPlan);
+    setCurrentMonthTransactionCount(cachedWorkspaceData.currentMonthTransactionCount);
+    setAiUsageCount(cachedWorkspaceData.aiUsageCount);
+    setTransactions(cachedWorkspaceData.transactions);
+    setGoals(cachedWorkspaceData.goals);
+    setInvestments(cachedWorkspaceData.investments);
+    setDebts(cachedWorkspaceData.debts);
+    setWorkspaceEvents(cachedWorkspaceData.workspaceEvents);
+    setDashboardInsights(cachedWorkspaceData.dashboardInsights);
+    setIsWhatsAppConnected(cachedWorkspaceData.isWhatsAppConnected);
+    setSettingsWhatsApp(cachedWorkspaceData.settingsWhatsApp);
   }, [activeWorkspaceId, user?.id]);
 
   React.useEffect(() => {
@@ -5038,7 +5147,7 @@ export default function App() {
       .map(([category, amount]) => ({ category, amount }));
 
     const recentTransactions = [...enrichedTransactions]
-      .sort((a, b) => (b.parsedDate?.getTime() ?? 0) - (a.parsedDate?.getTime() ?? 0))
+      .sort((a, b) => (b.parsedDate?.getTime() ? 0) - (a.parsedDate?.getTime() ? 0))
       .slice(0, 8)
       .map((tx) => ({
         date: tx.date,
@@ -5077,7 +5186,7 @@ export default function App() {
     const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
     const totalDebtRemaining = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
     const totalDebtOriginal = activeDebts.reduce((acc, debt) => acc + debt.originalAmount, 0);
-    const highestDebt = [...activeDebts].sort((a, b) => b.remainingAmount - a.remainingAmount)[0] ?? null;
+    const highestDebt = [...activeDebts].sort((a, b) => b.remainingAmount - a.remainingAmount)[0] ? null;
 
     return {
       balance,
@@ -5279,7 +5388,7 @@ export default function App() {
       }
 
       setSettingsSavedAt(
-        `Alterações salvas ?s ${new Date().toLocaleTimeString('pt-BR', {
+        `Alterações salvas às ${new Date().toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit',
         })}`
@@ -5399,7 +5508,7 @@ export default function App() {
   };
 
   const handleSendMessage = async (presetMessage?: string) => {
-    const messageText = (presetMessage ?? input).trim();
+    const messageText = (presetMessage ? input).trim();
     if (!messageText || isLoading) return;
     if (!consumeAiQuota()) return;
 
@@ -5454,7 +5563,7 @@ export default function App() {
         ...prev,
         {
           role: 'model',
-          text: `Desculpe, tive um problema t?cnico ao processar sua mensagem. ${
+          text: `Desculpe, tive um problema técnico ao processar sua mensagem. ${
             error instanceof Error ? error.message : 'Tente novamente em alguns instantes.'
           }`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -5664,7 +5773,7 @@ export default function App() {
 
     doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 20, 45);
     doc.text(`Total Despesas: ${formatCurrency(totalExpenses)}`, 20, 55);
-    doc.text(`Saldo L?quido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
+    doc.text(`Saldo Líquido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
 
     const tableData = transactions.map((tx) => [tx.date, tx.desc, tx.cat, tx.amount, tx.wallet]);
 
@@ -5798,7 +5907,7 @@ export default function App() {
       Number.isNaN(submittedDate.getTime()) ? null : submittedDate
     );
     const previousTransaction = editingTransactionId
-      ? transactions.find((item) => item.id === editingTransactionId) ?? null
+      ? transactions.find((item) => item.id === editingTransactionId) ? null
       : null;
     const wasCurrentMonthBeforeEdit = previousTransaction
       ? isInCurrentMonth(parseTransactionDate(previousTransaction.date))
@@ -5913,7 +6022,7 @@ export default function App() {
       return;
     }
     setEditingTransactionId(null);
-    setTransactionModalDraft(draft ?? null);
+    setTransactionModalDraft(draft ? null);
     setIsTransactionModalOpen(true);
   };
 
@@ -5927,7 +6036,7 @@ export default function App() {
     const previousTransactionsSnapshot = transactions;
     const previousTotalBalance = totalBalance;
     const previousMonthCount = currentMonthTransactionCount;
-    const transactionToDelete = transactions.find((item) => item.id === id) ?? null;
+    const transactionToDelete = transactions.find((item) => item.id === id) ? null;
 
     if (!transactionToDelete) {
       return;
@@ -6130,7 +6239,7 @@ export default function App() {
       const message =
         typeof responseData?.error === 'string'
           ? responseData.error
-          : 'Falha ao salvar d?vida.';
+          : 'Falha ao salvar dívida.';
       throw new Error(message);
     }
 
@@ -6161,7 +6270,7 @@ export default function App() {
           throw new Error(
             typeof responseData?.error === 'string'
               ? responseData.error
-              : 'Falha ao excluir d?vida.'
+              : 'Falha ao excluir dívida.'
           );
         }
         if (editingDebtId === id) {
@@ -6170,7 +6279,7 @@ export default function App() {
         }
         await fetchDashboardData();
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir d?vida.');
+        alert(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
       }
     })();
   };
@@ -6299,7 +6408,7 @@ export default function App() {
                 {upgradeLimitReason === 'transactions'
                   ? `Você chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês.`
                   : `Você chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interações de IA no mês.`}{' '}
-                Fa?a upgrade para Pro/Premium e continue sem bloqueios.
+                Faça upgrade para Pro/Premium e continue sem bloqueios.
               </p>
               <div className="flex gap-2">
                 <button
@@ -6368,7 +6477,7 @@ export default function App() {
                     <h4 className="text-2xl font-bold text-white mb-2">Bem-vindo ao Cote Finance AI</h4>
                     <p className="text-sm text-slate-300 leading-relaxed">
                       Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanças e
-                      gerar insights mais ?teis para você.
+                      gerar insights mais úteis para você.
                     </p>
                   </div>
                   <div className="flex justify-end">
@@ -6385,7 +6494,7 @@ export default function App() {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Qual ? seu principal objetivo financeiro?</h4>
+                    <h4 className="text-xl font-bold text-white mb-1">Qual é seu principal objetivo financeiro?</h4>
                     <p className="text-sm text-slate-400">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
@@ -6578,16 +6687,16 @@ export default function App() {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Este ? seu painel financeiro</h4>
-                    <p className="text-sm text-slate-400">Aqui você acompanha tudo em um ?nico lugar.</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Este é seu painel financeiro</h4>
+                    <p className="text-sm text-slate-400">Aqui você acompanha tudo em um único lugar.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
                     <p className="text-sm text-slate-200">Aqui você pode ver:</p>
                     <ul className="space-y-2 text-sm text-slate-300">
-                      <li>? saldo atual</li>
-                      <li>? despesas por categoria</li>
-                      <li>? evolução dos gastos</li>
-                      <li>? insights da inteligência artificial</li>
+                      <li>saldo atual</li>
+                      <li>despesas por categoria</li>
+                      <li>evolução dos gastos</li>
+                      <li>insights da inteligência artificial</li>
                     </ul>
                   </div>
                   <div className="flex justify-between">
@@ -6713,7 +6822,7 @@ export default function App() {
                     <h4 className="text-xl font-bold text-white mb-1">
                       Desbloqueie análises financeiras avançadas
                     </h4>
-                    <p className="text-sm text-slate-400">Com o plano Pro você ter?:</p>
+                    <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
                     <ul className="space-y-2 text-sm text-emerald-100">
@@ -6806,7 +6915,6 @@ export default function App() {
         onSubmit={handleSubmitDebt}
         initialData={editingDebt}
       />
-
       {/* Sidebar Overlay for Mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -6870,7 +6978,7 @@ export default function App() {
                 handleManageSubscription();
               }}
               className="w-full bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
-            >
+              >
               {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
             </button>
           </div>
