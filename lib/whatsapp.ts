@@ -16,6 +16,68 @@ type WhatsAppConfig = {
   appSecret?: string;
 };
 
+type ParsedWhatsAppError = {
+  message: string;
+  code?: number;
+  errorSubcode?: number;
+  type?: string;
+  fbtraceId?: string;
+  rawBody?: unknown;
+};
+
+export type WhatsAppRequestContext = {
+  source: 'template' | 'text';
+  destination: string;
+  templateName?: string | null;
+  languageCode?: string | null;
+};
+
+export class WhatsAppApiError extends Error {
+  status: number;
+  metaCode?: number;
+  metaSubcode?: number;
+  metaType?: string;
+  fbtraceId?: string;
+  templateName?: string | null;
+  languageCode?: string | null;
+  destination: string;
+  phoneNumberId: string;
+  endpoint: string;
+  category: 'auth' | 'template' | 'rate_limit' | 'temporary' | 'config' | 'unknown';
+  rawBody?: unknown;
+
+  constructor(params: {
+    message: string;
+    status: number;
+    destination: string;
+    phoneNumberId: string;
+    endpoint: string;
+    templateName?: string | null;
+    languageCode?: string | null;
+    metaCode?: number;
+    metaSubcode?: number;
+    metaType?: string;
+    fbtraceId?: string;
+    category: WhatsAppApiError['category'];
+    rawBody?: unknown;
+  }) {
+    super(params.message);
+    this.name = 'WhatsAppApiError';
+    this.status = params.status;
+    this.destination = params.destination;
+    this.phoneNumberId = params.phoneNumberId;
+    this.endpoint = params.endpoint;
+    this.templateName = params.templateName;
+    this.languageCode = params.languageCode;
+    this.metaCode = params.metaCode;
+    this.metaSubcode = params.metaSubcode;
+    this.metaType = params.metaType;
+    this.fbtraceId = params.fbtraceId;
+    this.category = params.category;
+    this.rawBody = params.rawBody;
+  }
+}
+
 type WhatsAppTemplateMessageParams = {
   to: string;
   name: string;
@@ -34,23 +96,85 @@ function normalizeApiVersion(value: string) {
   return normalized.startsWith('v') ? normalized : `v${normalized}`;
 }
 
-function parseErrorBody(rawText: string) {
-  if (!rawText) return '';
+function parseErrorBody(rawText: string): ParsedWhatsAppError {
+  if (!rawText) {
+    return {
+      message: 'Resposta vazia da API do WhatsApp.',
+      rawBody: null,
+    };
+  }
   try {
     const parsed = JSON.parse(rawText);
     if (typeof parsed?.error?.message === 'string') {
-      return parsed.error.message;
+      return {
+        message: parsed.error.message,
+        code: typeof parsed.error.code === 'number' ? parsed.error.code : undefined,
+        errorSubcode:
+          typeof parsed.error.error_subcode === 'number' ? parsed.error.error_subcode : undefined,
+        type: typeof parsed.error.type === 'string' ? parsed.error.type : undefined,
+        fbtraceId: typeof parsed.error.fbtrace_id === 'string' ? parsed.error.fbtrace_id : undefined,
+        rawBody: parsed,
+      };
     }
     if (typeof parsed?.message === 'string') {
-      return parsed.message;
+      return {
+        message: parsed.message,
+        rawBody: parsed,
+      };
     }
-    return rawText;
+    return {
+      message: rawText,
+      rawBody: parsed,
+    };
   } catch {
-    return rawText;
+    return {
+      message: rawText,
+      rawBody: rawText,
+    };
   }
 }
 
-async function sendWhatsAppRequest(payload: Record<string, unknown>) {
+function categorizeWhatsAppError(params: { status: number; parsedError: ParsedWhatsAppError; context: WhatsAppRequestContext }) {
+  if (params.status === 401 || params.status === 403) return 'auth' as const;
+  if (params.status === 429) return 'rate_limit' as const;
+  if (params.status >= 500) return 'temporary' as const;
+
+  if (
+    params.status === 404 &&
+    params.context.source === 'template' &&
+    /template/i.test(params.parsedError.message)
+  ) {
+    return 'template' as const;
+  }
+
+  return 'unknown' as const;
+}
+
+export function getFriendlyWhatsAppErrorMessage(error: unknown) {
+  if (!(error instanceof WhatsAppApiError)) {
+    return error instanceof Error ? error.message : 'Não foi possível enviar a mensagem no WhatsApp.';
+  }
+
+  if (error.category === 'auth') {
+    return 'Não foi possível autenticar na API do WhatsApp. Revise o token de acesso e as permissões da conta.';
+  }
+
+  if (error.category === 'template') {
+    return 'Revise o nome do template e o idioma configurado no WhatsApp Manager.';
+  }
+
+  if (error.category === 'rate_limit') {
+    return 'O WhatsApp atingiu o limite temporário de envio. Aguarde um pouco e tente novamente.';
+  }
+
+  if (error.category === 'temporary') {
+    return 'O WhatsApp está indisponível no momento. Tente novamente em alguns instantes.';
+  }
+
+  return `Falha ao enviar mensagem no WhatsApp (HTTP ${error.status}). ${error.message}`;
+}
+
+async function sendWhatsAppRequest(payload: Record<string, unknown>, context: WhatsAppRequestContext) {
   const config = getWhatsAppConfig();
   const endpoint = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}/messages`;
 
@@ -75,10 +199,38 @@ async function sendWhatsAppRequest(payload: Record<string, unknown>) {
   })();
 
   if (!response.ok) {
-    const parsedMessage = parseErrorBody(rawBody);
-    throw new Error(
-      `Falha ao enviar mensagem no WhatsApp (HTTP ${response.status}). ${parsedMessage}`
-    );
+    const parsedError = parseErrorBody(rawBody);
+    const category = categorizeWhatsAppError({
+      status: response.status,
+      parsedError,
+      context,
+    });
+
+    console.error('WhatsApp API send failure', {
+      status: response.status,
+      template_name: context.templateName ?? null,
+      language_code: context.languageCode ?? null,
+      phone_number_id: config.phoneNumberId,
+      destination: context.destination,
+      endpoint,
+      meta_error: parsedError.rawBody ?? parsedError.message,
+    });
+
+    throw new WhatsAppApiError({
+      message: parsedError.message,
+      status: response.status,
+      metaCode: parsedError.code,
+      metaSubcode: parsedError.errorSubcode,
+      metaType: parsedError.type,
+      fbtraceId: parsedError.fbtraceId,
+      templateName: context.templateName ?? null,
+      languageCode: context.languageCode ?? null,
+      destination: context.destination,
+      phoneNumberId: config.phoneNumberId,
+      endpoint,
+      category,
+      rawBody: parsedError.rawBody,
+    });
   }
 
   return parsedBody;
@@ -165,15 +317,21 @@ export async function sendWhatsAppTextMessage(params: { to: string; text: string
     throw new Error('Número de telefone inválido para envio no WhatsApp.');
   }
 
-  return sendWhatsAppRequest({
-    messaging_product: 'whatsapp',
-    recipient_type: 'individual',
-    to: normalizedPhone,
-    type: 'text',
-    text: {
-      body: params.text,
+  return sendWhatsAppRequest(
+    {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: normalizedPhone,
+      type: 'text',
+      text: {
+        body: params.text,
+      },
     },
-  });
+    {
+      source: 'text',
+      destination: normalizedPhone,
+    }
+  );
 }
 
 export async function sendWhatsAppTemplateMessage(params: WhatsAppTemplateMessageParams) {
@@ -183,33 +341,52 @@ export async function sendWhatsAppTemplateMessage(params: WhatsAppTemplateMessag
     throw new Error('Número de telefone inválido para envio no WhatsApp.');
   }
 
+  const templateName = params.name.trim();
+  const languageCode = (params.languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim();
+
+  if (!templateName) {
+    throw new Error('Nome do template do WhatsApp não configurado.');
+  }
+
+  if (!languageCode) {
+    throw new Error('Idioma do template do WhatsApp não configurado.');
+  }
+
   const bodyParameters =
     params.bodyParameters?.filter((value) => typeof value === 'string' && value.trim().length > 0) ?? [];
 
-  return sendWhatsAppRequest({
-    messaging_product: 'whatsapp',
-    recipient_type: 'individual',
-    to: normalizedPhone,
-    type: 'template',
-    template: {
-      name: params.name,
-      language: {
-        code: (params.languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim(),
+  return sendWhatsAppRequest(
+    {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: normalizedPhone,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: {
+          code: languageCode,
+        },
+        ...(bodyParameters.length > 0
+          ? {
+              components: [
+                {
+                  type: 'body',
+                  parameters: bodyParameters.map((text) => ({
+                    type: 'text',
+                    text,
+                  })),
+                },
+              ],
+            }
+          : {}),
       },
-      ...(bodyParameters.length > 0
-        ? {
-            components: [
-              {
-                type: 'body',
-                parameters: bodyParameters.map((text) => ({
-                  type: 'text',
-                  text,
-                })),
-              },
-            ],
-          }
-        : {}),
     },
-  });
+    {
+      source: 'template',
+      destination: normalizedPhone,
+      templateName,
+      languageCode,
+    }
+  );
 }
 

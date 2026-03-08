@@ -9,6 +9,7 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
+import { getWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -271,6 +272,7 @@ export async function GET(req: Request) {
       transactions,
       goals,
       workspace,
+      workspaceWhatsAppConfig,
       plan,
       preference,
       currentMonthTransactionCount,
@@ -283,6 +285,7 @@ export async function GET(req: Request) {
         findWorkspaceTransactions(workspaceId),
         findWorkspaceGoals(workspaceId),
         findWorkspaceSnapshot(workspaceId),
+        getWorkspaceWhatsAppConfig(workspaceId),
         getWorkspacePlan(workspaceId, context.userId),
         getWorkspacePreference(workspaceId, context.userId),
         countWorkspaceTransactions(workspaceId, monthStart, nextMonthStart),
@@ -298,9 +301,21 @@ export async function GET(req: Request) {
         name: context.workspaces.find((item) => item.id === workspaceId)?.name || 'Minha Conta',
         whatsapp_status: null,
         whatsapp_phone_number: null,
+        whatsapp_connect_template_name: workspaceWhatsAppConfig.connectTemplateName,
+        whatsapp_digest_template_name: workspaceWhatsAppConfig.digestTemplateName,
+        whatsapp_template_language: workspaceWhatsAppConfig.templateLanguage,
+        whatsapp_test_phone_number: workspaceWhatsAppConfig.testPhoneNumber,
         created_at: null,
         updated_at: null,
       } as const);
+
+    const workspaceWithConfig = {
+      ...safeWorkspace,
+      whatsapp_connect_template_name: workspaceWhatsAppConfig.connectTemplateName,
+      whatsapp_digest_template_name: workspaceWhatsAppConfig.digestTemplateName,
+      whatsapp_template_language: workspaceWhatsAppConfig.templateLanguage,
+      whatsapp_test_phone_number: workspaceWhatsAppConfig.testPhoneNumber,
+    };
 
     const totalBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
     const totalInvested = investments.reduce<number>(
@@ -317,7 +332,7 @@ export async function GET(req: Request) {
       goals,
       investments,
       debts,
-      workspace: safeWorkspace,
+      workspace: workspaceWithConfig,
       plan,
       limits: PLAN_LIMITS[plan],
       currentMonthTransactionCount,

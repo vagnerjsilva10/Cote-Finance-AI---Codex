@@ -1,8 +1,9 @@
-﻿import 'server-only';
+import 'server-only';
 
 import { prisma } from '@/lib/prisma';
-import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
+import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
+import { ResolvedWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import { sendWhatsAppTemplateMessage, sendWhatsAppTextMessage } from '@/lib/whatsapp';
 
 const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
@@ -29,11 +30,7 @@ export type WhatsAppDigestResult =
       preview?: string;
       workspaceId: string;
       phoneNumber?: string;
-      reason:
-        | 'not_connected'
-        | 'already_sent'
-        | 'no_content'
-        | 'workspace_not_found';
+      reason: 'not_connected' | 'already_sent' | 'no_content' | 'workspace_not_found';
     };
 
 function formatCurrency(value: number) {
@@ -147,12 +144,12 @@ function buildDigestMessage(params: {
     `Cote Finance AI | Resumo de ${params.workspaceName}`,
     '',
     `Saldo atual: ${formatCurrency(params.totalBalance)}`,
-    `Entradas do m\u00eas: ${formatCurrency(params.monthIncome)}`,
-    `Sa\u00eddas do m\u00eas: ${formatCurrency(params.monthExpenses)}`,
+    `Entradas do mês: ${formatCurrency(params.monthIncome)}`,
+    `Saídas do mês: ${formatCurrency(params.monthExpenses)}`,
   ];
 
   if (params.upcomingItems.length > 0) {
-    lines.push('', 'Pr\u00f3ximos compromissos:');
+    lines.push('', 'Próximos compromissos:');
     for (const item of params.upcomingItems.slice(0, 3)) {
       const prefix = item.type === 'debt' ? 'Conta' : 'Meta';
       lines.push(`- ${prefix}: ${item.label} em ${formatDateLabel(item.date)} (${formatCurrency(item.amount)})`);
@@ -193,6 +190,8 @@ export async function sendWorkspaceWhatsAppDigest(params: {
   force?: boolean;
   source?: 'cron' | 'manual';
   now?: Date;
+  destinationOverride?: string | null;
+  resolvedConfig?: Pick<ResolvedWorkspaceWhatsAppConfig, 'digestTemplateName' | 'templateLanguage' | 'testPhoneNumber'>;
 }) {
   const now = params.now ?? new Date();
   const workspace = await prisma.workspace.findUnique({
@@ -250,14 +249,20 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     } satisfies WhatsAppDigestResult;
   }
 
+  const destinationPhone =
+    params.destinationOverride?.trim() ||
+    params.resolvedConfig?.testPhoneNumber?.trim() ||
+    workspace.whatsapp_phone_number;
+
   if (
     workspace.whatsapp_status !== 'CONNECTED' ||
-    typeof workspace.whatsapp_phone_number !== 'string' ||
-    !workspace.whatsapp_phone_number
+    typeof destinationPhone !== 'string' ||
+    !destinationPhone
   ) {
     return {
       sent: false,
       workspaceId: workspace.id,
+      phoneNumber: destinationPhone || undefined,
       reason: 'not_connected',
     } satisfies WhatsAppDigestResult;
   }
@@ -281,18 +286,18 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       return {
         sent: false,
         workspaceId: workspace.id,
-        phoneNumber: workspace.whatsapp_phone_number,
+        phoneNumber: destinationPhone,
         reason: 'already_sent',
       } satisfies WhatsAppDigestResult;
     }
   }
 
-  const totalBalance = workspace.wallets.reduce(
-    (acc, wallet) => acc + Number(wallet.balance || 0),
-    0
-  );
+  const totalBalance = workspace.wallets.reduce((acc, wallet) => acc + Number(wallet.balance || 0), 0);
   const monthIncome = workspace.transactions
-    .filter((tx) => String(tx.type || '').toUpperCase().includes('INCOME') || String(tx.type || '').toUpperCase() === 'PIX_IN')
+    .filter((tx) => {
+      const type = String(tx.type || '').toUpperCase();
+      return type.includes('INCOME') || type === 'PIX_IN';
+    })
     .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
   const monthExpenses = workspace.transactions
     .filter((tx) => {
@@ -311,7 +316,7 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     return {
       sent: false,
       workspaceId: workspace.id,
-      phoneNumber: workspace.whatsapp_phone_number,
+      phoneNumber: destinationPhone,
       reason: 'no_content',
     } satisfies WhatsAppDigestResult;
   }
@@ -325,26 +330,27 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     upcomingItems,
   });
 
-  const digestTemplateName = process.env.WHATSAPP_TEMPLATE_DIGEST_NAME?.trim();
+  const digestTemplateName =
+    params.resolvedConfig?.digestTemplateName?.trim() || process.env.WHATSAPP_TEMPLATE_DIGEST_NAME?.trim();
   let deliveryMode: 'template' | 'text' = 'text';
 
   if (digestTemplateName) {
     await sendWhatsAppTemplateMessage({
-      to: workspace.whatsapp_phone_number,
+      to: destinationPhone,
       name: digestTemplateName,
+      languageCode: params.resolvedConfig?.templateLanguage,
       bodyParameters: [
         workspace.name,
         formatCurrency(totalBalance),
         formatCurrency(monthIncome),
         formatCurrency(monthExpenses),
-        buildDigestHighlights({ upcomingItems, insights }) ||
-          'Abra o painel para acompanhar tudo com mais detalhes.',
+        buildDigestHighlights({ upcomingItems, insights }) || 'Abra o painel para acompanhar tudo com mais detalhes.',
       ],
     });
     deliveryMode = 'template';
   } else {
     await sendWhatsAppTextMessage({
-      to: workspace.whatsapp_phone_number,
+      to: destinationPhone,
       text: preview,
     });
   }
@@ -359,15 +365,16 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       totalBalance,
       insightsSent: insights.slice(0, 2),
       agendaCount: upcomingItems.length,
+      deliveryMode,
+      phoneNumber: destinationPhone,
     },
   });
 
   return {
     sent: true,
     workspaceId: workspace.id,
-    phoneNumber: workspace.whatsapp_phone_number,
+    phoneNumber: destinationPhone,
     preview,
     deliveryMode,
   } satisfies WhatsAppDigestResult;
 }
-
