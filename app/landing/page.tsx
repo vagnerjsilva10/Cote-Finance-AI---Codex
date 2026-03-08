@@ -125,7 +125,10 @@ export default function LandingPage() {
   const scrollTo = React.useCallback((id: string) => {
     const node = document.getElementById(id);
     if (!node) return;
-    node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const header = document.querySelector('header');
+    const headerHeight = header instanceof HTMLElement ? header.offsetHeight : 0;
+    const top = node.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+    window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
   }, []);
 
   const handleHeroMouseMove = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
@@ -278,19 +281,19 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-slate-300 lg:flex">
-            <button onClick={() => scrollTo('video-demo')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('produto')} className="transition-colors hover:text-white">
               Produto
             </button>
-            <button onClick={() => scrollTo('como-funciona')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('como-funciona')} className="transition-colors hover:text-white">
               Como funciona
             </button>
-            <button onClick={() => scrollTo('funcionalidades')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('funcionalidades')} className="transition-colors hover:text-white">
               Funcionalidades
             </button>
             <Link href="/blog" className="transition-colors hover:text-white">
               Blog
             </Link>
-            <button onClick={() => scrollTo('planos')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('planos')} className="transition-colors hover:text-white">
               Preços
             </button>
           </nav>
@@ -542,7 +545,7 @@ export default function LandingPage() {
 
         <motion.section
           id="como-funciona"
-          className="space-y-6"
+          className="scroll-mt-24 space-y-6 lg:scroll-mt-28"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -573,8 +576,8 @@ export default function LandingPage() {
         </motion.section>
 
         <motion.section
-          id="video-demo"
-          className="relative overflow-hidden py-4"
+          id="produto"
+          className="scroll-mt-24 relative overflow-hidden py-4 lg:scroll-mt-28"
           initial={{ opacity: 0, y: 26 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -725,7 +728,7 @@ export default function LandingPage() {
 
         <motion.section
           id="funcionalidades"
-          className="space-y-6"
+          className="scroll-mt-24 space-y-6 lg:scroll-mt-28"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -839,7 +842,7 @@ export default function LandingPage() {
 
         <motion.section
           id="planos"
-          className="space-y-6"
+          className="scroll-mt-24 space-y-6 lg:scroll-mt-28"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
