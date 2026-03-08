@@ -58,7 +58,7 @@ function createTimeoutError(message: string) {
 }
 
 async function withClientTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
-  let timeoutId: ReturnType<typeof window.setTimeout> | null = null;
+  let timeoutId: number | null = null;
 
   try {
     return await Promise.race([
