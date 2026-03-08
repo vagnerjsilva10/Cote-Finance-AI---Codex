@@ -78,6 +78,18 @@ function getExpandedInvoice(invoice: string | Stripe.Invoice | null) {
   return invoice;
 }
 
+function getInvoicePaymentIntent(invoice: Stripe.Invoice | null) {
+  if (!invoice) {
+    return null;
+  }
+
+  const expandedInvoice = invoice as Stripe.Invoice & {
+    payment_intent?: string | Stripe.PaymentIntent | null;
+  };
+
+  return expandedInvoice.payment_intent ?? null;
+}
+
 function getExpandedPaymentIntent(paymentIntent: string | Stripe.PaymentIntent | null | undefined) {
   if (!paymentIntent || typeof paymentIntent === 'string') {
     return null;
@@ -104,7 +116,7 @@ function serializeSubscriptionState(params: {
   priceId: string;
 }) {
   const invoice = getExpandedInvoice(params.subscription.latest_invoice);
-  const paymentIntent = getExpandedPaymentIntent(invoice?.payment_intent ?? null);
+  const paymentIntent = getExpandedPaymentIntent(getInvoicePaymentIntent(invoice));
   const setupIntent = getExpandedSetupIntent(params.subscription.pending_setup_intent);
   const paymentClientSecret = paymentIntent?.client_secret ?? invoice?.confirmation_secret?.client_secret ?? null;
   const setupClientSecret = setupIntent?.client_secret ?? null;
