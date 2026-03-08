@@ -58,6 +58,7 @@ import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 // --- Types ---
 
 type LucideIcon = React.ComponentType<{ size?: number; className?: string }>;
+const DEFAULT_WHATSAPP_NUMBER = '+551199999999';
 
 type Tab =
   | 'dashboard'
@@ -4828,7 +4829,7 @@ export default function App() {
           settingsWhatsApp:
             data.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
               ? `+${data.workspace.whatsapp_phone_number}`
-              : settingsWhatsApp,
+              : DEFAULT_WHATSAPP_NUMBER,
         };
       }
       hasFetchedDashboardRef.current = true;
@@ -4847,7 +4848,7 @@ export default function App() {
         setDataLoading(false);
       }
     }
-  }, [activeWorkspaceId, getAuthHeaders, settingsWhatsApp, setupUserOnServer, user]);
+  }, [activeWorkspaceId, getAuthHeaders, setupUserOnServer, user]);
 
   React.useEffect(() => {
     if (user) {
@@ -4872,7 +4873,7 @@ export default function App() {
   const [isQuickCreateOpen, setIsQuickCreateOpen] = React.useState(false);
   const [settingsName, setSettingsName] = React.useState('');
   const [settingsEmail, setSettingsEmail] = React.useState('');
-  const [settingsWhatsApp, setSettingsWhatsApp] = React.useState('+551199999999');
+  const [settingsWhatsApp, setSettingsWhatsApp] = React.useState(DEFAULT_WHATSAPP_NUMBER);
   const [settingsSavedAt, setSettingsSavedAt] = React.useState<string | null>(null);
   const [workspaceEvents, setWorkspaceEvents] = React.useState<WorkspaceEventItem[]>([]);
   const [subscriptionSummary, setSubscriptionSummary] = React.useState<SubscriptionOverview | null>(null);
@@ -5243,7 +5244,7 @@ export default function App() {
     setSettingsName((prev) => prev || user.user_metadata?.full_name || user.email?.split('@')[0] || '');
     setSettingsEmail((prev) => prev || user.email || '');
     setSettingsWhatsApp((prev) =>
-      prev !== '+551199999999' ? prev : user.user_metadata?.phone || prev
+      prev !== DEFAULT_WHATSAPP_NUMBER ? prev : user.user_metadata?.phone || prev
     );
     setOnboardingWorkspaceName((prev) =>
       prev !== 'Minha Conta' ? prev : user.user_metadata?.company_name || prev
@@ -5357,7 +5358,7 @@ export default function App() {
 
   const handleSaveSettings = async () => {
     const normalizedPhone = settingsWhatsApp.replace(/[^\d+]/g, '');
-    setSettingsWhatsApp(normalizedPhone || '+551199999999');
+    setSettingsWhatsApp(normalizedPhone || DEFAULT_WHATSAPP_NUMBER);
 
     try {
       const updatePayload: {
