@@ -9,18 +9,18 @@ export function BlogHeader() {
           <Image
             src="/brand/cote-finance-ai-logo-black.svg"
             alt="Cote Finance AI - By Cote Juros"
-            width={560}
-            height={150}
+            width={720}
+            height={192}
             priority
-            className="hidden h-12 w-auto sm:block lg:h-14"
+            className="hidden h-14 w-auto sm:block lg:h-[4.5rem]"
           />
           <Image
             src="/brand/cote-favicon.svg"
             alt="Cote Finance AI"
-            width={48}
-            height={48}
+            width={56}
+            height={56}
             priority
-            className="h-11 w-11 sm:hidden"
+            className="h-12 w-12 sm:hidden"
           />
         </Link>
 

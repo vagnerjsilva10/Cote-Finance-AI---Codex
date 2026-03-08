@@ -89,6 +89,12 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
     title: localizeBlogText(section.title),
     paragraphs: section.paragraphs.map((paragraph) => localizeBlogText(paragraph)),
     bullets: section.bullets?.map((bullet) => localizeBlogText(bullet)),
+    subSections: section.subSections?.map((subSection) => ({
+      ...subSection,
+      title: localizeBlogText(subSection.title),
+      paragraphs: subSection.paragraphs.map((paragraph) => localizeBlogText(paragraph)),
+      bullets: subSection.bullets?.map((bullet) => localizeBlogText(bullet)),
+    })),
   }));
   const localizedKeywords = article.keywords.map((keyword) => localizeBlogText(keyword));
   const localizedFaqs = article.faqs.map((faq) => ({
@@ -194,16 +200,40 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
 
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-8">
-            {localizedSections.map((section, index) => (
+            {localizedSections.map((section) => (
               <section key={section.title} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-black tracking-tight text-slate-950">
-                  {index + 1}. {section.title}
-                </h2>
+                <h2 className="text-2xl font-black tracking-tight text-slate-950">{section.title}</h2>
                 <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
                   {section.paragraphs.map((paragraph) => (
                     <p key={paragraph}>{paragraph}</p>
                   ))}
                 </div>
+                {section.subSections?.length ? (
+                  <div className="mt-8 space-y-6">
+                    {section.subSections.map((subSection) => (
+                      <div key={subSection.title} className="space-y-4">
+                        <h3 className="text-xl font-bold tracking-tight text-slate-950">{subSection.title}</h3>
+                        <div className="space-y-4 text-base leading-8 text-slate-700">
+                          {subSection.paragraphs.map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                          ))}
+                        </div>
+                        {subSection.bullets?.length ? (
+                          <ul className="space-y-3">
+                            {subSection.bullets.map((bullet) => (
+                              <li
+                                key={bullet}
+                                className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3 text-sm leading-7 text-slate-700"
+                              >
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
                 {section.bullets?.length ? (
                   <div className="mt-6">
                     <h3 className="text-lg font-semibold text-slate-950">Pontos principais</h3>

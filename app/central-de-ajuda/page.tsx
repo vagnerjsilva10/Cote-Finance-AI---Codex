@@ -131,28 +131,28 @@ export default function HelpCenterPage() {
 
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-4">
             <Image
               src="/brand/cote-finance-ai-logo-black.svg"
               alt="Cote Finance AI - By Cote Juros"
-              width={460}
-              height={122}
+              width={720}
+              height={192}
               priority
-              className="hidden h-11 w-auto sm:block"
+              className="hidden h-14 w-auto sm:block lg:h-[4.5rem]"
             />
             <Image
               src="/brand/cote-favicon.svg"
               alt="Cote Finance AI"
-              width={44}
-              height={44}
+              width={56}
+              height={56}
               priority
-              className="h-10 w-10 sm:hidden"
+              className="h-12 w-12 sm:hidden"
             />
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
             <Link href="/" className="transition-colors hover:text-slate-950">
-              Landing
+              Início
             </Link>
             <Link href="/blog" className="transition-colors hover:text-slate-950">
               Blog
@@ -173,7 +173,7 @@ export default function HelpCenterPage() {
               Entrar
             </Link>
             <Link
-              href="/app?auth=signup"
+              href="/signup"
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
             >
               Começar grátis
@@ -314,7 +314,7 @@ export default function HelpCenterPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/app?auth=signup" className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600">
+              <Link href="/signup" className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600">
                 Começar grátis
               </Link>
               <Link href="/blog" className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950">

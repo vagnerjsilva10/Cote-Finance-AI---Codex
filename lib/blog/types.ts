@@ -5,6 +5,11 @@ export type BlogSection = {
   title: string;
   paragraphs: string[];
   bullets?: string[];
+  subSections?: {
+    title: string;
+    paragraphs: string[];
+    bullets?: string[];
+  }[];
 };
 
 export type BlogFaq = {
@@ -76,9 +81,17 @@ function getSecondaryKeyword(seed: ArticleSeed) {
   return seed.keywords[1] || seed.keywords[0] || 'controle financeiro';
 }
 
+function getTopicLabel(seed: ArticleSeed) {
+  const withoutHow = seed.title.replace(/^Como\s+/i, '');
+  const withoutListNumber = withoutHow.replace(/^\d+\s+/, '');
+  const normalized = withoutListNumber.charAt(0).toLowerCase() + withoutListNumber.slice(1);
+  return normalized.trim();
+}
+
 function createProblemSection(seed: ArticleSeed): BlogSection {
   const primaryKeyword = getPrimaryKeyword(seed);
   const secondaryKeyword = getSecondaryKeyword(seed);
+  const topicLabel = getTopicLabel(seed);
 
   const paragraphs =
     seed.category === 'Ferramenta'
@@ -96,7 +109,10 @@ function createProblemSection(seed: ArticleSeed): BlogSection {
         ];
 
   return {
-    title: 'O problema real do leitor',
+    title:
+      seed.category === 'Ferramenta'
+        ? `Por que ${topicLabel} ainda é difícil`
+        : `Por que ${topicLabel} ainda desafia tanta gente`,
     paragraphs,
   };
 }
@@ -104,9 +120,13 @@ function createProblemSection(seed: ArticleSeed): BlogSection {
 function createExplanationSection(seed: ArticleSeed): BlogSection {
   const primaryKeyword = getPrimaryKeyword(seed);
   const secondaryKeyword = getSecondaryKeyword(seed);
+  const topicLabel = getTopicLabel(seed);
 
   return {
-    title: 'Explicação clara',
+    title:
+      seed.category === 'Ferramenta'
+        ? `Como o Cote Finance AI ajuda a melhorar ${topicLabel}`
+        : `O que ajuda a melhorar ${topicLabel}`,
     paragraphs: [
       ...seed.explanation,
       `Na prática, ${primaryKeyword} melhora quando você para de olhar só para o resultado final e passa a observar o caminho que levou até ele. Isso inclui entender categorias, frequência de compra, recorrências, sazonalidade e o efeito acumulado das pequenas decisões.`,
@@ -115,6 +135,29 @@ function createExplanationSection(seed: ArticleSeed): BlogSection {
       `O objetivo aqui não é complicar sua vida com análise excessiva. É tornar visível aquilo que hoje passa despercebido. Quanto mais clara essa leitura, mais simples fica priorizar, economizar, negociar e planejar o próximo passo.`,
     ],
     bullets: seed.focusBullets,
+    subSections: [
+      {
+        title: seed.category === 'Ferramenta' ? 'Leitura automática do que entra e sai' : 'Visibilidade do que realmente pesa no orçamento',
+        paragraphs: [
+          'O primeiro ganho de um processo melhor é parar de decidir no escuro. Quando entradas, saídas e categorias aparecem de forma organizada, você consegue entender o mês com menos esforço e mais contexto.',
+          'Essa visibilidade evita a sensação de que o dinheiro “sumiu”, porque mostra como as pequenas decisões se acumulam e onde está o peso real do orçamento.',
+        ],
+      },
+      {
+        title: seed.category === 'Ferramenta' ? 'Identificação de desperdícios e padrões' : 'Correção de hábitos que drenam dinheiro',
+        paragraphs: [
+          'Nem todo excesso é óbvio quando você olha apenas para a fatura total. O que faz diferença é identificar padrões recorrentes, categorias que cresceram e comportamentos que parecem pequenos, mas drenam caixa com frequência.',
+          'Quando esse padrão fica visível, você deixa de cortar no escuro e passa a agir em cima do que realmente gera impacto.',
+        ],
+      },
+      {
+        title: seed.category === 'Ferramenta' ? 'Planejamento financeiro com mais contexto' : 'Planejamento financeiro com menos improviso',
+        paragraphs: [
+          'Entender o que aconteceu no mês serve para tomar decisões melhores no próximo. Essa ponte entre leitura e ação é o que transforma controle financeiro em estratégia prática.',
+          'Com mais contexto, fica mais simples ajustar metas, rever categorias, priorizar pagamentos e criar um planejamento que caiba de verdade na sua rotina.',
+        ],
+      },
+    ],
   };
 }
 
@@ -122,7 +165,10 @@ function createExamplesSection(seed: ArticleSeed): BlogSection {
   const primaryKeyword = getPrimaryKeyword(seed);
 
   return {
-    title: 'Exemplos do dia a dia',
+    title:
+      seed.category === 'Ferramenta'
+        ? `Exemplo prático de ${getTopicLabel(seed)}`
+        : `Exemplo prático para melhorar ${getTopicLabel(seed)}`,
     paragraphs: [
       ...seed.example,
       `Também vale pensar nos gastos que parecem inofensivos quando vistos sozinhos. Um café, um app, uma corrida por aplicativo, um pedido de delivery ou uma compra de conveniência dificilmente assustam no instante da decisão. Mas, quando entram em sequência, acabam roubando espaço de metas que seriam muito mais valiosas no médio prazo.`,
@@ -134,7 +180,10 @@ function createExamplesSection(seed: ArticleSeed): BlogSection {
 
 function createPracticalTipsSection(seed: ArticleSeed): BlogSection {
   return {
-    title: 'Dicas práticas',
+    title:
+      seed.category === 'Ferramenta'
+        ? `Dicas práticas para aplicar ${getTopicLabel(seed)} no dia a dia`
+        : `Dicas práticas para melhorar ${getTopicLabel(seed)} no dia a dia`,
     paragraphs: [
       'Na vida real, o que se sustenta é o que cabe na rotina. Por isso, o melhor plano não é o mais complexo. É o que você consegue executar mesmo em semanas corridas, sem depender de motivação extraordinária para continuar.',
       'As orientações abaixo funcionam como uma forma de reduzir atrito. Em vez de tentar controlar tudo ao mesmo tempo, você foca nos pontos com maior impacto e cria repetição. Esse tipo de consistência vale muito mais do que uma mudança radical que dura pouco.',
@@ -167,10 +216,11 @@ function createChecklistSection(seed: ArticleSeed): BlogSection {
 }
 
 function createCoteHelpSection(seed: ArticleSeed): BlogSection {
+  const topicLabel = getTopicLabel(seed);
   return {
     title: 'Como o Cote Finance AI pode ajudar',
     paragraphs: [
-      `Se a sua meta é ${seed.title.toLowerCase()}, o Cote Finance AI foi pensado para reduzir a parte pesada do processo e aumentar a parte útil: clareza, contexto e ação prática.`,
+      `Se a sua meta é melhorar ${topicLabel}, o Cote Finance AI foi pensado para reduzir a parte pesada do processo e aumentar a parte útil: clareza, contexto e ação prática.`,
       'Em vez de depender só de memória, planilhas dispersas ou revisão tardia no fim do mês, você centraliza lançamentos, acompanha a evolução do caixa e transforma comportamento financeiro em leitura acionável.',
       'O foco do produto não é só mostrar números. É ajudar você a controlar melhor o que entra e sai, identificar padrões cedo e agir com mais segurança antes que um problema cresça.',
     ],
@@ -199,7 +249,7 @@ export const createSections = (seed: ArticleSeed): BlogSection[] => [
     title: 'Introdução',
     paragraphs: [
       ...seed.intro,
-      `Se você já terminou um mês pensando “preciso colocar ordem na minha vida financeira”, este artigo foi escrito para esse momento. A proposta aqui é sair do discurso genérico e mostrar caminhos práticos para aplicar ${seed.title.toLowerCase()} com mais clareza e menos fricção.`,
+      `Se você já terminou um mês pensando “preciso colocar ordem na minha vida financeira”, este artigo foi escrito para esse momento. A proposta aqui é sair do discurso genérico e mostrar caminhos práticos para aplicar ${getTopicLabel(seed)} com mais clareza e menos fricção.`,
       'Ao longo da leitura, você vai entender o cenário, ver exemplos do dia a dia, identificar erros comuns e sair com passos objetivos para colocar o tema em prática sem complicar ainda mais a sua rotina.',
     ],
   },
