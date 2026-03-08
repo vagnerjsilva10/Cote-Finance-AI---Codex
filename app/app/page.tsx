@@ -4147,7 +4147,7 @@ const LoginView = ({
                     : 'text-slate-400 hover:text-white'
                 )}
               >
-                C?digo por e-mail
+                Código por e-mail
               </button>
             </div>
           ) : null}
@@ -4208,7 +4208,7 @@ const LoginView = ({
               ) : (
                 <div className="rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-                    Crit?rios da senha
+                    Critérios da senha
                   </p>
                   <ul className="mt-3 space-y-2 text-sm text-slate-300">
                     {passwordChecks.map((rule) => (
@@ -4246,7 +4246,7 @@ const LoginView = ({
               {otpRequestedEmail ? (
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    C?digo
+                    Código
                   </label>
                   <input
                     type="text"
