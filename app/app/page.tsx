@@ -7189,6 +7189,7 @@ export default function App() {
               </AnimatePresence>
             </div>
           </div>
+        </div>
         </header>
 
         {workspaces.length > 0 && (
