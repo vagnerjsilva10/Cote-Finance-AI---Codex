@@ -277,20 +277,20 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-slate-300 lg:flex">
-            <button onClick={() => scrollTo('problema')} className="transition-colors hover:text-white">
-              Problema
-            </button>
-            <button onClick={() => scrollTo('solucao')} className="transition-colors hover:text-white">
-              Solução
-            </button>
             <button onClick={() => scrollTo('video-demo')} className="transition-colors hover:text-white">
-              Vídeo
+              Produto
+            </button>
+            <button onClick={() => scrollTo('como-funciona')} className="transition-colors hover:text-white">
+              Como funciona
             </button>
             <button onClick={() => scrollTo('funcionalidades')} className="transition-colors hover:text-white">
               Funcionalidades
             </button>
+            <Link href="/blog" className="transition-colors hover:text-white">
+              Blog
+            </Link>
             <button onClick={() => scrollTo('planos')} className="transition-colors hover:text-white">
-              Planos
+              Preços
             </button>
           </nav>
 
@@ -952,6 +952,9 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <Link href="/blog" className="hover:text-slate-300">
               Blog
+            </Link>
+            <Link href="/central-de-ajuda" className="hover:text-slate-300">
+              Ajuda
             </Link>
             <Link href="/termos-de-uso" className="hover:text-slate-300">
               Termos

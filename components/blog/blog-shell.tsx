@@ -18,6 +18,9 @@ export function BlogShell({ children }: BlogShellProps) {
             <Link href="/blog" className="hover:text-slate-900">
               Blog
             </Link>
+            <Link href="/central-de-ajuda" className="hover:text-slate-900">
+              Ajuda
+            </Link>
             <Link href="/termos-de-uso" className="hover:text-slate-900">
               Termos
             </Link>

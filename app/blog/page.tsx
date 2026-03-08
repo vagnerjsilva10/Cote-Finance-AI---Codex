@@ -60,7 +60,7 @@ export default function BlogIndexPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/app?auth=signup"
+              href="/signup"
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
             >
               Começar grátis <ArrowRight size={16} />

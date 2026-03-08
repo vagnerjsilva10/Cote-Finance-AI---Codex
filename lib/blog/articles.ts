@@ -1,8 +1,8 @@
-import { articleCatalogPart1 } from './catalog-1';
+﻿import { articleCatalogPart1 } from './catalog-1';
 import { articleCatalogPart2 } from './catalog-2';
 import { articleCatalogPart3 } from './catalog-3';
 import { articleCatalogPart4 } from './catalog-4';
-import { createSections, enrichArticle, type BlogArticleSummary, type BlogCategory } from './types';
+import { createFaqs, createSections, enrichArticle, type BlogArticleSummary, type BlogCategory } from './types';
 
 export const blogArticles: BlogArticleSummary[] = [
   ...articleCatalogPart1,
@@ -13,6 +13,7 @@ export const blogArticles: BlogArticleSummary[] = [
   .map((seed) => ({
     ...seed,
     sections: createSections(seed),
+    faqs: createFaqs(seed),
   }))
   .map(enrichArticle)
   .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
@@ -30,11 +31,24 @@ export function getBlogArticleBySlug(slug: string) {
 }
 
 export function getRelatedBlogArticles(currentSlug: string, category: BlogCategory, limit = 3) {
-  const sameCategory = blogArticles.filter((article) => article.slug !== currentSlug && article.category === category);
-  if (sameCategory.length >= limit) {
-    return sameCategory.slice(0, limit);
+  const currentArticle = getBlogArticleBySlug(currentSlug);
+  const explicitRelated =
+    currentArticle?.relatedSlugs
+      ?.map((slug) => getBlogArticleBySlug(slug))
+      .filter((article): article is BlogArticleSummary => Boolean(article && article.slug !== currentSlug)) ?? [];
+
+  if (explicitRelated.length >= limit) {
+    return explicitRelated.slice(0, limit);
   }
 
-  const fallback = blogArticles.filter((article) => article.slug !== currentSlug && article.category !== category);
-  return [...sameCategory, ...fallback].slice(0, limit);
+  const alreadyAdded = new Set(explicitRelated.map((article) => article.slug));
+  const sameCategory = blogArticles.filter(
+    (article) => article.slug !== currentSlug && article.category === category && !alreadyAdded.has(article.slug)
+  );
+
+  const fallback = blogArticles.filter(
+    (article) => article.slug !== currentSlug && article.category !== category && !alreadyAdded.has(article.slug)
+  );
+
+  return [...explicitRelated, ...sameCategory, ...fallback].slice(0, limit);
 }

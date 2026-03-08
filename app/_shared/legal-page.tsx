@@ -40,6 +40,9 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections }
             <Link href="/blog" className="text-slate-300 transition-colors hover:text-white">
               Blog
             </Link>
+            <Link href="/central-de-ajuda" className="text-slate-300 transition-colors hover:text-white">
+              Ajuda
+            </Link>
             <Link
               href="/app"
               className="rounded-xl border border-slate-700 px-4 py-2 font-semibold text-slate-200 transition-colors hover:border-slate-500"

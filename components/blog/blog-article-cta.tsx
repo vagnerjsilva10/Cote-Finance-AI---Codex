@@ -16,7 +16,7 @@ export function BlogArticleCta() {
       </div>
       <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950">Experimente o Cote Finance AI gratuitamente</h2>
       <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-        Organize sua vida financeira, acompanhe gastos, defina metas e receba insights com IA em um só lugar.
+        Organize sua vida financeira, acompanhe gastos e receba insights inteligentes sobre seu dinheiro.
       </p>
       <ul className="mt-6 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
         {benefits.map((benefit) => (
@@ -28,7 +28,7 @@ export function BlogArticleCta() {
       </ul>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Link
-          href="/app?auth=signup"
+          href="/signup"
           className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
         >
           Começar grátis

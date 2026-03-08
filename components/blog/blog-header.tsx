@@ -5,31 +5,34 @@ export function BlogHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-4">
           <Image
             src="/brand/cote-finance-ai-logo-black.svg"
             alt="Cote Finance AI - By Cote Juros"
-            width={460}
-            height={122}
+            width={560}
+            height={150}
             priority
-            className="hidden h-11 w-auto sm:block"
+            className="hidden h-12 w-auto sm:block lg:h-14"
           />
           <Image
             src="/brand/cote-favicon.svg"
             alt="Cote Finance AI"
-            width={44}
-            height={44}
+            width={48}
+            height={48}
             priority
-            className="h-10 w-10 sm:hidden"
+            className="h-11 w-11 sm:hidden"
           />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
           <Link href="/" className="transition-colors hover:text-slate-950">
-            Landing
+            Início
           </Link>
           <Link href="/blog" className="font-semibold text-slate-950 transition-colors hover:text-emerald-700">
             Blog
+          </Link>
+          <Link href="/central-de-ajuda" className="transition-colors hover:text-slate-950">
+            Ajuda
           </Link>
           <Link href="/termos-de-uso" className="transition-colors hover:text-slate-950">
             Termos
@@ -47,7 +50,7 @@ export function BlogHeader() {
             Entrar
           </Link>
           <Link
-            href="/app?auth=signup"
+            href="/signup"
             className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
           >
             Começar grátis
