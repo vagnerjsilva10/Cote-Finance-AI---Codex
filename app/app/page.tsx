@@ -4953,7 +4953,7 @@ export default function App() {
       string,
       {
         totalBalance: number;
-        currentPlan: PlanName;
+        currentPlan: SubscriptionPlan;
         currentMonthTransactionCount: number;
         aiUsageCount: number;
         transactions: Transaction[];
