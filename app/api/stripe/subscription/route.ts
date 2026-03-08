@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import {
   getStripe,
@@ -22,28 +22,28 @@ export const runtime = 'nodejs';
 type ManageSubscriptionAction = 'cancel' | 'reactivate';
 
 const FREE_PLAN_FEATURES = [
-  'Acompanhamento de saldo e movimentaÃ§Ãµes essenciais',
+  'Acompanhamento de saldo e movimentações essenciais',
   'Dashboard inicial para organizar sua rotina financeira',
-  'RelatÃ³rios simples para acompanhar sua evoluÃ§Ã£o',
+  'Relatórios simples para acompanhar sua evolução',
 ];
 
 const PLAN_FEATURES: Record<'FREE' | 'PRO' | 'PREMIUM', string[]> = {
   FREE: FREE_PLAN_FEATURES,
   PRO: [
-    'LanÃ§amentos ilimitados',
-    'RelatÃ³rios completos e grÃ¡ficos avanÃ§ados',
-    'AnÃ¡lises inteligentes com IA',
+    'Lançamentos ilimitados',
+    'Relatórios completos e gráficos avançados',
+    'Análises inteligentes com IA',
     'Metas financeiras ilimitadas',
-    'Acompanhamento de dÃ­vidas',
+    'Acompanhamento de dívidas',
     'Controle de investimentos',
-    'Suporte prioritÃ¡rio por e-mail',
+    'Suporte prioritário por e-mail',
   ],
   PREMIUM: [
     'Tudo do plano Pro',
-    'Insights financeiros avanÃ§ados',
-    'PrevisÃµes de saldo e alertas inteligentes',
-    'AnÃ¡lise profunda de despesas',
-    'Suporte prioritÃ¡rio com acompanhamento acelerado',
+    'Insights financeiros avançados',
+    'Previsões de saldo e alertas inteligentes',
+    'Análise profunda de despesas',
+    'Suporte prioritário com acompanhamento acelerado',
   ],
 };
 
@@ -76,7 +76,7 @@ function mapStatus(params: {
     return {
       code: 'FREE',
       label: 'Ativa',
-      message: 'Seu workspace estÃ¡ no plano Free. Quando quiser evoluir, vocÃª pode fazer upgrade sem sair do app.',
+      message: 'Seu workspace está no plano Free. Quando quiser evoluir, você pode fazer upgrade sem sair do app.',
     };
   }
 
@@ -85,7 +85,7 @@ function mapStatus(params: {
       code: 'TRIALING',
       label: 'Em teste gratuito',
       message:
-        'VocÃª estÃ¡ no perÃ­odo de teste. Aproveite todos os recursos disponÃ­veis atÃ© o fim do teste.',
+        'Você está no período de teste. Aproveite todos os recursos disponíveis até o fim do teste.',
     };
   }
 
@@ -99,7 +99,7 @@ function mapStatus(params: {
       code: 'PENDING',
       label: 'Pagamento pendente',
       message:
-        'NÃ£o conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
+        'Não conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
     };
   }
 
@@ -107,7 +107,7 @@ function mapStatus(params: {
     return {
       code: 'CANCELED',
       label: 'Cancelada',
-      message: 'Sua assinatura foi cancelada. VocÃª ainda pode reativar seu plano quando quiser.',
+      message: 'Sua assinatura foi cancelada. Você ainda pode reativar seu plano quando quiser.',
     };
   }
 
@@ -115,7 +115,7 @@ function mapStatus(params: {
     return {
       code: 'CANCELED',
       label: 'Cancelada',
-      message: 'Sua assinatura foi cancelada. VocÃª ainda pode reativar seu plano quando quiser.',
+      message: 'Sua assinatura foi cancelada. Você ainda pode reativar seu plano quando quiser.',
     };
   }
 
@@ -124,7 +124,7 @@ function mapStatus(params: {
       code: 'PENDING',
       label: 'Pagamento pendente',
       message:
-        'NÃ£o conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
+        'Não conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
     };
   }
 
@@ -133,14 +133,14 @@ function mapStatus(params: {
       code: 'ACTIVE',
       label: 'Ativa',
       message:
-        'Sua assinatura segue ativa atÃ© o fim do ciclo atual. Se quiser, vocÃª ainda pode reativar antes da data final.',
+        'Sua assinatura segue ativa até o fim do ciclo atual. Se quiser, você ainda pode reativar antes da data final.',
     };
   }
 
   return {
     code: 'ACTIVE',
     label: 'Ativa',
-    message: 'Sua assinatura estÃ¡ ativa e seu acesso aos recursos do plano continua normalmente.',
+    message: 'Sua assinatura está ativa e seu acesso aos recursos do plano continua normalmente.',
   };
 }
 
@@ -208,12 +208,12 @@ async function buildSubscriptionResponse(req: Request) {
 
   const billingLabel =
     plan === 'FREE'
-      ? 'R$ 0 / mês'
+      ? 'R$ 0 / m?s'
       : interval
-        ? formatBillingPrice(plan, interval).replace('/ano', ' / ano').replace('/mês', ' / mês')
+        ? formatBillingPrice(plan, interval).replace('/ano', ' / ano').replace('/m?s', ' / m?s')
         : plan === 'PRO'
-          ? 'R$ 29 / mês'
-          : 'R$ 49 / mês';
+          ? 'R$ 29 / m?s'
+          : 'R$ 49 / m?s';
   const hasActiveStripeSubscription = Boolean(
     stripeSubscription && isEntitledStripeStatus(stripeSubscription.status)
   );
@@ -281,7 +281,7 @@ export async function GET(req: Request) {
     }
 
     console.error('Subscription overview error:', error);
-    return NextResponse.json({ error: 'NÃ£o foi possÃ­vel carregar a assinatura.' }, { status: 500 });
+    return NextResponse.json({ error: 'Não foi possível carregar a assinatura.' }, { status: 500 });
   }
 }
 
@@ -292,7 +292,7 @@ export async function POST(req: Request) {
     const action = body?.action;
 
     if (action !== 'cancel' && action !== 'reactivate') {
-      return NextResponse.json({ error: 'AÃ§Ã£o de assinatura invÃ¡lida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Ação de assinatura inválida.' }, { status: 400 });
     }
 
     const storedSubscription = await readWorkspaceSubscription(context.workspaceId);
@@ -332,6 +332,6 @@ export async function POST(req: Request) {
     }
 
     console.error('Subscription action error:', error);
-    return NextResponse.json({ error: 'NÃ£o foi possÃ­vel atualizar a assinatura.' }, { status: 500 });
+    return NextResponse.json({ error: 'Não foi possível atualizar a assinatura.' }, { status: 500 });
   }
 }
