@@ -3073,7 +3073,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: Inve
             <select
               value={formData.type}
               onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
             >
               {INVESTMENT_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -3398,6 +3398,8 @@ const TransactionModal = ({
   const [isLoadingSuggestion, setIsLoadingSuggestion] = React.useState(false);
   const [isParsingReceipt, setIsParsingReceipt] = React.useState(false);
   const [receiptStatus, setReceiptStatus] = React.useState<string | null>(null);
+  const [selectedReceiptName, setSelectedReceiptName] = React.useState<string | null>(null);
+  const receiptInputRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -3407,6 +3409,7 @@ const TransactionModal = ({
     setIsLoadingSuggestion(false);
     setIsParsingReceipt(false);
     setReceiptStatus(null);
+    setSelectedReceiptName(null);
   }, [isOpen, getInitialFormData]);
 
   React.useEffect(() => {
@@ -3446,6 +3449,7 @@ const TransactionModal = ({
     const file = event.target.files?.[0];
     if (!file || !onParseReceipt) return;
 
+    setSelectedReceiptName(file.name);
     setIsParsingReceipt(true);
     setReceiptStatus('Analisando comprovante...');
     try {
@@ -3499,11 +3503,11 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-3 pt-6 backdrop-blur-sm sm:items-center sm:p-4">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-lg w-full shadow-2xl my-6"
+        className="theme-modal-surface my-4 w-full max-w-[calc(100vw-1rem)] overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-900 p-4 shadow-2xl sm:my-6 sm:max-w-lg sm:rounded-3xl sm:p-6"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
@@ -3533,7 +3537,7 @@ const TransactionModal = ({
                     }))
                   }
                   className={cn(
-                    'px-4 py-3.5 rounded-2xl text-sm font-bold transition-colors border flex items-center justify-center gap-2',
+                    'flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-bold transition-colors sm:px-4 sm:py-3.5',
                     formData.flowType === flowType
                       ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
@@ -3588,23 +3592,23 @@ const TransactionModal = ({
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Data</label>
               <input
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="block w-full min-w-0 appearance-none rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
               >
                 {TRANSACTION_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -3624,7 +3628,7 @@ const TransactionModal = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
               }
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
             >
               {PAYMENT_METHODS.map((method) => (
                 <option key={method} value={method}>
@@ -3638,13 +3642,27 @@ const TransactionModal = ({
             <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
               Comprovante (JPG, PNG, PDF)
             </label>
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png,.pdf"
-              onChange={handleReceiptUpload}
-              disabled={isParsingReceipt || isSubmitting}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-slate-700 file:px-3 file:py-1 file:text-xs file:font-bold file:text-slate-200 hover:file:bg-slate-600"
-            />
+            <div className="flex w-full min-w-0 flex-col items-stretch gap-3 rounded-xl border border-slate-700 bg-slate-800 p-3 sm:flex-row sm:items-center">
+              <button
+                type="button"
+                onClick={() => receiptInputRef.current?.click()}
+                disabled={isParsingReceipt || isSubmitting}
+                className="shrink-0 rounded-lg bg-slate-700 px-3 py-2 text-xs font-bold text-slate-100 transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {selectedReceiptName ? 'Trocar arquivo' : 'Escolher arquivo'}
+              </button>
+              <span className="min-w-0 flex-1 truncate text-left text-sm text-slate-300">
+                {selectedReceiptName ?? 'Nenhum arquivo selecionado'}
+              </span>
+              <input
+                ref={receiptInputRef}
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                onChange={handleReceiptUpload}
+                disabled={isParsingReceipt || isSubmitting}
+                className="hidden"
+              />
+            </div>
             {receiptStatus && <p className="text-[11px] text-slate-400">{receiptStatus}</p>}
           </div>
 
@@ -3655,13 +3673,13 @@ const TransactionModal = ({
           )}
 
           {formData.flowType === 'Transferência' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="min-w-0 space-y-2">
                 <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta origem</label>
                 <select
                   value={formData.wallet}
                   onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
                 >
                   {TRANSACTION_WALLETS.map((wallet) => (
                     <option key={wallet} value={wallet}>
@@ -3670,12 +3688,12 @@ const TransactionModal = ({
                   ))}
                 </select>
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta destino</label>
                 <select
                   value={formData.destinationWallet}
                   onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
                 >
                   <option value="">Selecione</option>
                   {TRANSACTION_WALLETS.map((wallet) => (
@@ -3692,7 +3710,7 @@ const TransactionModal = ({
               <select
                 value={formData.wallet}
                 onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
               >
                 {TRANSACTION_WALLETS.map((wallet) => (
                   <option key={wallet} value={wallet}>
