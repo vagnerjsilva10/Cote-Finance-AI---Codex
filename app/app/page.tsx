@@ -7078,6 +7078,7 @@ export default function App() {
                       <p className="text-[11px] font-medium text-slate-400">Registre um ativo e acompanhe rendimento.</p>
                     </button>
                   </div>
+                </div>
               )}
             </div>
 
