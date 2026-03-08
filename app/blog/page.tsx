@@ -12,14 +12,14 @@ const featuredArticles = getFeaturedBlogArticles().slice(0, 3);
 export const metadata: Metadata = {
   title: 'Blog | Cote Finance AI',
   description:
-    'Artigos sobre controle financeiro, educacao financeira e inteligencia artificial aplicada a uma rotina de dinheiro mais clara.',
+    'Artigos sobre controle financeiro, educação financeira e inteligência artificial aplicada a uma rotina de dinheiro mais clara.',
   alternates: {
     canonical: absoluteUrl('/blog'),
   },
   openGraph: {
     title: 'Blog | Cote Finance AI',
     description:
-      'Aprenda a organizar financas, controlar gastos e usar IA para tomar decisoes financeiras melhores.',
+      'Aprenda a organizar finanças, controlar gastos e usar IA para tomar decisões financeiras melhores.',
     url: absoluteUrl('/blog'),
     siteName: 'Cote Finance AI',
     type: 'website',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Blog | Cote Finance AI',
     description:
-      'Artigos sobre controle financeiro, educacao financeira e inteligencia artificial aplicada as suas financas.',
+      'Artigos sobre controle financeiro, educação financeira e inteligência artificial aplicada às suas finanças.',
     images: [absoluteUrl('/brand/cote-finance-ai-logo.png')],
   },
 };
@@ -51,11 +51,11 @@ export default function BlogIndexPage() {
           </span>
           <div className="space-y-4">
             <h1 className="max-w-3xl text-4xl font-bold leading-tight text-white sm:text-5xl">
-              Conteudo pratico para organizar financas, entender gastos e usar IA a seu favor
+              Conteúdo prático para organizar finanças, entender gastos e usar IA a seu favor
             </h1>
             <p className="max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              Este blog combina educacao financeira com aplicacao real do Cote Finance AI para transformar
-              conhecimento em rotina, clareza e melhores decisoes.
+              Este blog combina educação financeira com aplicação real do Cote Finance AI para transformar
+              conhecimento em rotina, clareza e melhores decisões.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -63,7 +63,7 @@ export default function BlogIndexPage() {
               href="/app?auth=signup"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100"
             >
-              Comecar gratis <ArrowRight size={16} />
+              Começar grátis <ArrowRight size={16} />
             </Link>
             <Link
               href="/app"
@@ -81,7 +81,7 @@ export default function BlogIndexPage() {
               SEO e conversao
             </div>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              Artigos desenhados para atrair buscas relevantes e levar o leitor para uma experiencia real no SaaS.
+              Artigos desenhados para atrair buscas relevantes e levar o leitor para uma experiência real no SaaS.
             </p>
           </div>
           <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/50 p-5">
@@ -90,13 +90,13 @@ export default function BlogIndexPage() {
               20 artigos iniciais
             </div>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              Conteudo focado em organizar financas, controlar gastos, economizar melhor e usar o app com mais valor.
+              Conteúdo focado em organizar finanças, controlar gastos, economizar melhor e usar o app com mais valor.
             </p>
           </div>
           <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/50 p-5">
             <div className="text-sm font-semibold text-slate-100">Categorias</div>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              Ferramenta e Educacao Financeira em um acervo unico e integrado ao produto.
+              Ferramenta e Educação Financeira em um acervo único e integrado ao produto.
             </p>
           </div>
         </div>
@@ -106,10 +106,10 @@ export default function BlogIndexPage() {
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200">Destaques</p>
-            <h2 className="mt-2 text-3xl font-bold text-white">Os artigos mais fortes para comecar</h2>
+            <h2 className="mt-2 text-3xl font-bold text-white">Os artigos mais fortes para começar</h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-slate-400">
-            Conteudo editorial com foco em descoberta organica, educacao pratica e conversao natural para o
+            Conteúdo editorial com foco em descoberta orgânica, educação prática e conversão natural para o
             Cote Finance AI.
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function BlogIndexPage() {
             <h2 className="mt-2 text-3xl font-bold text-white">Todos os artigos do blog</h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-slate-400">
-            Cada pagina foi estruturada com metadados, schema Article, OpenGraph e chamada para experimentar o SaaS.
+            Cada página foi estruturada com metadados, schema Article, OpenGraph e chamada para experimentar o SaaS.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">

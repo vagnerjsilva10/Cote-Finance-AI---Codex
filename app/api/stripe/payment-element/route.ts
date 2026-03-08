@@ -35,6 +35,31 @@ type PaymentElementBody = {
 };
 
 type CheckoutIntentType = 'payment' | 'setup' | 'none';
+const STRIPE_REQUEST_TIMEOUT_MS = 15000;
+
+class StripeRequestTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StripeRequestTimeoutError';
+  }
+}
+
+async function withStripeTimeout<T>(promise: Promise<T>, message: string, timeoutMs = STRIPE_REQUEST_TIMEOUT_MS) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new StripeRequestTimeoutError(message)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
 
 function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
   const currentPeriodEndRaw = (subscription as Stripe.Subscription & { current_period_end?: number | null })
@@ -132,22 +157,31 @@ export async function POST(req: Request) {
       );
     }
 
-    const context = await resolveWorkspaceContext(req);
+    const context = await withStripeTimeout(
+      resolveWorkspaceContext(req),
+      'Não foi possível validar o workspace a tempo. Tente novamente.'
+    );
     const workspace = context.workspaces.find((item) => item.id === context.workspaceId);
     const workspaceName = workspace?.name || 'Workspace atual';
-    const customerId = await ensureStripeCustomer({
-      userId: context.userId,
-      email: context.email,
-    });
+    const customerId = await withStripeTimeout(
+      ensureStripeCustomer({
+        userId: context.userId,
+        email: context.email,
+      }),
+      'A criação do cliente Stripe demorou demais. Tente novamente.'
+    );
 
     const existingWorkspaceSubscription = await readWorkspaceSubscription(context.workspaceId);
     const existingSubscriptionId = existingWorkspaceSubscription?.stripe_subscription_id ?? null;
 
     if (existingSubscriptionId) {
       try {
-        const existingSubscription = await stripe.subscriptions.retrieve(existingSubscriptionId, {
-          expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
-        });
+        const existingSubscription = await withStripeTimeout(
+          stripe.subscriptions.retrieve(existingSubscriptionId, {
+            expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+          }),
+          'A validação da assinatura atual demorou demais. Tente novamente.'
+        );
 
         const existingPriceId = existingSubscription.items.data[0]?.price?.id ?? null;
         const requestedSelectionMatches =
@@ -198,34 +232,40 @@ export async function POST(req: Request) {
         }
 
         if (existingSubscription.status === 'incomplete' && !requestedSelectionMatches) {
-          await stripe.subscriptions.cancel(existingSubscription.id);
+          await withStripeTimeout(
+            stripe.subscriptions.cancel(existingSubscription.id),
+            'O ajuste da assinatura anterior demorou demais. Tente novamente.'
+          );
         }
       } catch (error) {
         console.warn('Stripe Payment Element: failed to inspect existing subscription', error);
       }
     }
 
-    const subscription = await stripe.subscriptions.create({
-      customer: customerId,
-      items: [
-        {
-          price: resolved.priceId,
+    const subscription = await withStripeTimeout(
+      stripe.subscriptions.create({
+        customer: customerId,
+        items: [
+          {
+            price: resolved.priceId,
+          },
+        ],
+        payment_behavior: 'default_incomplete',
+        payment_settings: {
+          save_default_payment_method: 'on_subscription',
         },
-      ],
-      payment_behavior: 'default_incomplete',
-      payment_settings: {
-        save_default_payment_method: 'on_subscription',
-      },
-      trial_from_plan: true,
-      metadata: {
-        userId: context.userId,
-        workspaceId: context.workspaceId,
-        plan: resolved.plan,
-        interval: resolved.interval,
-        priceId: resolved.priceId,
-      },
-      expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
-    });
+        trial_from_plan: true,
+        metadata: {
+          userId: context.userId,
+          workspaceId: context.workspaceId,
+          plan: resolved.plan,
+          interval: resolved.interval,
+          priceId: resolved.priceId,
+        },
+        expand: ['latest_invoice.confirmation_secret', 'pending_setup_intent'],
+      }),
+      'A criação da assinatura no Stripe demorou demais. Tente novamente.'
+    );
 
     const checkoutState = serializeSubscriptionState({
       subscription,
@@ -282,6 +322,10 @@ export async function POST(req: Request) {
 
     if (error instanceof Error && error.message === STRIPE_SECRET_KEY_MISSING_ERROR) {
       return NextResponse.json({ error: STRIPE_NOT_CONFIGURED_RESPONSE }, { status: 500 });
+    }
+
+    if (error instanceof StripeRequestTimeoutError) {
+      return NextResponse.json({ error: error.message }, { status: 504 });
     }
 
     console.error('Stripe Payment Element Error:', error);

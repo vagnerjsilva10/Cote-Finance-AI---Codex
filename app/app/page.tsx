@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -493,9 +493,9 @@ const formatEventTimestamp = (isoString: string) => {
 };
 
 const formatSubscriptionDate = (isoString?: string | null) => {
-  if (!isoString) return 'Sem cobranca futura definida';
+  if (!isoString) return 'Sem cobrança futura definida';
   const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return 'Sem cobranca futura definida';
+  if (Number.isNaN(date.getTime())) return 'Sem cobrança futura definida';
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -937,7 +937,7 @@ const SubscriptionView = ({
           <div>
             <h3 className="text-2xl font-black text-white">Minha assinatura</h3>
             <p className="text-sm text-slate-400">
-              Gerencie seu plano, cobranca e status da assinatura sem sair do Cote Finance AI.
+              Gerencie seu plano, cobrança e status da assinatura sem sair do Cote Finance AI.
             </p>
           </div>
         </div>
@@ -954,7 +954,7 @@ const SubscriptionView = ({
         <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-8 text-center">
           <p className="text-base font-semibold text-white">Carregando assinatura...</p>
           <p className="mt-2 text-sm text-slate-400">
-            Estamos sincronizando o status do workspace e a cobranca atual.
+            Estamos sincronizando o status do workspace e a cobrança atual.
           </p>
         </div>
       ) : error ? (
@@ -984,7 +984,7 @@ const SubscriptionView = ({
                   </div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Proxima cobranca</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Próxima cobrança</p>
                   <p className="mt-2 text-lg font-semibold text-white">{formatSubscriptionDate(summary.nextBillingDate)}</p>
                 </div>
               </div>
@@ -995,7 +995,7 @@ const SubscriptionView = ({
                   <p className="mt-2 text-lg font-semibold text-white">{summary.statusLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobranca</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobrança</p>
                   <p className="mt-2 text-lg font-semibold text-white">{summary.billingLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
@@ -1007,11 +1007,11 @@ const SubscriptionView = ({
 
             <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rapido</p>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
-                  Tudo o que importa para este workspace fica visivel aqui. Quando uma acao exigir a Stripe,
-                  abrimos apenas a etapa necessaria.
+                  Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
+                  abrimos apenas a etapa necessária.
                 </p>
               </div>
 
@@ -1028,9 +1028,9 @@ const SubscriptionView = ({
                 <div className="flex items-start gap-3">
                   <CreditCard size={18} className="mt-0.5 text-emerald-300" />
                   <div>
-                    <p className="text-sm font-semibold text-white">Gestao sem sair do app</p>
+                    <p className="text-sm font-semibold text-white">Gestão sem sair do app</p>
                     <p className="mt-1 text-sm text-slate-300">
-                      Status, plano e proximas cobrancas aparecem dentro do SaaS. Portal externo so quando preciso.
+                      Status, plano e próximas cobranças aparecem dentro do SaaS. Portal externo só quando preciso.
                     </p>
                   </div>
                 </div>
@@ -1043,7 +1043,7 @@ const SubscriptionView = ({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Recursos do plano</p>
-                  <h4 className="mt-2 text-xl font-black text-white">Beneficios ativos</h4>
+                  <h4 className="mt-2 text-xl font-black text-white">Benefícios ativos</h4>
                 </div>
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
                   {summary.planLabel}
@@ -1059,7 +1059,7 @@ const SubscriptionView = ({
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Acoes disponiveis</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ações disponíveis</p>
               <h4 className="mt-2 text-xl font-black text-white">Gerenciar assinatura</h4>
               <div className="mt-5 space-y-3">
                 <button
@@ -1096,14 +1096,14 @@ const SubscriptionView = ({
                   disabled={!summary.canManageBilling || actionLoading !== null}
                   className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver historico de cobranca'}</span>
+                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histórico de cobrança'}</span>
                   <ExternalLink size={16} className="text-slate-400" />
                 </button>
               </div>
 
               {summary.cancelAtPeriodEnd ? (
                 <p className="mt-4 text-sm text-amber-200">
-                  O cancelamento esta agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
+                  O cancelamento está agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
                   da data de encerramento.
                 </p>
               ) : null}
@@ -1696,9 +1696,9 @@ const IntegrationsView = ({
       active: false,
       features: [
         'Tudo do Pro',
-        'Insights semanais automaticos',
-        'Planejamento estrategico',
-        'Suporte prioritario',
+        'Insights semanais automáticos',
+        'Planejamento estratégico',
+        'Suporte prioritário',
       ],
     },
   ];
@@ -2009,7 +2009,7 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Dividas</h3>
+        <h3 className="text-xl font-bold text-white">Dívidas</h3>
         <button
           onClick={onAddDebt}
           className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
@@ -3688,7 +3688,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               onClick={nextStep}
               className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
             >
-              {step === steps.length - 1 ? 'Comecar Agora' : 'Proximo'}
+              {step === steps.length - 1 ? 'Começar agora' : 'Próximo'}
             </button>
           </div>
         </div>
@@ -5268,7 +5268,7 @@ export default function App() {
               : `Falha ao abrir portal (HTTP ${response.status}).`;
           if ((response.status === 404 || message.toLowerCase().includes('customer')) && isFreePlan) {
             const shouldUpgrade = window.confirm(
-              'Seu workspace ainda nao possui assinatura paga. Deseja iniciar upgrade agora?'
+              'Seu workspace ainda não possui assinatura paga. Deseja iniciar upgrade agora?'
             );
             if (shouldUpgrade) {
               void handleUpgrade('Pro Mensal');
@@ -5938,7 +5938,7 @@ export default function App() {
       handleOpenCreateDebt();
       return;
     }
-    alert('Use + Nova em Transações, Metas, Dividas ou Investimentos.');
+    alert('Use + Nova em Transações, Metas, Dívidas ou Investimentos.');
   };
 
   if (authLoading) {
@@ -6529,7 +6529,7 @@ export default function App() {
           <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={ReceiptText} label="Transações" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={Target} label="Metas" active={activeTab === 'goals'} onClick={() => { setActiveTab('goals'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={CreditCard} label="Dividas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={CreditCard} label="Dívidas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={TrendingUp} label="Investimentos" active={activeTab === 'investments'} onClick={() => { setActiveTab('investments'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={PieChart} label="Relatórios" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={MessageSquare} label="Assistente IA" active={activeTab === 'assistant'} onClick={() => { setActiveTab('assistant'); setIsAssistantOpen(true); setIsSidebarOpen(false); }} />
@@ -6544,7 +6544,7 @@ export default function App() {
             <p className="text-xs text-slate-400 mb-4 leading-relaxed">
               {isFreePlan
                 ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
-                : 'Seu plano atual possui lancamentos e IA ilimitados.'}
+                : 'Seu plano atual possui lançamentos e IA ilimitados.'}
             </p>
             <button
               onClick={() => {
@@ -6586,7 +6586,7 @@ export default function App() {
                 : activeTab === 'goals'
                 ? 'Metas'
                 : activeTab === 'debts'
-                ? 'Dividas'
+                ? 'Dívidas'
                 : activeTab === 'investments'
                 ? 'Investimentos'
                 : activeTab === 'reports'
@@ -6594,7 +6594,7 @@ export default function App() {
                 : activeTab === 'assistant'
                 ? 'Assistente IA'
                 : activeTab === 'agenda'
-                ? 'Dividas'
+                ? 'Dívidas'
                 : activeTab === 'integrations'
                 ? 'Integrações'
                 : activeTab === 'subscription'

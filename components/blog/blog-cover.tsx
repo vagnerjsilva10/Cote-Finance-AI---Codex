@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { localizeBlogText } from '@/lib/blog/types';
 
 export type BlogAccent = 'emerald' | 'cyan' | 'amber' | 'blue';
 
@@ -38,6 +39,8 @@ type BlogCoverProps = {
 
 export function BlogCover({ title, category, accent, className }: BlogCoverProps) {
   const accentClass = accentClasses[accent];
+  const localizedTitle = localizeBlogText(title);
+  const localizedCategory = localizeBlogText(category);
 
   return (
     <div
@@ -50,7 +53,7 @@ export function BlogCover({ title, category, accent, className }: BlogCoverProps
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,.04)_0%,rgba(2,6,23,.5)_100%)]" />
       <div className="relative z-10 flex h-full min-h-[220px] flex-col justify-between">
         <div className={cn('inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]', accentClass.badge)}>
-          {category}
+          {localizedCategory}
         </div>
 
         <div className="space-y-4">
@@ -64,7 +67,7 @@ export function BlogCover({ title, category, accent, className }: BlogCoverProps
               </div>
             ))}
           </div>
-          <h3 className="max-w-[18ch] text-2xl font-bold leading-tight text-white">{title}</h3>
+          <h3 className="max-w-[18ch] text-2xl font-bold leading-tight text-white">{localizedTitle}</h3>
         </div>
       </div>
     </div>

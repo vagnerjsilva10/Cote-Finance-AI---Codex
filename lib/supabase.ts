@@ -5,7 +5,7 @@ type SupabaseClientInstance = ReturnType<typeof createClient>;
 let supabaseClient: SupabaseClientInstance | null = null;
 
 export const SUPABASE_CONFIG_MISSING_ERROR =
-  'Supabase nao configurado. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.';
+  'Supabase não configurado. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.';
 
 function readSupabaseEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

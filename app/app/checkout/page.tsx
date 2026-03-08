@@ -49,6 +49,67 @@ type EmbeddedCheckoutResponse = {
 type FormStatus = 'idle' | 'submitting' | 'success';
 
 const stripePromise = getStripeJs();
+const CHECKOUT_INIT_TIMEOUT_MS = 20000;
+
+function createTimeoutError(message: string) {
+  const error = new Error(message);
+  error.name = 'TimeoutError';
+  return error;
+}
+
+async function withClientTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeoutId: ReturnType<typeof window.setTimeout> | null = null;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = window.setTimeout(() => reject(createTimeoutError(message)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== null) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+}
+
+async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as T & { error?: string; code?: string };
+
+    if (!response.ok) {
+      const error = new Error(
+        typeof payload?.error === 'string'
+          ? payload.error
+          : `Falha ao preparar checkout (HTTP ${response.status}).`
+      );
+      (error as Error & { status?: number; code?: string }).status = response.status;
+      (error as Error & { status?: number; code?: string }).code = payload?.code;
+      throw error;
+    }
+
+    return payload;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw createTimeoutError(
+        'O checkout demorou demais para responder. Tente novamente ou use o checkout legado.'
+      );
+    }
+
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
 
 function buildCacheKey(plan: BillingPlanCode, interval: BillingIntervalCode, workspaceId?: string | null) {
   return `cote-payment-element:${workspaceId || 'default'}:${plan}:${interval}`;
@@ -112,14 +173,14 @@ function EmbeddedPaymentForm(props: {
     try {
       const paymentElement = elements.getElement(PaymentElement);
       if (!paymentElement) {
-        setInlineError('O formulario de pagamento ainda nao terminou de carregar. Aguarde alguns segundos e tente novamente.');
+        setInlineError('O formulário de pagamento ainda não terminou de carregar. Aguarde alguns segundos e tente novamente.');
         setStatus('idle');
         return;
       }
 
       const submission = await elements.submit();
       if (submission.error) {
-        setInlineError(submission.error.message || 'Nao foi possivel validar o formulario de pagamento.');
+        setInlineError(submission.error.message || 'Não foi possível validar o formulário de pagamento.');
         setStatus('idle');
         return;
       }
@@ -142,7 +203,7 @@ function EmbeddedPaymentForm(props: {
             });
 
       if (result.error) {
-        setInlineError(result.error.message || 'Nao foi possivel confirmar o pagamento.');
+        setInlineError(result.error.message || 'Não foi possível confirmar o pagamento.');
         setStatus('idle');
         return;
       }
@@ -182,7 +243,7 @@ function EmbeddedPaymentForm(props: {
         {status === 'submitting' ? 'Confirmando pagamento...' : props.submitLabel}
       </button>
       {!isPaymentElementReady ? (
-        <p className="text-center text-xs text-slate-500">Carregando formulario de pagamento seguro...</p>
+        <p className="text-center text-xs text-slate-500">Carregando formulário de pagamento seguro...</p>
       ) : null}
       {inlineError ? <p className="text-center text-sm text-rose-300">{inlineError}</p> : null}
       <p className="text-center text-xs text-slate-400">{props.helperText}</p>
@@ -315,7 +376,7 @@ function CheckoutPageContent() {
 
       const payload = (await response.json().catch(() => ({}))) as { error?: string; url?: string };
       if (!response.ok || !payload.url) {
-        throw new Error(payload.error || 'Nao foi possivel abrir o checkout legado.');
+        throw new Error(payload.error || 'Não foi possível abrir o checkout legado.');
       }
 
       window.location.href = payload.url;
@@ -347,7 +408,7 @@ function CheckoutPageContent() {
 
       const payload = (await response.json().catch(() => ({}))) as { error?: string; url?: string };
       if (!response.ok || !payload.url) {
-        throw new Error(payload.error || 'Nao foi possivel abrir o portal do cliente.');
+        throw new Error(payload.error || 'Não foi possível abrir o portal do cliente.');
       }
 
       window.location.href = payload.url;
@@ -360,7 +421,13 @@ function CheckoutPageContent() {
 
   React.useEffect(() => {
     if (!plan || !interval) {
-      setError('Selecao de plano invalida. Volte e escolha um plano valido.');
+      setError('Seleção de plano inválida. Volte e escolha um plano válido.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!publishableKey) {
+      setError('Checkout transparente indisponível no momento. Use o checkout legado enquanto a chave pública do Stripe não estiver configurada.');
       setIsLoading(false);
       return;
     }
@@ -370,13 +437,13 @@ function CheckoutPageContent() {
     const resolveRedirectResult = async () => {
       const stripe = await stripePromise;
       if (!stripe) {
-        throw new Error('Stripe.js indisponivel. Verifique NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.');
+        throw new Error('Stripe.js indisponível. Verifique NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.');
       }
 
       if (paymentIntentClientSecret) {
         const result = await stripe.retrievePaymentIntent(paymentIntentClientSecret);
         if (result.error) {
-          throw new Error(result.error.message || 'Nao foi possivel confirmar o pagamento.');
+          throw new Error(result.error.message || 'Não foi possível confirmar o pagamento.');
         }
 
         const status = result.paymentIntent?.status;
@@ -384,33 +451,33 @@ function CheckoutPageContent() {
           clearCachedCheckout(plan, interval, workspaceId);
           setSuccessMessage(
             status === 'processing'
-              ? 'Pagamento recebido e em processamento. Seu workspace sera atualizado pelo webhook do Stripe.'
-              : 'Pagamento confirmado. O plano do workspace sera atualizado em instantes.'
+              ? 'Pagamento recebido e em processamento. Seu workspace será atualizado pelo webhook do Stripe.'
+              : 'Pagamento confirmado. O plano do workspace será atualizado em instantes.'
           );
           window.history.replaceState({}, '', getCheckoutPath({ plan, interval, workspaceId }));
           return;
         }
 
-        throw new Error('O pagamento nao foi concluido. Tente novamente.');
+        throw new Error('O pagamento não foi concluído. Tente novamente.');
       }
 
       if (setupIntentClientSecret) {
         const result = await stripe.retrieveSetupIntent(setupIntentClientSecret);
         if (result.error) {
-          throw new Error(result.error.message || 'Nao foi possivel confirmar o metodo de pagamento.');
+          throw new Error(result.error.message || 'Não foi possível confirmar o método de pagamento.');
         }
 
         const status = result.setupIntent?.status;
         if (status === 'succeeded' || status === 'processing') {
           clearCachedCheckout(plan, interval, workspaceId);
           setSuccessMessage(
-            'Metodo de pagamento confirmado. O Stripe vai ativar a assinatura do workspace via webhook.'
+            'Método de pagamento confirmado. O Stripe vai ativar a assinatura do workspace via webhook.'
           );
           window.history.replaceState({}, '', getCheckoutPath({ plan, interval, workspaceId }));
           return;
         }
 
-        throw new Error('O metodo de pagamento nao foi confirmado. Tente novamente.');
+        throw new Error('O método de pagamento não foi confirmado. Tente novamente.');
       }
     };
 
@@ -434,56 +501,52 @@ function CheckoutPageContent() {
 
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await withClientTimeout(
+          supabase.auth.getSession(),
+          8000,
+          'Não foi possível validar sua sessão a tempo. Faça login novamente.'
+        );
 
         if (!session?.access_token) {
           window.location.href = `/app?auth=signup&plan=${encodeURIComponent(authPlanLabel || 'Pro Mensal')}`;
           return;
         }
 
-        const response = await fetch('/api/stripe/payment-element', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            ...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
+        const typedPayload = await fetchJsonWithTimeout<
+          EmbeddedCheckoutResponse & { error?: string; code?: string; currentPlan?: string | null }
+        >(
+          '/api/stripe/payment-element',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+              ...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
+            },
+            body: JSON.stringify({
+              plan,
+              interval,
+            }),
           },
-          body: JSON.stringify({
-            plan,
-            interval,
-          }),
-        });
+          CHECKOUT_INIT_TIMEOUT_MS
+        );
 
-        const payload = (await response.json().catch(() => ({}))) as
-          | (EmbeddedCheckoutResponse & { error?: string; code?: string; currentPlan?: string | null })
-          | { error?: string; code?: string; currentPlan?: string | null };
-
-        if (!response.ok) {
-          if (response.status === 409 && payload.code === 'ACTIVE_SUBSCRIPTION_EXISTS') {
-            setError(payload.error || 'Este workspace ja possui uma assinatura ativa.');
-            return;
-          }
-
-          throw new Error(
-            typeof payload?.error === 'string'
-              ? payload.error
-              : `Falha ao preparar checkout (HTTP ${response.status}).`
-          );
-        }
-
-        const typedPayload = payload as EmbeddedCheckoutResponse;
         cacheCheckout(typedPayload);
 
         if (!isCancelled) {
           if (!typedPayload.requiresConfirmation) {
             clearCachedCheckout(plan, interval, typedPayload.workspaceId);
-            setSuccessMessage('A assinatura nao exige confirmacao adicional. O workspace sera atualizado em instantes.');
+            setSuccessMessage('A assinatura não exige confirmação adicional. O workspace será atualizado em instantes.');
           }
           setCheckoutData(typedPayload);
         }
       } catch (checkoutError) {
         if (!isCancelled) {
-          setError(checkoutError instanceof Error ? checkoutError.message : 'Falha ao abrir checkout.');
+          const message =
+            checkoutError instanceof Error
+              ? checkoutError.message
+              : 'Falha ao abrir checkout.';
+          setError(message);
         }
       } finally {
         if (!isCancelled) {
@@ -503,6 +566,7 @@ function CheckoutPageContent() {
     paymentIntentClientSecret,
     plan,
     setupIntentClientSecret,
+    publishableKey,
     workspaceId,
   ]);
 
@@ -520,34 +584,34 @@ function CheckoutPageContent() {
   const checkoutWorkspaceName = checkoutData?.workspaceName || 'Meu Workspace';
   const checkoutPlanDescription =
     plan === 'PREMIUM'
-      ? 'Camada avancada de inteligencia financeira para quem quer mais previsibilidade e acompanhamento proativo.'
-      : 'Controle financeiro completo com inteligencia artificial.';
+      ? 'Camada avançada de inteligência financeira para quem quer mais previsibilidade e acompanhamento proativo.'
+      : 'Controle financeiro completo com inteligência artificial.';
   const checkoutBenefits =
     plan === 'PREMIUM'
       ? [
           'Tudo do plano Pro',
           'Insights financeiros mais profundos',
-          'Previsoes de saldo e alertas inteligentes',
-          'Analises avancadas de despesas',
-          'Suporte prioritario com acompanhamento acelerado',
+          'Previsões de saldo e alertas inteligentes',
+          'Análises avançadas de despesas',
+          'Suporte prioritário com acompanhamento acelerado',
         ]
       : [
-          'Lancamentos ilimitados',
-          'Relatorios completos e graficos avancados',
-          'Analises inteligentes com IA',
+          'Lançamentos ilimitados',
+          'Relatórios completos e gráficos avançados',
+          'Análises inteligentes com IA',
           'Metas financeiras ilimitadas',
-          'Acompanhamento de dividas',
+          'Acompanhamento de dívidas',
           'Controle de investimentos',
-          'Suporte prioritario por e-mail',
+          'Suporte prioritário por e-mail',
         ];
   const checkoutSecurityItems = [
-    'Cobranca recorrente automatica',
+    'Cobrança recorrente automática',
     'Cancele quando quiser',
     'Pagamento protegido pela Stripe',
-    'Seus dados sao criptografados',
+    'Seus dados são criptografados',
   ];
   const subscriptionCenterPath = '/app?tab=subscription';
-  const submitLabel = `Comecar meu plano ${checkoutPlanName}`;
+  const submitLabel = `Começar meu plano ${checkoutPlanName}`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -586,7 +650,7 @@ function CheckoutPageContent() {
                   Checkout seguro
                 </h1>
                 <p className="max-w-2xl text-base text-slate-300 md:text-lg">
-                  Finalize sua assinatura em poucos segundos. Seu pagamento e processado com seguranca pela Stripe.
+                  Finalize sua assinatura em poucos segundos. Seu pagamento é processado com segurança pela Stripe.
                 </p>
               </div>
 
@@ -606,7 +670,7 @@ function CheckoutPageContent() {
                     {checkoutWorkspaceName}
                   </p>
                   <p className="mt-2 text-sm text-slate-300">
-                    Esta assinatura sera vinculada a este workspace. Voce podera gerenciar tudo depois na sua area de assinatura.
+                    Esta assinatura será vinculada a este workspace. Você poderá gerenciar tudo depois na sua área de assinatura.
                   </p>
                 </div>
               </div>
@@ -614,7 +678,7 @@ function CheckoutPageContent() {
               {summaryPlan ? (
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-5">
-                    <p className="text-sm font-semibold text-white">O que voce desbloqueia com o {checkoutPlanName}</p>
+                    <p className="text-sm font-semibold text-white">O que você desbloqueia com o {checkoutPlanName}</p>
                     <ul className="mt-4 space-y-3">
                       {checkoutBenefits.map((feature) => (
                         <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
@@ -664,10 +728,10 @@ function CheckoutPageContent() {
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento seguro</p>
                 <h2 className="text-3xl font-black text-white">Finalize sua assinatura</h2>
                 <p className="text-sm text-slate-400">
-                  Preencha os dados de pagamento para ativar seu plano {checkoutPlanName} com seguranca.
+                  Preencha os dados de pagamento para ativar seu plano {checkoutPlanName} com segurança.
                 </p>
                 <p className="text-sm text-slate-300">
-                  Comece hoje a ter mais clareza sobre seu dinheiro e acesso a analises mais inteligentes.
+                  Comece hoje a ter mais clareza sobre seu dinheiro e acesso a análises mais inteligentes.
                 </p>
               </div>
 
@@ -706,7 +770,7 @@ function CheckoutPageContent() {
                 </div>
               ) : error ? (
                 <div className="space-y-5 rounded-[1.6rem] border border-rose-400/20 bg-rose-500/10 p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-rose-200">Checkout indisponivel</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-rose-200">Checkout indisponível</p>
                   <p className="text-base text-slate-100">{error}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link
@@ -738,7 +802,7 @@ function CheckoutPageContent() {
                     intentType={checkoutData.intentType}
                     returnUrl={checkoutReturnUrl}
                     submitLabel={submitLabel}
-                    helperText="Voce pode cancelar sua assinatura a qualquer momento."
+                    helperText="Você pode cancelar sua assinatura a qualquer momento."
                     onSuccess={() => {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
                       setSuccessMessage('Pagamento enviado. O Stripe esta finalizando a assinatura deste workspace.');
@@ -752,8 +816,8 @@ function CheckoutPageContent() {
                     Assinatura pronta
                   </div>
                   <p className="text-base text-slate-100">
-                    A assinatura deste workspace nao exige confirmacao adicional. O webhook do Stripe vai consolidar o
-                    plano automaticamente.
+                    A assinatura deste workspace não exige confirmação adicional. O webhook do Stripe vai consolidar o
+                    plano automáticamente.
                   </p>
                   <Link
                     href={subscriptionCenterPath}
@@ -765,7 +829,7 @@ function CheckoutPageContent() {
               ) : (
                 <div className="space-y-4 rounded-[1.6rem] border border-white/10 bg-slate-950/60 p-6">
                   <p className="text-sm text-slate-300">
-                    Nao foi possivel iniciar o Payment Element com a configuracao atual.
+                    Não foi possível iniciar o Payment Element com a configuração atual.
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <button
@@ -787,8 +851,8 @@ function CheckoutPageContent() {
 
               {showLegacyFallback ? (
                 <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY nao esta definida. O fallback legado continua disponivel enquanto o
-                  Payment Element nao pode ser renderizado.
+                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY não está definida. O fallback legado continua disponível enquanto o
+                  Payment Element não pode ser renderizado.
                 </div>
               ) : null}
 
@@ -804,7 +868,7 @@ function CheckoutPageContent() {
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Cobranca</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Cobrança</p>
                     <p className="mt-2 text-lg font-semibold text-white">
                       {checkoutPriceLabel}
                     </p>

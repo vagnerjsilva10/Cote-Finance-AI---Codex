@@ -3,9 +3,9 @@ import { Check, Sparkles } from 'lucide-react';
 
 const benefits = [
   'Controle de gastos em um painel claro e atualizado',
-  'Insights com IA para entender padroes financeiros',
-  'Metas financeiras com acompanhamento continuo',
-  'Gestao de dividas e investimentos no mesmo lugar',
+  'Insights com IA para entender padrões financeiros',
+  'Metas financeiras com acompanhamento contínuo',
+  'Gestão de dívidas e investimentos no mesmo lugar',
 ];
 
 export function BlogArticleCta() {
@@ -16,7 +16,7 @@ export function BlogArticleCta() {
       </div>
       <h2 className="mt-5 text-3xl font-bold text-white">Experimente o Cote Finance AI gratuitamente</h2>
       <p className="mt-4 max-w-3xl text-base leading-7 text-emerald-50/90">
-        Transforme conhecimento em acao com um sistema que organiza suas financas, mostra o que realmente importa e ajuda voce a tomar decisoes melhores todos os meses.
+        Transforme conhecimento em ação com um sistema que organiza suas finanças, mostra o que realmente importa e ajuda você a tomar decisões melhores todos os meses.
       </p>
       <ul className="mt-6 grid gap-3 text-sm text-slate-100 md:grid-cols-2">
         {benefits.map((benefit) => (
@@ -31,7 +31,7 @@ export function BlogArticleCta() {
           href="/app?auth=signup"
           className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100"
         >
-          Comecar gratis
+          Começar grátis
         </Link>
         <Link
           href="/app"

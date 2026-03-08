@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import type { BlogArticleSummary } from '@/lib/blog/types';
+import { localizeBlogText, type BlogArticleSummary } from '@/lib/blog/types';
 import { BlogCover } from './blog-cover';
 
 type BlogCardProps = {
@@ -8,6 +8,9 @@ type BlogCardProps = {
 };
 
 export function BlogCard({ article }: BlogCardProps) {
+  const localizedTitle = localizeBlogText(article.title);
+  const localizedDescription = localizeBlogText(article.description);
+
   return (
     <article className="group overflow-hidden rounded-[1.9rem] border border-white/10 bg-slate-900/55 transition-transform hover:-translate-y-1">
       <Link href={`/blog/${article.slug}`} className="block">
@@ -19,9 +22,9 @@ export function BlogCard({ article }: BlogCardProps) {
             <span>{article.readingTimeLabel}</span>
           </div>
           <h2 className="text-2xl font-semibold leading-tight text-white transition-colors group-hover:text-emerald-200">
-            {article.title}
+            {localizedTitle}
           </h2>
-          <p className="text-sm leading-7 text-slate-300">{article.description}</p>
+          <p className="text-sm leading-7 text-slate-300">{localizedDescription}</p>
           <div className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-300">
             Ler artigo <ArrowRight size={15} />
           </div>

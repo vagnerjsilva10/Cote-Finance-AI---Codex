@@ -42,7 +42,7 @@ export function BlogHeader() {
             href="/app?auth=signup"
             className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
           >
-            Comecar gratis
+            Começar grátis
           </Link>
         </div>
       </div>
