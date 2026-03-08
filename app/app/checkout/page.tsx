@@ -29,6 +29,7 @@ import {
   type BillingIntervalCode,
   type BillingPlanCode,
 } from '@/lib/billing/plans';
+import type { Appearance } from '@stripe/stripe-js';
 
 type CheckoutIntentType = 'payment' | 'setup' | 'none';
 type StripeMode = 'live' | 'test' | 'unknown';
@@ -382,9 +383,9 @@ function CheckoutPageContent() {
     return interval === 'ANNUAL' ? 'Pro Anual' : 'Pro Mensal';
   }, [interval, plan]);
 
-  const appearance = React.useMemo(
+  const appearance = React.useMemo<Appearance>(
     () => ({
-      theme: (isDarkTheme ? 'night' : 'stripe') as const,
+      theme: isDarkTheme ? 'night' : 'stripe',
       variables: {
         colorPrimary: '#10b981',
         colorBackground: isDarkTheme ? '#020617' : '#ffffff',
