@@ -45,37 +45,70 @@ export default function BlogIndexPage() {
   return (
     <BlogShell>
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8">
-        <div className="max-w-4xl space-y-5">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-            <BookOpen size={14} /> Blog Cote Finance AI
-          </span>
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">
-              Controle melhor seu dinheiro com conhecimento prático
-            </h1>
-            <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              Aprenda a organizar suas finanças, entender seus gastos e tomar decisões financeiras mais inteligentes.
-            </p>
-            <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              O blog do Cote Finance AI reúne guias práticos, educação financeira e estratégias reais para ajudar você a
-              ter mais clareza sobre seu dinheiro.
-            </p>
+        <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
+          <div className="max-w-4xl space-y-5">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+              <BookOpen size={14} /> Blog Cote Finance AI
+            </span>
+            <div className="space-y-4">
+              <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">
+                Controle melhor seu dinheiro com conhecimento prático
+              </h1>
+              <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+                Aprenda a organizar suas finanças, entender seus gastos e tomar decisões financeiras mais inteligentes.
+              </p>
+              <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+                O blog do Cote Finance AI reúne guias práticos, educação financeira e estratégias reais para ajudar você a
+                ter mais clareza sobre seu dinheiro.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+              >
+                Começar grátis <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/app"
+                className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
+              >
+                Ver o produto
+              </Link>
+            </div>
+            <p className="text-sm font-medium text-slate-500">Leva menos de 1 minuto para começar.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
-            >
-              Começar grátis <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/app"
-              className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
-            >
-              Ver o produto
-            </Link>
-          </div>
-          <p className="text-sm font-medium text-slate-500">Leva menos de 1 minuto para começar.</p>
+
+          <aside className="rounded-[1.75rem] border border-slate-200 bg-[#f7f8f3] p-5 shadow-sm">
+            <div className="rounded-[1.4rem] border border-slate-200 bg-white p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">No blog você encontra</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Guias</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">Controle de gastos</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Educação</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">Planejamento financeiro</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Prática</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">Exemplos do dia a dia</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Ação</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">Passos para aplicar hoje</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-white px-5 py-4">
+              <p className="text-sm font-semibold text-slate-950">Leitura pensada para ser útil</p>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                Menos teoria vazia e mais orientação prática para ajudar você a entender o que fazer com o seu dinheiro.
+              </p>
+            </div>
+          </aside>
         </div>
       </section>
 
