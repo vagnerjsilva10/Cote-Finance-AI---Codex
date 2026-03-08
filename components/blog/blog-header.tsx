@@ -1,13 +1,27 @@
-﻿import Image from 'next/image';
-import Link from 'next/link';
+﻿'use client';
 
-export function BlogHeader() {
+import Image from 'next/image';
+import Link from 'next/link';
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button';
+import { useTheme } from '@/components/theme/theme-provider';
+
+type BlogHeaderProps = {
+  activeItem?: 'blog' | 'help';
+};
+
+export function BlogHeader({ activeItem = 'blog' }: BlogHeaderProps) {
+  const { theme, mounted } = useTheme();
+  const isDarkTheme = !mounted || theme === 'dark';
+  const brandLogo = isDarkTheme
+    ? '/brand/cote-finance-ai-logo.svg'
+    : '/brand/cote-finance-ai-logo-black.svg';
+
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
+    <header className="theme-blog-header sticky top-0 z-40 border-b border-slate-200/80 bg-[#f7f8f3]/92 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-4">
           <Image
-            src="/brand/cote-finance-ai-logo-black.svg"
+            src={brandLogo}
             alt="Cote Finance AI - By Cote Juros"
             width={720}
             height={192}
@@ -28,10 +42,24 @@ export function BlogHeader() {
           <Link href="/" className="transition-colors hover:text-slate-950">
             Início
           </Link>
-          <Link href="/blog" className="font-semibold text-slate-950 transition-colors hover:text-emerald-700">
+          <Link
+            href="/blog"
+            className={
+              activeItem === 'blog'
+                ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
+                : 'transition-colors hover:text-slate-950'
+            }
+          >
             Blog
           </Link>
-          <Link href="/central-de-ajuda" className="transition-colors hover:text-slate-950">
+          <Link
+            href="/central-de-ajuda"
+            className={
+              activeItem === 'help'
+                ? 'font-semibold text-slate-950 transition-colors hover:text-emerald-700'
+                : 'transition-colors hover:text-slate-950'
+            }
+          >
             Ajuda
           </Link>
           <Link href="/termos-de-uso" className="transition-colors hover:text-slate-950">
@@ -43,9 +71,10 @@ export function BlogHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggleButton className="theme-toggle-surface" />
           <Link
             href="/app"
-            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
+            className="theme-blog-action rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
           >
             Entrar
           </Link>

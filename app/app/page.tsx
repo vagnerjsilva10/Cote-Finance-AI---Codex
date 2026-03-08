@@ -27,8 +27,6 @@ import {
   Plus,
   LogOut,
   Smartphone,
-  Moon,
-  Sun,
   X,
   Menu,
   Trash2,
@@ -56,6 +54,8 @@ import {
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button';
+import { useTheme } from '@/components/theme/theme-provider';
 
 // --- Types ---
 
@@ -1310,7 +1310,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
           </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <h3 className="text-lg font-bold text-white mb-6">Insights do mÃªs</h3>
           <div className="space-y-4">
             <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
@@ -1353,7 +1353,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <h3 className="text-lg font-bold text-white">Ãšltimas transaÃ§Ãµes</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
@@ -1580,7 +1580,7 @@ const TransactionsView = ({
         })}
       </div>
 
-      <div className="hidden lg:block bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="theme-table-surface hidden lg:block bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-800/30">
@@ -1924,7 +1924,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => (
       </div>
     </div>
 
-    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -2023,11 +2023,11 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Divida Total</p>
           <p className="text-2xl font-black text-white">{formatCurrency(totalRemaining)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Valor Quitado</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalPaid)}</p>
         </div>
@@ -2037,7 +2037,7 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -2262,7 +2262,7 @@ const InvestmentsView = ({
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -2525,7 +2525,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+      <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
         <div className="mb-5">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Receita x Despesa (12 meses)</h4>
         </div>
@@ -2560,7 +2560,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Gastos por categoria</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -2606,7 +2606,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Taxa de economia (6 meses)</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -2642,7 +2642,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+      <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Insights da IA</h4>
           <button
@@ -2765,11 +2765,11 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
@@ -2920,11 +2920,11 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: Inve
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
@@ -3089,11 +3089,11 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">{initialData ? 'Editar DÃ­vida' : 'Nova DÃ­vida'}</h3>
@@ -3373,11 +3373,11 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-lg w-full shadow-2xl my-6"
+        className="theme-modal-surface bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-lg w-full shadow-2xl my-6"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova TransaÃ§Ã£o'}</h3>
@@ -3651,11 +3651,11 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+    <div className="theme-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">
@@ -3710,6 +3710,9 @@ const LoginView = ({
   onLoginSuccess: (user: any) => void;
   initialMode?: 'login' | 'signup';
 }) => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+  const brandLogo = isDarkMode ? '/brand/cote-finance-ai-logo.svg' : '/brand/cote-finance-ai-logo-black.svg';
   const [loginMethod, setLoginMethod] = React.useState<'password' | 'otp'>('password');
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
@@ -3953,16 +3956,20 @@ const LoginView = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-8">
+    <div className="theme-app-shell min-h-screen bg-slate-950 px-4 py-8">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-[420px] rounded-[2rem] border border-slate-800 bg-slate-900/95 p-7 shadow-[0_32px_120px_-60px_rgba(16,185,129,0.45)]"
       >
-        <div className="flex flex-col items-center mb-8">
+        <div className="mb-8">
+          <div className="mb-5 flex justify-end">
+            <ThemeToggleButton className="theme-toggle-surface border-slate-700 bg-slate-800 px-3 py-2" showLabel />
+          </div>
+          <div className="flex flex-col items-center">
           <Image
-            src="/brand/cote-finance-ai-logo.svg"
+            src={brandLogo}
             alt="Cote Finance AI - By Cote Juros"
             width={480}
             height={128}
@@ -3981,6 +3988,7 @@ const LoginView = ({
                 : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
+        </div>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
@@ -4298,6 +4306,9 @@ const LoginView = ({
 // --- Main Layout ---
 
 export default function App() {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+  const brandLogo = isDarkMode ? '/brand/cote-finance-ai-logo.svg' : '/brand/cote-finance-ai-logo-black.svg';
   const [user, setUser] = React.useState<any>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
   const setupTokenRef = React.useRef<string | null>(null);
@@ -4629,7 +4640,6 @@ export default function App() {
   const [editingInvestmentId, setEditingInvestmentId] = React.useState<string | number | null>(null);
   const [isDebtModalOpen, setIsDebtModalOpen] = React.useState(false);
   const [editingDebtId, setEditingDebtId] = React.useState<string | number | null>(null);
-  const [isDarkMode, setIsDarkMode] = React.useState(true);
   const [isWhatsAppConnected, setIsWhatsAppConnected] = React.useState(false);
   const [isConnectingWhatsApp, setIsConnectingWhatsApp] = React.useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
@@ -4895,10 +4905,6 @@ export default function App() {
   }, [aiUsageStorageKey]);
 
   React.useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-  }, [isDarkMode]);
-
-  React.useEffect(() => {
     if (!user) return;
     setSettingsName((prev) => prev || user.user_metadata?.full_name || user.email?.split('@')[0] || '');
     setSettingsEmail((prev) => prev || user.email || '');
@@ -5014,10 +5020,6 @@ export default function App() {
   }, [onboardingChecklist]);
 
   const onboardingFlowProgress = Math.round(((onboardingStep + 1) / 9) * 100);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
 
   const handleSaveSettings = async () => {
     const normalizedPhone = settingsWhatsApp.replace(/[^\d+]/g, '');
@@ -6005,7 +6007,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="theme-app-shell min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="size-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -6017,7 +6019,7 @@ export default function App() {
 
   return (
     <AppErrorBoundary>
-      <div className="flex h-screen overflow-hidden bg-slate-950">
+      <div className="theme-app-shell flex h-screen overflow-hidden bg-slate-950">
       {showTutorial && <OnboardingTutorial onComplete={() => setShowTutorial(false)} />}
 
       <AnimatePresence>
@@ -6576,7 +6578,7 @@ export default function App() {
       >
         <div className="p-6 flex items-center justify-between" id="sidebar-logo">
           <Image
-            src="/brand/cote-finance-ai-logo.svg"
+            src={brandLogo}
             alt="Cote Finance AI - By Cote Juros"
             width={420}
             height={112}
@@ -6707,12 +6709,7 @@ export default function App() {
               <ArrowUpRight size={14} /> {isFreePlan ? 'Upgrade' : 'Assinatura'}
             </button>
 
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-500 hover:text-white transition-all"
-            >
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+            <ThemeToggleButton className="theme-toggle-surface p-2" />
 
             <button
               onClick={handleOpenNew}

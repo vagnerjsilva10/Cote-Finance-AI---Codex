@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button';
+import { useTheme } from '@/components/theme/theme-provider';
 
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
 const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
@@ -116,6 +118,9 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+  const brandLogo = isDarkMode ? '/brand/cote-finance-ai-logo.svg' : '/brand/cote-finance-ai-logo-black.svg';
   const router = useRouter();
   const [isBusy, setIsBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -250,10 +255,12 @@ export default function LandingPage() {
 
   return (
     <div
-      className={`${displayFont.variable} ${bodyFont.variable} min-h-screen bg-slate-950 text-slate-100`}
+      className={`theme-landing-shell ${displayFont.variable} ${bodyFont.variable} min-h-screen ${
+        isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      }`}
       style={{ fontFamily: 'var(--font-body)' }}
     >
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,.18),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(59,130,246,.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
+      <div className="theme-landing-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,.18),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(59,130,246,.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
 
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:gap-6 lg:py-4">
@@ -267,7 +274,7 @@ export default function LandingPage() {
               className="h-11 w-11 sm:hidden"
             />
             <Image
-              src="/brand/cote-finance-ai-logo.svg"
+              src={brandLogo}
               alt="Cote Finance AI - By Cote Juros"
               width={560}
               height={150}
@@ -295,6 +302,7 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <ThemeToggleButton className="theme-toggle-surface px-3 py-2" />
             <button
               onClick={() => openAuth('login')}
               className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 sm:min-w-[112px] sm:px-4 sm:text-sm"

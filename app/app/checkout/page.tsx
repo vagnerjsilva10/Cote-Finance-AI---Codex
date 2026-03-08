@@ -18,6 +18,8 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { getStripeJs, getStripePublishableKey } from '@/lib/stripe-client';
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button';
+import { useTheme } from '@/components/theme/theme-provider';
 import {
   BILLING_PLAN_DETAILS,
   formatBillingPrice,
@@ -298,25 +300,34 @@ function EmbeddedPaymentForm(props: {
 }
 
 function CheckoutLoadingShell() {
+  const { theme, mounted } = useTheme();
+  const isDarkTheme = !mounted || theme === 'dark';
+  const brandLogo = isDarkTheme
+    ? '/brand/cote-finance-ai-logo.svg'
+    : '/brand/cote-finance-ai-logo-black.svg';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(16,185,129,.16),transparent_32%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,.12),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_45%,#0b1120_100%)]" />
+    <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
+      <div className="theme-checkout-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(16,185,129,.16),transparent_32%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,.12),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_45%,#0b1120_100%)]" />
       <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 lg:px-10">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/app" className="inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-white">
             <ArrowLeft className="size-4" />
             Voltar ao painel
           </Link>
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/brand/cote-finance-ai-logo.svg"
-              alt="Cote Finance AI - By Cote Juros"
-              width={560}
-              height={150}
-              priority
-              className="h-24 w-auto"
-            />
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggleButton className="theme-toggle-surface" />
+            <Link href="/" className="flex items-center">
+              <Image
+                src={brandLogo}
+                alt="Cote Finance AI - By Cote Juros"
+                width={560}
+                height={150}
+                priority
+                className="h-24 w-auto"
+              />
+            </Link>
+          </div>
         </div>
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="rounded-[2rem] border border-white/10 bg-slate-900/65 p-7 backdrop-blur-xl">
@@ -345,6 +356,8 @@ function CheckoutLoadingShell() {
 }
 
 function CheckoutPageContent() {
+  const { theme, mounted } = useTheme();
+  const isDarkTheme = !mounted || theme === 'dark';
   const searchParams = useSearchParams();
   const plan = normalizeBillingPlan(searchParams.get('plan'));
   const interval = normalizeBillingInterval(searchParams.get('interval'));
@@ -371,29 +384,35 @@ function CheckoutPageContent() {
 
   const appearance = React.useMemo(
     () => ({
-      theme: 'night' as const,
+      theme: (isDarkTheme ? 'night' : 'stripe') as const,
       variables: {
         colorPrimary: '#10b981',
-        colorBackground: '#020617',
-        colorText: '#e2e8f0',
+        colorBackground: isDarkTheme ? '#020617' : '#ffffff',
+        colorText: isDarkTheme ? '#e2e8f0' : '#0f172a',
         colorDanger: '#fb7185',
-        colorTextSecondary: '#94a3b8',
+        colorTextSecondary: isDarkTheme ? '#94a3b8' : '#64748b',
         borderRadius: '18px',
         fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       },
       rules: {
         '.Input, .Block, .Tab': {
-          backgroundColor: '#0f172a',
-          border: '1px solid rgba(148, 163, 184, 0.16)',
+          backgroundColor: isDarkTheme ? '#0f172a' : '#f8fafc',
+          border: isDarkTheme
+            ? '1px solid rgba(148, 163, 184, 0.16)'
+            : '1px solid rgba(148, 163, 184, 0.24)',
           boxShadow: 'none',
         },
         '.Label': {
-          color: '#cbd5e1',
+          color: isDarkTheme ? '#cbd5e1' : '#334155',
         },
       },
     }),
-    []
+    [isDarkTheme]
   );
+
+  const brandLogo = isDarkTheme
+    ? '/brand/cote-finance-ai-logo.svg'
+    : '/brand/cote-finance-ai-logo-black.svg';
 
   const handleLegacyCheckout = React.useCallback(async () => {
     if (!plan || !interval) return;
@@ -686,8 +705,8 @@ function CheckoutPageContent() {
   const submitLabel = `Começar meu plano ${checkoutPlanName}`;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(16,185,129,.16),transparent_32%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,.12),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_45%,#0b1120_100%)]" />
+    <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
+      <div className="theme-checkout-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(16,185,129,.16),transparent_32%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,.12),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_45%,#0b1120_100%)]" />
 
       <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 lg:px-10">
         <div className="mb-8 flex items-center justify-between gap-4">
@@ -696,16 +715,19 @@ function CheckoutPageContent() {
             Voltar ao painel
           </Link>
 
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/brand/cote-finance-ai-logo.svg"
-              alt="Cote Finance AI - By Cote Juros"
-              width={560}
-              height={150}
-              priority
-              className="h-24 w-auto"
-            />
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggleButton className="theme-toggle-surface" />
+            <Link href="/" className="flex items-center">
+              <Image
+                src={brandLogo}
+                alt="Cote Finance AI - By Cote Juros"
+                width={560}
+                height={150}
+                priority
+                className="h-24 w-auto"
+              />
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">

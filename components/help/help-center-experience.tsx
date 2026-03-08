@@ -1,0 +1,402 @@
+﻿'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  BadgeHelp,
+  BookOpenText,
+  CreditCard,
+  LockKeyhole,
+  Search,
+  ShieldCheck,
+  Target,
+  Wallet,
+} from 'lucide-react';
+import { BlogShell } from '@/components/blog/blog-shell';
+
+type HelpCategory = {
+  id: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  title: string;
+  description: string;
+  keywords: string[];
+};
+
+type PopularGuide = {
+  id: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  keywords: string[];
+};
+
+type HelpFaq = {
+  id: string;
+  question: string;
+  answer: string[];
+  keywords: string[];
+};
+
+type SearchItem = {
+  id: string;
+  title: string;
+  body: string;
+  kind: 'categoria' | 'guia' | 'faq';
+  anchor: string;
+  keywords: string[];
+};
+
+const categories: HelpCategory[] = [
+  {
+    id: 'primeiros-passos',
+    icon: BadgeHelp,
+    title: 'Primeiros passos',
+    description: 'Aprenda a criar sua conta e começar a organizar suas finanças.',
+    keywords: ['conta', 'cadastro', 'começar', 'primeiro acesso', 'email'],
+  },
+  {
+    id: 'controle-de-gastos',
+    icon: Wallet,
+    title: 'Controle de gastos',
+    description: 'Veja como registrar despesas, acompanhar movimentações e entender seus hábitos financeiros.',
+    keywords: ['gastos', 'despesas', 'movimentações', 'receitas', 'controle'],
+  },
+  {
+    id: 'metas-e-planejamento-financeiro',
+    icon: Target,
+    title: 'Metas e planejamento financeiro',
+    description: 'Aprenda a criar metas financeiras e acompanhar seu progresso.',
+    keywords: ['metas', 'planejamento', 'economizar', 'objetivos', 'progresso'],
+  },
+  {
+    id: 'conta-e-seguranca',
+    icon: LockKeyhole,
+    title: 'Conta e segurança',
+    description: 'Gerencie informações da conta, login e segurança.',
+    keywords: ['senha', 'segurança', 'google', 'login', 'conta'],
+  },
+  {
+    id: 'planos-e-pagamentos',
+    icon: CreditCard,
+    title: 'Planos e pagamentos',
+    description: 'Tire dúvidas sobre assinatura, cobrança e gerenciamento do seu plano.',
+    keywords: ['assinatura', 'pagamento', 'plano', 'cancelar plano', 'cobrança'],
+  },
+];
+
+const popularGuides: PopularGuide[] = [
+  {
+    id: 'guia-comecar',
+    title: 'Como começar a usar o Cote Finance AI',
+    description:
+      'Criar uma conta leva menos de um minuto. Depois de entrar na plataforma, registre suas primeiras movimentações financeiras e acompanhe o resumo do mês no painel.',
+    categoryId: 'primeiros-passos',
+    keywords: ['começar', 'conta', 'painel', 'primeiras movimentações'],
+  },
+  {
+    id: 'guia-gastos',
+    title: 'Como acompanhar seus gastos',
+    description:
+      'Registrar despesas ajuda você a entender para onde seu dinheiro está indo e identificar hábitos financeiros que podem ser melhorados.',
+    categoryId: 'controle-de-gastos',
+    keywords: ['gastos', 'despesas', 'controle de gastos', 'dinheiro'],
+  },
+  {
+    id: 'guia-metas',
+    title: 'Como definir metas financeiras',
+    description:
+      'Você pode criar metas para economizar dinheiro, pagar dívidas ou acompanhar objetivos financeiros importantes.',
+    categoryId: 'metas-e-planejamento-financeiro',
+    keywords: ['metas', 'economizar', 'dívidas', 'objetivos financeiros'],
+  },
+  {
+    id: 'guia-relatorios',
+    title: 'Como entender os relatórios financeiros',
+    description:
+      'Os relatórios mostram como seu dinheiro entra e sai ao longo do mês, ajudando você a tomar decisões financeiras melhores.',
+    categoryId: 'controle-de-gastos',
+    keywords: ['relatórios', 'painel', 'gastos mensais', 'receitas e despesas'],
+  },
+];
+
+const faqs: HelpFaq[] = [
+  {
+    id: 'faq-comecar',
+    question: 'Como começo a usar o Cote Finance AI?',
+    answer: [
+      'Crie sua conta, confirme seu e-mail e registre suas primeiras despesas ou receitas.',
+      'Em poucos minutos você já terá uma visão clara da sua situação financeira.',
+    ],
+    keywords: ['começar', 'conta', 'email', 'primeiro acesso'],
+  },
+  {
+    id: 'faq-google',
+    question: 'Posso entrar com Google?',
+    answer: ['Sim. Você pode acessar sua conta usando login com Google ou e-mail e senha.'],
+    keywords: ['google', 'login', 'entrar', 'conta'],
+  },
+  {
+    id: 'faq-seguro',
+    question: 'O Cote Finance AI é seguro?',
+    answer: ['Sim. Utilizamos práticas modernas de segurança para proteger suas informações.'],
+    keywords: ['segurança', 'seguro', 'dados', 'conta'],
+  },
+  {
+    id: 'faq-cancelar',
+    question: 'Posso cancelar minha assinatura?',
+    answer: ['Sim. Você pode cancelar sua assinatura a qualquer momento nas configurações da conta.'],
+    keywords: ['cancelar plano', 'assinatura', 'pagamento', 'plano'],
+  },
+  {
+    id: 'faq-blog',
+    question: 'O blog faz parte da plataforma?',
+    answer: ['Sim. O blog ajuda você a aprender mais sobre organização financeira e aproveitar melhor o Cote Finance AI.'],
+    keywords: ['blog', 'plataforma', 'ajuda', 'educação financeira'],
+  },
+];
+
+const searchItems: SearchItem[] = [
+  ...categories.map((category) => ({
+    id: category.id,
+    title: category.title,
+    body: category.description,
+    kind: 'categoria' as const,
+    anchor: category.id,
+    keywords: category.keywords,
+  })),
+  ...popularGuides.map((guide) => ({
+    id: guide.id,
+    title: guide.title,
+    body: guide.description,
+    kind: 'guia' as const,
+    anchor: guide.id,
+    keywords: guide.keywords,
+  })),
+  ...faqs.map((faq) => ({
+    id: faq.id,
+    title: faq.question,
+    body: faq.answer.join(' '),
+    kind: 'faq' as const,
+    anchor: faq.id,
+    keywords: faq.keywords,
+  })),
+];
+
+function normalizeValue(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim();
+}
+
+function rankSearchItem(item: SearchItem, query: string) {
+  const normalizedQuery = normalizeValue(query);
+  const normalizedTitle = normalizeValue(item.title);
+  const normalizedBody = normalizeValue(item.body);
+  const normalizedKeywords = item.keywords.map(normalizeValue);
+
+  let score = 0;
+
+  if (normalizedTitle === normalizedQuery) score += 120;
+  if (normalizedTitle.startsWith(normalizedQuery)) score += 60;
+  if (normalizedTitle.includes(normalizedQuery)) score += 40;
+  if (normalizedBody.includes(normalizedQuery)) score += 18;
+
+  for (const keyword of normalizedKeywords) {
+    if (keyword === normalizedQuery) score += 36;
+    else if (keyword.includes(normalizedQuery)) score += 18;
+  }
+
+  return score;
+}
+
+function scrollToAnchor(anchor: string) {
+  const node = document.getElementById(anchor);
+  if (!node) return;
+  node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+export function HelpCenterExperience() {
+  const [query, setQuery] = React.useState('');
+  const trimmedQuery = query.trim();
+
+  const results = React.useMemo(() => {
+    if (!trimmedQuery) return [];
+
+    return searchItems
+      .map((item) => ({
+        ...item,
+        score: rankSearchItem(item, trimmedQuery),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+      .slice(0, 6);
+  }, [trimmedQuery]);
+
+  return (
+    <BlogShell activeItem="help">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8 lg:p-10">
+        <div className="max-w-4xl space-y-5">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <ShieldCheck size={14} /> Central de ajuda
+          </span>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">Como podemos ajudar?</h1>
+            <p className="max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
+              Encontre respostas rápidas sobre como usar o Cote Finance AI, organizar suas finanças e resolver dúvidas
+              sobre sua conta.
+            </p>
+          </div>
+
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar ajuda..."
+              className="w-full rounded-2xl border border-slate-300 bg-[#f7f8f3] py-4 pl-12 pr-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+            />
+          </div>
+
+          <p className="text-sm text-slate-500">
+            Digite palavras como &quot;conta&quot;, &quot;gastos&quot;, &quot;pagamento&quot; ou &quot;assinatura&quot;.
+          </p>
+
+          {trimmedQuery ? (
+            <div className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-slate-950">Resultados da busca</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                  {results.length} resultado{results.length === 1 ? '' : 's'}
+                </p>
+              </div>
+
+              {results.length ? (
+                <div className="space-y-3">
+                  {results.map((result) => (
+                    <button
+                      key={result.id}
+                      type="button"
+                      onClick={() => scrollToAnchor(result.anchor)}
+                      className="flex w-full items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-300"
+                    >
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{result.kind}</p>
+                        <p className="text-sm font-semibold text-slate-950">{result.title}</p>
+                        <p className="text-sm leading-6 text-slate-600">{result.body}</p>
+                      </div>
+                      <ArrowRight className="mt-1 shrink-0 text-slate-400" size={16} />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-sm leading-7 text-slate-600">
+                  Nenhum resultado encontrado para essa busca. Tente palavras como &quot;login&quot;, &quot;gastos&quot;,
+                  &quot;metas&quot; ou &quot;assinatura&quot;.
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <div className="mb-6">
+          <h2 className="text-3xl font-black tracking-tight text-slate-950">Categorias principais</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+            Encontre o assunto certo mais rápido e vá direto ao que você precisa resolver.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <article
+                key={category.id}
+                id={category.id}
+                className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"
+              >
+                <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                  <Icon size={20} />
+                </div>
+                <h3 className="mt-4 text-lg font-black tracking-tight text-slate-950">{category.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{category.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mt-14">
+        <div className="mb-6">
+          <h2 className="text-3xl font-black tracking-tight text-slate-950">Guias mais acessados</h2>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {popularGuides.map((guide) => (
+            <article
+              key={guide.id}
+              id={guide.id}
+              className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm"
+            >
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#f7f8f3] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                <BookOpenText size={14} /> Guia
+              </div>
+              <h3 className="mt-4 text-xl font-black tracking-tight text-slate-950">{guide.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">{guide.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-14" id="faq">
+        <div className="mb-6">
+          <h2 className="text-3xl font-black tracking-tight text-slate-950">Perguntas frequentes</h2>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq) => (
+            <details
+              key={faq.id}
+              id={faq.id}
+              className="group rounded-[1.4rem] border border-slate-200 bg-white px-5 py-4 shadow-sm"
+            >
+              <summary className="cursor-pointer list-none text-base font-semibold text-slate-950 marker:hidden">
+                {faq.question}
+              </summary>
+              <div className="mt-3 space-y-3 text-sm leading-7 text-slate-600">
+                {faq.answer.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-14 rounded-[2rem] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff_0%,#f0fdf4_100%)] p-6 shadow-[0_24px_80px_-50px_rgba(16,185,129,0.30)] sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+              <BadgeHelp size={14} /> Suporte
+            </p>
+            <h2 className="text-3xl font-black tracking-tight text-slate-950">Ainda precisa de ajuda?</h2>
+            <p className="max-w-2xl text-base leading-8 text-slate-600">
+              Se você não encontrou o que procurava, nossa equipe pode ajudar.
+            </p>
+          </div>
+          <a
+            href="mailto:auth@cotejuros.com.br?subject=Ajuda%20Cote%20Finance%20AI"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+          >
+            Entrar em contato <ArrowRight size={16} />
+          </a>
+        </div>
+      </section>
+    </BlogShell>
+  );
+}
