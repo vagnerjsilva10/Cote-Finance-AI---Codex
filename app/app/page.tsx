@@ -2853,7 +2853,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
       category: initialData.category || GOAL_CATEGORIES[0],
       deadline: normalizedDeadline,
     };
-  }, [initialData, initialDraft]);
+  }, [initialData]);
 
   const [formData, setFormData] = React.useState<GoalFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
