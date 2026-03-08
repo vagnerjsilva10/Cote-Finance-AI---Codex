@@ -50,6 +50,7 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
     typeof payload.config === 'object'
       ? payload.config
       : payload;
+  const sourceRecord = source && typeof source === 'object' ? (source as Record<string, unknown>) : null;
 
   const updatedAt =
     payload && typeof payload === 'object' && 'updatedAt' in payload && typeof payload.updatedAt === 'string'
@@ -57,16 +58,12 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
       : null;
 
   return {
-    connectTemplateName:
-      source && typeof source === 'object' ? normalizeTemplateName(source.connectTemplateName) : null,
-    digestTemplateName:
-      source && typeof source === 'object' ? normalizeTemplateName(source.digestTemplateName) : null,
-    templateLanguage:
-      source && typeof source === 'object'
-        ? normalizeTemplateLanguage(source.templateLanguage)
-        : DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
-    testPhoneNumber:
-      source && typeof source === 'object' ? normalizeTestPhoneNumber(source.testPhoneNumber) : null,
+    connectTemplateName: sourceRecord ? normalizeTemplateName(sourceRecord.connectTemplateName) : null,
+    digestTemplateName: sourceRecord ? normalizeTemplateName(sourceRecord.digestTemplateName) : null,
+    templateLanguage: sourceRecord
+      ? normalizeTemplateLanguage(sourceRecord.templateLanguage)
+      : DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
+    testPhoneNumber: sourceRecord ? normalizeTestPhoneNumber(sourceRecord.testPhoneNumber) : null,
     updatedAt,
   };
 }
