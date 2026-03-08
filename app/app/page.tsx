@@ -3373,7 +3373,7 @@ const TransactionModal = ({
       };
     }
 
-    const parsedDate = parseTransactionDate(initialData.date) ? new Date();
+    const parsedDate = parseTransactionDate(initialData.date) ?? new Date();
     const normalizedDate = new Date(parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000)
       .toISOString()
       .split('T')[0];
@@ -4968,7 +4968,7 @@ export default function App() {
   >({});
 
   React.useEffect(() => {
-    const nextUserId = user?.id ? null;
+    const nextUserId = user?.id ?? null;
     if (lastUserIdRef.current !== nextUserId) {
       workspaceDashboardCacheRef.current = {};
       setTransactions([]);
@@ -5186,7 +5186,7 @@ export default function App() {
     const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
     const totalDebtRemaining = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
     const totalDebtOriginal = activeDebts.reduce((acc, debt) => acc + debt.originalAmount, 0);
-    const highestDebt = [...activeDebts].sort((a, b) => b.remainingAmount - a.remainingAmount)[0] ? null;
+    const highestDebt = [...activeDebts].sort((a, b) => b.remainingAmount - a.remainingAmount)[0] ?? null;
 
     return {
       balance,
@@ -6036,7 +6036,7 @@ export default function App() {
     const previousTransactionsSnapshot = transactions;
     const previousTotalBalance = totalBalance;
     const previousMonthCount = currentMonthTransactionCount;
-    const transactionToDelete = transactions.find((item) => item.id === id) ? null;
+    const transactionToDelete = transactions.find((item) => item.id === id) ?? null;
 
     if (!transactionToDelete) {
       return;

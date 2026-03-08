@@ -622,7 +622,7 @@ export async function PATCH(req: Request) {
       },
     });
 
-    const effectiveCategoryId = categoryId ? existingTransaction.category_id;
+    const effectiveCategoryId = categoryId ?? existingTransaction.category_id;
     const effectiveDescription = nextDescription || existingTransaction.description;
     if (effectiveCategoryId && effectiveDescription) {
       let effectiveCategoryName = (body.category || '').trim();
