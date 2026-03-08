@@ -4,6 +4,12 @@ import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { logWorkspaceEventSafe, upsertWorkspaceSubscriptionSafe } from '@/lib/server/multi-tenant';
+import {
+  mapStripeStatusToStoredStatus,
+  normalizeBillingPlan,
+  type StoredBillingStatus,
+  isEntitledStripeStatus,
+} from '@/lib/server/billing-status';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -28,11 +34,7 @@ const PLAN_BY_PRICE_ID: Record<string, AppPlan> = {
 
 function normalizePlan(plan?: string | null): AppPlan | null {
   if (!plan) return null;
-  const normalized = plan.trim().toUpperCase();
-  if (normalized === 'FREE' || normalized === 'PRO' || normalized === 'PREMIUM') {
-    return normalized;
-  }
-  return null;
+  return normalizeBillingPlan(plan);
 }
 
 function planFromPriceId(priceId?: string | null): AppPlan | null {
@@ -48,14 +50,13 @@ async function syncSubscriptionByUserId(params: {
   currentPeriodEnd?: Date | null;
 }) {
   const { userId, plan, status, customerId, currentPeriodEnd } = params;
+  const effectivePlan = status === 'ACTIVE' && plan ? plan : 'FREE';
   const profileUpdate: { stripe_customer_id?: string; plan?: AppPlan } = {};
 
   if (customerId) {
     profileUpdate.stripe_customer_id = customerId;
   }
-  if (plan) {
-    profileUpdate.plan = plan;
-  }
+  profileUpdate.plan = effectivePlan;
 
   if (Object.keys(profileUpdate).length > 0) {
     try {
@@ -65,7 +66,7 @@ async function syncSubscriptionByUserId(params: {
         create: {
           user_id: userId,
           stripe_customer_id: customerId || undefined,
-          plan: plan || 'FREE',
+          plan: effectivePlan,
         },
       });
     } catch (error) {
@@ -77,13 +78,13 @@ async function syncSubscriptionByUserId(params: {
     await prisma.subscriptionEntitlement.upsert({
       where: { user_id: userId },
       update: {
-        ...(plan ? { plan } : {}),
+        plan: effectivePlan,
         status,
         current_period_end: currentPeriodEnd ?? null,
       },
       create: {
         user_id: userId,
-        plan: plan || 'FREE',
+        plan: effectivePlan,
         status,
         current_period_end: currentPeriodEnd ?? null,
       },
@@ -112,6 +113,24 @@ async function syncSubscriptionByCustomerId(params: {
       customerId: params.customerId,
       currentPeriodEnd: params.currentPeriodEnd,
     });
+  }
+}
+
+async function syncCustomerReferenceByUserId(params: { userId: string; customerId: string }) {
+  try {
+    await prisma.profile.upsert({
+      where: { user_id: params.userId },
+      update: {
+        stripe_customer_id: params.customerId,
+      },
+      create: {
+        user_id: params.userId,
+        stripe_customer_id: params.customerId,
+        plan: 'FREE',
+      },
+    });
+  } catch (error) {
+    console.error('Stripe webhook: failed to sync customer reference', params, error);
   }
 }
 
@@ -276,21 +295,11 @@ export async function POST(req: Request) {
         const subscriptionId = typeof session.subscription === 'string' ? session.subscription : null;
         const plan = normalizePlan(session.metadata?.plan);
 
-        if (userId) {
-          await syncSubscriptionByUserId({
+        if (userId && customerId) {
+          await syncCustomerReferenceByUserId({
             userId,
             customerId,
-            plan: plan || 'FREE',
-            status: 'ACTIVE',
           });
-        } else if (customerId) {
-          await syncSubscriptionByCustomerId({
-            customerId,
-            plan: plan || 'FREE',
-            status: 'ACTIVE',
-          });
-        } else {
-          console.warn('Stripe webhook: checkout.session.completed without user/customer reference');
         }
 
         if (workspaceId) {
@@ -300,9 +309,11 @@ export async function POST(req: Request) {
             customerId,
             subscriptionId,
             plan: plan || 'FREE',
-            status: 'ACTIVE',
+            status: 'PENDING',
             eventType: 'stripe.checkout_completed',
           });
+        } else if (!userId && !customerId) {
+          console.warn('Stripe webhook: checkout.session.completed without user/customer reference');
         }
         break;
       }
@@ -316,15 +327,20 @@ export async function POST(req: Request) {
         const metadataUserId = subscription.metadata?.userId || null;
         const metadataWorkspaceId = subscription.metadata?.workspaceId || null;
         const metadataPlan = normalizePlan(subscription.metadata?.plan);
-        const plan =
+        const storedStatus: StoredBillingStatus =
           event.type === 'customer.subscription.deleted'
-            ? 'FREE'
-            : metadataPlan || planFromPriceId(priceId) || null;
-        const status: EntitlementStatus =
-          event.type === 'customer.subscription.deleted' ? 'CANCELED' : 'ACTIVE';
+            ? 'CANCELED'
+            : mapStripeStatusToStoredStatus(subscription.status);
+        const entitlementStatus: EntitlementStatus =
+          event.type === 'customer.subscription.deleted'
+            ? 'CANCELED'
+            : isEntitledStripeStatus(subscription.status)
+              ? 'ACTIVE'
+              : 'CANCELED';
+        const plan = metadataPlan || planFromPriceId(priceId) || null;
         const currentPeriodEndRaw = (subscription as any).current_period_end;
         const currentPeriodEnd =
-          status === 'ACTIVE' && typeof currentPeriodEndRaw === 'number'
+          entitlementStatus === 'ACTIVE' && typeof currentPeriodEndRaw === 'number'
             ? new Date(currentPeriodEndRaw * 1000)
             : null;
 
@@ -333,14 +349,14 @@ export async function POST(req: Request) {
             userId: metadataUserId,
             customerId,
             plan,
-            status,
+            status: entitlementStatus,
             currentPeriodEnd,
           });
         } else if (customerId) {
           await syncSubscriptionByCustomerId({
             customerId,
             plan,
-            status,
+            status: entitlementStatus,
             currentPeriodEnd,
           });
         } else {
@@ -354,7 +370,7 @@ export async function POST(req: Request) {
             customerId,
             subscriptionId: subscription.id,
             plan,
-            status,
+            status: storedStatus,
             currentPeriodEnd,
             eventType: `stripe.${event.type}`,
           });
@@ -363,8 +379,16 @@ export async function POST(req: Request) {
             subscriptionId: subscription.id,
             customerId,
             plan,
-            status,
+            status: storedStatus === 'ACTIVE' ? 'ACTIVE' : 'CANCELED',
             currentPeriodEnd,
+          });
+          await syncWorkspaceStatusByReference({
+            subscriptionId: subscription.id,
+            customerId,
+            plan,
+            status: storedStatus,
+            currentPeriodEnd,
+            eventType: `stripe.${event.type}`,
           });
         }
         break;
@@ -388,6 +412,15 @@ export async function POST(req: Request) {
           typeof recurringPrice === 'string' ? recurringPrice : recurringPrice?.id ?? null;
         const plan = planFromPriceId(priceId);
         const status = event.type === 'invoice.paid' ? 'ACTIVE' : 'PENDING';
+
+        if (customerId) {
+          await syncSubscriptionByCustomerId({
+            customerId,
+            plan,
+            status: event.type === 'invoice.paid' ? 'ACTIVE' : 'CANCELED',
+            currentPeriodEnd: null,
+          });
+        }
 
         await syncWorkspaceStatusByReference({
           subscriptionId,

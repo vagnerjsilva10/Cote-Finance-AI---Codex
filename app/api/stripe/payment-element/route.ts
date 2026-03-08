@@ -24,6 +24,7 @@ import {
   type BillingIntervalCode,
   type BillingPlanCode,
 } from '@/lib/billing/plans';
+import { mapStripeStatusToStoredStatus } from '@/lib/server/billing-status';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -188,11 +189,7 @@ export async function POST(req: Request) {
           existingPriceId === resolved.priceId ||
           normalizeBillingPlan(existingWorkspaceSubscription?.plan) === resolved.plan;
 
-        if (
-          existingSubscription.status === 'active' ||
-          existingSubscription.status === 'trialing' ||
-          existingSubscription.status === 'paused'
-        ) {
+        if (existingSubscription.status === 'active' || existingSubscription.status === 'trialing') {
           return NextResponse.json(
             {
               error:
@@ -207,7 +204,9 @@ export async function POST(req: Request) {
 
         if (
           requestedSelectionMatches &&
-          (existingSubscription.status === 'incomplete' || existingSubscription.status === 'past_due')
+          (existingSubscription.status === 'incomplete' ||
+            existingSubscription.status === 'past_due' ||
+            existingSubscription.status === 'unpaid')
         ) {
           const reusedState = serializeSubscriptionState({
             subscription: existingSubscription,
@@ -219,10 +218,22 @@ export async function POST(req: Request) {
             priceId: resolved.priceId,
           });
 
+          if (!reusedState.requiresConfirmation) {
+            return NextResponse.json(
+              {
+                error:
+                  'Existe uma cobrança pendente para este workspace. Atualize a forma de pagamento para regularizar a assinatura antes de trocar de plano.',
+                code: 'PAYMENT_METHOD_UPDATE_REQUIRED',
+                currentStatus: existingSubscription.status,
+              },
+              { status: 409 }
+            );
+          }
+
           await upsertWorkspaceSubscriptionSafe({
             workspaceId: context.workspaceId,
             plan: resolved.plan,
-            status: reusedState.requiresConfirmation ? 'PENDING' : 'ACTIVE',
+            status: mapStripeStatusToStoredStatus(existingSubscription.status),
             stripeCustomerId: customerId,
             stripeSubscriptionId: existingSubscription.id,
             currentPeriodEnd: getCurrentPeriodEnd(existingSubscription),
@@ -231,7 +242,11 @@ export async function POST(req: Request) {
           return NextResponse.json(reusedState);
         }
 
-        if (existingSubscription.status === 'incomplete' && !requestedSelectionMatches) {
+        if (
+          (existingSubscription.status === 'incomplete' ||
+            existingSubscription.status === 'incomplete_expired') &&
+          !requestedSelectionMatches
+        ) {
           await withStripeTimeout(
             stripe.subscriptions.cancel(existingSubscription.id),
             'O ajuste da assinatura anterior demorou demais. Tente novamente.'
@@ -287,10 +302,7 @@ export async function POST(req: Request) {
     await upsertWorkspaceSubscriptionSafe({
       workspaceId: context.workspaceId,
       plan: resolved.plan,
-      status:
-        checkoutState.subscriptionStatus === 'active' || checkoutState.subscriptionStatus === 'trialing'
-          ? 'ACTIVE'
-          : 'PENDING',
+      status: mapStripeStatusToStoredStatus(subscription.status),
       stripeCustomerId: customerId,
       stripeSubscriptionId: subscription.id,
       currentPeriodEnd: getCurrentPeriodEnd(subscription),

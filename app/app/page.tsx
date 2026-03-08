@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -74,14 +74,14 @@ type Tab =
   | 'settings'
   | 'agenda';
 
-type TransactionFlowType = 'Receita' | 'Despesa' | 'Transferência';
+type TransactionFlowType = 'Receita' | 'Despesa' | 'TransferÃªncia';
 type PaymentMethodLabel =
   | 'PIX'
-  | 'Cartão'
+  | 'CartÃ£o'
   | 'Dinheiro'
-  | 'Transferência bancária'
+  | 'TransferÃªncia bancÃ¡ria'
   | 'Boleto'
-  | 'Débito'
+  | 'DÃ©bito'
   | 'Outro';
 
 type TransactionFormData = {
@@ -208,6 +208,7 @@ type SubscriptionOverview = {
   workspaceName: string;
   plan: SubscriptionPlan;
   planLabel: string;
+  interval?: 'MONTHLY' | 'ANNUAL' | null;
   billingLabel: string;
   status: 'FREE' | 'ACTIVE' | 'TRIALING' | 'CANCELED' | 'PENDING';
   statusLabel: string;
@@ -218,9 +219,12 @@ type SubscriptionOverview = {
   stripeConfigured: boolean;
   hasStripeCustomer: boolean;
   hasStripeSubscription: boolean;
+  recommendedAction?: 'checkout' | 'regularize' | 'change_plan';
+  primaryActionLabel?: string;
   canCancel: boolean;
   canReactivate: boolean;
   canManageBilling: boolean;
+  canOpenCheckout?: boolean;
 };
 
 const FREE_TRANSACTION_LIMIT_PER_MONTH = 50;
@@ -257,27 +261,27 @@ const maskMoneyInput = (rawValue: string) => {
 const TRANSACTION_FLOW_TYPES: TransactionFlowType[] = [
   'Receita',
   'Despesa',
-  'Transferência',
+  'TransferÃªncia',
 ];
 
 const PAYMENT_METHODS: PaymentMethodLabel[] = [
   'PIX',
-  'Cartão',
+  'CartÃ£o',
   'Dinheiro',
-  'Transferência bancária',
+  'TransferÃªncia bancÃ¡ria',
   'Boleto',
-  'Débito',
+  'DÃ©bito',
   'Outro',
 ];
 
 const TRANSACTION_CATEGORIES = [
-  'Alimentação',
+  'AlimentaÃ§Ã£o',
   'Transporte',
-  'Saúde',
-  'Educação',
+  'SaÃºde',
+  'EducaÃ§Ã£o',
   'Lazer',
   'Moradia',
-  'Salário',
+  'SalÃ¡rio',
   'Freelance',
   'Marketing',
   'Investimentos',
@@ -286,22 +290,22 @@ const TRANSACTION_CATEGORIES = [
   'Auto (IA)',
 ];
 
-const TRANSACTION_WALLETS = ['Nubank', 'Itaú', 'Santander', 'Bradesco', 'Dinheiro', 'Outros'];
+const TRANSACTION_WALLETS = ['Nubank', 'ItaÃº', 'Santander', 'Bradesco', 'Dinheiro', 'Outros'];
 
 const GOAL_CATEGORIES = [
-  'Reserva de emergência',
+  'Reserva de emergÃªncia',
   'Viagem',
   'Casa',
   'Carro',
   'Investimentos',
-  'Educação',
+  'EducaÃ§Ã£o',
   'Aposentadoria',
   'Outros',
 ];
 
 const DEBT_CATEGORIES = [
-  'Cartão de crédito',
-  'Empréstimo',
+  'CartÃ£o de crÃ©dito',
+  'EmprÃ©stimo',
   'Financiamento',
   'Cheque especial',
   'Outros',
@@ -309,11 +313,11 @@ const DEBT_CATEGORIES = [
 
 const INVESTMENT_TYPES = [
   'Renda fixa',
-  'Renda variável',
+  'Renda variÃ¡vel',
   'Tesouro',
   'CDB',
   'LCI/LCA',
-  'Ações',
+  'AÃ§Ãµes',
   'Fundos',
   'Cripto',
   'Outros',
@@ -321,33 +325,33 @@ const INVESTMENT_TYPES = [
 
 const ASSISTANT_SUGGESTIONS = [
   'Onde eu mais gasto',
-  'Qual meu saldo este mês',
-  'Me dê dicas para economizar',
-  'Quais são meus maiores gastos',
-  'Como estão meus investimentos',
-  'Quais dívidas devo priorizar',
+  'Qual meu saldo este mÃªs',
+  'Me dÃª dicas para economizar',
+  'Quais sÃ£o meus maiores gastos',
+  'Como estÃ£o meus investimentos',
+  'Quais dÃ­vidas devo priorizar',
 ];
 
 const ONBOARDING_OBJECTIVES = [
   'Organizar meus gastos',
   'Economizar mais dinheiro',
-  'Sair das dívidas',
+  'Sair das dÃ­vidas',
   'Acompanhar investimentos',
   'Ter mais controle financeiro',
 ];
 
 const ONBOARDING_USAGE_LEVELS = [
-  'Até 20 lançamentos',
-  '20 a 50 lançamentos',
-  '50 a 100 lançamentos',
-  'Mais de 100 lançamentos',
+  'AtÃ© 20 lanÃ§amentos',
+  '20 a 50 lanÃ§amentos',
+  '50 a 100 lanÃ§amentos',
+  'Mais de 100 lanÃ§amentos',
 ];
 
 const createInitialOnboardingTransaction = (): TransactionFormData => ({
   description: '',
   amount: '',
   flowType: 'Despesa',
-  category: 'Alimentação',
+  category: 'AlimentaÃ§Ã£o',
   paymentMethod: 'PIX',
   wallet: TRANSACTION_WALLETS[0],
   destinationWallet: '',
@@ -358,11 +362,11 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
 const getInvestmentColor = (type: string) => {
   const colorMap: Record<string, string> = {
     'Renda fixa': 'bg-emerald-500',
-    'Renda variável': 'bg-blue-500',
+    'Renda variÃ¡vel': 'bg-blue-500',
     Tesouro: 'bg-cyan-500',
     CDB: 'bg-teal-500',
     'LCI/LCA': 'bg-lime-500',
-    'Ações': 'bg-amber-500',
+    'AÃ§Ãµes': 'bg-amber-500',
     Fundos: 'bg-violet-500',
     Cripto: 'bg-rose-500',
     Outros: 'bg-slate-500',
@@ -386,7 +390,7 @@ const mapFlowTypeToBackendType = (flowType: TransactionFlowType) => {
 const mapBackendTypeToFlowType = (rawType: string): TransactionFlowType => {
   if (rawType === 'INCOME' || rawType === 'PIX_IN') return 'Receita';
   if (rawType === 'EXPENSE' || rawType === 'PIX_OUT') return 'Despesa';
-  if (rawType === 'TRANSFER') return 'Transferência';
+  if (rawType === 'TRANSFER') return 'TransferÃªncia';
   if (rawType === 'income') return 'Receita';
   if (rawType === 'expense') return 'Despesa';
   return 'Despesa';
@@ -398,32 +402,32 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃO') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃƒO') return 'CartÃ£o';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
     normalized === 'TRANSFERENCIA_BANCARIA' ||
-    normalized === 'TRANSFERÊNCIA BANCÁRIA'
+    normalized === 'TRANSFERÃŠNCIA BANCÃRIA'
   ) {
-    return 'Transferência bancária';
+    return 'TransferÃªncia bancÃ¡ria';
   }
   if (normalized === 'BOLETO') return 'Boleto';
-  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'DÉBITO') return 'Débito';
+  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'DÃ‰BITO') return 'DÃ©bito';
   return 'Outro';
 };
 
 const mapPaymentMethodToBackend = (method: PaymentMethodLabel) => {
   if (method === 'PIX') return 'PIX';
-  if (method === 'Cartão') return 'CARD';
+  if (method === 'CartÃ£o') return 'CARD';
   if (method === 'Dinheiro') return 'CASH';
-  if (method === 'Transferência bancária') return 'BANK_TRANSFER';
+  if (method === 'TransferÃªncia bancÃ¡ria') return 'BANK_TRANSFER';
   if (method === 'Boleto') return 'BOLETO';
-  if (method === 'Débito') return 'DEBIT';
+  if (method === 'DÃ©bito') return 'DEBIT';
   return 'OTHER';
 };
 
 const getDefaultPaymentMethodForFlow = (flowType: TransactionFlowType): PaymentMethodLabel => {
-  if (flowType === 'Transferência') return 'Transferência bancária';
+  if (flowType === 'TransferÃªncia') return 'TransferÃªncia bancÃ¡ria';
   return 'PIX';
 };
 
@@ -435,17 +439,17 @@ const getTransactionAmountSignal = (baseType: 'income' | 'expense' | 'transfer')
 
 const getPaymentMethodIconLabel = (method: PaymentMethodLabel) => {
   if (method === 'PIX') return 'PIX';
-  if (method === 'Cartão') return 'CARD';
+  if (method === 'CartÃ£o') return 'CARD';
   if (method === 'Dinheiro') return 'CASH';
-  if (method === 'Transferência bancária') return 'TED';
+  if (method === 'TransferÃªncia bancÃ¡ria') return 'TED';
   if (method === 'Boleto') return 'BOL';
-  if (method === 'Débito') return 'DEB';
+  if (method === 'DÃ©bito') return 'DEB';
   return 'OUT';
 };
 
 const getFlowTypeIcon = (flowType: TransactionFlowType) => {
   if (flowType === 'Receita') return ArrowUpRight;
-  if (flowType === 'Transferência') return Workflow;
+  if (flowType === 'TransferÃªncia') return Workflow;
   return ArrowDownRight;
 };
 
@@ -465,20 +469,20 @@ const getPlanLabel = (plan: SubscriptionPlan) => {
 
 const getWorkspaceEventLabel = (eventType: string) => {
   const labels: Record<string, string> = {
-    'transaction.created': 'Transação criada',
-    'transaction.updated': 'Transação atualizada',
-    'transaction.deleted': 'Transação removida',
+    'transaction.created': 'TransaÃ§Ã£o criada',
+    'transaction.updated': 'TransaÃ§Ã£o atualizada',
+    'transaction.deleted': 'TransaÃ§Ã£o removida',
     'workspace.created': 'Workspace criado',
-    'onboarding.completed': 'Onboarding concluído',
+    'onboarding.completed': 'Onboarding concluÃ­do',
     'workspace.whatsapp.connected': 'WhatsApp conectado',
     'workspace.whatsapp.disconnected': 'WhatsApp desconectado',
     'stripe.checkout.created': 'Checkout iniciado',
     'stripe.portal.created': 'Portal de assinatura aberto',
     'ai.chat.used': 'Assistente IA utilizado',
-    'ai.classify.used': 'Classificação automática usada',
+    'ai.classify.used': 'ClassificaÃ§Ã£o automÃ¡tica usada',
   };
 
-  return labels[eventType] || eventType.replace(/\./g, ' · ');
+  return labels[eventType] || eventType.replace(/\./g, ' Â· ');
 };
 
 const formatEventTimestamp = (isoString: string) => {
@@ -493,9 +497,9 @@ const formatEventTimestamp = (isoString: string) => {
 };
 
 const formatSubscriptionDate = (isoString?: string | null) => {
-  if (!isoString) return 'Sem cobrança futura definida';
+  if (!isoString) return 'Sem cobranÃ§a futura definida';
   const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return 'Sem cobrança futura definida';
+  if (Number.isNaN(date.getTime())) return 'Sem cobranÃ§a futura definida';
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -554,13 +558,13 @@ const mapAiCategoryToCategory = (rawCategory: string) => {
     return normalizedMap.get(normalized) as string;
   }
 
-  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'Alimentação';
+  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'AlimentaÃ§Ã£o';
   if (normalized.includes('transp')) return 'Transporte';
-  if (normalized.includes('saud')) return 'Saúde';
-  if (normalized.includes('educ')) return 'Educação';
+  if (normalized.includes('saud')) return 'SaÃºde';
+  if (normalized.includes('educ')) return 'EducaÃ§Ã£o';
   if (normalized.includes('lazer')) return 'Lazer';
   if (normalized.includes('morad') || normalized.includes('aluguel')) return 'Moradia';
-  if (normalized.includes('salario')) return 'Salário';
+  if (normalized.includes('salario')) return 'SalÃ¡rio';
   if (normalized.includes('freela')) return 'Freelance';
   if (normalized.includes('ads') || normalized.includes('marketing') || normalized.includes('trafego')) return 'Marketing';
   if (normalized.includes('invest')) return 'Investimentos';
@@ -689,7 +693,7 @@ const buildOptimisticTransaction = (
   flowType: formData.flowType,
   paymentMethod: formData.paymentMethod,
   wallet: formData.wallet,
-  destinationWallet: formData.flowType === 'Transferência' ? formData.destinationWallet || null : null,
+  destinationWallet: formData.flowType === 'TransferÃªncia' ? formData.destinationWallet || null : null,
   receiptUrl: formData.receiptUrl || null,
 });
 
@@ -771,13 +775,13 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
             <h2 className="text-xl font-bold text-white mb-2">Erro na interface</h2>
             <p className="text-sm text-slate-400 mb-5">
-              Ocorreu uma falha inesperada de renderização. Recarregue a página para continuar.
+              Ocorreu uma falha inesperada de renderizaÃ§Ã£o. Recarregue a pÃ¡gina para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
             >
-              Recarregar página
+              Recarregar pÃ¡gina
             </button>
           </div>
         </div>
@@ -937,7 +941,7 @@ const SubscriptionView = ({
           <div>
             <h3 className="text-2xl font-black text-white">Minha assinatura</h3>
             <p className="text-sm text-slate-400">
-              Gerencie seu plano, cobrança e status da assinatura sem sair do Cote Finance AI.
+              Gerencie seu plano, cobranÃ§a e status da assinatura sem sair do Cote Finance AI.
             </p>
           </div>
         </div>
@@ -946,7 +950,7 @@ const SubscriptionView = ({
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-400"
         >
           <ArrowUpRight size={16} />
-          Alterar plano
+          {summary?.primaryActionLabel || 'Alterar plano'}
         </button>
       </div>
 
@@ -954,7 +958,7 @@ const SubscriptionView = ({
         <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-8 text-center">
           <p className="text-base font-semibold text-white">Carregando assinatura...</p>
           <p className="mt-2 text-sm text-slate-400">
-            Estamos sincronizando o status do workspace e a cobrança atual.
+            Estamos sincronizando o status do workspace e a cobranÃ§a atual.
           </p>
         </div>
       ) : error ? (
@@ -984,7 +988,7 @@ const SubscriptionView = ({
                   </div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Próxima cobrança</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">PrÃ³xima cobranÃ§a</p>
                   <p className="mt-2 text-lg font-semibold text-white">{formatSubscriptionDate(summary.nextBillingDate)}</p>
                 </div>
               </div>
@@ -995,7 +999,7 @@ const SubscriptionView = ({
                   <p className="mt-2 text-lg font-semibold text-white">{summary.statusLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Cobrança</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">CobranÃ§a</p>
                   <p className="mt-2 text-lg font-semibold text-white">{summary.billingLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
@@ -1007,11 +1011,11 @@ const SubscriptionView = ({
 
             <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rÃ¡pido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
-                  Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
-                  abrimos apenas a etapa necessária.
+                  Tudo o que importa para este workspace fica visÃ­vel aqui. Quando uma aÃ§Ã£o exigir a Stripe,
+                  abrimos apenas a etapa necessÃ¡ria.
                 </p>
               </div>
 
@@ -1028,9 +1032,9 @@ const SubscriptionView = ({
                 <div className="flex items-start gap-3">
                   <CreditCard size={18} className="mt-0.5 text-emerald-300" />
                   <div>
-                    <p className="text-sm font-semibold text-white">Gestão sem sair do app</p>
+                    <p className="text-sm font-semibold text-white">GestÃ£o sem sair do app</p>
                     <p className="mt-1 text-sm text-slate-300">
-                      Status, plano e próximas cobranças aparecem dentro do SaaS. Portal externo só quando preciso.
+                      Status, plano e prÃ³ximas cobranÃ§as aparecem dentro do SaaS. Portal externo sÃ³ quando preciso.
                     </p>
                   </div>
                 </div>
@@ -1043,7 +1047,7 @@ const SubscriptionView = ({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Recursos do plano</p>
-                  <h4 className="mt-2 text-xl font-black text-white">Benefícios ativos</h4>
+                  <h4 className="mt-2 text-xl font-black text-white">BenefÃ­cios ativos</h4>
                 </div>
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
                   {summary.planLabel}
@@ -1059,14 +1063,14 @@ const SubscriptionView = ({
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ações disponíveis</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">AÃ§Ãµes disponÃ­veis</p>
               <h4 className="mt-2 text-xl font-black text-white">Gerenciar assinatura</h4>
               <div className="mt-5 space-y-3">
                 <button
                   onClick={onChangePlan}
                   className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-emerald-500/30 hover:bg-slate-900"
                 >
-                  <span>Alterar plano</span>
+                  <span>{summary.primaryActionLabel || 'Alterar plano'}</span>
                   <ArrowUpRight size={16} className="text-emerald-300" />
                 </button>
                 <button
@@ -1096,14 +1100,14 @@ const SubscriptionView = ({
                   disabled={!summary.canManageBilling || actionLoading !== null}
                   className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histórico de cobrança'}</span>
+                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histÃ³rico de cobranÃ§a'}</span>
                   <ExternalLink size={16} className="text-slate-400" />
                 </button>
               </div>
 
               {summary.cancelAtPeriodEnd ? (
                 <p className="mt-4 text-sm text-amber-200">
-                  O cancelamento está agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
+                  O cancelamento estÃ¡ agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
                   da data de encerramento.
                 </p>
               ) : null}
@@ -1208,35 +1212,35 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-white">Visão Geral</h3>
+          <h3 className="text-xl font-bold text-white">VisÃ£o Geral</h3>
           <p className="text-sm text-slate-400 capitalize">Resumo de {monthLabel}</p>
         </div>
         <button
           onClick={onAddTransaction}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={16} /> Nova Transação
+          <Plus size={16} /> Nova TransaÃ§Ã£o
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          label="Entradas do mês"
+          label="Entradas do mÃªs"
           value={formatCurrency(monthIncome)}
-          trend="transações de entrada"
+          trend="transaÃ§Ãµes de entrada"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'income').length}`}
           icon={TrendingUp}
         />
         <StatCard
-          label="Despesas do mês"
+          label="Despesas do mÃªs"
           value={formatCurrency(monthExpenses)}
-          trend="transações de saída"
+          trend="transaÃ§Ãµes de saÃ­da"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'expense').length}`}
           icon={ShoppingCart}
           trendType="down"
         />
         <StatCard
-          label="Saldo do mês"
+          label="Saldo do mÃªs"
           value={formatCurrency(monthBalance)}
           trend="entradas - despesas"
           trendValue={monthBalance >= 0 ? 'Positivo' : 'Negativo'}
@@ -1247,7 +1251,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
           label="Taxa de economia"
           value={`${savingsRate.toFixed(1)}%`}
           trend="(entradas - despesas) / entradas"
-          trendValue="mês atual"
+          trendValue="mÃªs atual"
           icon={Target}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
         />
@@ -1257,7 +1261,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
         <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-white">Receitas vs Despesas</h3>
-            <p className="text-sm text-slate-400">Últimos 6 meses</p>
+            <p className="text-sm text-slate-400">Ãšltimos 6 meses</p>
           </div>
 
           <div className="h-[320px] w-full">
@@ -1307,30 +1311,30 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
         </div>
 
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
-          <h3 className="text-lg font-bold text-white mb-6">Insights do mês</h3>
+          <h3 className="text-lg font-bold text-white mb-6">Insights do mÃªs</h3>
           <div className="space-y-4">
             <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                Maior gasto do mês
+                Maior gasto do mÃªs
               </p>
               <p className="text-sm font-semibold text-white">
                 {largestExpenseEntry
                   ? `${largestExpenseEntry[0]} (${formatCurrency(largestExpenseEntry[1])})`
-                  : 'Sem despesas no mês atual'}
+                  : 'Sem despesas no mÃªs atual'}
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-                Resumo do mês
+                Resumo do mÃªs
               </p>
               <p className="text-sm text-slate-200">
-                Você gastou <span className="font-bold text-rose-400">{formatCurrency(monthExpenses)}</span>{' '}
+                VocÃª gastou <span className="font-bold text-rose-400">{formatCurrency(monthExpenses)}</span>{' '}
                 em{' '}
                 <span className="font-bold text-white">
                   {currentMonthTransactions.filter((tx) => tx.type === 'expense').length}
                 </span>{' '}
-                transações.
+                transaÃ§Ãµes.
               </p>
             </div>
 
@@ -1340,7 +1344,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
                 className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"
               >
                 <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
-                  Insight automático
+                  Insight automÃ¡tico
                 </p>
                 <p className="text-sm text-emerald-100/90">{insight}</p>
               </div>
@@ -1351,7 +1355,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
 
       <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">Últimas transações</h3>
+          <h3 className="text-lg font-bold text-white">Ãšltimas transaÃ§Ãµes</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
@@ -1365,7 +1369,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
                   Categoria
                 </th>
                 <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Descrição
+                  DescriÃ§Ã£o
                 </th>
                 <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
                   Data
@@ -1379,7 +1383,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
               {recentTransactions.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Nenhuma transação encontrada.
+                    Nenhuma transaÃ§Ã£o encontrada.
                   </td>
                 </tr>
               )}
@@ -1453,12 +1457,12 @@ const TransactionsView = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Transações</h3>
+        <h3 className="text-xl font-bold text-white">TransaÃ§Ãµes</h3>
         <button
           onClick={onAddTransaction}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={18} /> Nova Transação
+          <Plus size={18} /> Nova TransaÃ§Ã£o
         </button>
       </div>
 
@@ -1468,7 +1472,7 @@ const TransactionsView = ({
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saídas totais</p>
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">SaÃ­das totais</p>
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
@@ -1486,7 +1490,7 @@ const TransactionsView = ({
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por descrição"
+              placeholder="Buscar por descriÃ§Ã£o"
               className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
@@ -1509,7 +1513,7 @@ const TransactionsView = ({
       <div className="lg:hidden space-y-4">
         {filteredTransactions.length === 0 && (
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-sm">
-            Nenhuma transação encontrada para os filtros atuais.
+            Nenhuma transaÃ§Ã£o encontrada para os filtros atuais.
           </div>
         )}
 
@@ -1550,9 +1554,9 @@ const TransactionsView = ({
                 <span className="text-[10px] text-emerald-500/80 font-bold uppercase tracking-widest flex items-center gap-1">
                   <Wallet size={10} /> {tx.wallet}
                 </span>
-                {tx.flowType === 'Transferência' && tx.destinationWallet && (
+                {tx.flowType === 'TransferÃªncia' && tx.destinationWallet && (
                   <span className="text-[10px] text-cyan-400/80 font-bold uppercase tracking-widest">
-                    → {tx.destinationWallet}
+                    â†’ {tx.destinationWallet}
                   </span>
                 )}
               </div>
@@ -1581,20 +1585,20 @@ const TransactionsView = ({
           <thead>
             <tr className="border-b border-slate-800 bg-slate-800/30">
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Data</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Descrição</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">DescriÃ§Ã£o</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Tipo</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Categoria</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Método</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">MÃ©todo</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Carteira</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Valor</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Ações</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filteredTransactions.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
-                  Nenhuma transação encontrada para os filtros atuais.
+                  Nenhuma transaÃ§Ã£o encontrada para os filtros atuais.
                 </td>
               </tr>
             )}
@@ -1615,7 +1619,7 @@ const TransactionsView = ({
                   <td className="px-6 py-4 text-xs text-slate-300">{tx.paymentMethod}</td>
                   <td className="px-6 py-4 text-xs text-slate-400">
                     {tx.wallet}
-                    {tx.flowType === 'Transferência' && tx.destinationWallet ? ` → ${tx.destinationWallet}` : ''}
+                    {tx.flowType === 'TransferÃªncia' && tx.destinationWallet ? ` â†’ ${tx.destinationWallet}` : ''}
                   </td>
                   <td
                     className={cn(
@@ -1682,9 +1686,9 @@ const IntegrationsView = ({
       annualPrice: 290,
       active: false,
       features: [
-        'Lançamentos ilimitados',
+        'LanÃ§amentos ilimitados',
         'IA completa',
-        'Relatórios avançados',
+        'RelatÃ³rios avanÃ§ados',
         'Metas ilimitadas',
         'Investimentos',
       ],
@@ -1696,9 +1700,9 @@ const IntegrationsView = ({
       active: false,
       features: [
         'Tudo do Pro',
-        'Insights semanais automáticos',
-        'Planejamento estratégico',
-        'Suporte prioritário',
+        'Insights semanais automÃ¡ticos',
+        'Planejamento estratÃ©gico',
+        'Suporte prioritÃ¡rio',
       ],
     },
   ];
@@ -1726,7 +1730,7 @@ const IntegrationsView = ({
               billingCycle === 'annually' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400'
             )}
           >
-            Anual <span className="text-[10px] ml-1 opacity-70">(2 meses grátis)</span>
+            Anual <span className="text-[10px] ml-1 opacity-70">(2 meses grÃ¡tis)</span>
           </button>
         </div>
 
@@ -1744,7 +1748,7 @@ const IntegrationsView = ({
                   R$ {billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice}
                 </span>
                 <span className="text-slate-500 text-sm">
-                  /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                  /{billingCycle === 'monthly' ? 'mÃªs' : 'ano'}
                 </span>
               </div>
               <button
@@ -1773,7 +1777,7 @@ const IntegrationsView = ({
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white">Integração com WhatsApp</h3>
+              <h3 className="text-xl font-bold text-white">IntegraÃ§Ã£o com WhatsApp</h3>
               <p className="text-sm text-slate-500">
                 Alertas em tempo real e resumos de IA no seu celular
               </p>
@@ -1798,15 +1802,15 @@ const IntegrationsView = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-6">
             <p className="text-slate-400 leading-relaxed">
-              Receba notificações em tempo real sobre seu saldo, alertas de transação e resumos
+              Receba notificaÃ§Ãµes em tempo real sobre seu saldo, alertas de transaÃ§Ã£o e resumos
               financeiros semanais de IA diretamente no seu celular.
             </p>
 
             <div className="space-y-4">
               {[
-                'Insira o número do seu WhatsApp Business',
-                'Escaneie o código QR usando seu aplicativo WhatsApp',
-                'Aguarde a conexão ser estabelecida',
+                'Insira o nÃºmero do seu WhatsApp Business',
+                'Escaneie o cÃ³digo QR usando seu aplicativo WhatsApp',
+                'Aguarde a conexÃ£o ser estabelecida',
               ].map((step, i) => (
                 <div key={i} className="flex gap-4 items-start">
                   <div className="size-6 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 flex-shrink-0">
@@ -1819,7 +1823,7 @@ const IntegrationsView = ({
 
             {!isWhatsAppConnected && (
               <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Número do WhatsApp</label>
+                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">NÃºmero do WhatsApp</label>
                 <input
                   type="tel"
                   value={phoneNumber}
@@ -1896,7 +1900,7 @@ const IntegrationsView = ({
                 ? 'Dispositivo vinculado: iPhone de Vagner'
                 : isConnectingWhatsApp
                 ? 'Aguardando sinal...'
-                : 'O código QR expira em 2 minutos'}
+                : 'O cÃ³digo QR expira em 2 minutos'}
             </p>
           </div>
         </div>
@@ -1915,7 +1919,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => (
       <h3 className="text-xl font-bold text-white">Agenda Financeira</h3>
       <div className="flex gap-2">
         <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors text-sm font-bold">
-          <Calendar size={18} /> Próximos 30 dias
+          <Calendar size={18} /> PrÃ³ximos 30 dias
         </button>
       </div>
     </div>
@@ -1929,7 +1933,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => (
                 Vencimento
               </th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Descrição
+                DescriÃ§Ã£o
               </th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
                 Valor
@@ -1938,7 +1942,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => (
                 Status
               </th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">
-                Ações
+                AÃ§Ãµes
               </th>
             </tr>
           </thead>
@@ -2009,12 +2013,12 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Dívidas</h3>
+        <h3 className="text-xl font-bold text-white">DÃ­vidas</h3>
         <button
           onClick={onAddDebt}
           className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={18} /> Nova Dívida
+          <Plus size={18} /> Nova DÃ­vida
         </button>
       </div>
 
@@ -2042,17 +2046,17 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Categoria</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Original</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Restante</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Juros % mês</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Juros % mÃªs</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Vencimento</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Ações</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {debts.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Nenhuma dívida cadastrada.
+                    Nenhuma dÃ­vida cadastrada.
                   </td>
                 </tr>
               )}
@@ -2265,13 +2269,13 @@ const InvestmentsView = ({
               <tr className="border-b border-slate-800 bg-slate-900/50">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Nome</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Tipo</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Instituição</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">InstituiÃ§Ã£o</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Investido</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Valor atual</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rendimento</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rentab. %</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Ret. esp. % a.a.</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Ações</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -2458,7 +2462,7 @@ const ReportsView = ({
 
     setIsGeneratingInsight(true);
     try {
-      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionáveis:
+      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionÃ¡veis:
 Receitas: ${formatCurrency(totalIncome)}
 Despesas: ${formatCurrency(totalExpenses)}
 Saldo: ${formatCurrency(balance)}
@@ -2477,10 +2481,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao gerar insights.');
       }
-      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi possível gerar insights no momento.');
+      setAiInsight(typeof data?.text === 'string' ? data.text : 'NÃ£o foi possÃ­vel gerar insights no momento.');
     } catch (error) {
       console.error('AI Insight error:', error);
-      setAiInsight('Não foi possível gerar insights no momento.');
+      setAiInsight('NÃ£o foi possÃ­vel gerar insights no momento.');
     } finally {
       setIsGeneratingInsight(false);
     }
@@ -2489,7 +2493,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Relatórios e Insights</h3>
+        <h3 className="text-xl font-bold text-white">RelatÃ³rios e Insights</h3>
         <div className="flex gap-2">
           <button
             onClick={onExportPDF}
@@ -2516,7 +2520,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo lÃ­quido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
         </div>
       </div>
@@ -2654,7 +2658,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={16} className="text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-500 uppercase">Análise personalizada</span>
+                <span className="text-xs font-bold text-emerald-500 uppercase">AnÃ¡lise personalizada</span>
               </div>
               <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
                 {aiInsight}
@@ -2845,7 +2849,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar meta'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar meta'}
           </button>
         </div>
       </motion.div>
@@ -2957,12 +2961,12 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: Inve
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Instituição</label>
+            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">InstituiÃ§Ã£o</label>
             <input
               type="text"
               value={formData.institution}
               onChange={(e) => setFormData((prev) => ({ ...prev, institution: e.target.value }))}
-              placeholder="Ex: XP, NuInvest, Itaú"
+              placeholder="Ex: XP, NuInvest, ItaÃº"
               className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
@@ -3011,7 +3015,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: Inve
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Adicionar investimento'}
           </button>
         </div>
       </motion.div>
@@ -3078,7 +3082,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar dívida.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar dÃ­vida.');
     } finally {
       setIsSubmitting(false);
     }
@@ -3092,7 +3096,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
         className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Dívida' : 'Nova Dívida'}</h3>
+          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar DÃ­vida' : 'Nova DÃ­vida'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -3133,7 +3137,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Juros (% mês)</label>
+              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Juros (% mÃªs)</label>
               <input
                 type="number"
                 min="0"
@@ -3194,7 +3198,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar dÃ­vida'}
           </button>
         </div>
       </motion.div>
@@ -3235,7 +3239,7 @@ const TransactionModal = ({
         description: '',
         amount: '',
         flowType: 'Despesa',
-        category: 'Alimentação',
+        category: 'AlimentaÃ§Ã£o',
         paymentMethod: 'PIX',
         wallet: TRANSACTION_WALLETS[0],
         destinationWallet: '',
@@ -3333,7 +3337,7 @@ const TransactionModal = ({
         }));
         setReceiptStatus('Dados detectados automaticamente. Revise antes de salvar.');
       } else {
-        setReceiptStatus('Não foi possível extrair dados do comprovante.');
+        setReceiptStatus('NÃ£o foi possÃ­vel extrair dados do comprovante.');
       }
     } catch {
       setReceiptStatus('Falha ao processar comprovante.');
@@ -3350,7 +3354,7 @@ const TransactionModal = ({
     parseMoneyInput(formData.amount) > 0 &&
     formData.category.trim().length > 0 &&
     formData.wallet.trim().length > 0 &&
-    (formData.flowType !== 'Transferência' ||
+    (formData.flowType !== 'TransferÃªncia' ||
       (formData.destinationWallet.trim().length > 0 && formData.destinationWallet !== formData.wallet)) &&
     formData.date.trim().length > 0;
 
@@ -3376,7 +3380,7 @@ const TransactionModal = ({
         className="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-lg w-full shadow-2xl my-6"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
+          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova TransaÃ§Ã£o'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -3395,9 +3399,9 @@ const TransactionModal = ({
                       ...prev,
                       flowType,
                       paymentMethod:
-                        flowType === 'Transferência'
-                          ? 'Transferência bancária'
-                          : prev.paymentMethod === 'Transferência bancária'
+                        flowType === 'TransferÃªncia'
+                          ? 'TransferÃªncia bancÃ¡ria'
+                          : prev.paymentMethod === 'TransferÃªncia bancÃ¡ria'
                             ? 'PIX'
                             : prev.paymentMethod,
                     }))
@@ -3427,7 +3431,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descrição</label>
+            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">DescriÃ§Ã£o</label>
             <input
               type="text"
               value={formData.description}
@@ -3440,18 +3444,18 @@ const TransactionModal = ({
           {(isLoadingSuggestion || suggestedCategory) && (
             <div className="rounded-xl border border-slate-800 bg-slate-800/40 p-3 text-xs text-slate-300">
               {isLoadingSuggestion ? (
-                <span>Buscando sugestão de categoria...</span>
+                <span>Buscando sugestÃ£o de categoria...</span>
               ) : suggestedCategory ? (
                 <div className="flex items-center justify-between gap-2">
                   <span>
-                    Sugestão: <span className="font-bold text-emerald-400">{suggestedCategory}</span>
+                    SugestÃ£o: <span className="font-bold text-emerald-400">{suggestedCategory}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
                     className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors"
                   >
-                    Usar sugestão
+                    Usar sugestÃ£o
                   </button>
                 </div>
               ) : null}
@@ -3487,7 +3491,7 @@ const TransactionModal = ({
 
           <div className="space-y-2">
             <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-              Método de pagamento
+              MÃ©todo de pagamento
             </label>
             <select
               value={formData.paymentMethod}
@@ -3524,7 +3528,7 @@ const TransactionModal = ({
             </div>
           )}
 
-          {formData.flowType === 'Transferência' ? (
+          {formData.flowType === 'TransferÃªncia' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta origem</label>
@@ -3573,9 +3577,9 @@ const TransactionModal = ({
             </div>
           )}
 
-          {formData.flowType === 'Transferência' && formData.destinationWallet === formData.wallet && (
+          {formData.flowType === 'TransferÃªncia' && formData.destinationWallet === formData.wallet && (
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
-              Conta origem e destino não podem ser iguais.
+              Conta origem e destino nÃ£o podem ser iguais.
             </div>
           )}
 
@@ -3589,7 +3593,7 @@ const TransactionModal = ({
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar transaÃ§Ã£o'}
           </button>
         </div>
       </motion.div>
@@ -3607,32 +3611,32 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const steps = [
     {
       title: 'Bem-vindo ao Cote Finance AI!',
-      description: 'Seu assistente financeiro inteligente que organiza, analisa, prevê e orienta automaticamente.',
+      description: 'Seu assistente financeiro inteligente que organiza, analisa, prevÃª e orienta automaticamente.',
       target: 'sidebar-logo',
     },
     {
-      title: 'Visão Geral do Painel',
-      description: 'Aqui você acompanha seu saldo consolidado, entradas e saídas em tempo real.',
+      title: 'VisÃ£o Geral do Painel',
+      description: 'Aqui vocÃª acompanha seu saldo consolidado, entradas e saÃ­das em tempo real.',
       target: 'dashboard-stats',
     },
     {
-      title: 'Previsões de IA',
-      description: 'Nossa IA analisa seus padrões e prevê seu saldo futuro, ajudando você a se planejar.',
+      title: 'PrevisÃµes de IA',
+      description: 'Nossa IA analisa seus padrÃµes e prevÃª seu saldo futuro, ajudando vocÃª a se planejar.',
       target: 'ai-forecast',
     },
     {
       title: 'Assistente Cote',
-      description: 'Converse com nossa IA para tirar dúvidas sobre seus gastos e receber dicas personalizadas.',
+      description: 'Converse com nossa IA para tirar dÃºvidas sobre seus gastos e receber dicas personalizadas.',
       target: 'ai-assistant',
     },
     {
-      title: 'Integração WhatsApp',
+      title: 'IntegraÃ§Ã£o WhatsApp',
       description: 'Registre gastos e receba alertas diretamente pelo WhatsApp. Praticidade total.',
       target: 'whatsapp-integration',
     },
     {
       title: 'Tudo Pronto!',
-      description: 'Agora você está pronto para dominar suas finanças. Vamos começar?',
+      description: 'Agora vocÃª estÃ¡ pronto para dominar suas finanÃ§as. Vamos comeÃ§ar?',
       target: 'sidebar-logo',
     },
   ];
@@ -3688,7 +3692,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               onClick={nextStep}
               className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
             >
-              {step === steps.length - 1 ? 'Começar agora' : 'Próximo'}
+              {step === steps.length - 1 ? 'ComeÃ§ar agora' : 'PrÃ³ximo'}
             </button>
           </div>
         </div>
@@ -3733,11 +3737,11 @@ const LoginView = ({
     if (!firstName.trim()) return 'Informe seu nome.';
     if (!lastName.trim()) return 'Informe seu sobrenome.';
     if (!email.trim()) return 'Informe seu e-mail.';
-    if (password.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
+    if (password.length < 8) return 'A senha deve ter no mÃ­nimo 8 caracteres.';
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      return 'A senha deve conter letras e números.';
+      return 'A senha deve conter letras e nÃºmeros.';
     }
-    if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
+    if (!acceptedTerms) return 'VocÃª precisa aceitar os termos para continuar.';
     return null;
   };
 
@@ -3770,9 +3774,9 @@ const LoginView = ({
 
       if (resendError) throw resendError;
 
-      setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
+      setNotice('Enviamos um novo e-mail de confirmaÃ§Ã£o. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
-      setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
+      setError(err?.message || 'NÃ£o foi possÃ­vel reenviar o e-mail de confirmaÃ§Ã£o.');
     } finally {
       setLoading(false);
     }
@@ -3780,7 +3784,7 @@ const LoginView = ({
 
   const requestEmailCode = async (normalizedEmail: string) => {
     if (!normalizedEmail) {
-      throw new Error('Informe seu e-mail para receber o código.');
+      throw new Error('Informe seu e-mail para receber o cÃ³digo.');
     }
 
     const { error: otpError } = await supabase.auth.signInWithOtp({
@@ -3797,7 +3801,7 @@ const LoginView = ({
     setOtpRequestedEmail(normalizedEmail);
     setOtpCode('');
     setNotice(
-      'Enviamos um código de acesso para seu e-mail. Se o template estiver com link mágico, você também pode entrar clicando no link recebido.'
+      'Enviamos um cÃ³digo de acesso para seu e-mail. Se o template estiver com link mÃ¡gico, vocÃª tambÃ©m pode entrar clicando no link recebido.'
     );
   };
 
@@ -3805,11 +3809,11 @@ const LoginView = ({
     const token = otpCode.trim();
 
     if (!normalizedEmail) {
-      throw new Error('Informe seu e-mail para validar o código.');
+      throw new Error('Informe seu e-mail para validar o cÃ³digo.');
     }
 
     if (token.length < 6) {
-      throw new Error('Digite o código recebido no e-mail para continuar.');
+      throw new Error('Digite o cÃ³digo recebido no e-mail para continuar.');
     }
 
     const { data, error: verifyError } = await supabase.auth.verifyOtp({
@@ -3827,7 +3831,7 @@ const LoginView = ({
     const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
 
     if (!accessToken || !resolvedUser) {
-      throw new Error('Não foi possível validar o código. Solicite um novo e tente novamente.');
+      throw new Error('NÃ£o foi possÃ­vel validar o cÃ³digo. Solicite um novo e tente novamente.');
     }
 
     await runSetupForToken(accessToken);
@@ -3894,14 +3898,14 @@ const LoginView = ({
       if (!isLogin) {
         setPendingConfirmationEmail(normalizedEmail);
         setNotice(
-          'Conta criada com sucesso. Enviamos um e-mail de confirmação para continuar seu acesso.'
+          'Conta criada com sucesso. Enviamos um e-mail de confirmaÃ§Ã£o para continuar seu acesso.'
         );
         setIsLogin(true);
         setPassword('');
         return;
       }
 
-      throw new Error('Não foi possível iniciar sessão. Tente novamente.');
+      throw new Error('NÃ£o foi possÃ­vel iniciar sessÃ£o. Tente novamente.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -3930,11 +3934,11 @@ const LoginView = ({
       const rawMessage = String(err?.message || '');
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError(
-          'Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
+          'Google OAuth nÃ£o estÃ¡ habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
         );
       } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
         setError(
-          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
+          `Redirect URI invÃ¡lida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
         );
       } else {
         setError(rawMessage || 'Falha ao iniciar login com Google.');
@@ -3967,9 +3971,9 @@ const LoginView = ({
             <p className="text-sm text-slate-400">
               {isLogin
                 ? loginMethod === 'otp'
-                  ? 'Entre com um código enviado para o seu e-mail, sem precisar da senha.'
-                  : 'Acesse seu workspace com segurança e continue de onde parou.'
-                : 'Comece a organizar suas finanças em minutos.'}
+                  ? 'Entre com um cÃ³digo enviado para o seu e-mail, sem precisar da senha.'
+                  : 'Acesse seu workspace com seguranÃ§a e continue de onde parou.'
+                : 'Comece a organizar suas finanÃ§as em minutos.'}
             </p>
           </div>
         </div>
@@ -4010,7 +4014,7 @@ const LoginView = ({
                     : 'text-slate-400 hover:text-white'
                 )}
               >
-                Código por e-mail
+                CÃ³digo por e-mail
               </button>
             </div>
           ) : null}
@@ -4069,19 +4073,19 @@ const LoginView = ({
             <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-800/30 p-4">
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-white">
-                  {otpRequestedEmail ? 'Digite o código recebido' : 'Receba um código de acesso'}
+                  {otpRequestedEmail ? 'Digite o cÃ³digo recebido' : 'Receba um cÃ³digo de acesso'}
                 </p>
                 <p className="text-xs leading-relaxed text-slate-400">
                   {otpRequestedEmail
-                    ? `Enviamos o código para ${otpRequestedEmail}. Você também pode usar o link recebido no e-mail.`
-                    : 'Vamos enviar um código para o seu e-mail para validar sua entrada no app.'}
+                    ? `Enviamos o cÃ³digo para ${otpRequestedEmail}. VocÃª tambÃ©m pode usar o link recebido no e-mail.`
+                    : 'Vamos enviar um cÃ³digo para o seu e-mail para validar sua entrada no app.'}
                 </p>
               </div>
 
               {otpRequestedEmail ? (
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    Código
+                    CÃ³digo
                   </label>
                   <input
                     type="text"
@@ -4090,7 +4094,7 @@ const LoginView = ({
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
-                    placeholder="Digite o código recebido"
+                    placeholder="Digite o cÃ³digo recebido"
                   />
                 </div>
               ) : null}
@@ -4125,7 +4129,7 @@ const LoginView = ({
                     rel="noreferrer"
                     className="font-semibold text-emerald-300 hover:text-emerald-200"
                   >
-                    política de privacidade
+                    polÃ­tica de privacidade
                   </Link>
                   <span>.</span>
                 </div>
@@ -4147,8 +4151,8 @@ const LoginView = ({
                 ? 'Criar conta gratuita'
                 : loginMethod === 'otp'
                   ? otpRequestedEmail
-                    ? 'Validar código e entrar'
-                    : 'Receber código por e-mail'
+                    ? 'Validar cÃ³digo e entrar'
+                    : 'Receber cÃ³digo por e-mail'
                   : 'Entrar'}
           </button>
 
@@ -4159,7 +4163,7 @@ const LoginView = ({
               disabled={loading}
               className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
             >
-              Não recebeu o e-mail? Reenviar confirmação
+              NÃ£o recebeu o e-mail? Reenviar confirmaÃ§Ã£o
             </button>
           ) : null}
 
@@ -4175,14 +4179,14 @@ const LoginView = ({
                   try {
                     await requestEmailCode(otpRequestedEmail);
                   } catch (err: any) {
-                    setError(err?.message || 'Não foi possível reenviar o código.');
+                    setError(err?.message || 'NÃ£o foi possÃ­vel reenviar o cÃ³digo.');
                   } finally {
                     setLoading(false);
                   }
                 }}
                 className="text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
               >
-                Reenviar código
+                Reenviar cÃ³digo
               </button>
               <button
                 type="button"
@@ -4236,7 +4240,7 @@ const LoginView = ({
         </button>
 
         <p className="mt-7 text-center text-sm text-slate-500">
-          {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+          {isLogin ? 'NÃ£o tem uma conta?' : 'JÃ¡ tem uma conta?'}
           <button
             onClick={() => {
               setError(null);
@@ -4395,7 +4399,7 @@ export default function App() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Sessão expirada. Faça login novamente.');
+        throw new Error('SessÃ£o expirada. FaÃ§a login novamente.');
       }
 
       return {
@@ -4532,7 +4536,7 @@ export default function App() {
             id: item.id,
             label: item.name,
             type: item.type || 'Outros',
-            institution: item.institution || 'Não informado',
+            institution: item.institution || 'NÃ£o informado',
             invested: Number(item.invested_amount || 0),
             value: Number(item.current_amount || 0),
             expectedReturnAnnual: Number(item.expected_return_annual || 0),
@@ -4566,7 +4570,7 @@ export default function App() {
         setGoals([]);
         setInvestments([]);
         setDebts([]);
-        setDashboardInsights(['Não foi possível carregar os insights no momento.']);
+        setDashboardInsights(['NÃ£o foi possÃ­vel carregar os insights no momento.']);
       }
     } finally {
       if (!silent) {
@@ -5014,14 +5018,14 @@ export default function App() {
       }
 
       setSettingsSavedAt(
-        `Alterações salvas às ${new Date().toLocaleTimeString('pt-BR', {
+        `AlteraÃ§Ãµes salvas Ã s ${new Date().toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit',
         })}`
       );
     } catch (error) {
       console.error('Save settings error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao salvar configurações.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar configuraÃ§Ãµes.');
     }
   };
 
@@ -5082,7 +5086,7 @@ export default function App() {
     const payload: TransactionFormData = {
       ...onboardingFirstRecord,
       flowType:
-        onboardingFirstRecord.flowType === 'Transferência'
+        onboardingFirstRecord.flowType === 'TransferÃªncia'
           ? 'Despesa'
           : onboardingFirstRecord.flowType,
       destinationWallet: '',
@@ -5159,7 +5163,7 @@ export default function App() {
             parts: [{ text: m.text }],
           })),
           context: {
-            userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário',
+            userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'UsuÃ¡rio',
             activeTab,
             isWhatsAppConnected,
             financialSummary: assistantFinancialContext,
@@ -5189,7 +5193,7 @@ export default function App() {
         ...prev,
         {
           role: 'model',
-          text: `Desculpe, tive um problema técnico ao processar sua mensagem. ${
+          text: `Desculpe, tive um problema tÃ©cnico ao processar sua mensagem. ${
             error instanceof Error ? error.message : 'Tente novamente em alguns instantes.'
           }`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -5222,6 +5226,15 @@ export default function App() {
     },
     [activeWorkspaceId]
   );
+
+  const buildPlanLabelFromSummary = React.useCallback((summary: SubscriptionOverview | null) => {
+    if (!summary || summary.plan === 'FREE') {
+      return 'Pro Mensal';
+    }
+
+    const suffix = summary.interval === 'ANNUAL' ? 'Anual' : 'Mensal';
+    return `${summary.planLabel} ${suffix}`;
+  }, []);
 
   const fetchSubscriptionData = React.useCallback(async () => {
     if (!user || !activeWorkspaceId) return;
@@ -5266,12 +5279,15 @@ export default function App() {
             typeof data?.error === 'string'
               ? data.error
               : `Falha ao abrir portal (HTTP ${response.status}).`;
-          if ((response.status === 404 || message.toLowerCase().includes('customer')) && isFreePlan) {
+          if (
+            (response.status === 404 || message.toLowerCase().includes('customer')) &&
+            (subscriptionSummary?.canOpenCheckout || isFreePlan)
+          ) {
             const shouldUpgrade = window.confirm(
-              'Seu workspace ainda não possui assinatura paga. Deseja iniciar upgrade agora?'
+              'Este workspace ainda nao tem uma assinatura regularizada. Deseja abrir o checkout agora?'
             );
             if (shouldUpgrade) {
-              void handleUpgrade('Pro Mensal');
+              void handleUpgrade(buildPlanLabelFromSummary(subscriptionSummary));
             }
             return;
           }
@@ -5289,9 +5305,8 @@ export default function App() {
         setSubscriptionActionLoading(null);
       }
     },
-    [getAuthHeaders, handleUpgrade, isFreePlan]
+    [buildPlanLabelFromSummary, getAuthHeaders, handleUpgrade, isFreePlan, subscriptionSummary]
   );
-
   const handleManageSubscription = React.useCallback(() => {
     setActiveTab('subscription');
     setIsProfileMenuOpen(false);
@@ -5328,13 +5343,26 @@ export default function App() {
   );
 
   const handleChangePlan = React.useCallback(() => {
+    if (!subscriptionSummary) {
+      handleManageSubscription();
+      return;
+    }
+
+    if (
+      subscriptionSummary.recommendedAction === 'checkout' ||
+      subscriptionSummary.recommendedAction === 'regularize'
+    ) {
+      void handleUpgrade(buildPlanLabelFromSummary(subscriptionSummary));
+      return;
+    }
+
     if (currentPlan === 'FREE') {
       void handleUpgrade('Pro Mensal');
       return;
     }
 
     void openStripePortal('history');
-  }, [currentPlan, handleUpgrade, openStripePortal]);
+  }, [buildPlanLabelFromSummary, currentPlan, handleManageSubscription, handleUpgrade, openStripePortal, subscriptionSummary]);
 
   React.useEffect(() => {
     if (!user || !pendingPlanFromQuery || pendingPlanHandled || !activeWorkspaceId) {
@@ -5362,7 +5390,7 @@ export default function App() {
 
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text('Relatório Financeiro - Cote Finance AI', 20, 20);
+    doc.text('RelatÃ³rio Financeiro - Cote Finance AI', 20, 20);
     doc.setFontSize(12);
     doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 30);
 
@@ -5375,13 +5403,13 @@ export default function App() {
 
     doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 20, 45);
     doc.text(`Total Despesas: ${formatCurrency(totalExpenses)}`, 20, 55);
-    doc.text(`Saldo Líquido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
+    doc.text(`Saldo LÃ­quido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
 
     const tableData = transactions.map((tx) => [tx.date, tx.desc, tx.cat, tx.amount, tx.wallet]);
 
     (doc as any).autoTable({
       startY: 80,
-      head: [['Data', 'Descrição', 'Categoria', 'Valor', 'Carteira']],
+      head: [['Data', 'DescriÃ§Ã£o', 'Categoria', 'Valor', 'Carteira']],
       body: tableData,
     });
 
@@ -5389,7 +5417,7 @@ export default function App() {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Carteira'];
+    const headers = ['Data', 'DescriÃ§Ã£o', 'Categoria', 'Valor', 'Tipo', 'Carteira'];
     const rows = transactions.map((tx) => [
       tx.date,
       tx.desc,
@@ -5530,16 +5558,16 @@ export default function App() {
     const resolvedCategory = await resolveTransactionCategory(tx);
     const absoluteAmount = parseMoneyInput(tx.amount);
     if (!absoluteAmount || absoluteAmount <= 0) {
-      alert('Valor inválido para transação.');
+      alert('Valor invÃ¡lido para transaÃ§Ã£o.');
       return false;
     }
-    if (flowType === 'Transferência') {
+    if (flowType === 'TransferÃªncia') {
       if (!tx.destinationWallet.trim()) {
-        alert('Selecione a conta de destino da transferência.');
+        alert('Selecione a conta de destino da transferÃªncia.');
         return false;
       }
       if (tx.destinationWallet === tx.wallet) {
-        alert('Conta origem e destino não podem ser iguais.');
+        alert('Conta origem e destino nÃ£o podem ser iguais.');
         return false;
       }
     }
@@ -5560,7 +5588,7 @@ export default function App() {
         category: resolvedCategory,
         paymentMethod: mapPaymentMethodToBackend(tx.paymentMethod),
         wallet: tx.wallet,
-        destinationWallet: tx.flowType === 'Transferência' ? tx.destinationWallet : null,
+        destinationWallet: tx.flowType === 'TransferÃªncia' ? tx.destinationWallet : null,
         receiptUrl: tx.receiptUrl || null,
         date: tx.date,
       };
@@ -5593,7 +5621,7 @@ export default function App() {
         const message =
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao salvar transação.';
+            : 'Falha ao salvar transaÃ§Ã£o.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -5613,7 +5641,7 @@ export default function App() {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Save transaction error:', error);
-      alert('Falha ao salvar transação. Tente novamente.');
+      alert('Falha ao salvar transaÃ§Ã£o. Tente novamente.');
       return false;
     }
   };
@@ -5660,7 +5688,7 @@ export default function App() {
         const message =
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao excluir transação.';
+            : 'Falha ao excluir transaÃ§Ã£o.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -5679,7 +5707,7 @@ export default function App() {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Delete transaction error:', error);
-      alert('Falha ao excluir transação. Tente novamente.');
+      alert('Falha ao excluir transaÃ§Ã£o. Tente novamente.');
     }
   };
 
@@ -5839,7 +5867,7 @@ export default function App() {
       const message =
         typeof responseData?.error === 'string'
           ? responseData.error
-          : 'Falha ao salvar dívida.';
+          : 'Falha ao salvar dÃ­vida.';
       throw new Error(message);
     }
 
@@ -5870,7 +5898,7 @@ export default function App() {
           throw new Error(
             typeof responseData?.error === 'string'
               ? responseData.error
-              : 'Falha ao excluir dívida.'
+              : 'Falha ao excluir dÃ­vida.'
           );
         }
         if (editingDebtId === id) {
@@ -5879,7 +5907,7 @@ export default function App() {
         }
         await fetchDashboardData();
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
+        alert(error instanceof Error ? error.message : 'Falha ao excluir dÃ­vida.');
       }
     })();
   };
@@ -5938,7 +5966,7 @@ export default function App() {
       handleOpenCreateDebt();
       return;
     }
-    alert('Use + Nova em Transações, Metas, Dívidas ou Investimentos.');
+    alert('Use + Nova em TransaÃ§Ãµes, Metas, DÃ­vidas ou Investimentos.');
   };
 
   if (authLoading) {
@@ -5985,16 +6013,16 @@ export default function App() {
               <h3 className="text-lg font-bold text-white mb-2">Limite do plano Free atingido</h3>
               <p className="text-sm text-slate-400 leading-relaxed mb-6">
                 {upgradeLimitReason === 'transactions'
-                  ? `Você chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês.`
-                  : `Você chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interações de IA no mês.`}{' '}
-                Faça upgrade para Pro/Premium e continue sem bloqueios.
+                  ? `VocÃª chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes no mÃªs.`
+                  : `VocÃª chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interaÃ§Ãµes de IA no mÃªs.`}{' '}
+                FaÃ§a upgrade para Pro/Premium e continue sem bloqueios.
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsUpgradeLimitModalOpen(false)}
                   className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300 hover:text-white transition-colors"
                 >
-                  Agora não
+                  Agora nÃ£o
                 </button>
                 <button
                   onClick={() => {
@@ -6055,8 +6083,8 @@ export default function App() {
                   <div className="rounded-2xl border border-slate-800 bg-slate-800/40 p-6">
                     <h4 className="text-2xl font-bold text-white mb-2">Bem-vindo ao Cote Finance AI</h4>
                     <p className="text-sm text-slate-300 leading-relaxed">
-                      Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanças e
-                      gerar insights mais úteis para você.
+                      Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanÃ§as e
+                      gerar insights mais Ãºteis para vocÃª.
                     </p>
                   </div>
                   <div className="flex justify-end">
@@ -6064,7 +6092,7 @@ export default function App() {
                       onClick={() => setOnboardingStep(1)}
                       className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
-                      Começar
+                      ComeÃ§ar
                     </button>
                   </div>
                 </div>
@@ -6073,7 +6101,7 @@ export default function App() {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Qual é seu principal objetivo financeiro?</h4>
+                    <h4 className="text-xl font-bold text-white mb-1">Qual Ã© seu principal objetivo financeiro?</h4>
                     <p className="text-sm text-slate-400">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
@@ -6115,9 +6143,9 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">
-                      Quantos lançamentos você pretende registrar por mês?
+                      Quantos lanÃ§amentos vocÃª pretende registrar por mÃªs?
                     </h4>
-                    <p className="text-sm text-slate-400">Isso ajuda a ajustar recomendações e limites iniciais.</p>
+                    <p className="text-sm text-slate-400">Isso ajuda a ajustar recomendaÃ§Ãµes e limites iniciais.</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {ONBOARDING_USAGE_LEVELS.map((rangeLabel) => (
@@ -6224,7 +6252,7 @@ export default function App() {
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                      Descrição (opcional)
+                      DescriÃ§Ã£o (opcional)
                     </label>
                     <input
                       value={onboardingFirstRecord.description}
@@ -6234,14 +6262,14 @@ export default function App() {
                           description: event.target.value,
                         }))
                       }
-                      placeholder="Ex: Mercado do mês"
+                      placeholder="Ex: Mercado do mÃªs"
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
                   {onboardingFirstRecordAdded && (
                     <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                      Parabéns! Seu primeiro registro foi adicionado.
+                      ParabÃ©ns! Seu primeiro registro foi adicionado.
                     </div>
                   )}
 
@@ -6266,16 +6294,16 @@ export default function App() {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Este é seu painel financeiro</h4>
-                    <p className="text-sm text-slate-400">Aqui você acompanha tudo em um único lugar.</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Este Ã© seu painel financeiro</h4>
+                    <p className="text-sm text-slate-400">Aqui vocÃª acompanha tudo em um Ãºnico lugar.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
-                    <p className="text-sm text-slate-200">Aqui você pode ver:</p>
+                    <p className="text-sm text-slate-200">Aqui vocÃª pode ver:</p>
                     <ul className="space-y-2 text-sm text-slate-300">
-                      <li>• saldo atual</li>
-                      <li>• despesas por categoria</li>
-                      <li>• evolução dos gastos</li>
-                      <li>• insights da inteligência artificial</li>
+                      <li>â€¢ saldo atual</li>
+                      <li>â€¢ despesas por categoria</li>
+                      <li>â€¢ evoluÃ§Ã£o dos gastos</li>
+                      <li>â€¢ insights da inteligÃªncia artificial</li>
                     </ul>
                   </div>
                   <div className="flex justify-between">
@@ -6298,14 +6326,14 @@ export default function App() {
               {onboardingStep === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Sua primeira análise financeira</h4>
+                    <h4 className="text-xl font-bold text-white mb-1">Sua primeira anÃ¡lise financeira</h4>
                     <p className="text-sm text-slate-400">A IA analisou seus primeiros dados.</p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
-                    Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
-                    {String(onboardingPrimaryInsight.category || 'alimentação').toLowerCase()}. Se reduzir esse gasto em
+                    VocÃª gastou {onboardingPrimaryInsight.percentage}% em{' '}
+                    {String(onboardingPrimaryInsight.category || 'alimentaÃ§Ã£o').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
-                    {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mês.
+                    {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mÃªs.
                   </div>
                   <div className="flex justify-between">
                     <button
@@ -6331,7 +6359,7 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">Complete seu setup</h4>
-                    <p className="text-sm text-slate-400">Conclua estas ações para ativar todo o potencial da IA.</p>
+                    <p className="text-sm text-slate-400">Conclua estas aÃ§Ãµes para ativar todo o potencial da IA.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
                     <div className="h-2 w-full rounded-full bg-slate-700">
@@ -6340,7 +6368,7 @@ export default function App() {
                         style={{ width: `${onboardingChecklistProgress}%` }}
                       />
                     </div>
-                    <p className="text-sm text-slate-300">Você completou {onboardingChecklistProgress}% do setup.</p>
+                    <p className="text-sm text-slate-300">VocÃª completou {onboardingChecklistProgress}% do setup.</p>
                     <div className="space-y-2">
                       {onboardingChecklist.map((item) => (
                         <div key={item.label} className="flex items-center gap-2 text-sm text-slate-200">
@@ -6371,11 +6399,11 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">Insight detectado</h4>
-                    <p className="text-sm text-slate-400">A IA encontrou um padrão para economizar mais.</p>
+                    <p className="text-sm text-slate-400">A IA encontrou um padrÃ£o para economizar mais.</p>
                   </div>
                   <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 p-5 text-sm leading-relaxed text-cyan-100">
-                    Você gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
-                    {onboardingAutomaticInsight.categoryLabel} neste mês. Se reduzir 15% desse valor, pode economizar
+                    VocÃª gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
+                    {onboardingAutomaticInsight.categoryLabel} neste mÃªs. Se reduzir 15% desse valor, pode economizar
                     aproximadamente {formatCurrency(onboardingAutomaticInsight.annualSaving)} por ano.
                   </div>
                   <div className="flex justify-between">
@@ -6389,7 +6417,7 @@ export default function App() {
                       onClick={() => setOnboardingStep(8)}
                       className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
-                      Ver análise completa
+                      Ver anÃ¡lise completa
                     </button>
                   </div>
                 </div>
@@ -6399,16 +6427,16 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">
-                      Desbloqueie análises financeiras avançadas
+                      Desbloqueie anÃ¡lises financeiras avanÃ§adas
                     </h4>
-                    <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
+                    <p className="text-sm text-slate-400">Com o plano Pro vocÃª terÃ¡:</p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
                     <ul className="space-y-2 text-sm text-emerald-100">
-                      <li>• insights financeiros completos</li>
-                      <li>• previsões de saldo</li>
-                      <li>• alertas de gastos fora do padrão</li>
-                      <li>• relatórios avançados</li>
+                      <li>â€¢ insights financeiros completos</li>
+                      <li>â€¢ previsÃµes de saldo</li>
+                      <li>â€¢ alertas de gastos fora do padrÃ£o</li>
+                      <li>â€¢ relatÃ³rios avanÃ§ados</li>
                     </ul>
                   </div>
                   <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -6417,7 +6445,7 @@ export default function App() {
                       checked={onboardingAiSuggestionsEnabled}
                       onChange={(event) => setOnboardingAiSuggestionsEnabled(event.target.checked)}
                     />
-                    Ativar sugestões de IA para este workspace
+                    Ativar sugestÃµes de IA para este workspace
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
@@ -6527,13 +6555,13 @@ export default function App() {
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
           <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={ReceiptText} label="Transações" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={ReceiptText} label="TransaÃ§Ãµes" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={Target} label="Metas" active={activeTab === 'goals'} onClick={() => { setActiveTab('goals'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={CreditCard} label="Dívidas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={CreditCard} label="DÃ­vidas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={TrendingUp} label="Investimentos" active={activeTab === 'investments'} onClick={() => { setActiveTab('investments'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={PieChart} label="Relatórios" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={PieChart} label="RelatÃ³rios" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
           <SidebarItem icon={MessageSquare} label="Assistente IA" active={activeTab === 'assistant'} onClick={() => { setActiveTab('assistant'); setIsAssistantOpen(true); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={Settings} label="Configurações" active={activeTab === 'settings'} onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} />
+          <SidebarItem icon={Settings} label="ConfiguraÃ§Ãµes" active={activeTab === 'settings'} onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} />
         </nav>
 
         <div className="p-4">
@@ -6543,8 +6571,8 @@ export default function App() {
             </p>
             <p className="text-xs text-slate-400 mb-4 leading-relaxed">
               {isFreePlan
-                ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
-                : 'Seu plano atual possui lançamentos e IA ilimitados.'}
+                ? `Free: atÃ© ${FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes/mÃªs e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
+                : 'Seu plano atual possui lanÃ§amentos e IA ilimitados.'}
             </p>
             <button
               onClick={() => {
@@ -6582,24 +6610,24 @@ export default function App() {
               {activeTab === 'dashboard'
                 ? 'Dashboard'
                 : activeTab === 'transactions'
-                ? 'Transações'
+                ? 'TransaÃ§Ãµes'
                 : activeTab === 'goals'
                 ? 'Metas'
                 : activeTab === 'debts'
-                ? 'Dívidas'
+                ? 'DÃ­vidas'
                 : activeTab === 'investments'
                 ? 'Investimentos'
                 : activeTab === 'reports'
-                ? 'Relatórios'
+                ? 'RelatÃ³rios'
                 : activeTab === 'assistant'
                 ? 'Assistente IA'
                 : activeTab === 'agenda'
-                ? 'Dívidas'
+                ? 'DÃ­vidas'
                 : activeTab === 'integrations'
-                ? 'Integrações'
+                ? 'IntegraÃ§Ãµes'
                 : activeTab === 'subscription'
                 ? 'Minha assinatura'
-                : 'Configurações'}
+                : 'ConfiguraÃ§Ãµes'}
             </h2>
             {workspaces.length > 0 && (
               <div className="hidden md:flex items-center gap-2">
@@ -6681,7 +6709,7 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => alert('Sem notificações novas no momento.')}
+              onClick={() => alert('Sem notificaÃ§Ãµes novas no momento.')}
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-500 hover:text-white transition-all relative"
             >
               <Bell size={18} />
@@ -6742,7 +6770,7 @@ export default function App() {
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
                         >
-                          <Settings size={16} /> Configurações
+                          <Settings size={16} /> ConfiguraÃ§Ãµes
                         </button>
                         <button
                           onClick={() => {
@@ -6902,12 +6930,12 @@ export default function App() {
               {activeTab === 'settings' && (
                 <div className="max-w-3xl space-y-6 animate-in fade-in duration-500">
                   <div className="flex items-center justify-between gap-4">
-                    <h3 className="text-xl font-bold text-white">Configurações</h3>
+                    <h3 className="text-xl font-bold text-white">ConfiguraÃ§Ãµes</h3>
                     <button
                       onClick={() => setActiveTab('integrations')}
                       className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-all"
                     >
-                      Abrir Integrações
+                      Abrir IntegraÃ§Ãµes
                     </button>
                   </div>
 
@@ -6958,7 +6986,7 @@ export default function App() {
                       </div>
                       {isFreePlan && (
                         <p className="mt-2 text-xs text-slate-400">
-                          {currentMonthTransactionCount}/{FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês - IA{' '}
+                          {currentMonthTransactionCount}/{FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes no mÃªs - IA{' '}
                           {aiUsageCount}/{FREE_AI_LIMIT_PER_MONTH}
                         </p>
                       )}
@@ -6980,7 +7008,7 @@ export default function App() {
                   <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4">
                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">WhatsApp</h4>
                     <div className="space-y-2">
-                      <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Número</label>
+                      <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">NÃºmero</label>
                       <input
                         type="text"
                         value={settingsWhatsApp}
@@ -7021,7 +7049,7 @@ export default function App() {
                                 {getWorkspaceEventLabel(event.type)}
                               </p>
                               <p className="text-[11px] text-slate-500">
-                                {event.user_id ? `Usuário: ${event.user_id.slice(0, 8)}...` : 'Sistema'}
+                                {event.user_id ? `UsuÃ¡rio: ${event.user_id.slice(0, 8)}...` : 'Sistema'}
                               </p>
                             </div>
                             <span className="text-[11px] text-slate-500 whitespace-nowrap">
@@ -7046,7 +7074,7 @@ export default function App() {
                         onClick={handleSaveSettings}
                         className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-all"
                       >
-                        Salvar alterações
+                        Salvar alteraÃ§Ãµes
                       </button>
                     </div>
                   </div>
@@ -7080,7 +7108,7 @@ export default function App() {
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-slate-400">Pergunte qualquer coisa sobre suas finanças</p>
+                <p className="text-xs text-slate-400">Pergunte qualquer coisa sobre suas finanÃ§as</p>
               </div>
               <button onClick={() => setIsAssistantOpen(false)} className="text-slate-500 hover:text-white transition-colors">
                 <X size={20} />
@@ -7090,7 +7118,7 @@ export default function App() {
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
               {!hasUserMessages && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Sugestões</p>
+                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">SugestÃµes</p>
                   <div className="flex flex-wrap gap-2">
                     {ASSISTANT_SUGGESTIONS.map((suggestion) => (
                       <button
@@ -7119,7 +7147,7 @@ export default function App() {
                     {msg.role === 'model' && i > 0 && (
                       <div className="flex items-center gap-2 mb-2">
                         <TrendingUp className="text-emerald-500" size={14} />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Análise Cote</span>
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">AnÃ¡lise Cote</span>
                       </div>
                     )}
                     {msg.role === 'model' ? (
@@ -7136,7 +7164,7 @@ export default function App() {
 
               {isLoading && (
                 <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                  <Sparkles size={12} /> Cote está pensando...
+                  <Sparkles size={12} /> Cote estÃ¡ pensando...
                 </div>
               )}
             </div>

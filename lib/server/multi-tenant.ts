@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, assertPrismaAvailable, prisma } from '@/lib/prisma';
 import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
+import { getPlanForStoredSubscription, normalizeBillingPlan } from '@/lib/server/billing-status';
 
 export type WorkspacePlan = 'FREE' | 'PRO' | 'PREMIUM';
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -52,13 +53,7 @@ export class HttpError extends Error {
 }
 
 export function normalizePlan(value: string | null | undefined): WorkspacePlan {
-  const normalized = String(value || '')
-    .trim()
-    .toUpperCase();
-  if (normalized === 'PRO' || normalized === 'PREMIUM') {
-    return normalized;
-  }
-  return 'FREE';
+  return normalizeBillingPlan(value);
 }
 
 function readBearerToken(req: Request) {
@@ -226,8 +221,8 @@ async function readUserFallbackPlan(userId: string): Promise<WorkspacePlan> {
       }),
     ]);
 
-    if (entitlement?.status === 'ACTIVE') {
-      return normalizePlan(entitlement.plan);
+    if (entitlement) {
+      return entitlement.status === 'ACTIVE' ? normalizePlan(entitlement.plan) : 'FREE';
     }
 
     return normalizePlan(profile?.plan);
@@ -251,8 +246,11 @@ export async function getWorkspacePlan(workspaceId: string, userId: string): Pro
       select: { plan: true, status: true },
     });
 
-    if (workspaceSubscription && workspaceSubscription.status !== 'CANCELED') {
-      return normalizePlan(workspaceSubscription.plan);
+    if (workspaceSubscription) {
+      return getPlanForStoredSubscription({
+        plan: workspaceSubscription.plan,
+        status: workspaceSubscription.status as 'ACTIVE' | 'CANCELED' | 'PENDING' | null,
+      });
     }
   } catch (error) {
     if (asPrismaServiceUnavailableError(error)) {
