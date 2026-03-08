@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Cote Finance AI | Seu Assistente Financeiro Inteligente',
-  description: 'Organize, analise, preveja e oriente automaticamente suas finanças com o Cote Finance AI.',
+  description: 'Organize, analise, preveja e oriente automaticamente suas finanï¿½as com o Cote Finance AI.',
   icons: {
     icon: [{ url: '/brand/cote-favicon.svg', type: 'image/svg+xml' }],
     shortcut: ['/brand/cote-favicon.svg'],

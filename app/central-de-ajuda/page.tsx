@@ -5,14 +5,14 @@ import { absoluteUrl } from '@/lib/blog/seo';
 export const metadata: Metadata = {
   title: 'Central de Ajuda | Cote Finance AI',
   description:
-    'Encontre respostas rápidas sobre conta, gastos, assinatura, pagamentos e como usar o Cote Finance AI no dia a dia.',
+    'Encontre respostas rï¿½pidas sobre conta, gastos, assinatura, pagamentos e como usar o Cote Finance AI no dia a dia.',
   alternates: {
     canonical: absoluteUrl('/central-de-ajuda'),
   },
   openGraph: {
     title: 'Central de Ajuda | Cote Finance AI',
     description:
-      'Encontre respostas rápidas sobre conta, gastos, assinatura, pagamentos e como usar o Cote Finance AI no dia a dia.',
+      'Encontre respostas rï¿½pidas sobre conta, gastos, assinatura, pagamentos e como usar o Cote Finance AI no dia a dia.',
     url: absoluteUrl('/central-de-ajuda'),
     siteName: 'Cote Finance AI',
     type: 'website',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Central de Ajuda | Cote Finance AI',
     description:
-      'Encontre respostas rápidas sobre conta, gastos, assinatura, pagamentos e como usar o Cote Finance AI no dia a dia.',
+      'Encontre respostas rï¿½pidas sobre conta, gastos, assinatura, pagamentos e como usar o Cote Finance AI no dia a dia.',
     images: [absoluteUrl('/brand/cote-finance-ai-logo.png')],
   },
 };
