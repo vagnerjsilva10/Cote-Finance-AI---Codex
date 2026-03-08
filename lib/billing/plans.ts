@@ -104,6 +104,10 @@ export function formatBillingPrice(plan: BillingPlanCode, interval: BillingInter
   return `R$ ${amount.toLocaleString('pt-BR')}/${interval === 'ANNUAL' ? 'ano' : 'mês'}`;
 }
 
+export function getBillingTrialDays(plan: BillingPlanCode) {
+  return plan === 'PRO' ? 3 : 0;
+}
+
 export function getCheckoutPath(params: {
   plan: BillingPlanCode;
   interval: BillingIntervalCode;

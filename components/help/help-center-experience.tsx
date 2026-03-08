@@ -228,6 +228,11 @@ function scrollToAnchor(anchor: string) {
 
 export function HelpCenterExperience() {
   const [query, setQuery] = React.useState('');
+  const [ticketName, setTicketName] = React.useState('');
+  const [ticketEmail, setTicketEmail] = React.useState('');
+  const [ticketCategory, setTicketCategory] = React.useState('Primeiros passos');
+  const [ticketSubject, setTicketSubject] = React.useState('');
+  const [ticketMessage, setTicketMessage] = React.useState('');
   const trimmedQuery = query.trim();
 
   const results = React.useMemo(() => {
@@ -242,6 +247,33 @@ export function HelpCenterExperience() {
       .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
       .slice(0, 6);
   }, [trimmedQuery]);
+
+  const handleTicketSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const name = ticketName.trim();
+    const email = ticketEmail.trim();
+    const subject = ticketSubject.trim();
+    const message = ticketMessage.trim();
+
+    if (!name || !email || !subject || !message) {
+      return;
+    }
+
+    const mailtoSubject = encodeURIComponent(`[Ticket] ${ticketCategory} - ${subject}`);
+    const mailtoBody = encodeURIComponent(
+      [
+        `Nome: ${name}`,
+        `E-mail: ${email}`,
+        `Categoria: ${ticketCategory}`,
+        '',
+        'Detalhes do pedido:',
+        message,
+      ].join('\n')
+    );
+
+    window.location.href = `mailto:suporte@cotejuros.com.br?subject=${mailtoSubject}&body=${mailtoBody}`;
+  };
 
   return (
     <BlogShell activeItem="help">
@@ -498,22 +530,100 @@ export function HelpCenterExperience() {
       </section>
 
       <section className="mt-14 rounded-[2rem] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff_0%,#f0fdf4_100%)] p-6 shadow-[0_24px_80px_-50px_rgba(16,185,129,0.30)] sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
           <div className="space-y-3">
             <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
               <BadgeHelp size={14} /> Suporte
             </p>
             <h2 className="text-3xl font-black tracking-tight text-slate-950">Ainda precisa de ajuda?</h2>
             <p className="max-w-2xl text-base leading-8 text-slate-600">
-              Se você não encontrou o que procurava, nossa equipe pode ajudar.
+              Se você não encontrou o que procurava, envie um ticket para nossa equipe. Vamos receber sua solicitação
+              no e-mail de suporte com o contexto já organizado.
             </p>
+            <div className="rounded-[1.5rem] border border-emerald-200 bg-white/90 p-5">
+              <p className="text-sm font-semibold text-slate-950">Canal recomendado</p>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                O e-mail ideal para esse fluxo é <span className="font-semibold text-slate-950">suporte@cotejuros.com.br</span>.
+              </p>
+            </div>
           </div>
-          <a
-            href="mailto:auth@cotejuros.com.br?subject=Ajuda%20Cote%20Finance%20AI"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
-          >
-            Entrar em contato <ArrowRight size={16} />
-          </a>
+
+          <form onSubmit={handleTicketSubmit} className="rounded-[1.75rem] border border-white/70 bg-white/95 p-6 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="space-y-2 text-sm font-medium text-slate-700">
+                <span>Nome</span>
+                <input
+                  type="text"
+                  value={ticketName}
+                  onChange={(event) => setTicketName(event.target.value)}
+                  placeholder="Seu nome"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                />
+              </label>
+              <label className="space-y-2 text-sm font-medium text-slate-700">
+                <span>E-mail</span>
+                <input
+                  type="email"
+                  value={ticketEmail}
+                  onChange={(event) => setTicketEmail(event.target.value)}
+                  placeholder="voce@exemplo.com"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                />
+              </label>
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-[220px_minmax(0,1fr)]">
+              <label className="space-y-2 text-sm font-medium text-slate-700">
+                <span>Categoria</span>
+                <select
+                  value={ticketCategory}
+                  onChange={(event) => setTicketCategory(event.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.title}>
+                      {category.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-2 text-sm font-medium text-slate-700">
+                <span>Assunto</span>
+                <input
+                  type="text"
+                  value={ticketSubject}
+                  onChange={(event) => setTicketSubject(event.target.value)}
+                  placeholder="Resumo rápido da sua dúvida"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                />
+              </label>
+            </div>
+
+            <label className="mt-4 block space-y-2 text-sm font-medium text-slate-700">
+              <span>Mensagem</span>
+              <textarea
+                value={ticketMessage}
+                onChange={(event) => setTicketMessage(event.target.value)}
+                rows={6}
+                placeholder="Explique o que aconteceu, o que você tentou fazer e qual ajuda você precisa."
+                className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-7 text-slate-900 outline-none transition focus:border-emerald-500"
+              />
+            </label>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs leading-6 text-slate-500">
+                Ao enviar, abriremos seu aplicativo de e-mail com o ticket preenchido para <span className="font-semibold text-slate-700">suporte@cotejuros.com.br</span>.
+              </p>
+              <button
+                type="submit"
+                disabled={!ticketName.trim() || !ticketEmail.trim() || !ticketSubject.trim() || !ticketMessage.trim()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Enviar ticket <ArrowRight size={16} />
+              </button>
+            </div>
+          </form>
         </div>
       </section>
     </BlogShell>

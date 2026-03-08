@@ -225,7 +225,7 @@ type SubscriptionOverview = {
   canOpenCheckout?: boolean;
 };
 
-const FREE_TRANSACTION_LIMIT_PER_MONTH = 50;
+const FREE_TRANSACTION_LIMIT_PER_MONTH = 20;
 const FREE_AI_LIMIT_PER_MONTH = 20;
 
 // --- Helpers ---
@@ -6494,7 +6494,7 @@ export default function App() {
                         disabled={isSavingOnboarding}
                         className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-60"
                       >
-                        {isSavingOnboarding ? 'Preparando...' : 'Testar Pro gratuitamente por 7 dias'}
+                        {isSavingOnboarding ? 'Preparando...' : 'Testar Pro gratuitamente por 3 dias'}
                       </button>
                     </div>
                   </div>

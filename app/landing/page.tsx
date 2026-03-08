@@ -44,7 +44,7 @@ const plans: PlanCard[] = [
     price: 'R$0 / mês',
     buttonText: 'Começar grátis',
     features: [
-      'até 50 lançamentos por mês',
+      'até 20 lançamentos por mês',
       'dashboard básico',
       'acompanhamento de saldo',
       'relatórios simples',
@@ -54,7 +54,7 @@ const plans: PlanCard[] = [
   {
     name: 'Pro',
     price: 'R$29 / mês',
-    buttonText: 'Testar 7 dias grátis',
+    buttonText: 'Testar 3 dias grátis',
     checkoutPlan: 'Pro Mensal',
     popular: true,
     features: [

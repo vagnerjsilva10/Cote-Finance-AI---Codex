@@ -20,6 +20,7 @@ import {
 import {
   BILLING_PLAN_DETAILS,
   formatBillingPrice,
+  getBillingTrialDays,
   normalizeBillingPlan,
   type BillingIntervalCode,
   type BillingPlanCode,
@@ -197,6 +198,8 @@ export async function POST(req: Request) {
 
     const existingWorkspaceSubscription = await readWorkspaceSubscription(context.workspaceId);
     const existingSubscriptionId = existingWorkspaceSubscription?.stripe_subscription_id ?? null;
+    const shouldApplyTrial =
+      getBillingTrialDays(resolved.plan) > 0 && !existingWorkspaceSubscription?.stripe_subscription_id;
 
     if (existingSubscriptionId) {
       try {
@@ -292,7 +295,7 @@ export async function POST(req: Request) {
         payment_settings: {
           save_default_payment_method: 'on_subscription',
         },
-        trial_from_plan: true,
+        ...(shouldApplyTrial ? { trial_period_days: getBillingTrialDays(resolved.plan) } : {}),
         metadata: {
           userId: context.userId,
           workspaceId: context.workspaceId,
@@ -341,6 +344,7 @@ export async function POST(req: Request) {
         priceId: resolved.priceId,
         subscriptionId: subscription.id,
         intentType: checkoutState.intentType,
+        trialDays: shouldApplyTrial ? getBillingTrialDays(resolved.plan) : 0,
       },
     });
 

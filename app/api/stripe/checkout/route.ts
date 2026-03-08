@@ -12,6 +12,7 @@ import {
   upsertWorkspaceSubscriptionSafe,
 } from '@/lib/server/multi-tenant';
 import { ensureStripeCustomer, resolveStripePlan } from '@/lib/server/stripe-billing';
+import { getBillingTrialDays } from '@/lib/billing/plans';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
     const cancelUrl = new URL('/app?checkout=canceled', baseUrl).toString();
     const workspaceId = context.workspaceId;
     const selectedPlan = resolved.plan;
+    const trialDays = selectedPlan ? getBillingTrialDays(selectedPlan) : 0;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -78,6 +80,7 @@ export async function POST(req: Request) {
         interval: resolved.interval,
       },
       subscription_data: {
+        ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
         metadata: {
           userId: user.id,
           workspaceId,
@@ -105,6 +108,7 @@ export async function POST(req: Request) {
         priceId: resolved.priceId,
         plan: selectedPlan || null,
         interval: resolved.interval,
+        trialDays,
       },
     });
 
