@@ -4513,7 +4513,7 @@ export default function App() {
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? null);
+      setUser(session?.user ?? null);
       if (session?.access_token) {
         void setupUserOnServer(session.access_token);
       }
@@ -4928,19 +4928,19 @@ export default function App() {
   const aiLimitReached = isFreePlan && aiUsageCount >= FREE_AI_LIMIT_PER_MONTH;
   const planLabel = getPlanLabel(currentPlan);
   const editingTransaction = React.useMemo(
-    () => transactions.find((tx) => tx.id === editingTransactionId) ? null,
+    () => transactions.find((tx) => tx.id === editingTransactionId) ?? null,
     [transactions, editingTransactionId]
   );
   const editingGoal = React.useMemo(
-    () => goals.find((goal) => goal.id === editingGoalId) ? null,
+    () => goals.find((goal) => goal.id === editingGoalId) ?? null,
     [goals, editingGoalId]
   );
   const editingInvestment = React.useMemo(
-    () => investments.find((inv) => inv.id === editingInvestmentId) ? null,
+    () => investments.find((inv) => inv.id === editingInvestmentId) ?? null,
     [investments, editingInvestmentId]
   );
   const editingDebt = React.useMemo(
-    () => debts.find((debt) => debt.id === editingDebtId) ? null,
+    () => debts.find((debt) => debt.id === editingDebtId) ?? null,
     [debts, editingDebtId]
   );
   const lastUserIdRef = React.useRef<string | null>(null);
@@ -5907,7 +5907,7 @@ export default function App() {
       Number.isNaN(submittedDate.getTime()) ? null : submittedDate
     );
     const previousTransaction = editingTransactionId
-      ? transactions.find((item) => item.id === editingTransactionId) ? null
+      ? transactions.find((item) => item.id === editingTransactionId) ?? null
       : null;
     const wasCurrentMonthBeforeEdit = previousTransaction
       ? isInCurrentMonth(parseTransactionDate(previousTransaction.date))
@@ -6022,7 +6022,7 @@ export default function App() {
       return;
     }
     setEditingTransactionId(null);
-    setTransactionModalDraft(draft ? null);
+    setTransactionModalDraft(draft ?? null);
     setIsTransactionModalOpen(true);
   };
 
