@@ -1,4 +1,4 @@
-import type { ArticleSeed } from './types';
+﻿import type { ArticleSeed } from './types';
 
 export const articleCatalogPart4: ArticleSeed[] = [
   {
@@ -7,7 +7,7 @@ export const articleCatalogPart4: ArticleSeed[] = [
     description: 'Gastos impulsivos drenam caixa silenciosamente e costumam crescer quando nao ha visibilidade.',
     seoTitle: 'Como controlar gastos impulsivos | Cote Finance AI',
     seoDescription: 'Descubra como controlar gastos impulsivos com regras simples, acompanhamento e mais clareza financeira.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-20T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'amber',
@@ -36,7 +36,7 @@ export const articleCatalogPart4: ArticleSeed[] = [
     description: 'Planejamento mensal bom e aquele que se adapta a vida real e reduz improviso.',
     seoTitle: 'Como planejar seu dinheiro no mes | Cote Finance AI',
     seoDescription: 'Aprenda como planejar seu dinheiro no mes com prioridades, limites por categoria e revisoes mais inteligentes.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-19T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'emerald',
@@ -65,7 +65,7 @@ export const articleCatalogPart4: ArticleSeed[] = [
     description: 'Uma relacao mais saudavel com dinheiro nasce de clareza, nao de culpa ou medo constante.',
     seoTitle: 'Como melhorar sua relacao com dinheiro | Cote Finance AI',
     seoDescription: 'Descubra como melhorar sua relacao com dinheiro e tomar decisoes financeiras com mais clareza e menos ansiedade.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-18T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'cyan',
@@ -94,7 +94,7 @@ export const articleCatalogPart4: ArticleSeed[] = [
     description: 'Liberdade financeira nao nasce de uma promessa rapida, mas de decisoes consistentes e de longo prazo.',
     seoTitle: 'Como construir liberdade financeira | Cote Finance AI',
     seoDescription: 'Aprenda como construir liberdade financeira com controle de gastos, metas, reserva e visao de longo prazo.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-17T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'blue',
@@ -123,7 +123,7 @@ export const articleCatalogPart4: ArticleSeed[] = [
     description: 'Decisoes melhores nascem de contexto, comparacao e menos improviso.',
     seoTitle: 'Como tomar decisoes financeiras melhores | Cote Finance AI',
     seoDescription: 'Entenda como tomar decisoes financeiras melhores usando contexto, comparacao de cenarios e dados reais do seu mes.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-16T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'amber',
@@ -147,3 +147,4 @@ export const articleCatalogPart4: ArticleSeed[] = [
     conclusion: ['Tomar decisoes financeiras melhores e construir clareza antes da acao. Quanto melhor o contexto, menor o custo do improviso.'],
   },
 ];
+

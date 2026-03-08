@@ -1,4 +1,4 @@
-import type { ArticleSeed } from './types';
+﻿import type { ArticleSeed } from './types';
 
 export const articleCatalogPart3: ArticleSeed[] = [
   {
@@ -7,7 +7,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
     description: 'Um passo a passo simples para sair da confusao e construir uma rotina financeira mais segura.',
     seoTitle: 'Como comecar a organizar sua vida financeira | Cote Finance AI',
     seoDescription: 'Veja como comecar a organizar sua vida financeira com um passo a passo simples, pratico e sustentavel.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-25T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'blue',
@@ -36,7 +36,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
     description: 'Conheca falhas comuns que enfraquecem o controle financeiro e aprenda como evita-las.',
     seoTitle: '10 erros financeiros que quase todo mundo comete | Cote Finance AI',
     seoDescription: 'Veja 10 erros financeiros comuns e aprenda como evitar falhas que atrapalham planejamento, controle de gastos e saude financeira.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-24T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'amber',
@@ -65,7 +65,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
     description: 'Uma reserva de emergencia protege seu caixa e reduz a dependencia de juros quando surgem imprevistos.',
     seoTitle: 'Como montar uma reserva de emergencia | Cote Finance AI',
     seoDescription: 'Aprenda como montar uma reserva de emergencia com metas realistas, constancia e foco em liquidez.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-23T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'emerald',
@@ -94,7 +94,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
     description: 'Reduza a dependencia do cartao e recupere previsibilidade no seu fluxo de caixa.',
     seoTitle: 'Como parar de viver no limite do cartao | Cote Finance AI',
     seoDescription: 'Veja como sair da rotina de viver no limite do cartao com planejamento, controle de gastos e reducao de juros.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-22T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'cyan',
@@ -123,7 +123,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
     description: 'Economizar com constancia depende de sistema, nao apenas de motivacao temporaria.',
     seoTitle: 'Como criar o habito de economizar dinheiro | Cote Finance AI',
     seoDescription: 'Aprenda como criar o habito de economizar dinheiro com rotina, metas pequenas e mais visibilidade sobre seus gastos.',
-    category: 'Educacao Financeira',
+    category: 'Educação Financeira',
     publishedAt: '2026-02-21T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',
     accent: 'blue',
@@ -147,3 +147,4 @@ export const articleCatalogPart3: ArticleSeed[] = [
     conclusion: ['Criar o habito de economizar dinheiro e construir consistencia. O tamanho do valor importa menos do que a repeticao ao longo do tempo.'],
   },
 ];
+

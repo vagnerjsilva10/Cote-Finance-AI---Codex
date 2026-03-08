@@ -1,10 +1,23 @@
-export type BlogAccent = 'emerald' | 'cyan' | 'amber' | 'blue';
-export type BlogCategory = 'Ferramenta' | 'Educacao Financeira';
+﻿export type BlogAccent = 'emerald' | 'cyan' | 'amber' | 'blue';
+export type BlogCategory = 'Ferramenta' | 'Educação Financeira';
 
 export type BlogSection = {
   title: string;
   paragraphs: string[];
   bullets?: string[];
+};
+
+export type BlogArticleVisualItem = {
+  label: string;
+  value: string;
+  caption: string;
+};
+
+export type BlogArticleVisual = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  items: BlogArticleVisualItem[];
 };
 
 export type BlogArticle = {
@@ -20,6 +33,7 @@ export type BlogArticle = {
   keywords: string[];
   featured?: boolean;
   sections: BlogSection[];
+  visual?: BlogArticleVisual;
 };
 
 export type BlogArticleSummary = BlogArticle & {
@@ -129,6 +143,42 @@ const BLOG_TEXT_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\bgratis\b/g, 'grátis'],
   [/\bGratis\b/g, 'Grátis'],
   [/\bComecar\b/g, 'Começar'],
+  [/\bcartao\b/g, 'cartão'],
+  [/\bCartao\b/g, 'Cartão'],
+  [/\btransacoes\b/g, 'transações'],
+  [/\bTransacoes\b/g, 'Transações'],
+  [/\brelacao\b/g, 'relação'],
+  [/\bRelacao\b/g, 'Relação'],
+  [/\borcamento\b/g, 'orçamento'],
+  [/\bOrcamento\b/g, 'Orçamento'],
+  [/\bvariacao\b/g, 'variação'],
+  [/\bVariacao\b/g, 'Variação'],
+  [/\bcomparacao\b/g, 'comparação'],
+  [/\bComparacao\b/g, 'Comparação'],
+  [/\boperacao\b/g, 'operação'],
+  [/\bOperacao\b/g, 'Operação'],
+  [/\binformacao\b/g, 'informação'],
+  [/\bInformacao\b/g, 'Informação'],
+  [/\binformacoes\b/g, 'informações'],
+  [/\bInformacoes\b/g, 'Informações'],
+  [/\bmemoria\b/g, 'memória'],
+  [/\bMemoria\b/g, 'Memória'],
+  [/\bdiaria\b/g, 'diária'],
+  [/\bDiaria\b/g, 'Diária'],
+  [/\bnecessario\b/g, 'necessário'],
+  [/\bNecessario\b/g, 'Necessário'],
+  [/\bja\b/g, 'já'],
+  [/\bJa\b/g, 'Já'],
+  [/\bsera\b/g, 'será'],
+  [/\bSera\b/g, 'Será'],
+  [/\bporcao\b/g, 'porção'],
+  [/\bPorcao\b/g, 'Porção'],
+  [/\bvisao\b/g, 'visão'],
+  [/\bVisao\b/g, 'Visão'],
+  [/\bgestao financeira pessoal\b/g, 'gestão financeira pessoal'],
+  [/\bsaude financeira\b/g, 'saúde financeira'],
+  [/\bSaude financeira\b/g, 'Saúde financeira'],
+  [/\bjuros\b/g, 'juros'],
 ];
 
 const formatter = new Intl.DateTimeFormat('pt-BR', {
@@ -153,7 +203,7 @@ export const createSections = (seed: ArticleSeed): BlogSection[] => [
   },
   {
     title: 'Dicas práticas',
-    paragraphs: ['Algumas acoes simples ajudam a transformar esse tema em rotina real.'],
+    paragraphs: ['Algumas ações simples ajudam a transformar esse tema em rotina real.'],
     bullets: seed.tips,
   },
   {
@@ -170,6 +220,9 @@ export const estimateReadingTime = (article: BlogArticle) => {
     article.title,
     article.description,
     ...article.sections.flatMap((section) => [section.title, ...section.paragraphs, ...(section.bullets || [])]),
+    article.visual?.title || '',
+    article.visual?.description || '',
+    ...(article.visual?.items.flatMap((item) => [item.label, item.value, item.caption]) || []),
   ].join(' ');
 
   const words = text.split(/\s+/).filter(Boolean).length;
