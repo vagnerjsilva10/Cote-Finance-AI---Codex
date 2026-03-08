@@ -3726,22 +3726,29 @@ const LoginView = ({
 
   React.useEffect(() => {
     setIsLogin(initialMode !== 'signup');
-    if (initialMode === 'signup') {
-      setLoginMethod('password');
-      setOtpCode('');
-      setOtpRequestedEmail('');
-    }
+    setLoginMethod('password');
+    setOtpCode('');
+    setOtpRequestedEmail('');
   }, [initialMode]);
+
+  const passwordChecks = React.useMemo(
+    () => [
+      { label: 'Pelo menos 8 caracteres', valid: password.length >= 8 },
+      { label: 'Pelo menos 1 letra', valid: /[A-Za-z]/.test(password) },
+      { label: 'Pelo menos 1 número', valid: /\d/.test(password) },
+    ],
+    [password]
+  );
 
   const validateSignup = () => {
     if (!firstName.trim()) return 'Informe seu nome.';
     if (!lastName.trim()) return 'Informe seu sobrenome.';
     if (!email.trim()) return 'Informe seu e-mail.';
-    if (password.length < 8) return 'A senha deve ter no mÃ­nimo 8 caracteres.';
+    if (password.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      return 'A senha deve conter letras e nÃºmeros.';
+      return 'A senha deve conter letras e números.';
     }
-    if (!acceptedTerms) return 'VocÃª precisa aceitar os termos para continuar.';
+    if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
     return null;
   };
 
@@ -3774,9 +3781,9 @@ const LoginView = ({
 
       if (resendError) throw resendError;
 
-      setNotice('Enviamos um novo e-mail de confirmaÃ§Ã£o. Verifique sua caixa de entrada e spam.');
+      setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
-      setError(err?.message || 'NÃ£o foi possÃ­vel reenviar o e-mail de confirmaÃ§Ã£o.');
+      setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
     } finally {
       setLoading(false);
     }
@@ -3784,7 +3791,7 @@ const LoginView = ({
 
   const requestEmailCode = async (normalizedEmail: string) => {
     if (!normalizedEmail) {
-      throw new Error('Informe seu e-mail para receber o cÃ³digo.');
+      throw new Error('Informe seu e-mail para receber o código.');
     }
 
     const { error: otpError } = await supabase.auth.signInWithOtp({
@@ -3800,18 +3807,18 @@ const LoginView = ({
 
     setOtpRequestedEmail(normalizedEmail);
     setOtpCode('');
-    setNotice('Enviamos um código de acesso para seu e-mail. Digite esse código no formulário para validar sua entrada.');
+    setNotice('Enviamos um código de acesso para o seu e-mail. Digite esse código para entrar.');
   };
 
   const verifyEmailCode = async (normalizedEmail: string) => {
     const token = otpCode.trim();
 
     if (!normalizedEmail) {
-      throw new Error('Informe seu e-mail para validar o cÃ³digo.');
+      throw new Error('Informe seu e-mail para validar o código.');
     }
 
     if (token.length < 6) {
-      throw new Error('Digite o cÃ³digo recebido no e-mail para continuar.');
+      throw new Error('Digite o código recebido no e-mail para continuar.');
     }
 
     const { data, error: verifyError } = await supabase.auth.verifyOtp({
@@ -3829,7 +3836,7 @@ const LoginView = ({
     const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
 
     if (!accessToken || !resolvedUser) {
-      throw new Error('NÃ£o foi possÃ­vel validar o cÃ³digo. Solicite um novo e tente novamente.');
+      throw new Error('Não foi possível validar o código. Solicite um novo e tente novamente.');
     }
 
     await runSetupForToken(accessToken);
@@ -3896,14 +3903,14 @@ const LoginView = ({
       if (!isLogin) {
         setPendingConfirmationEmail(normalizedEmail);
         setNotice(
-          'Conta criada com sucesso. Enviamos um e-mail de confirmaÃ§Ã£o para continuar seu acesso.'
+          'Conta criada com sucesso. Enviamos um e-mail de confirmação para continuar seu acesso.'
         );
         setIsLogin(true);
         setPassword('');
         return;
       }
 
-      throw new Error('NÃ£o foi possÃ­vel iniciar sessÃ£o. Tente novamente.');
+      throw new Error('Não foi possível iniciar sessão. Tente novamente.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -3932,11 +3939,11 @@ const LoginView = ({
       const rawMessage = String(err?.message || '');
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError(
-          'Google OAuth nÃ£o estÃ¡ habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
+          'Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
         );
       } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
         setError(
-          `Redirect URI invÃ¡lida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
+          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
         );
       } else {
         setError(rawMessage || 'Falha ao iniciar login com Google.');
@@ -3969,9 +3976,9 @@ const LoginView = ({
             <p className="text-sm text-slate-400">
               {isLogin
                 ? loginMethod === 'otp'
-                  ? 'Entre com um cÃ³digo enviado para o seu e-mail, sem precisar da senha.'
-                  : 'Acesse seu workspace com seguranÃ§a e continue de onde parou.'
-                : 'Comece a organizar suas finanÃ§as em minutos.'}
+                  ? 'Receba um código no e-mail e valide sua entrada sem depender da senha.'
+                  : 'Acesse seu workspace com segurança e continue de onde parou.'
+                : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
         </div>
@@ -4012,7 +4019,7 @@ const LoginView = ({
                     : 'text-slate-400 hover:text-white'
                 )}
               >
-                CÃ³digo por e-mail
+                Código por e-mail
               </button>
             </div>
           ) : null}
@@ -4066,24 +4073,52 @@ const LoginView = ({
                 className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
                 placeholder={isLogin ? 'Digite sua senha' : 'Crie uma senha segura'}
               />
+              {isLogin ? (
+                <p className="text-xs leading-relaxed text-slate-500">
+                  Entre com a senha que você criou para acessar sua conta.
+                </p>
+              ) : (
+                <div className="rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                    Critérios da senha
+                  </p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                    {passwordChecks.map((rule) => (
+                      <li key={rule.label} className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            'inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold',
+                            rule.valid
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : 'bg-slate-700 text-slate-400'
+                          )}
+                        >
+                          {rule.valid ? 'OK' : '•'}
+                        </span>
+                        <span>{rule.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-800/30 p-4">
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-white">
-                  {otpRequestedEmail ? 'Digite o cÃ³digo recebido' : 'Receba um cÃ³digo de acesso'}
+                  {otpRequestedEmail ? 'Digite o código recebido' : 'Receba um código de acesso'}
                 </p>
                 <p className="text-xs leading-relaxed text-slate-400">
                   {otpRequestedEmail
                     ? `Enviamos o código para ${otpRequestedEmail}. Digite esse código abaixo para entrar.`
-                    : 'Vamos enviar um cÃ³digo para o seu e-mail para validar sua entrada no app.'}
+                    : 'Vamos enviar um código real para o seu e-mail para validar sua entrada no app.'}
                 </p>
               </div>
 
               {otpRequestedEmail ? (
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    CÃ³digo
+                    Código
                   </label>
                   <input
                     type="text"
@@ -4092,7 +4127,7 @@ const LoginView = ({
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
-                    placeholder="Digite o cÃ³digo recebido"
+                    placeholder="Digite o código recebido"
                   />
                 </div>
               ) : null}
@@ -4127,7 +4162,7 @@ const LoginView = ({
                     rel="noreferrer"
                     className="font-semibold text-emerald-300 hover:text-emerald-200"
                   >
-                    polÃ­tica de privacidade
+                    política de privacidade
                   </Link>
                   <span>.</span>
                 </div>
@@ -4149,8 +4184,8 @@ const LoginView = ({
                 ? 'Criar conta gratuita'
                 : loginMethod === 'otp'
                   ? otpRequestedEmail
-                    ? 'Validar cÃ³digo e entrar'
-                    : 'Receber cÃ³digo por e-mail'
+                    ? 'Validar código e entrar'
+                    : 'Receber código por e-mail'
                   : 'Entrar'}
           </button>
 
@@ -4161,7 +4196,7 @@ const LoginView = ({
               disabled={loading}
               className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
             >
-              NÃ£o recebeu o e-mail? Reenviar confirmaÃ§Ã£o
+              Não recebeu o e-mail? Reenviar confirmação
             </button>
           ) : null}
 
@@ -4177,14 +4212,14 @@ const LoginView = ({
                   try {
                     await requestEmailCode(otpRequestedEmail);
                   } catch (err: any) {
-                    setError(err?.message || 'NÃ£o foi possÃ­vel reenviar o cÃ³digo.');
+                    setError(err?.message || 'Não foi possível reenviar o código.');
                   } finally {
                     setLoading(false);
                   }
                 }}
                 className="text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
               >
-                Reenviar cÃ³digo
+                Reenviar código
               </button>
               <button
                 type="button"
@@ -4238,7 +4273,7 @@ const LoginView = ({
         </button>
 
         <p className="mt-7 text-center text-sm text-slate-500">
-          {isLogin ? 'NÃ£o tem uma conta?' : 'JÃ¡ tem uma conta?'}
+          {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
           <button
             onClick={() => {
               setError(null);
@@ -4247,6 +4282,7 @@ const LoginView = ({
               setLoginMethod('password');
               setOtpCode('');
               setOtpRequestedEmail('');
+              setPassword('');
             }}
             className="ml-1 font-bold text-emerald-500 hover:underline"
           >

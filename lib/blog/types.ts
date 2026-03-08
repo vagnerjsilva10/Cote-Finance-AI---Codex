@@ -271,22 +271,22 @@ export function createFaqs(seed: ArticleSeed): BlogFaq[] {
     {
       question: `Por onde começar para ${seed.title.toLowerCase()}?`,
       answer:
-        'O melhor começo é reduzir complexidade. Primeiro, organize o básico: entradas, saídas, categorias principais e compromissos recorrentes. Depois, revise o que mais pesa e tome uma decisão prática por semana.',
+        'O melhor começo é reduzir complexidade. Primeiro, organize o básico: entradas, saídas, categorias principais e compromissos recorrentes. Isso já devolve clareza e ajuda a enxergar onde o dinheiro realmente está indo.\n\nDepois, revise o que mais pesa no seu mês e escolha uma decisão prática por semana. O objetivo não é mudar tudo de uma vez, e sim criar consistência com ações que cabem na vida real.',
     },
     {
       question: 'Quanto tempo leva para perceber resultado na prática?',
       answer:
-        'Em muitos casos, a sensação de clareza aparece nas primeiras semanas. O ganho maior vem quando você transforma acompanhamento em rotina e usa os dados para corrigir comportamento antes do fechamento do mês.',
+        'Em muitos casos, a sensação de clareza aparece nas primeiras semanas, porque você finalmente passa a entender o que está acontecendo com o seu dinheiro.\n\nO ganho maior vem quando o acompanhamento vira rotina e você começa a corrigir comportamento antes do fechamento do mês, em vez de reagir só quando a fatura já chegou.',
     },
     {
       question: 'Como o Cote Finance AI entra nesse processo?',
       answer:
-        'O Cote Finance AI ajuda a centralizar lançamentos, mostrar padrões com IA, acompanhar metas e organizar dívidas. Na prática, ele reduz atrito operacional e melhora a leitura do que realmente está acontecendo com o seu dinheiro.',
+        'O Cote Finance AI ajuda a centralizar lançamentos, mostrar padrões com IA, acompanhar metas e organizar dívidas. Na prática, ele reduz o trabalho manual e facilita a leitura do que realmente está acontecendo com o seu dinheiro.\n\nIsso significa menos improviso, mais contexto para decidir e mais facilidade para transformar informação em ação no dia a dia.',
     },
     {
       question: 'Isso funciona mesmo para quem não gosta de planilhas?',
       answer:
-        'Sim. A lógica é justamente substituir processos pesados por uma rotina mais visual, simples e consistente. Quando o controle financeiro cabe na vida real, a chance de continuidade aumenta muito.',
+        'Sim. A lógica é justamente substituir processos pesados por uma rotina mais visual, simples e consistente, sem depender de planilhas complexas para funcionar.\n\nQuando o controle financeiro cabe na vida real, a chance de continuidade aumenta muito. E continuidade é o que realmente melhora resultado ao longo dos meses.',
     },
   ];
 }

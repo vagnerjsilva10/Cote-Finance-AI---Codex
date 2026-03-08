@@ -14,9 +14,9 @@ export function BlogArticleCta() {
       <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
         <Sparkles size={14} /> Como o Cote Finance AI pode ajudar
       </div>
-      <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950">Experimente o Cote Finance AI gratuitamente</h2>
+      <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950">Comece a organizar suas finanças hoje</h2>
       <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-        Organize sua vida financeira, acompanhe gastos e receba insights inteligentes sobre seu dinheiro.
+        Entenda seus gastos, acompanhe seu dinheiro e receba insights financeiros com inteligência artificial.
       </p>
       <ul className="mt-6 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
         {benefits.map((benefit) => (

@@ -253,34 +253,37 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
             ))}
 
             <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-2xl font-black tracking-tight text-slate-950">Leituras relacionadas</h2>
+              <h2 className="text-2xl font-black tracking-tight text-slate-950">Posts relacionados</h2>
               <p className="mt-4 text-base leading-8 text-slate-700">
-                Se você quiser aprofundar o tema, estes artigos ajudam a ampliar a visão e conectar o conteúdo com outros pontos importantes da sua rotina financeira.
+                Continue a leitura com artigos do mesmo cluster de conteúdo. Essa sequência ajuda a aprofundar o tema,
+                melhorar a compreensão do assunto e conectar a prática do dia a dia com outras áreas da sua vida financeira.
               </p>
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {relatedArticles.slice(0, 2).map((relatedArticle) => (
-                  <Link
-                    key={relatedArticle.slug}
-                    href={`/blog/${relatedArticle.slug}`}
-                    className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-5 py-4 transition-colors hover:border-slate-300 hover:bg-white"
-                  >
-                    <p className="text-sm font-semibold text-emerald-700">{localizeBlogText(relatedArticle.category)}</p>
-                    <p className="mt-2 text-lg font-semibold text-slate-950">{localizeBlogText(relatedArticle.title)}</p>
-                    <p className="mt-2 text-sm leading-7 text-slate-600">{localizeBlogText(relatedArticle.description)}</p>
-                  </Link>
+              <div className="mt-6 grid gap-5 lg:grid-cols-3">
+                {relatedArticles.slice(0, 3).map((relatedArticle) => (
+                  <BlogCard key={relatedArticle.slug} article={relatedArticle} />
                 ))}
               </div>
             </section>
 
             <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-2xl font-black tracking-tight text-slate-950">Perguntas frequentes</h2>
+              <p className="mt-4 text-base leading-8 text-slate-700">
+                Estas respostas resumem as dúvidas mais comuns de quem quer organizar melhor a vida financeira e aplicar o conteúdo do artigo com mais segurança.
+              </p>
               <div className="mt-6 space-y-4">
                 {localizedFaqs.map((faq) => (
                   <details key={faq.question} className="group rounded-2xl border border-slate-200 bg-[#f7f8f3] px-5 py-4">
                     <summary className="cursor-pointer list-none text-base font-semibold text-slate-950 marker:hidden">
                       {faq.question}
                     </summary>
-                    <p className="mt-3 text-sm leading-7 text-slate-600">{faq.answer}</p>
+                    <div className="mt-3 space-y-3 text-sm leading-7 text-slate-600">
+                      {faq.answer
+                        .split(/\n\n+/)
+                        .filter(Boolean)
+                        .map((paragraph) => (
+                          <p key={paragraph}>{paragraph}</p>
+                        ))}
+                    </div>
                   </details>
                 ))}
               </div>

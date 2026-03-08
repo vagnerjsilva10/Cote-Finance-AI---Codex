@@ -42,13 +42,22 @@ export function getRelatedBlogArticles(currentSlug: string, category: BlogCatego
   }
 
   const alreadyAdded = new Set(explicitRelated.map((article) => article.slug));
-  const sameCategory = blogArticles.filter(
-    (article) => article.slug !== currentSlug && article.category === category && !alreadyAdded.has(article.slug)
-  );
+  const currentKeywords = new Set(currentArticle?.keywords.map((keyword) => keyword.toLowerCase()) ?? []);
 
-  const fallback = blogArticles.filter(
-    (article) => article.slug !== currentSlug && article.category !== category && !alreadyAdded.has(article.slug)
-  );
+  const rankedCandidates = blogArticles
+    .filter((article) => article.slug !== currentSlug && !alreadyAdded.has(article.slug))
+    .map((article) => {
+      const keywordOverlap = article.keywords.filter((keyword) => currentKeywords.has(keyword.toLowerCase())).length;
+      const sameCategoryScore = article.category === category ? 10 : 0;
+      const featuredScore = article.featured ? 1 : 0;
 
-  return [...explicitRelated, ...sameCategory, ...fallback].slice(0, limit);
+      return {
+        article,
+        score: sameCategoryScore + keywordOverlap * 3 + featuredScore,
+      };
+    })
+    .sort((a, b) => b.score - a.score || new Date(b.article.publishedAt).getTime() - new Date(a.article.publishedAt).getTime())
+    .map((item) => item.article);
+
+  return [...explicitRelated, ...rankedCandidates].slice(0, limit);
 }
