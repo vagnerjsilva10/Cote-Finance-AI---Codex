@@ -1,4 +1,4 @@
-import 'server-only';
+﻿import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
@@ -378,3 +378,4 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     deliveryMode,
   } satisfies WhatsAppDigestResult;
 }
+

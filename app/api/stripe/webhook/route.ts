@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { getStripe, STRIPE_NOT_CONFIGURED_RESPONSE, STRIPE_SECRET_KEY_MISSING_ERROR } from '@/lib/stripe';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
@@ -448,3 +448,4 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
+
