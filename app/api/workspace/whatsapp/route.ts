@@ -16,11 +16,15 @@ import {
   resolveWorkspaceWhatsAppConfig,
   saveWorkspaceWhatsAppConfig,
 } from '@/lib/server/whatsapp-config';
-import { HttpError, logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
+import { HttpError, getWorkspacePlan, logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+function hasWhatsAppPlanAccess(plan: string) {
+  return plan === 'PRO' || plan === 'PREMIUM';
+}
 
 type WorkspaceWhatsAppAction = 'connect' | 'disconnect' | 'send_test' | 'save_config' | 'diagnose';
 
@@ -119,6 +123,20 @@ export async function POST(req: Request) {
 
     if (!action || !['connect', 'disconnect', 'send_test', 'save_config', 'diagnose'].includes(action)) {
       return jsonResponse({ error: 'Ação do WhatsApp inválida.' }, 400);
+    }
+
+    const workspacePlan = await getWorkspacePlan(context.workspaceId, context.userId);
+    const requiresPaidPlan = action !== 'disconnect';
+
+    if (requiresPaidPlan && !hasWhatsAppPlanAccess(workspacePlan)) {
+      return jsonResponse(
+        {
+          error: 'O WhatsApp está disponível apenas nos planos Pro e Premium.',
+          currentPlan: workspacePlan,
+          code: 'WHATSAPP_REQUIRES_PRO',
+        },
+        403
+      );
     }
 
     const currentWorkspace = await prisma.workspace.findUnique({

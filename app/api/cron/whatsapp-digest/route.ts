@@ -29,6 +29,14 @@ export async function GET(req: Request) {
         whatsapp_phone_number: {
           not: null,
         },
+        subscription: {
+          is: {
+            status: 'ACTIVE',
+            plan: {
+              in: ['PRO', 'PREMIUM'],
+            },
+          },
+        },
       },
       select: {
         id: true,
