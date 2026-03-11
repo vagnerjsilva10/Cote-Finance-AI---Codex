@@ -266,6 +266,8 @@ type WhatsAppDiagnostic = {
 
 const FREE_TRANSACTION_LIMIT_PER_MONTH = 20;
 const FREE_AI_LIMIT_PER_MONTH = 20;
+const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const AVATAR_OUTPUT_SIZE = 256;
 
 // --- Helpers ---
 
@@ -318,6 +320,115 @@ const formatMoneyInput = (val: number | string) => {
   if (typeof val === 'number') return formatCurrency(val);
   return formatCurrency(parseMoneyInput(val));
 };
+
+const getUserDisplayName = (user: any) => {
+  const metadata = user?.user_metadata;
+  const nameCandidates = [
+    metadata?.full_name,
+    metadata?.name,
+    [metadata?.first_name, metadata?.last_name].filter(Boolean).join(' '),
+  ];
+
+  const resolvedName = nameCandidates.find((value) => typeof value === 'string' && value.trim());
+  if (typeof resolvedName === 'string' && resolvedName.trim()) {
+    return resolvedName.trim();
+  }
+
+  return user?.email?.split('@')[0] || 'Usuário';
+};
+
+const getUserAvatarUrl = (user: any) => {
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  if (typeof avatarUrl === 'string' && avatarUrl.trim()) {
+    return avatarUrl.trim();
+  }
+
+  return null;
+};
+
+const getInitialsFromName = (name: string) => {
+  const parts = name
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase();
+  }
+
+  return (parts[0] || '').slice(0, 2).toUpperCase() || 'U';
+};
+
+const getUserInitials = (user: any) => getInitialsFromName(getUserDisplayName(user));
+
+const isDataImageUrl = (value: string) => /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(value);
+
+const isValidAvatarUrl = (value: string) => {
+  if (!value) return true;
+  if (isDataImageUrl(value)) return true;
+
+  try {
+    const parsedAvatarUrl = new URL(value);
+    return parsedAvatarUrl.protocol === 'http:' || parsedAvatarUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const optimizeAvatarFile = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Selecione um arquivo de imagem válido.'));
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new window.Image();
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = AVATAR_OUTPUT_SIZE;
+        canvas.height = AVATAR_OUTPUT_SIZE;
+
+        const context = canvas.getContext('2d');
+        if (!context) {
+          throw new Error('Não foi possível processar a imagem.');
+        }
+
+        const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
+        const offsetX = (image.naturalWidth - cropSize) / 2;
+        const offsetY = (image.naturalHeight - cropSize) / 2;
+
+        context.fillStyle = '#020617';
+        context.fillRect(0, 0, AVATAR_OUTPUT_SIZE, AVATAR_OUTPUT_SIZE);
+        context.drawImage(
+          image,
+          offsetX,
+          offsetY,
+          cropSize,
+          cropSize,
+          0,
+          0,
+          AVATAR_OUTPUT_SIZE,
+          AVATAR_OUTPUT_SIZE
+        );
+
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('Falha ao processar a imagem.'));
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Não foi possível ler a imagem selecionada.'));
+    };
+
+    image.src = objectUrl;
+  });
 
 const maskMoneyInput = (rawValue: string) => {
   const digits = rawValue.replace(/\D/g, '');
@@ -867,6 +978,15 @@ type MoneyInputProps = {
   className?: string;
 };
 
+type UserAvatarProps = {
+  user?: any;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  className?: string;
+  fallbackClassName?: string;
+  textClassName?: string;
+};
+
 const MoneyInput = ({
   value,
   onChange,
@@ -884,6 +1004,49 @@ const MoneyInput = ({
       disabled={disabled}
       className={className}
     />
+  );
+};
+
+const UserAvatar = ({
+  user,
+  displayName,
+  avatarUrl,
+  className,
+  fallbackClassName,
+  textClassName,
+}: UserAvatarProps) => {
+  const resolvedDisplayName = displayName?.trim() || getUserDisplayName(user);
+  const resolvedAvatarUrl = avatarUrl?.trim() || getUserAvatarUrl(user);
+  const initials = resolvedDisplayName ? getInitialsFromName(resolvedDisplayName) : getUserInitials(user);
+  const [imageFailed, setImageFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageFailed(false);
+  }, [resolvedAvatarUrl]);
+
+  return (
+    <div className={cn('relative flex shrink-0 items-center justify-center overflow-hidden rounded-full', className)}>
+      {resolvedAvatarUrl && !imageFailed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={resolvedAvatarUrl}
+          alt={`Foto de perfil de ${resolvedDisplayName}`}
+          className="h-full w-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <div
+          className={cn(
+            'flex h-full w-full items-center justify-center bg-emerald-500/20 font-bold text-emerald-300',
+            fallbackClassName,
+            textClassName
+          )}
+        >
+          {initials}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -5192,6 +5355,8 @@ export default function App() {
   const [isQuickCreateOpen, setIsQuickCreateOpen] = React.useState(false);
   const [settingsName, setSettingsName] = React.useState('');
   const [settingsEmail, setSettingsEmail] = React.useState('');
+  const [settingsAvatarUrl, setSettingsAvatarUrl] = React.useState('');
+  const [isAvatarProcessing, setIsAvatarProcessing] = React.useState(false);
   const [settingsWhatsApp, setSettingsWhatsApp] = React.useState(DEFAULT_WHATSAPP_NUMBER);
   const [workspaceWhatsAppPhoneNumber, setWorkspaceWhatsAppPhoneNumber] = React.useState(DEFAULT_WHATSAPP_NUMBER);
   const [workspaceWhatsAppTestPhoneNumber, setWorkspaceWhatsAppTestPhoneNumber] = React.useState('');
@@ -5274,6 +5439,7 @@ export default function App() {
   const lastWorkspaceIdRef = React.useRef<string | null>(null);
   const hasFetchedDashboardRef = React.useRef(false);
   const quickCreateMenuRef = React.useRef<HTMLDivElement | null>(null);
+  const avatarInputRef = React.useRef<HTMLInputElement | null>(null);
   const workspaceDashboardCacheRef = React.useRef<
     Record<
       string,
@@ -5840,8 +6006,9 @@ export default function App() {
 
   React.useEffect(() => {
     if (!user) return;
-    setSettingsName((prev) => prev || user.user_metadata?.full_name || user.email?.split('@')[0] || '');
+    setSettingsName((prev) => prev || getUserDisplayName(user));
     setSettingsEmail((prev) => prev || user.email || '');
+    setSettingsAvatarUrl(getUserAvatarUrl(user) || '');
     setSettingsWhatsApp((prev) =>
       prev !== DEFAULT_WHATSAPP_NUMBER ? prev : user.user_metadata?.phone || prev
     );
@@ -5955,9 +6122,41 @@ export default function App() {
 
   const onboardingFlowProgress = Math.round(((onboardingStep + 1) / 9) * 100);
 
+  const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file) return;
+    if (file.size > AVATAR_MAX_FILE_SIZE_BYTES) {
+      alert('Escolha uma imagem de até 5 MB.');
+      return;
+    }
+
+    setIsAvatarProcessing(true);
+
+    try {
+      const optimizedAvatar = await optimizeAvatarFile(file);
+      setSettingsAvatarUrl(optimizedAvatar);
+      setSettingsSavedAt('Foto pronta. Clique em salvar alterações para concluir.');
+    } catch (error) {
+      console.error('Avatar processing error:', error);
+      alert(error instanceof Error ? error.message : 'Falha ao processar a foto.');
+    } finally {
+      setIsAvatarProcessing(false);
+    }
+  };
+
   const handleSaveSettings = async () => {
+    if (isAvatarProcessing) return;
+
     const normalizedPhone = settingsWhatsApp.replace(/[^\d+]/g, '');
+    const normalizedAvatarUrl = settingsAvatarUrl.trim();
     setSettingsWhatsApp(normalizedPhone || DEFAULT_WHATSAPP_NUMBER);
+
+    if (!isValidAvatarUrl(normalizedAvatarUrl)) {
+      alert('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https válida.');
+      return;
+    }
 
     try {
       const updatePayload: {
@@ -5965,11 +6164,13 @@ export default function App() {
         data?: {
           full_name?: string | null;
           phone?: string | null;
+          avatar_url?: string | null;
         };
       } = {
         data: {
           full_name: settingsName.trim() || null,
           phone: normalizedPhone || null,
+          avatar_url: normalizedAvatarUrl || null,
         },
       };
 
@@ -5985,6 +6186,11 @@ export default function App() {
 
       if (data?.user) {
         setUser(data.user);
+      }
+
+      const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
+      if (accessToken) {
+        void setupUserOnServer(accessToken);
       }
 
       setSettingsSavedAt(
@@ -7838,9 +8044,12 @@ export default function App() {
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="size-10 rounded-full bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-emerald-500 transition-all flex items-center justify-center group"
               >
-                <div className="w-full h-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 font-bold text-sm">
-                  VS
-                </div>
+                <UserAvatar
+                  user={user}
+                  className="size-full"
+                  fallbackClassName="border border-emerald-500/30"
+                  textClassName="text-sm"
+                />
               </button>
 
               <AnimatePresence>
@@ -7857,13 +8066,21 @@ export default function App() {
                       className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
                       <div className="p-4 border-b border-slate-800">
-                        <p className="text-sm font-bold text-white">
-                          {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                        </p>
-                        <p className="text-xs text-slate-500">{user.email}</p>
+                        <div className="flex items-center gap-3">
+                          <UserAvatar
+                            user={user}
+                            className="size-12 border border-slate-700 bg-slate-800"
+                            fallbackClassName="border border-emerald-500/30"
+                            textClassName="text-base"
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-white">{getUserDisplayName(user)}</p>
+                            <p className="truncate text-xs text-slate-500">{user.email}</p>
+                          </div>
+                        </div>
                         <div
                           className={cn(
-                            'mt-2 inline-block px-2 py-0.5 rounded border',
+                            'mt-3 inline-block rounded border px-2 py-0.5',
                             isFreePlan
                               ? 'bg-slate-500/10 border-slate-500/20'
                               : 'bg-emerald-500/10 border-emerald-500/20'
@@ -8063,6 +8280,57 @@ export default function App() {
 
                   <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4">
                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Perfil</h4>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                      <UserAvatar
+                        user={user}
+                        displayName={settingsName}
+                        avatarUrl={settingsAvatarUrl}
+                        className="size-20 border border-slate-700 bg-slate-800"
+                        fallbackClassName="border border-emerald-500/30"
+                        textClassName="text-2xl"
+                      />
+                      <div className="flex-1 space-y-2">
+                        <div>
+                          <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
+                            Foto de perfil
+                          </label>
+                          <p className="mt-2 text-xs text-slate-500">
+                            PNG, JPG ou WEBP de até 5 MB. A imagem é ajustada automaticamente para avatar.
+                          </p>
+                        </div>
+                        <input
+                          ref={avatarInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/jpg"
+                          onChange={handleAvatarFileChange}
+                          className="hidden"
+                        />
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <button
+                            type="button"
+                            onClick={() => avatarInputRef.current?.click()}
+                            disabled={isAvatarProcessing}
+                            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-100 transition-all hover:border-emerald-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {isAvatarProcessing ? 'Processando foto...' : 'Enviar foto'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSettingsAvatarUrl('');
+                              setSettingsSavedAt('Foto removida. Clique em salvar alterações para concluir.');
+                            }}
+                            disabled={!settingsAvatarUrl || isAvatarProcessing}
+                            className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold text-slate-300 transition-all hover:border-rose-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Remover foto
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          Se não houver foto, o sistema mostra automaticamente as iniciais do usuário.
+                        </p>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Nome</label>
@@ -8213,7 +8481,8 @@ export default function App() {
                       </button>
                       <button
                         onClick={handleSaveSettings}
-                        className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-all"
+                        disabled={isAvatarProcessing}
+                        className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Salvar alterações
                       </button>
