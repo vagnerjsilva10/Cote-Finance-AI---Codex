@@ -236,6 +236,15 @@ type WhatsAppFeedback = {
   message: string;
 } | null;
 
+type AppNotification = {
+  id: string;
+  title: string;
+  message: string;
+  tone: 'info' | 'warning' | 'error' | 'success';
+  timestamp?: string;
+  targetTab?: Tab;
+};
+
 type WhatsAppMetaDiagnostic = {
   status?: number;
   category?: string;
@@ -5352,6 +5361,7 @@ export default function App() {
   const [isSendingWhatsAppTest, setIsSendingWhatsAppTest] = React.useState(false);
   const [isSavingWhatsAppConfig, setIsSavingWhatsAppConfig] = React.useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = React.useState(false);
   const [settingsName, setSettingsName] = React.useState('');
   const [settingsEmail, setSettingsEmail] = React.useState('');
@@ -5866,6 +5876,123 @@ export default function App() {
   React.useEffect(() => {
     setBills(derivedAgendaBills);
   }, [derivedAgendaBills]);
+
+  const appNotifications = React.useMemo<AppNotification[]>(() => {
+    const notifications: AppNotification[] = [];
+    const overdueBills = derivedAgendaBills.filter((bill) => bill.status === 'overdue');
+    const upcomingBills = derivedAgendaBills.filter(
+      (bill) => bill.status !== 'paid' && (bill.daysUntil ?? 99) >= 0 && (bill.daysUntil ?? 99) <= 7
+    );
+
+    if (overdueBills.length > 0) {
+      notifications.push({
+        id: `agenda-overdue-${overdueBills.length}`,
+        title: 'Você tem compromissos em atraso',
+        message: `${overdueBills.length} item(ns) exigem atenção imediata na sua agenda financeira.`,
+        tone: 'error',
+        targetTab: 'agenda',
+      });
+    } else if (upcomingBills.length > 0) {
+      notifications.push({
+        id: `agenda-upcoming-${upcomingBills.length}`,
+        title: 'Há vencimentos próximos',
+        message: `${upcomingBills.length} compromisso(s) vencem nos próximos 7 dias.`,
+        tone: 'warning',
+        targetTab: 'agenda',
+      });
+    }
+
+    if (subscriptionSummary?.status === 'PENDING') {
+      notifications.push({
+        id: 'subscription-pending',
+        title: 'Sua assinatura precisa de atenção',
+        message: 'Revise a cobrança para manter seu acesso premium ativo.',
+        tone: 'error',
+        targetTab: 'subscription',
+      });
+    } else if (subscriptionSummary?.status === 'TRIALING') {
+      notifications.push({
+        id: 'subscription-trial',
+        title: 'Seu período de teste está ativo',
+        message: subscriptionSummary.nextBillingDate
+          ? `A cobrança do Pro começa em ${subscriptionSummary.nextBillingDate}.`
+          : 'Aproveite o teste do Pro e acompanhe a próxima cobrança na sua assinatura.',
+        tone: 'info',
+        targetTab: 'subscription',
+      });
+    } else if (subscriptionSummary?.status === 'CANCELED' && subscriptionSummary.cancelAtPeriodEnd) {
+      notifications.push({
+        id: 'subscription-canceled',
+        title: 'Sua assinatura está programada para encerrar',
+        message: 'Reative o plano se quiser continuar com acesso aos recursos premium.',
+        tone: 'warning',
+        targetTab: 'subscription',
+      });
+    }
+
+    if (currentPlan === 'FREE' && currentMonthTransactionCount >= Math.ceil(FREE_TRANSACTION_LIMIT_PER_MONTH * 0.8)) {
+      notifications.push({
+        id: 'free-transactions-limit',
+        title: 'Você está perto do limite do plano Free',
+        message: `Já foram ${currentMonthTransactionCount}/${FREE_TRANSACTION_LIMIT_PER_MONTH} lançamentos neste mês.`,
+        tone: 'warning',
+        targetTab: 'subscription',
+      });
+    }
+
+    if (currentPlan === 'FREE' && aiUsageCount >= Math.ceil(FREE_AI_LIMIT_PER_MONTH * 0.8)) {
+      notifications.push({
+        id: 'free-ai-limit',
+        title: 'Seu limite de IA está quase no fim',
+        message: `Você já usou ${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH} interações de IA neste mês.`,
+        tone: 'info',
+        targetTab: 'subscription',
+      });
+    }
+
+    if (currentPlan !== 'FREE' && !isWhatsAppConnected) {
+      notifications.push({
+        id: 'whatsapp-not-connected',
+        title: 'Conecte o WhatsApp do workspace',
+        message: 'Ative alertas e resumos automáticos direto no seu celular.',
+        tone: 'info',
+        targetTab: 'integrations',
+      });
+    }
+
+    for (const event of workspaceEvents.slice(0, 2)) {
+      notifications.push({
+        id: `event-${event.id}`,
+        title: getWorkspaceEventLabel(event.type),
+        message: event.user_id ? 'Atividade recente registrada neste workspace.' : 'Evento automático registrado pelo sistema.',
+        tone: 'success',
+        timestamp: formatEventTimestamp(event.created_at),
+      });
+    }
+
+    return notifications.slice(0, 6);
+  }, [
+    aiUsageCount,
+    currentMonthTransactionCount,
+    currentPlan,
+    derivedAgendaBills,
+    isWhatsAppConnected,
+    subscriptionSummary,
+    workspaceEvents,
+  ]);
+
+  const handleNotificationClick = React.useCallback(
+    (notification: AppNotification) => {
+      setIsNotificationsOpen(false);
+      if (notification.targetTab) {
+        setActiveTab(notification.targetTab);
+        if (notification.targetTab === 'assistant') {
+          setIsAssistantOpen(true);
+        }
+      }
+    },
+    [setActiveTab]
+  );
 
   const assistantFinancialContext = React.useMemo(() => {
     const now = new Date();
@@ -8031,13 +8158,100 @@ export default function App() {
               <MessageSquare size={18} />
             </button>
 
-              <button
-              onClick={() => alert('Sem notificações novas no momento.')}
-              className="relative hidden rounded-xl border border-slate-800 bg-slate-900 p-2 text-slate-500 transition-all hover:text-white sm:block"
-            >
-              <Bell size={18} />
-              <span className="absolute top-2 right-2 size-2 bg-rose-500 rounded-full border-2 border-slate-950" />
-            </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsNotificationsOpen((current) => !current)}
+                  className={cn(
+                    'relative rounded-xl border border-slate-800 bg-slate-900 p-2 transition-all hover:text-white',
+                    appNotifications.length > 0 ? 'text-white' : 'text-slate-500'
+                  )}
+                >
+                  <Bell size={18} />
+                  {appNotifications.length > 0 && (
+                    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
+                      {appNotifications.length}
+                    </span>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {isNotificationsOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.97 }}
+                        transition={{ duration: 0.18 }}
+                        className="absolute right-0 z-50 mt-3 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/95 shadow-2xl shadow-slate-950/40 backdrop-blur"
+                      >
+                        <div className="border-b border-slate-800 px-4 py-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-bold text-white">Notificações</p>
+                              <p className="text-xs text-slate-400">
+                                {appNotifications.length > 0
+                                  ? `${appNotifications.length} atualização(ões) relevantes para este workspace`
+                                  : 'Nada urgente no momento'}
+                              </p>
+                            </div>
+                            {appNotifications.length > 0 && (
+                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                                Novas
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {appNotifications.length === 0 ? (
+                          <div className="px-4 py-5">
+                            <p className="text-sm text-slate-300">Nenhuma notificação nova no momento.</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              Quando surgir algo importante sobre sua conta, assinatura ou agenda, isso aparece aqui.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="max-h-[26rem] overflow-y-auto p-2">
+                            {appNotifications.map((notification) => (
+                              <button
+                                key={notification.id}
+                                type="button"
+                                onClick={() => handleNotificationClick(notification)}
+                                className="w-full rounded-2xl border border-transparent px-3 py-3 text-left transition-colors hover:border-slate-700 hover:bg-slate-900/80"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={cn(
+                                          'inline-flex size-2 rounded-full',
+                                          notification.tone === 'error'
+                                            ? 'bg-rose-500'
+                                            : notification.tone === 'warning'
+                                              ? 'bg-amber-400'
+                                              : notification.tone === 'success'
+                                                ? 'bg-emerald-500'
+                                                : 'bg-cyan-400'
+                                        )}
+                                      />
+                                      <p className="truncate text-sm font-semibold text-white">{notification.title}</p>
+                                    </div>
+                                    <p className="mt-1 text-sm leading-relaxed text-slate-300">{notification.message}</p>
+                                  </div>
+                                  {notification.timestamp && (
+                                    <span className="shrink-0 text-[11px] text-slate-500">{notification.timestamp}</span>
+                                  )}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
 
             <div className="relative">
               <button
