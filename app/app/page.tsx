@@ -601,7 +601,7 @@ const TRANSACTION_CATEGORIES = [
   'Auto (IA)',
 ];
 
-const REVENUE_TRANSACTION_CATEGORIES = [
+const REVENUE_TRANSACTION_CATEGORIES: readonly string[] = [
   'Salário',
   'Freelance',
   'Comissão',
@@ -611,7 +611,7 @@ const REVENUE_TRANSACTION_CATEGORIES = [
   'PIX',
   'Outros',
 ] as const;
-const EXPENSE_TRANSACTION_CATEGORIES = [
+const EXPENSE_TRANSACTION_CATEGORIES: readonly string[] = [
   'Alimentação',
   'Transporte',
   'Saúde',
@@ -621,7 +621,7 @@ const EXPENSE_TRANSACTION_CATEGORIES = [
   'Marketing',
   'Outros',
 ] as const;
-const TRANSFER_TRANSACTION_CATEGORIES = ['Outros'] as const;
+const TRANSFER_TRANSACTION_CATEGORIES: readonly string[] = ['Outros'];
 
 const TRANSACTION_WALLETS = ['Nubank', 'Itaú', 'Santander', 'Bradesco', 'Dinheiro', 'Outros'];
 
@@ -770,7 +770,7 @@ const getDefaultCategoryForFlow = (flowType: TransactionFlowType) => {
   return 'Alimentação';
 };
 
-const getAvailableCategoriesForFlow = (flowType: TransactionFlowType) => {
+const getAvailableCategoriesForFlow = (flowType: TransactionFlowType): string[] => {
   if (flowType === 'Receita') return [...REVENUE_TRANSACTION_CATEGORIES];
   if (flowType === 'Transferência') return [...TRANSFER_TRANSACTION_CATEGORIES];
   return [...EXPENSE_TRANSACTION_CATEGORIES];
