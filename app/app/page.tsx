@@ -3223,7 +3223,7 @@ const ReportsView = ({
       .map((tx) => ({
         id: tx.id,
         amount: parseCurrency(tx.amount),
-        description: tx.description || tx.cat || 'Despesa sem descrição',
+        description: tx.desc || tx.cat || 'Despesa sem descrição',
         category: tx.cat || 'Outros',
         date: tx.parsedDate,
       }))
