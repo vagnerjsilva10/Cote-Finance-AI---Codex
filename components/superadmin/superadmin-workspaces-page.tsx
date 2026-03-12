@@ -15,6 +15,23 @@ import {
 } from '@/components/superadmin/superadmin-utils';
 import type { SuperadminWorkspacesResponse } from '@/lib/superadmin/types';
 
+function getWorkspaceEstimatedMrr(plan: string) {
+  if (plan === 'PREMIUM') return 49;
+  if (plan === 'PRO') return 29;
+  return 0;
+}
+
+function getWorkspaceFeatureLabels(workspace: SuperadminWorkspacesResponse['workspaces'][number]) {
+  const labels: string[] = [];
+
+  if (workspace.whatsappStatus === 'CONNECTED') labels.push('WhatsApp');
+  if (workspace.walletsCount > 0) labels.push('Carteiras');
+  if (workspace.investmentsCount > 0) labels.push('Investimentos');
+  if (workspace.debtsCount > 0) labels.push('Dívidas');
+
+  return labels;
+}
+
 export function SuperadminWorkspacesPage() {
   const [query, setQuery] = React.useState('');
   const debouncedQuery = useDebouncedValue(query, 250);
@@ -98,44 +115,49 @@ export function SuperadminWorkspacesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {data.workspaces.map((workspace) => (
-                    <tr key={workspace.id}>
-                      <td className="py-4 pr-4 align-top">
-                        <div className="font-semibold text-white">{workspace.name}</div>
-                        <div className="mt-1 text-[11px] text-slate-500">{workspace.id}</div>
-                      </td>
-                      <td className="py-4 pr-4 align-top text-slate-300">{workspace.ownerEmail || 'Sem owner'}</td>
-                      <td className="py-4 pr-4 align-top text-slate-200">{formatPlanLabel(workspace.plan)}</td>
-                      <td className="py-4 pr-4 align-top">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(workspace.subscriptionStatus)}`}>
-                          {formatSubscriptionStatus(workspace.subscriptionStatus)}
-                        </span>
-                      </td>
-                      <td className="py-4 pr-4 align-top text-slate-200">{formatAdminCurrency(workspace.estimatedMrr)}</td>
-                      <td className="py-4 pr-4 align-top text-slate-300">
-                        <div className="flex flex-wrap gap-2">
-                          {workspace.enabledFeatures.length === 0 ? (
-                            <span className="text-slate-500">Sem recursos extras</span>
-                          ) : (
-                            workspace.enabledFeatures.map((feature) => (
-                              <span key={feature} className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-200">
-                                {feature}
-                              </span>
-                            ))
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 pr-4 align-top text-slate-300">{formatAdminDate(workspace.createdAt)}</td>
-                      <td className="py-4 pr-0 align-top">
-                        <Link
-                          href={`/superadmin/workspaces/${workspace.id}`}
-                          className="inline-flex rounded-full border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
-                        >
-                          Ver detalhe
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                  {data.workspaces.map((workspace) => {
+                    const estimatedMrr = getWorkspaceEstimatedMrr(workspace.plan);
+                    const featureLabels = getWorkspaceFeatureLabels(workspace);
+
+                    return (
+                      <tr key={workspace.id}>
+                        <td className="py-4 pr-4 align-top">
+                          <div className="font-semibold text-white">{workspace.name}</div>
+                          <div className="mt-1 text-[11px] text-slate-500">{workspace.id}</div>
+                        </td>
+                        <td className="py-4 pr-4 align-top text-slate-300">{workspace.ownerEmail || 'Sem owner'}</td>
+                        <td className="py-4 pr-4 align-top text-slate-200">{formatPlanLabel(workspace.plan)}</td>
+                        <td className="py-4 pr-4 align-top">
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(workspace.subscriptionStatus)}`}>
+                            {formatSubscriptionStatus(workspace.subscriptionStatus)}
+                          </span>
+                        </td>
+                        <td className="py-4 pr-4 align-top text-slate-200">{formatAdminCurrency(estimatedMrr)}</td>
+                        <td className="py-4 pr-4 align-top text-slate-300">
+                          <div className="flex flex-wrap gap-2">
+                            {featureLabels.length === 0 ? (
+                              <span className="text-slate-500">Sem recursos extras</span>
+                            ) : (
+                              featureLabels.map((feature) => (
+                                <span key={feature} className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-200">
+                                  {feature}
+                                </span>
+                              ))
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 pr-4 align-top text-slate-300">{formatAdminDate(workspace.createdAt)}</td>
+                        <td className="py-4 pr-0 align-top">
+                          <Link
+                            href={`/superadmin/workspaces/${workspace.id}`}
+                            className="inline-flex rounded-full border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
+                          >
+                            Ver detalhe
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
