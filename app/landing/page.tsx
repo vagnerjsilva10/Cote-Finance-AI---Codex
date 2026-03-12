@@ -33,57 +33,95 @@ type CheckoutPlan = 'Pro Mensal' | 'Premium Mensal';
 type PlanCard = {
   name: 'Free' | 'Pro' | 'Premium';
   price: string;
+  benefit: string;
   buttonText: string;
+  microcopy: string;
   features: string[];
   checkoutPlan?: CheckoutPlan;
   popular?: boolean;
+  proof?: string;
 };
 
 const plans: PlanCard[] = [
   {
-    name: 'Free',
-    price: 'R$0 / mês',
-    buttonText: 'Começar grátis',
+    name: 'Premium',
+    price: 'R$49/mês',
+    benefit: 'Controle financeiro avançado com automações inteligentes.',
+    buttonText: 'Assinar Premium',
+    microcopy: 'Mais profundidade, previsões e suporte prioritário.',
+    checkoutPlan: 'Premium Mensal',
     features: [
-      'até 20 lançamentos por mês',
-      'dashboard básico',
-      'acompanhamento de saldo',
-      'relatórios simples',
-      'IA limitada',
+      'Tudo do plano Pro',
+      'Previsão de saldo futuro',
+      'Alertas financeiros inteligentes',
+      'Análise profunda de despesas',
+      'Automação financeira no WhatsApp',
+      'Suporte prioritário',
     ],
   },
   {
     name: 'Pro',
-    price: 'R$29 / mês',
+    price: 'R$29/mês',
+    benefit: 'Organize suas finanças com ajuda da inteligência artificial.',
     buttonText: 'Testar 3 dias grátis',
+    microcopy: 'Cancele quando quiser.',
     checkoutPlan: 'Pro Mensal',
     popular: true,
+    proof: 'Mais de 80% dos usuários escolhem o plano Pro',
     features: [
-      'tudo do plano Free',
-      'lançamentos ilimitados',
-      'relatórios completos',
-      'gráficos avançados',
-      'análise inteligente da IA',
-      'insights financeiros automáticos',
-      'resumos e alertas no WhatsApp',
+      'Lançamentos ilimitados',
+      'Descubra exatamente para onde seu dinheiro está indo',
+      'Gráficos financeiros inteligentes',
+      'Análise automática da IA sobre seus gastos',
+      'Insights financeiros automáticos',
+      'Relatórios completos de despesas e receitas',
+      'Resumos e alertas financeiros no WhatsApp',
     ],
   },
   {
-    name: 'Premium',
-    price: 'R$49 / mês',
-    buttonText: 'Assinar Premium',
-    checkoutPlan: 'Premium Mensal',
+    name: 'Free',
+    price: 'R$0/mês',
+    benefit: 'Experimente o produto sem resolver completamente o problema.',
+    buttonText: 'Criar conta grátis',
+    microcopy: 'Experimente gratuitamente. Sem cartão.',
     features: [
-      'tudo do plano Pro',
-      'IA financeira avançada',
-      'previsões de saldo',
-      'alertas inteligentes',
-      'análises profundas de despesas',
-      'automação financeira no WhatsApp',
-      'suporte prioritário',
+      'Até 15 lançamentos por mês',
+      'Dashboard financeiro básico',
+      'Acompanhamento simples de saldo',
+      'Sem análise da IA',
+      'Sem relatórios avançados',
+      'Sem alertas no WhatsApp',
     ],
   },
 ];
+
+const pricingFaqs = [
+  {
+    question: 'Posso começar gratuitamente?',
+    answer:
+      'Sim. O plano Free permite experimentar o produto, registrar seus primeiros lançamentos e acompanhar seu saldo sem custo inicial.',
+  },
+  {
+    question: 'Preciso de cartão para testar?',
+    answer:
+      'Você pode criar sua conta grátis sem cartão. Para testar o Pro, o fluxo segue o checkout do produto e você pode cancelar quando quiser.',
+  },
+  {
+    question: 'Posso cancelar quando quiser?',
+    answer:
+      'Sim. Os planos pagos podem ser cancelados a qualquer momento na área de assinatura do produto.',
+  },
+  {
+    question: 'Qual a diferença entre Pro e Premium?',
+    answer:
+      'O Pro entrega controle financeiro completo com IA, relatórios e WhatsApp. O Premium adiciona previsões, alertas inteligentes, análises profundas e suporte prioritário.',
+  },
+  {
+    question: 'O WhatsApp está incluído em quais planos?',
+    answer:
+      'Os resumos e alertas financeiros no WhatsApp estão disponíveis nos planos Pro e Premium. O Premium também inclui automações financeiras mais avançadas.',
+  },
+] as const;
 
 const features = [
   {
@@ -865,41 +903,58 @@ export default function LandingPage() {
 
         <motion.section
           id="planos"
-          className="scroll-mt-24 space-y-6 lg:scroll-mt-28"
+          className="scroll-mt-24 space-y-8 lg:scroll-mt-28"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
           transition={{ duration: 0.45 }}
         >
-          <h2
-            className="text-center text-3xl font-bold text-white md:text-4xl"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Escolha o plano ideal para você
-          </h2>
+          <div className="space-y-4 text-center">
+            <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
+              Com base no seu perfil financeiro
+            </span>
+            <h2
+              className="text-center text-3xl font-bold text-white md:text-4xl"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Estas são as melhores opções para organizar sua vida financeira
+            </h2>
+            <p className="mx-auto max-w-3xl text-base text-slate-300 md:text-lg">
+              Escolha o plano que faz mais sentido para o seu momento e transforme o resultado do quiz em uma rotina
+              financeira mais clara, prática e consistente.
+            </p>
+          </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-3xl border p-6 ${
-                  plan.popular ? 'border-emerald-300/45 bg-emerald-500/10' : 'border-white/10 bg-slate-900/55'
+                className={`relative flex h-full flex-col rounded-[30px] border p-6 ${
+                  plan.popular
+                    ? 'border-emerald-300/45 bg-gradient-to-b from-emerald-400/18 via-white/10 to-white/8 shadow-[0_30px_90px_rgba(16,185,129,0.22)] lg:-translate-y-3'
+                    : 'border-white/10 bg-slate-900/55'
                 }`}
               >
                 {plan.popular && (
-                  <span className="mb-4 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
                     Mais popular
                   </span>
                 )}
-                <h3 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
-                  Plano {plan.name}
-                </h3>
-                <p className="mb-4 mt-1 text-xl font-semibold text-white">{plan.price}</p>
+                <div className="space-y-4">
+                  <p className="max-w-[18rem] text-sm leading-6 text-slate-200">{plan.benefit}</p>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+                      Plano {plan.name}
+                    </h3>
+                    <p className="mt-1 text-3xl font-semibold text-white">{plan.price}</p>
+                    <p className="mt-2 text-sm text-slate-300">{plan.microcopy}</p>
+                  </div>
+                </div>
 
-                <ul className="mb-6 space-y-2">
+                <ul className="mb-6 mt-8 space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2 text-sm text-slate-200">
-                      <Check size={15} className="mt-0.5 text-emerald-300" />
+                      <Check size={15} className="mt-0.5 shrink-0 text-emerald-300" />
                       {feature}
                     </li>
                   ))}
@@ -908,7 +963,7 @@ export default function LandingPage() {
                 <button
                   onClick={() => void checkoutPlan(plan.checkoutPlan)}
                   disabled={isBusy}
-                  className={`w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${
+                  className={`mt-auto w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.popular
                       ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                       : 'bg-slate-100 text-slate-900 hover:bg-white'
@@ -916,7 +971,18 @@ export default function LandingPage() {
                 >
                   {plan.buttonText}
                 </button>
+
+                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-emerald-100">{plan.proof}</p> : null}
               </div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {pricingFaqs.map((item) => (
+              <details key={item.question} className="rounded-3xl border border-white/10 bg-slate-900/55 p-6">
+                <summary className="cursor-pointer list-none text-base font-semibold text-white">{item.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-slate-300">{item.answer}</p>
+              </details>
             ))}
           </div>
         </motion.section>
