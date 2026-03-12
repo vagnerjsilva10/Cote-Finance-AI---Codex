@@ -93,7 +93,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Sessão ativa</p>
               <p className="mt-3 text-sm font-semibold text-white">{bootstrap.access.email}</p>
-              <p className="mt-1 text-sm text-slate-400">{formatPlatformRole(bootstrap.access.role)}</p>
+              <p className="mt-1 text-sm text-slate-400">{formatPlatformRole(bootstrap.access.platformRole)}</p>
             </div>
           </div>
 
