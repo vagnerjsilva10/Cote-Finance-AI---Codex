@@ -591,12 +591,37 @@ const TRANSACTION_CATEGORIES = [
   'Moradia',
   'Salário',
   'Freelance',
+  'Comissão',
+  'Reembolso',
+  'Vendas',
   'Marketing',
   'Investimentos',
   'PIX',
   'Outros',
   'Auto (IA)',
 ];
+
+const REVENUE_TRANSACTION_CATEGORIES = [
+  'Salário',
+  'Freelance',
+  'Comissão',
+  'Reembolso',
+  'Vendas',
+  'Investimentos',
+  'PIX',
+  'Outros',
+] as const;
+const EXPENSE_TRANSACTION_CATEGORIES = [
+  'Alimentação',
+  'Transporte',
+  'Saúde',
+  'Educação',
+  'Lazer',
+  'Moradia',
+  'Marketing',
+  'Outros',
+] as const;
+const TRANSFER_TRANSACTION_CATEGORIES = ['Outros'] as const;
 
 const TRANSACTION_WALLETS = ['Nubank', 'Itaú', 'Santander', 'Bradesco', 'Dinheiro', 'Outros'];
 
@@ -737,6 +762,18 @@ const mapPaymentMethodToBackend = (method: PaymentMethodLabel) => {
 const getDefaultPaymentMethodForFlow = (flowType: TransactionFlowType): PaymentMethodLabel => {
   if (flowType === 'Transferência') return 'Transferência bancária';
   return 'PIX';
+};
+
+const getDefaultCategoryForFlow = (flowType: TransactionFlowType) => {
+  if (flowType === 'Receita') return 'Salário';
+  if (flowType === 'Transferência') return 'Outros';
+  return 'Alimentação';
+};
+
+const getAvailableCategoriesForFlow = (flowType: TransactionFlowType) => {
+  if (flowType === 'Receita') return [...REVENUE_TRANSACTION_CATEGORIES];
+  if (flowType === 'Transferência') return [...TRANSFER_TRANSACTION_CATEGORIES];
+  return [...EXPENSE_TRANSACTION_CATEGORIES];
 };
 
 const getTransactionAmountSignal = (baseType: 'income' | 'expense' | 'transfer') => {
@@ -907,6 +944,9 @@ const mapAiCategoryToCategory = (rawCategory: string) => {
   if (normalized.includes('morad') || normalized.includes('aluguel')) return 'Moradia';
   if (normalized.includes('salario')) return 'Salário';
   if (normalized.includes('freela')) return 'Freelance';
+  if (normalized.includes('comiss')) return 'Comissão';
+  if (normalized.includes('reemb')) return 'Reembolso';
+  if (normalized.includes('vend')) return 'Vendas';
   if (normalized.includes('ads') || normalized.includes('marketing') || normalized.includes('trafego')) return 'Marketing';
   if (normalized.includes('invest')) return 'Investimentos';
   if (normalized.includes('pix')) return 'PIX';
@@ -4313,7 +4353,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
       category: initialData.category || GOAL_CATEGORIES[0],
       deadline: normalizedDeadline,
     };
-  }, [initialData]);
+  }, [initialData, initialDraft]);
 
   const [formData, setFormData] = React.useState<GoalFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -4823,7 +4863,7 @@ const TransactionModal = ({
         description: '',
         amount: '',
         flowType: 'Despesa',
-        category: 'Alimentação',
+        category: getDefaultCategoryForFlow('Despesa'),
         paymentMethod: 'PIX',
         wallet: TRANSACTION_WALLETS[0],
         destinationWallet: '',
@@ -4859,6 +4899,10 @@ const TransactionModal = ({
   const [receiptStatus, setReceiptStatus] = React.useState<string | null>(null);
   const [selectedReceiptName, setSelectedReceiptName] = React.useState<string | null>(null);
   const receiptInputRef = React.useRef<HTMLInputElement | null>(null);
+  const availableCategories = React.useMemo(
+    () => getAvailableCategoriesForFlow(formData.flowType),
+    [formData.flowType]
+  );
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -4870,6 +4914,15 @@ const TransactionModal = ({
     setReceiptStatus(null);
     setSelectedReceiptName(null);
   }, [isOpen, getInitialFormData]);
+
+  React.useEffect(() => {
+    if (!availableCategories.includes(formData.category)) {
+      setFormData((prev) => ({
+        ...prev,
+        category: getDefaultCategoryForFlow(prev.flowType),
+      }));
+    }
+  }, [availableCategories, formData.category]);
 
   React.useEffect(() => {
     if (!isOpen || !onSuggestCategory) return;
@@ -4991,6 +5044,9 @@ const TransactionModal = ({
                     setFormData((prev) => ({
                       ...prev,
                       flowType,
+                      category: getAvailableCategoriesForFlow(flowType).includes(prev.category)
+                        ? prev.category
+                        : getDefaultCategoryForFlow(flowType),
                       paymentMethod:
                         flowType === 'Transferência'
                           ? 'Transferência bancária'
@@ -5076,7 +5132,7 @@ const TransactionModal = ({
                   onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
                   className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
                 >
-                  {TRANSACTION_CATEGORIES.map((category) => (
+                  {availableCategories.map((category) => (
                     <option key={category} value={category}>
                       {category}
                     </option>
@@ -8473,13 +8529,7 @@ export default function App() {
     setIsQuickCreateOpen(false);
     handleOpenCreateTransaction({
       flowType,
-      category:
-        category ||
-        (flowType === 'Receita'
-          ? TRANSACTION_CATEGORIES[6]
-          : flowType === TRANSACTION_FLOW_TYPES[2]
-            ? TRANSACTION_CATEGORIES[11]
-            : TRANSACTION_CATEGORIES[0]),
+      category: category || getDefaultCategoryForFlow(flowType),
       paymentMethod: getDefaultPaymentMethodForFlow(flowType),
       destinationWallet: flowType === TRANSACTION_FLOW_TYPES[2] ? '' : undefined,
     });
@@ -9534,11 +9584,11 @@ export default function App() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {([
-                        { value: TRANSACTION_CATEGORIES[0], label: 'Alimenta\u00e7\u00e3o' },
-                        { value: TRANSACTION_CATEGORIES[1], label: 'Transporte' },
-                        { value: TRANSACTION_CATEGORIES[5], label: 'Moradia' },
-                        { value: TRANSACTION_CATEGORIES[2], label: 'Sa\u00fade' },
-                        { value: TRANSACTION_CATEGORIES[4], label: 'Lazer' },
+                        { value: 'Alimentação', label: 'Alimentação' },
+                        { value: 'Transporte', label: 'Transporte' },
+                        { value: 'Moradia', label: 'Moradia' },
+                        { value: 'Saúde', label: 'Saúde' },
+                        { value: 'Lazer', label: 'Lazer' },
                       ] as const).map((quickCategory) => (
                         <button
                           key={quickCategory.value}
