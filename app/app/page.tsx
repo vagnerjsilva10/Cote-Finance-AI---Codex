@@ -9806,7 +9806,7 @@ export default function App() {
                   insights={dashboardInsights}
                   onAddTransaction={handleOpenCreateTransaction}
                   currentPlan={currentPlan}
-                  onUpgrade={handleUpgrade}
+                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
                 />
               )}
               {activeTab === 'transactions' && (
@@ -9862,7 +9862,7 @@ export default function App() {
                   getApiHeaders={getAuthHeaders}
                   accessLevel={reportAccessLevel}
                   currentPlan={currentPlan}
-                  onUpgrade={handleUpgrade}
+                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
                 />
               )}
               {activeTab === 'assistant' && (
@@ -9870,7 +9870,7 @@ export default function App() {
               )}
               {activeTab === 'integrations' && (
                 <IntegrationsView
-                  onUpgrade={handleUpgrade}
+                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
                   currentPlan={currentPlan}
                   isWhatsAppConnected={isWhatsAppConnected}
                   isConnectingWhatsApp={isConnectingWhatsApp}
