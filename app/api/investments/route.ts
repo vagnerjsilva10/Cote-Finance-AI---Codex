@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+﻿import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import {
@@ -15,6 +15,7 @@ type InvestmentBody = {
   name?: string;
   type?: string;
   institution?: string;
+  walletId?: string;
   invested?: number | string;
   current?: number | string;
   expectedReturnAnnual?: number | string;
@@ -34,6 +35,22 @@ const isMissingTableError = (error: unknown) => {
     return error.code === 'P2021';
   }
   return false;
+};
+
+const resolveInvestmentWallet = async (workspaceId: string, walletId?: string) => {
+  const normalizedWalletId = (walletId || '').trim();
+  if (!normalizedWalletId) return null;
+
+  return prisma.wallet.findFirst({
+    where: {
+      id: normalizedWalletId,
+      workspace_id: workspaceId,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
 };
 
 const buildMissingTableResponse = () =>
@@ -78,13 +95,19 @@ export async function POST(req: Request) {
 
     const name = (body.name || '').trim();
     const type = (body.type || '').trim() || 'Outros';
-    const institution = (body.institution || '').trim() || 'Não informado';
+    const wallet = await resolveInvestmentWallet(context.workspaceId, body.walletId);
     const investedAmount = parseAmount(body.invested);
     const currentAmount = parseAmount(body.current);
     const expectedReturnAnnual = parseAmount(body.expectedReturnAnnual) ?? 0;
 
     if (!name) {
       return NextResponse.json({ error: 'Investment name is required' }, { status: 400 });
+    }
+    if (!wallet) {
+      return NextResponse.json(
+        { error: 'Selecione uma carteira válida para vincular o investimento.' },
+        { status: 400 }
+      );
     }
     if (!investedAmount || investedAmount < 0) {
       return NextResponse.json({ error: 'Invalid invested amount' }, { status: 400 });
@@ -98,7 +121,7 @@ export async function POST(req: Request) {
         workspace_id: context.workspaceId,
         name,
         type,
-        institution,
+        institution: wallet.name,
         invested_amount: investedAmount,
         current_amount: currentAmount,
         expected_return_annual: expectedReturnAnnual,
@@ -152,17 +175,24 @@ export async function PATCH(req: Request) {
 
     const name = body.name?.trim();
     const type = body.type?.trim();
-    const institution = body.institution?.trim();
+    const wallet = body.walletId ? await resolveInvestmentWallet(context.workspaceId, body.walletId) : null;
     const investedAmount = parseAmount(body.invested);
     const currentAmount = parseAmount(body.current);
     const expectedReturnAnnual = parseAmount(body.expectedReturnAnnual);
+
+    if (body.walletId && !wallet) {
+      return NextResponse.json(
+        { error: 'Selecione uma carteira válida para vincular o investimento.' },
+        { status: 400 }
+      );
+    }
 
     const investment = await prisma.investment.update({
       where: { id: existing.id },
       data: {
         name: name || undefined,
         type: type || undefined,
-        institution: institution || undefined,
+        institution: wallet?.name || undefined,
         invested_amount: investedAmount !== null && investedAmount >= 0 ? investedAmount : undefined,
         current_amount: currentAmount !== null && currentAmount >= 0 ? currentAmount : undefined,
         expected_return_annual:
@@ -243,3 +273,4 @@ export async function DELETE(req: Request) {
     );
   }
 }
+

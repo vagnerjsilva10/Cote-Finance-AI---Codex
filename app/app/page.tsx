@@ -119,7 +119,7 @@ type DebtFormData = {
 type InvestmentFormData = {
   name: string;
   type: string;
-  institution: string;
+  walletId: string;
   invested: string;
   current: string;
   expectedReturnAnnual: string;
@@ -154,6 +154,8 @@ type Investment = {
   id: string | number;
   label: string;
   type: string;
+  walletId?: string | null;
+  walletName: string;
   institution: string;
   value: number; // valor atual
   invested: number; // valor total investido
@@ -3241,13 +3243,86 @@ type PortfolioViewProps = {
   transactions: Transaction[];
   totalBalance: number;
   onAddWallet: () => void;
+  onTransferBalance: (walletName?: string) => void;
+  onAddInvestment: () => void;
+  onAddDebt: () => void;
+  onViewWalletHistory: (walletName?: string) => void;
+  onAdjustWalletBalance: (walletName?: string) => void;
+  onOpenInvestments: () => void;
+  onOpenDebts: () => void;
+  onOpenReports: () => void;
 };
 
-const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance, onAddWallet }: PortfolioViewProps) => {
+const buildPortfolioInsights = ({
+  wallets,
+  totalBalance,
+  totalInvested,
+  totalDebt,
+  netWorth,
+}: {
+  wallets: WalletAccount[];
+  totalBalance: number;
+  totalInvested: number;
+  totalDebt: number;
+  netWorth: number;
+}) => {
+  const insights: string[] = [];
+  const totalAssets = totalBalance + totalInvested;
+  const topWallet = [...wallets].sort((a, b) => b.balance - a.balance)[0] ?? null;
+
+  if (totalAssets <= 0 && totalDebt <= 0) {
+    return ['Você ainda não consolidou patrimônio suficiente para gerar insights da carteira.'];
+  }
+
+  if (totalAssets > 0 && totalInvested === 0) {
+    insights.push('Seu patrimônio ainda está concentrado em caixa. Registrar investimentos pode melhorar sua diversificação.');
+  }
+
+  if (topWallet && totalBalance > 0) {
+    const share = (topWallet.balance / totalBalance) * 100;
+    if (share >= 70) {
+      insights.push(`${topWallet.name} concentra ${share.toFixed(0)}% do seu saldo em contas.`);
+    }
+  }
+
+  if (totalDebt > 0 && totalAssets > 0) {
+    const debtShare = (totalDebt / totalAssets) * 100;
+    insights.push(`Suas dívidas representam ${debtShare.toFixed(0)}% dos seus ativos atuais.`);
+  }
+
+  if (netWorth < 0) {
+    insights.push('Seu patrimônio líquido está negativo. Priorize reduzir dívidas e reforçar o saldo em contas.');
+  }
+
+  if (insights.length === 0 && totalAssets > 0) {
+    insights.push('Sua carteira está equilibrada neste momento. Continue acompanhando a distribuição entre caixa, investimentos e dívidas.');
+  }
+
+  return insights.slice(0, 3);
+};
+
+const PortfolioView = ({
+  wallets,
+  investments,
+  debts,
+  transactions,
+  totalBalance,
+  onAddWallet,
+  onTransferBalance,
+  onAddInvestment,
+  onAddDebt,
+  onViewWalletHistory,
+  onAdjustWalletBalance,
+  onOpenInvestments,
+  onOpenDebts,
+  onOpenReports,
+}: PortfolioViewProps) => {
   const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
   const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
   const totalDebt = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
   const netWorth = totalBalance + totalInvested - totalDebt;
+  const [showAllWallets, setShowAllWallets] = React.useState(false);
+  const hasAnyPortfolioData = wallets.length > 0 || investments.length > 0 || activeDebts.length > 0 || transactions.length > 0;
 
   const assetMix = React.useMemo(
     () =>
@@ -3255,7 +3330,7 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
         { name: 'Caixa', value: Math.max(totalBalance, 0), color: '#10b981' },
         { name: 'Investimentos', value: Math.max(totalInvested, 0), color: '#3b82f6' },
         { name: 'Dívidas', value: Math.max(totalDebt, 0), color: '#f59e0b' },
-      ].filter((item) => item.value > 0),
+      ],
     [totalBalance, totalInvested, totalDebt]
   );
 
@@ -3268,86 +3343,149 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
         share: totalWalletBalance > 0 ? (wallet.balance / totalWalletBalance) * 100 : 0,
       }));
   }, [wallets]);
+  const visibleWallets = showAllWallets ? walletAllocation : walletAllocation.slice(0, 4);
 
   const topInvestments = React.useMemo(
     () =>
       [...investments]
         .sort((a, b) => b.value - a.value)
-        .slice(0, 5)
+        .slice(0, 3)
         .map((investment) => ({
           ...investment,
           profit: investment.value - investment.invested,
           profitPct: investment.invested > 0 ? ((investment.value - investment.invested) / investment.invested) * 100 : 0,
+          portfolioShare: netWorth > 0 ? (investment.value / netWorth) * 100 : 0,
         })),
-    [investments]
+    [investments, netWorth]
   );
 
-  const walletActivity = React.useMemo(() => {
-    const activityMap = new Map<string, { income: number; expense: number; count: number }>();
-    transactions.forEach((transaction) => {
-      const walletName = transaction.wallet || 'Sem carteira';
-      const parsedAmount = parseCurrency(transaction.amount);
-      const absoluteAmount = Math.abs(parsedAmount);
-      const current = activityMap.get(walletName) || { income: 0, expense: 0, count: 0 };
+  const topDebts = React.useMemo(
+    () =>
+      [...activeDebts]
+        .sort((a, b) => b.remainingAmount - a.remainingAmount)
+        .slice(0, 3)
+        .map((debt) => ({
+          ...debt,
+          portfolioShare: netWorth > 0 ? (debt.remainingAmount / netWorth) * 100 : 0,
+        })),
+    [activeDebts, netWorth]
+  );
 
-      if (transaction.type === 'income') {
-        current.income += absoluteAmount;
-      } else if (transaction.type === 'expense') {
-        current.expense += absoluteAmount;
-      }
-
-      current.count += 1;
-      activityMap.set(walletName, current);
-    });
-
-    return [...activityMap.entries()]
-      .map(([walletName, activity]) => ({
-        walletName,
-        ...activity,
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  }, [transactions]);
+  const portfolioInsights = React.useMemo(
+    () =>
+      buildPortfolioInsights({
+        wallets,
+        totalBalance,
+        totalInvested,
+        totalDebt,
+        netWorth,
+      }),
+    [wallets, totalBalance, totalInvested, totalDebt, netWorth]
+  );
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2">
-          <h3 className="text-xl font-bold text-white">Carteira</h3>
-          <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
-            Acompanhe seu patrimônio consolidado, veja a distribuição entre contas, investimentos e dívidas e entenda
-            onde sua carteira está mais concentrada.
-          </p>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-white">Carteira</h3>
+            <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
+              Veja seu patrimônio total e onde seu dinheiro está distribuído.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+            <button
+              type="button"
+              onClick={onAddWallet}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white"
+            >
+              <Plus size={16} />
+              Criar carteira
+            </button>
+            <button
+              type="button"
+              onClick={() => onTransferBalance()}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              <Workflow size={16} />
+              Transferir saldo
+            </button>
+            <button
+              type="button"
+              onClick={onAddInvestment}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              <TrendingUp size={16} />
+              Registrar investimento
+            </button>
+            <button
+              type="button"
+              onClick={onAddDebt}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              <CreditCard size={16} />
+              Registrar dívida
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onAddWallet}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white"
-        >
-          <Plus size={16} />
-          Nova carteira
-        </button>
+
+        {!hasAnyPortfolioData && (
+          <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-900/40 px-6 py-8 text-center">
+            <h4 className="text-lg font-bold text-white">Crie sua primeira carteira</h4>
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+              Adicione contas bancárias, dinheiro em espécie ou carteiras digitais para começar a organizar suas finanças.
+            </p>
+            <button
+              type="button"
+              onClick={onAddWallet}
+              className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-emerald-400"
+            >
+              <Plus size={16} />
+              Criar primeira carteira
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saldo em contas</p>
-          <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalBalance)}</p>
-        </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Investimentos atuais</p>
-          <p className="text-2xl font-black text-blue-400">{formatCurrency(totalInvested)}</p>
-        </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Dívidas em aberto</p>
-          <p className="text-2xl font-black text-amber-400">{formatCurrency(totalDebt)}</p>
-        </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Patrimônio líquido</p>
+        <button
+          type="button"
+          onClick={onOpenReports}
+          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+        >
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Patrimônio líquido</p>
           <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-white' : 'text-rose-400')}>
             {formatCurrency(netWorth)}
           </p>
-        </div>
+          <p className="mt-3 text-xs text-slate-500">Saldo em contas + investimentos - dívidas</p>
+        </button>
+        <button
+          type="button"
+          onClick={() => onViewWalletHistory()}
+          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+        >
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Saldo em contas</p>
+          <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalBalance)}</p>
+          <p className="mt-3 text-xs text-slate-500">Veja o histórico e movimente saldo entre carteiras</p>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenInvestments}
+          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+        >
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Investimentos</p>
+          <p className="text-2xl font-black text-blue-400">{formatCurrency(totalInvested)}</p>
+          <p className="mt-3 text-xs text-slate-500">Abra a área de investimentos e registre novas posições</p>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenDebts}
+          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+        >
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Dívidas</p>
+          <p className="text-2xl font-black text-amber-400">{formatCurrency(totalDebt)}</p>
+          <p className="mt-3 text-xs text-slate-500">Acompanhe o valor em aberto e os próximos vencimentos</p>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -3355,13 +3493,13 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <h4 className="text-lg font-bold text-white">Distribuição do patrimônio</h4>
-              <p className="text-sm text-slate-500">Visualize a composição da sua carteira neste workspace.</p>
+              <p className="text-sm text-slate-500">Entenda rapidamente quanto do seu patrimônio está em contas, investimentos e dívidas.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_0.9fr]">
             <div className="h-72">
-              {assetMix.length > 0 ? (
+              {assetMix.some((item) => item.value > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <RePieChart>
                     <Pie
@@ -3390,15 +3528,16 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-800 text-sm text-slate-500">
-                  Sem dados suficientes para montar a carteira.
+                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecerá aqui.
                 </div>
               )}
             </div>
 
             <div className="space-y-3">
               {assetMix.map((entry) => {
-                const share = assetMix.reduce((acc, item) => acc + item.value, 0) > 0
-                  ? (entry.value / assetMix.reduce((acc, item) => acc + item.value, 0)) * 100
+                const portfolioBase = assetMix.reduce((acc, item) => acc + item.value, 0);
+                const share = portfolioBase > 0
+                  ? (entry.value / portfolioBase) * 100
                   : 0;
                 return (
                   <div key={entry.name} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
@@ -3420,19 +3559,30 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
         </div>
 
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-          <div className="mb-4">
-            <h4 className="text-lg font-bold text-white">Contas e carteiras</h4>
-            <p className="text-sm text-slate-500">Veja onde seu saldo de caixa está distribuído.</p>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h4 className="text-lg font-bold text-white">Onde está meu dinheiro</h4>
+              <p className="text-sm text-slate-500">Veja as principais carteiras, participação no saldo total e ações rápidas.</p>
+            </div>
+            {walletAllocation.length > 4 && (
+              <button
+                type="button"
+                onClick={() => setShowAllWallets((current) => !current)}
+                className="text-xs font-bold uppercase tracking-widest text-emerald-300 transition-colors hover:text-white"
+              >
+                {showAllWallets ? 'Mostrar menos' : 'Ver todas as carteiras'}
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
             {walletAllocation.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
-                Nenhuma conta ou carteira cadastrada neste workspace.
+                Nenhuma carteira cadastrada ainda. Crie uma conta financeira para começar a organizar o saldo do workspace.
               </div>
             )}
 
-            {walletAllocation.map((wallet) => (
+            {visibleWallets.map((wallet) => (
               <div key={wallet.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <span className="text-sm font-semibold text-white">{wallet.name}</span>
@@ -3442,6 +3592,32 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
                   <div className="h-full rounded-full bg-emerald-500" style={{ width: `${wallet.share}%` }} />
                 </div>
                 <p className="mt-2 text-xs text-slate-500">{wallet.share.toFixed(1)}% do saldo em contas</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onViewWalletHistory(wallet.name)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                  >
+                    <ReceiptText size={14} />
+                    Ver histórico
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onTransferBalance(wallet.name)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                  >
+                    <Workflow size={14} />
+                    Transferir
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onAdjustWalletBalance(wallet.name)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                  >
+                    <Pencil size={14} />
+                    Ajustar saldo
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -3450,15 +3626,37 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-          <div className="mb-4">
-            <h4 className="text-lg font-bold text-white">Principais posições de investimento</h4>
-            <p className="text-sm text-slate-500">Os ativos que hoje mais representam sua carteira.</p>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h4 className="text-lg font-bold text-white">Resumo de investimentos</h4>
+              <p className="text-sm text-slate-500">Veja os ativos que mais representam seu patrimônio.</p>
+            </div>
+            {topInvestments.length > 0 && (
+              <button
+                type="button"
+                onClick={onOpenInvestments}
+                className="text-xs font-bold uppercase tracking-widest text-blue-300 transition-colors hover:text-white"
+              >
+                Abrir investimentos
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
             {topInvestments.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
-                Nenhum investimento registrado ainda.
+              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
+                <p className="text-sm font-semibold text-white">Você ainda não registrou investimentos.</p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Adicione seus principais ativos para ver a participação deles no patrimônio total.
+                </p>
+                <button
+                  type="button"
+                  onClick={onAddInvestment}
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 transition-colors hover:border-blue-400/50 hover:text-white"
+                >
+                  <Plus size={14} />
+                  Adicionar investimento
+                </button>
               </div>
             )}
 
@@ -3468,11 +3666,14 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-white">{investment.label}</p>
                     <p className="text-xs text-slate-500">
-                      {investment.type} · {investment.institution}
+                      {investment.type} · {investment.walletName}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-blue-400">{formatCurrency(investment.value)}</p>
+                    <p className="text-[11px] uppercase tracking-widest text-slate-500">
+                      {investment.portfolioShare.toFixed(1)}% do patrimônio
+                    </p>
                     <p
                       className={cn(
                         'text-xs font-semibold',
@@ -3490,33 +3691,52 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
         </div>
 
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-          <div className="mb-4">
-            <h4 className="text-lg font-bold text-white">Movimentação por carteira</h4>
-            <p className="text-sm text-slate-500">Volume recente de entradas e saídas por conta.</p>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h4 className="text-lg font-bold text-white">Resumo de dívidas</h4>
+              <p className="text-sm text-slate-500">Entenda o que está em aberto e o peso disso no seu patrimônio.</p>
+            </div>
+            {topDebts.length > 0 && (
+              <button
+                type="button"
+                onClick={onOpenDebts}
+                className="text-xs font-bold uppercase tracking-widest text-amber-300 transition-colors hover:text-white"
+              >
+                Abrir dívidas
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
-            {walletActivity.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
-                Ainda não há movimentações para consolidar por carteira.
+            {topDebts.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
+                <p className="text-sm font-semibold text-white">Você não possui dívidas registradas.</p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Registre dívidas para acompanhar o valor em aberto e o impacto delas no seu patrimônio.
+                </p>
+                <button
+                  type="button"
+                  onClick={onAddDebt}
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition-colors hover:border-amber-400/50 hover:text-white"
+                >
+                  <Plus size={14} />
+                  Registrar dívida
+                </button>
               </div>
             )}
 
-            {walletActivity.map((activity) => (
-              <div key={activity.walletName} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+            {topDebts.map((debt) => (
+              <div key={debt.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                  <p className="text-sm font-semibold text-white">{activity.walletName}</p>
-                  <span className="text-xs uppercase tracking-widest text-slate-500">{activity.count} lançamentos</span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{debt.creditor}</p>
+                    <p className="mt-1 text-xs text-slate-500">{debt.category}</p>
+                  </div>
+                  <span className="text-sm font-bold text-amber-300">{formatCurrency(debt.remainingAmount)}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl bg-slate-900/70 px-3 py-2">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1">Entradas</p>
-                    <p className="font-semibold text-emerald-400">{formatCurrency(activity.income)}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-900/70 px-3 py-2">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1">Saídas</p>
-                    <p className="font-semibold text-rose-400">{formatCurrency(activity.expense)}</p>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                  <span>Vence no dia {debt.dueDay}</span>
+                  <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimônio</span>
                 </div>
               </div>
             ))}
@@ -3524,28 +3744,24 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
         </div>
       </div>
 
-      {activeDebts.length > 0 && (
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-          <div className="mb-4">
-            <h4 className="text-lg font-bold text-white">Dívidas que pressionam a carteira</h4>
-            <p className="text-sm text-slate-500">Priorize as maiores exposições e vencimentos mais sensíveis.</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-            {[...activeDebts]
-              .sort((a, b) => b.remainingAmount - a.remainingAmount)
-              .slice(0, 3)
-              .map((debt) => (
-                <div key={debt.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-                  <p className="text-sm font-semibold text-white">{debt.creditor}</p>
-                  <p className="mt-1 text-xs text-slate-500">{debt.category}</p>
-                  <p className="mt-4 text-xl font-black text-amber-300">{formatCurrency(debt.remainingAmount)}</p>
-                  <p className="mt-2 text-xs text-slate-500">Vence todo dia {debt.dueDay}</p>
-                </div>
-              ))}
-          </div>
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <div className="mb-4">
+          <h4 className="text-lg font-bold text-white">Insights da IA</h4>
+          <p className="text-sm text-slate-500">Mensagens rápidas para ajudar você a entender a composição da sua carteira.</p>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          {portfolioInsights.map((insight, index) => (
+            <div key={`${index}-${insight}`} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                <Sparkles size={12} />
+                Insight
+              </div>
+              <p className="text-sm leading-relaxed text-slate-200">{insight}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
@@ -3603,7 +3819,7 @@ const InvestmentsView = ({
               <tr className="border-b border-slate-800 bg-slate-900/50">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Nome</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Tipo</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Instituição</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Carteira</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Investido</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Valor atual</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rendimento</th>
@@ -3633,7 +3849,7 @@ const InvestmentsView = ({
                         {item.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{item.institution}</td>
+                    <td className="px-6 py-4 text-sm text-slate-300">{item.walletName}</td>
                     <td className="px-6 py-4 text-sm text-slate-300">{formatCurrency(item.invested)}</td>
                     <td className="px-6 py-4 text-sm text-white">{formatCurrency(item.value)}</td>
                     <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
@@ -4674,31 +4890,37 @@ type InvestmentModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (inv: InvestmentFormData) => Promise<void> | void;
+  wallets: WalletAccount[];
   initialData?: Investment | null;
 };
 
-const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: InvestmentModalProps) => {
+const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = null }: InvestmentModalProps) => {
   const getInitialFormData = React.useCallback((): InvestmentFormData => {
     if (!initialData) {
       return {
         name: '',
         type: INVESTMENT_TYPES[0],
-        institution: '',
+        walletId: wallets[0]?.id || '',
         invested: '',
         current: '',
         expectedReturnAnnual: '',
       };
     }
 
+    const matchedWalletId =
+      initialData.walletId ||
+      wallets.find((wallet) => wallet.name === initialData.walletName || wallet.name === initialData.institution)?.id ||
+      '';
+
     return {
       name: initialData.label,
       type: initialData.type,
-      institution: initialData.institution,
+      walletId: matchedWalletId,
       invested: formatMoneyInput(initialData.invested),
       current: formatMoneyInput(initialData.value),
       expectedReturnAnnual: String(initialData.expectedReturnAnnual),
     };
-  }, [initialData]);
+  }, [initialData, wallets]);
 
   const [formData, setFormData] = React.useState<InvestmentFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -4713,7 +4935,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: Inve
 
   const isValid =
     formData.name.trim().length > 0 &&
-    formData.institution.trim().length > 0 &&
+    formData.walletId.trim().length > 0 &&
     parseMoneyInput(formData.invested) >= 0 &&
     parseMoneyInput(formData.current) >= 0 &&
     Number(formData.expectedReturnAnnual) >= 0;
@@ -4774,14 +4996,19 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, initialData = null }: Inve
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Instituição</label>
-            <input
-              type="text"
-              value={formData.institution}
-              onChange={(e) => setFormData((prev) => ({ ...prev, institution: e.target.value }))}
-              placeholder="Ex: XP, NuInvest, Itaú"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
-            />
+            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Carteira</label>
+            <select
+              value={formData.walletId}
+              onChange={(e) => setFormData((prev) => ({ ...prev, walletId: e.target.value }))}
+              className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+            >
+              <option value="">Selecione uma carteira</option>
+              {wallets.map((wallet) => (
+                <option key={wallet.id} value={wallet.id}>
+                  {wallet.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -6541,6 +6768,8 @@ export default function App() {
             id: item.id,
             label: item.name,
             type: item.type || 'Outros',
+            walletId: null,
+            walletName: item.institution || 'Não informado',
             institution: item.institution || 'Não informado',
             invested: Number(item.invested_amount || 0),
             value: Number(item.current_amount || 0),
@@ -6601,6 +6830,8 @@ export default function App() {
                 id: item.id,
                 label: item.name,
                 type: item.type || 'Outros',
+                walletId: null,
+                walletName: item.institution || 'Não informado',
                 institution: item.institution || 'Não informado',
                 invested: Number(item.invested_amount || 0),
                 value: Number(item.current_amount || 0),
@@ -7532,7 +7763,7 @@ export default function App() {
       .map((inv) => ({
         name: inv.label,
         type: inv.type,
-        institution: inv.institution,
+        walletName: inv.walletName,
         invested: inv.invested,
         currentValue: inv.value,
       }));
@@ -8548,7 +8779,7 @@ export default function App() {
       ...(editingInvestmentId ? { id: String(editingInvestmentId) } : {}),
       name: inv.name.trim(),
       type: inv.type,
-      institution: inv.institution.trim(),
+      walletId: inv.walletId,
       invested: parseMoneyInput(inv.invested),
       current: parseMoneyInput(inv.current),
       expectedReturnAnnual: Number(inv.expectedReturnAnnual || 0),
@@ -9621,6 +9852,7 @@ export default function App() {
           setEditingInvestmentId(null);
         }}
         onSubmit={handleSubmitInvestment}
+        wallets={wallets}
         initialData={editingInvestment}
       />
 
@@ -10443,6 +10675,44 @@ export default function App() {
                   transactions={transactions}
                   totalBalance={totalBalance}
                   onAddWallet={handleOpenCreateWalletModal}
+                  onTransferBalance={(walletName) => {
+                    const sourceWallet = walletName ?? wallets[0]?.name ?? '';
+                    const destinationWallet =
+                      wallets.find((wallet) => wallet.name !== sourceWallet)?.name ?? '';
+
+                    setActiveTab('transactions');
+                    handleOpenCreateTransaction({
+                      flowType: 'Transferência',
+                      wallet: sourceWallet,
+                      destinationWallet,
+                      category: getDefaultCategoryForFlow('Transferência'),
+                      paymentMethod: getDefaultPaymentMethodForFlow('Transferência'),
+                    });
+                  }}
+                  onAddInvestment={() => {
+                    setActiveTab('investments');
+                    handleOpenCreateInvestment();
+                  }}
+                  onAddDebt={() => {
+                    setActiveTab('debts');
+                    handleOpenCreateDebt();
+                  }}
+                  onViewWalletHistory={() => {
+                    setActiveTab('transactions');
+                  }}
+                  onAdjustWalletBalance={(walletName) => {
+                    setActiveTab('transactions');
+                    handleOpenCreateTransaction({
+                      flowType: 'Receita',
+                      wallet: walletName ?? wallets[0]?.name ?? '',
+                      category: getDefaultCategoryForFlow('Receita'),
+                      paymentMethod: getDefaultPaymentMethodForFlow('Receita'),
+                      description: 'Ajuste de saldo',
+                    });
+                  }}
+                  onOpenInvestments={() => setActiveTab('investments')}
+                  onOpenDebts={() => setActiveTab('debts')}
+                  onOpenReports={() => setActiveTab('reports')}
                 />
               )}
               {activeTab === 'agenda' && <AgendaView bills={bills} />}
