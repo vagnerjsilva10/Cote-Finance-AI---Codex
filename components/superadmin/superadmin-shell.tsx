@@ -61,7 +61,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
             <ShieldAlert className="mx-auto mb-4 h-10 w-10 text-rose-400" />
             <h1 className="text-2xl font-semibold text-white">Acesso negado</h1>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              {error || 'VocÍ n„o tem permiss„o para acessar a ·rea administrativa da plataforma.'}
+              {error || 'Voc√™ n√£o tem permiss√£o para acessar a √°rea administrativa da plataforma.'}
             </p>
             <Link
               href="/app"
@@ -84,14 +84,14 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">Cote Finance AI</p>
                 <h1 className="mt-2 text-2xl font-semibold text-white">Super Admin</h1>
-                <p className="mt-2 text-sm leading-6 text-slate-400">OperaÁ„o da plataforma, usu·rios, workspaces e crescimento.</p>
+                <p className="mt-2 text-sm leading-6 text-slate-400">Opera√ß√£o da plataforma, usu√°rios, workspaces e crescimento.</p>
               </div>
             </div>
           </div>
 
           <div className="border-b border-slate-900/80 px-6 py-5">
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Sess„o ativa</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Sess√£o ativa</p>
               <p className="mt-3 text-sm font-semibold text-white">{bootstrap.access.email}</p>
               <p className="mt-1 text-sm text-slate-400">{formatPlatformRole(bootstrap.access.role)}</p>
             </div>

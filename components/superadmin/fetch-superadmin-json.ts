@@ -7,12 +7,12 @@ import { supabase } from '@/lib/supabase';
 export async function fetchSuperadminJson<T>(input: string, init?: RequestInit): Promise<T> {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
-    throw new Error(error.message || 'N„o foi possÌvel validar sua sess„o.');
+    throw new Error(error.message || 'N√£o foi poss√≠vel validar sua sess√£o.');
   }
 
   const token = data.session?.access_token;
   if (!token) {
-    throw new Error('Sess„o inv·lida. FaÁa login novamente.');
+    throw new Error('Sess√£o inv√°lida. Fa√ßa login novamente.');
   }
 
   const response = await fetch(input, {

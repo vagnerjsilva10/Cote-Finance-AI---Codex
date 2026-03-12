@@ -20,9 +20,9 @@ export function formatAdminPercent(value: number) {
 }
 
 export function formatAdminDate(value: string | null) {
-  if (!value) return '—';
+  if (!value) return 'â€”';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
+  if (Number.isNaN(date.getTime())) return 'â€”';
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -31,9 +31,9 @@ export function formatAdminDate(value: string | null) {
 }
 
 export function formatAdminDateTime(value: string | null) {
-  if (!value) return '—';
+  if (!value) return 'â€”';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
+  if (Number.isNaN(date.getTime())) return 'â€”';
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -50,7 +50,7 @@ export function formatPlatformRole(role: string) {
     case 'admin':
       return 'Admin';
     default:
-      return 'Usuário';
+      return 'UsuÃ¡rio';
   }
 }
 
@@ -63,7 +63,7 @@ export function formatPlanLabel(plan: string) {
     case 'FREE':
       return 'Free';
     default:
-      return plan || '—';
+      return plan || 'â€”';
   }
 }
 
@@ -78,7 +78,7 @@ export function formatSubscriptionStatus(status: string | null) {
     case 'PAST_DUE':
       return 'Pagamento pendente';
     case 'UNPAID':
-      return 'Não paga';
+      return 'NÃ£o paga';
     case 'CANCELED':
       return 'Cancelada';
     case 'INCOMPLETE':
@@ -107,7 +107,7 @@ export function getSubscriptionTone(status: string | null) {
 }
 
 export function humanizeEventType(type: string) {
-  const normalized = type.replace(/_/g, ' ').replace(/\./g, ' · ');
+  const normalized = type.replace(/_/g, ' ').replace(/\./g, ' Â· ');
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
