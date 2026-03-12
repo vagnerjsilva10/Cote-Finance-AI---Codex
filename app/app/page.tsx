@@ -314,6 +314,108 @@ const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(),
 const getAgendaDayDiff = (date: Date, reference = new Date()) =>
   Math.round((startOfDay(date).getTime() - startOfDay(reference).getTime()) / 86_400_000);
 
+const buildPremiumSmartAlerts = ({
+  transactions,
+  totalBalance,
+  goals,
+  now,
+  includeOkState = false,
+}: {
+  transactions: Transaction[];
+  totalBalance: number;
+  goals: Goal[];
+  now: Date;
+} & PremiumSmartAlertOptions): AppNotification[] => {
+  const alerts: AppNotification[] = [];
+  const forecastWindowDays = 60;
+  const windowStart = new Date(now.getTime() - forecastWindowDays * 24 * 60 * 60 * 1000);
+  const enrichedTransactions = transactions.map((tx) => ({ ...tx, parsedDate: parseTransactionDate(tx.date) }));
+  const recentTransactions = enrichedTransactions.filter(
+    (tx) => tx.parsedDate && tx.parsedDate >= windowStart
+  );
+
+  const recentNetFlow = recentTransactions.reduce((acc, tx) => {
+    const amount = parseCurrency(tx.amount);
+    return acc + (tx.type === 'income' ? amount : -amount);
+  }, 0);
+  const dailyNetFlow = recentTransactions.length > 0 ? recentNetFlow / forecastWindowDays : 0;
+  const projectedNegativeInDays =
+    dailyNetFlow < 0 && totalBalance > 0 ? Math.max(1, Math.floor(totalBalance / Math.abs(dailyNetFlow))) : null;
+
+  if (projectedNegativeInDays !== null && projectedNegativeInDays <= 30) {
+    alerts.push({
+      id: 'premium-balance-risk',
+      title: 'Alerta inteligente: risco de saldo',
+      message: `No ritmo atual, seu saldo pode ficar negativo em cerca de ${projectedNegativeInDays} dias.`,
+      tone: 'error',
+      targetTab: 'reports',
+    });
+  }
+
+  const currentMonthExpenses = enrichedTransactions
+    .filter((tx) => tx.type === 'expense' && isInCurrentMonth(tx.parsedDate ?? null))
+    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+
+  const previousMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonthExpenses = enrichedTransactions
+    .filter(
+      (tx) =>
+        tx.type === 'expense' &&
+        tx.parsedDate &&
+        tx.parsedDate.getFullYear() === previousMonthReference.getFullYear() &&
+        tx.parsedDate.getMonth() === previousMonthReference.getMonth()
+    )
+    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+
+  if (previousMonthExpenses > 0 && currentMonthExpenses > previousMonthExpenses * 1.18) {
+    const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
+    alerts.push({
+      id: 'premium-expense-spike',
+      title: 'Alerta inteligente: gasto acima do padrão',
+      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
+      tone: 'warning',
+      targetTab: 'reports',
+    });
+  }
+
+  const riskyGoal = goals
+    .filter((goal) => goal.deadline && goal.current < goal.target)
+    .map((goal) => {
+      const deadline = new Date(goal.deadline as string);
+      const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+      const remaining = Math.max(0, goal.target - goal.current);
+      return {
+        goal,
+        daysUntilDeadline,
+        remaining,
+      };
+    })
+    .filter((item) => item.daysUntilDeadline >= 0 && item.daysUntilDeadline <= 30)
+    .sort((a, b) => a.daysUntilDeadline - b.daysUntilDeadline)[0];
+
+  if (riskyGoal) {
+    alerts.push({
+      id: `premium-goal-risk-${riskyGoal.goal.id}`,
+      title: 'Alerta inteligente: meta em risco',
+      message: `A meta ${riskyGoal.goal.name} vence em ${riskyGoal.daysUntilDeadline} dias e ainda faltam ${formatCurrency(riskyGoal.remaining)}.`,
+      tone: 'warning',
+      targetTab: 'goals',
+    });
+  }
+
+  if (alerts.length === 0 && includeOkState) {
+    alerts.push({
+      id: 'premium-smart-alerts-ok',
+      title: 'Alertas inteligentes monitorando seu caixa',
+      message: 'Nenhum sinal crítico foi detectado agora. Seu fluxo está estável e dentro do esperado.',
+      tone: 'success',
+      targetTab: 'reports',
+    });
+  }
+
+  return alerts;
+};
+
 const getNextMonthDueDate = (dueDay: number, reference = new Date()) => {
   const year = reference.getFullYear();
   const month = reference.getMonth();
@@ -4949,108 +5051,6 @@ const LoginView = ({
     }
     if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
   return null;
-};
-
-const buildPremiumSmartAlerts = ({
-  transactions,
-  totalBalance,
-  goals,
-  now,
-  includeOkState = false,
-}: {
-  transactions: Transaction[];
-  totalBalance: number;
-  goals: Goal[];
-  now: Date;
-} & PremiumSmartAlertOptions): AppNotification[] => {
-  const alerts: AppNotification[] = [];
-  const forecastWindowDays = 60;
-  const windowStart = new Date(now.getTime() - forecastWindowDays * 24 * 60 * 60 * 1000);
-  const enrichedTransactions = transactions.map((tx) => ({ ...tx, parsedDate: parseTransactionDate(tx.date) }));
-  const recentTransactions = enrichedTransactions.filter(
-    (tx) => tx.parsedDate && tx.parsedDate >= windowStart
-  );
-
-  const recentNetFlow = recentTransactions.reduce((acc, tx) => {
-    const amount = parseCurrency(tx.amount);
-    return acc + (tx.type === 'income' ? amount : -amount);
-  }, 0);
-  const dailyNetFlow = recentTransactions.length > 0 ? recentNetFlow / forecastWindowDays : 0;
-  const projectedNegativeInDays =
-    dailyNetFlow < 0 && totalBalance > 0 ? Math.max(1, Math.floor(totalBalance / Math.abs(dailyNetFlow))) : null;
-
-  if (projectedNegativeInDays !== null && projectedNegativeInDays <= 30) {
-    alerts.push({
-      id: 'premium-balance-risk',
-      title: 'Alerta inteligente: risco de saldo',
-      message: `No ritmo atual, seu saldo pode ficar negativo em cerca de ${projectedNegativeInDays} dias.`,
-      tone: 'error',
-      targetTab: 'reports',
-    });
-  }
-
-  const currentMonthExpenses = enrichedTransactions
-    .filter((tx) => tx.type === 'expense' && isInCurrentMonth(tx.parsedDate ?? null))
-    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
-
-  const previousMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const previousMonthExpenses = enrichedTransactions
-    .filter(
-      (tx) =>
-        tx.type === 'expense' &&
-        tx.parsedDate &&
-        tx.parsedDate.getFullYear() === previousMonthReference.getFullYear() &&
-        tx.parsedDate.getMonth() === previousMonthReference.getMonth()
-    )
-    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
-
-  if (previousMonthExpenses > 0 && currentMonthExpenses > previousMonthExpenses * 1.18) {
-    const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
-    alerts.push({
-      id: 'premium-expense-spike',
-      title: 'Alerta inteligente: gasto acima do padrão',
-      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
-      tone: 'warning',
-      targetTab: 'reports',
-    });
-  }
-
-  const riskyGoal = goals
-    .filter((goal) => goal.deadline && goal.current < goal.target)
-    .map((goal) => {
-      const deadline = new Date(goal.deadline as string);
-      const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-      const remaining = Math.max(0, goal.target - goal.current);
-      return {
-        goal,
-        daysUntilDeadline,
-        remaining,
-      };
-    })
-    .filter((item) => item.daysUntilDeadline >= 0 && item.daysUntilDeadline <= 30)
-    .sort((a, b) => a.daysUntilDeadline - b.daysUntilDeadline)[0];
-
-  if (riskyGoal) {
-    alerts.push({
-      id: `premium-goal-risk-${riskyGoal.goal.id}`,
-      title: 'Alerta inteligente: meta em risco',
-      message: `A meta ${riskyGoal.goal.name} vence em ${riskyGoal.daysUntilDeadline} dias e ainda faltam ${formatCurrency(riskyGoal.remaining)}.`,
-      tone: 'warning',
-      targetTab: 'goals',
-    });
-  }
-
-  if (alerts.length === 0 && includeOkState) {
-    alerts.push({
-      id: 'premium-smart-alerts-ok',
-      title: 'Alertas inteligentes monitorando seu caixa',
-      message: 'Nenhum sinal crítico foi detectado agora. Seu fluxo está estável e dentro do esperado.',
-      tone: 'success',
-      targetTab: 'reports',
-    });
-  }
-
-  return alerts;
 };
 
   const runSetupForToken = async (accessToken: string) => {
