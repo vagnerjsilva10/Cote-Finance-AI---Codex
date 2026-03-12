@@ -4962,11 +4962,11 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-auto bg-slate-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-slate-950/80 p-0 backdrop-blur-sm sm:overflow-y-auto sm:items-center sm:p-4">
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="theme-modal-surface box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
+        className="theme-modal-surface mobile-hide-scrollbar box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <div className="mb-4 flex justify-center sm:hidden">
@@ -6054,6 +6054,10 @@ export default function App() {
   const [workspaces, setWorkspaces] = React.useState<WorkspaceOption[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = React.useState<string | null>(null);
   const [isWorkspaceOnboardingOpen, setIsWorkspaceOnboardingOpen] = React.useState(false);
+  const [isCreateWorkspaceModalOpen, setIsCreateWorkspaceModalOpen] = React.useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = React.useState('');
+  const [createWorkspaceError, setCreateWorkspaceError] = React.useState<string | null>(null);
+  const [isCreatingWorkspace, setIsCreatingWorkspace] = React.useState(false);
   const [loginModeFromQuery, setLoginModeFromQuery] = React.useState<'login' | 'signup'>('login');
   const [pendingPlanFromQuery, setPendingPlanFromQuery] = React.useState<string | null>(null);
   const [pendingPlanHandled, setPendingPlanHandled] = React.useState(false);
@@ -8405,16 +8409,27 @@ export default function App() {
     })();
   };
 
-  const handleCreateWorkspace = async () => {
-    const name = window.prompt('Nome da nova conta/workspace');
-    if (!name?.trim()) return;
+  const handleOpenCreateWorkspaceModal = () => {
+    setCreateWorkspaceError(null);
+    setNewWorkspaceName('');
+    setIsCreateWorkspaceModalOpen(true);
+  };
 
+  const handleCreateWorkspace = async (name: string) => {
+    const normalizedName = name.trim();
+    if (!normalizedName) {
+      setCreateWorkspaceError('Informe um nome para a nova conta.');
+      return;
+    }
+
+    setIsCreatingWorkspace(true);
+    setCreateWorkspaceError(null);
     try {
       const response = await fetch('/api/workspaces', {
         method: 'POST',
         headers: await getAuthHeaders(true),
         body: JSON.stringify({
-          name: name.trim(),
+          name: normalizedName,
         }),
       });
       const payload = await response.json().catch(() => ({}));
@@ -8435,10 +8450,14 @@ export default function App() {
         },
       ]);
       setActiveWorkspaceId(payload.workspace.id);
+      setIsCreateWorkspaceModalOpen(false);
+      setNewWorkspaceName('');
       setIsWorkspaceOnboardingOpen(true);
     } catch (error) {
       console.error('Create workspace error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao criar workspace.');
+      setCreateWorkspaceError(error instanceof Error ? error.message : 'Falha ao criar conta.');
+    } finally {
+      setIsCreatingWorkspace(false);
     }
   };
 
@@ -8549,6 +8568,107 @@ export default function App() {
                   Fazer upgrade
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isCreateWorkspaceModalOpen && (
+          <motion.div
+            className="fixed inset-0 z-[132] flex items-end justify-center p-0 sm:items-center sm:p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              type="button"
+              aria-label="Fechar modal de nova conta"
+              onClick={() => {
+                if (isCreatingWorkspace) return;
+                setIsCreateWorkspaceModalOpen(false);
+                setCreateWorkspaceError(null);
+              }}
+              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: 16, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 16, opacity: 0, scale: 0.98 }}
+              className="relative z-10 w-full max-w-lg rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 p-5 shadow-2xl sm:rounded-3xl sm:border sm:p-6"
+            >
+              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">Nova conta</p>
+                  <h3 className="text-xl font-bold text-white">Criar workspace</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    Crie uma nova conta para separar finanças pessoais, empresa ou operações diferentes dentro do mesmo
+                    painel.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isCreatingWorkspace) return;
+                    setIsCreateWorkspaceModalOpen(false);
+                    setCreateWorkspaceError(null);
+                  }}
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                >
+                  Fechar
+                </button>
+              </div>
+
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleCreateWorkspace(newWorkspaceName);
+                }}
+              >
+                <div>
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    Nome da conta
+                  </label>
+                  <input
+                    type="text"
+                    value={newWorkspaceName}
+                    onChange={(event) => setNewWorkspaceName(event.target.value)}
+                    placeholder="Ex.: Empresa, Casa ou Projeto"
+                    autoFocus
+                    maxLength={80}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
+                  />
+                </div>
+
+                {createWorkspaceError && (
+                  <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                    {createWorkspaceError}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isCreatingWorkspace) return;
+                      setIsCreateWorkspaceModalOpen(false);
+                      setCreateWorkspaceError(null);
+                    }}
+                    className="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-bold text-slate-300 transition-colors hover:text-white"
+                  >
+                    Agora não
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreatingWorkspace}
+                    className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isCreatingWorkspace ? 'Criando conta...' : 'Criar conta'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
@@ -9303,7 +9423,7 @@ export default function App() {
                   ))}
                 </select>
                 <button
-                  onClick={() => void handleCreateWorkspace()}
+                  onClick={handleOpenCreateWorkspaceModal}
                   className="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:border-emerald-500 transition-colors"
                 >
                   + Conta
@@ -9766,7 +9886,7 @@ export default function App() {
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Conta ativa</span>
                 <button
-                  onClick={() => void handleCreateWorkspace()}
+                  onClick={handleOpenCreateWorkspaceModal}
                   className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 transition-colors hover:border-emerald-500 hover:text-white"
                 >
                   + Conta
