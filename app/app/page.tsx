@@ -36,6 +36,8 @@ import {
   CreditCard,
   User as UserIcon,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Workflow,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -66,6 +68,7 @@ type Tab =
   | 'goals'
   | 'debts'
   | 'investments'
+  | 'portfolio'
   | 'reports'
   | 'assistant'
   | 'integrations'
@@ -156,6 +159,12 @@ type Investment = {
   invested: number; // valor total investido
   expectedReturnAnnual: number;
   color: string; // className ex: 'bg-emerald-500'
+};
+
+type WalletAccount = {
+  id: string;
+  name: string;
+  balance: number;
 };
 
 type Debt = {
@@ -815,6 +824,8 @@ const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
 const getNotificationStorageKey = (userId: string, workspaceId: string) =>
   `cote-notifications:${userId}:${workspaceId}`;
 
+const SIDEBAR_PREFERENCE_STORAGE_KEY = 'cote-sidebar-collapsed';
+
 const formatEventTimestamp = (isoString: string) => {
   const date = new Date(isoString);
   if (Number.isNaN(date.getTime())) return 'Agora';
@@ -1207,13 +1218,16 @@ type SidebarItemProps = {
   label: string;
   active?: boolean;
   onClick?: () => void;
+  collapsed?: boolean;
 };
 
-const SidebarItem = ({ icon: Icon, label, active = false, onClick }: SidebarItemProps) => (
+const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = false }: SidebarItemProps) => (
   <button
     onClick={onClick}
+    title={collapsed ? label : undefined}
     className={cn(
-      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 w-full text-left group',
+      'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-200 group',
+      collapsed && 'justify-center px-2',
       active
         ? 'bg-emerald-500/10 text-emerald-500 font-medium'
         : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
@@ -1223,7 +1237,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick }: SidebarItem
       size={20}
       className={cn(active ? 'text-emerald-500' : 'text-slate-500 group-hover:text-slate-300')}
     />
-    <span className="text-sm">{label}</span>
+    {!collapsed && <span className="text-sm">{label}</span>}
   </button>
 );
 
@@ -3000,6 +3014,311 @@ type InvestmentsViewProps = {
   onDeleteInvestment: (id: string | number) => void;
 };
 
+type PortfolioViewProps = {
+  wallets: WalletAccount[];
+  investments: Investment[];
+  debts: Debt[];
+  transactions: Transaction[];
+  totalBalance: number;
+};
+
+const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance }: PortfolioViewProps) => {
+  const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
+  const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
+  const totalDebt = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
+  const netWorth = totalBalance + totalInvested - totalDebt;
+
+  const assetMix = React.useMemo(
+    () =>
+      [
+        { name: 'Caixa', value: Math.max(totalBalance, 0), color: '#10b981' },
+        { name: 'Investimentos', value: Math.max(totalInvested, 0), color: '#3b82f6' },
+        { name: 'Dívidas', value: Math.max(totalDebt, 0), color: '#f59e0b' },
+      ].filter((item) => item.value > 0),
+    [totalBalance, totalInvested, totalDebt]
+  );
+
+  const walletAllocation = React.useMemo(() => {
+    const totalWalletBalance = wallets.reduce((acc, wallet) => acc + wallet.balance, 0);
+    return [...wallets]
+      .sort((a, b) => b.balance - a.balance)
+      .map((wallet) => ({
+        ...wallet,
+        share: totalWalletBalance > 0 ? (wallet.balance / totalWalletBalance) * 100 : 0,
+      }));
+  }, [wallets]);
+
+  const topInvestments = React.useMemo(
+    () =>
+      [...investments]
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5)
+        .map((investment) => ({
+          ...investment,
+          profit: investment.value - investment.invested,
+          profitPct: investment.invested > 0 ? ((investment.value - investment.invested) / investment.invested) * 100 : 0,
+        })),
+    [investments]
+  );
+
+  const walletActivity = React.useMemo(() => {
+    const activityMap = new Map<string, { income: number; expense: number; count: number }>();
+    transactions.forEach((transaction) => {
+      const walletName = transaction.wallet || 'Sem carteira';
+      const parsedAmount = parseCurrency(transaction.amount);
+      const absoluteAmount = Math.abs(parsedAmount);
+      const current = activityMap.get(walletName) || { income: 0, expense: 0, count: 0 };
+
+      if (transaction.type === 'income') {
+        current.income += absoluteAmount;
+      } else if (transaction.type === 'expense') {
+        current.expense += absoluteAmount;
+      }
+
+      current.count += 1;
+      activityMap.set(walletName, current);
+    });
+
+    return [...activityMap.entries()]
+      .map(([walletName, activity]) => ({
+        walletName,
+        ...activity,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [transactions]);
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-2">
+        <h3 className="text-xl font-bold text-white">Carteira</h3>
+        <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
+          Acompanhe seu patrimônio consolidado, veja a distribuição entre contas, investimentos e dívidas e entenda
+          onde sua carteira está mais concentrada.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saldo em contas</p>
+          <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalBalance)}</p>
+        </div>
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Investimentos atuais</p>
+          <p className="text-2xl font-black text-blue-400">{formatCurrency(totalInvested)}</p>
+        </div>
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Dívidas em aberto</p>
+          <p className="text-2xl font-black text-amber-400">{formatCurrency(totalDebt)}</p>
+        </div>
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Patrimônio líquido</p>
+          <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-white' : 'text-rose-400')}>
+            {formatCurrency(netWorth)}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <h4 className="text-lg font-bold text-white">Distribuição do patrimônio</h4>
+              <p className="text-sm text-slate-500">Visualize a composição da sua carteira neste workspace.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_0.9fr]">
+            <div className="h-72">
+              {assetMix.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RePieChart>
+                    <Pie
+                      data={assetMix}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={70}
+                      outerRadius={96}
+                      paddingAngle={3}
+                      stroke="none"
+                    >
+                      {assetMix.map((entry) => (
+                        <Cell key={`portfolio-pie-${entry.name}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => formatCurrency(Number(value))}
+                      contentStyle={{
+                        backgroundColor: '#0f172a',
+                        borderColor: '#1e293b',
+                        borderRadius: 16,
+                        color: '#e2e8f0',
+                      }}
+                    />
+                  </RePieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-800 text-sm text-slate-500">
+                  Sem dados suficientes para montar a carteira.
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {assetMix.map((entry) => {
+                const share = assetMix.reduce((acc, item) => acc + item.value, 0) > 0
+                  ? (entry.value / assetMix.reduce((acc, item) => acc + item.value, 0)) * 100
+                  : 0;
+                return (
+                  <div key={entry.name} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                        <span className="text-sm font-semibold text-white">{entry.name}</span>
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                        {share.toFixed(1)}%
+                      </span>
+                    </div>
+                    <p className="text-base font-bold text-slate-100">{formatCurrency(entry.value)}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+          <div className="mb-4">
+            <h4 className="text-lg font-bold text-white">Contas e carteiras</h4>
+            <p className="text-sm text-slate-500">Veja onde seu saldo de caixa está distribuído.</p>
+          </div>
+
+          <div className="space-y-3">
+            {walletAllocation.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
+                Nenhuma conta ou carteira cadastrada neste workspace.
+              </div>
+            )}
+
+            {walletAllocation.map((wallet) => (
+              <div key={wallet.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <span className="text-sm font-semibold text-white">{wallet.name}</span>
+                  <span className="text-sm font-bold text-emerald-400">{formatCurrency(wallet.balance)}</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${wallet.share}%` }} />
+                </div>
+                <p className="mt-2 text-xs text-slate-500">{wallet.share.toFixed(1)}% do saldo em contas</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+          <div className="mb-4">
+            <h4 className="text-lg font-bold text-white">Principais posições de investimento</h4>
+            <p className="text-sm text-slate-500">Os ativos que hoje mais representam sua carteira.</p>
+          </div>
+
+          <div className="space-y-3">
+            {topInvestments.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
+                Nenhum investimento registrado ainda.
+              </div>
+            )}
+
+            {topInvestments.map((investment) => (
+              <div key={investment.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-white">{investment.label}</p>
+                    <p className="text-xs text-slate-500">
+                      {investment.type} · {investment.institution}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-blue-400">{formatCurrency(investment.value)}</p>
+                    <p
+                      className={cn(
+                        'text-xs font-semibold',
+                        investment.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                      )}
+                    >
+                      {investment.profit >= 0 ? '+' : ''}
+                      {investment.profitPct.toFixed(2)}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+          <div className="mb-4">
+            <h4 className="text-lg font-bold text-white">Movimentação por carteira</h4>
+            <p className="text-sm text-slate-500">Volume recente de entradas e saídas por conta.</p>
+          </div>
+
+          <div className="space-y-3">
+            {walletActivity.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
+                Ainda não há movimentações para consolidar por carteira.
+              </div>
+            )}
+
+            {walletActivity.map((activity) => (
+              <div key={activity.walletName} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                  <p className="text-sm font-semibold text-white">{activity.walletName}</p>
+                  <span className="text-xs uppercase tracking-widest text-slate-500">{activity.count} lançamentos</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-slate-900/70 px-3 py-2">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1">Entradas</p>
+                    <p className="font-semibold text-emerald-400">{formatCurrency(activity.income)}</p>
+                  </div>
+                  <div className="rounded-xl bg-slate-900/70 px-3 py-2">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1">Saídas</p>
+                    <p className="font-semibold text-rose-400">{formatCurrency(activity.expense)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {activeDebts.length > 0 && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+          <div className="mb-4">
+            <h4 className="text-lg font-bold text-white">Dívidas que pressionam a carteira</h4>
+            <p className="text-sm text-slate-500">Priorize as maiores exposições e vencimentos mais sensíveis.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            {[...activeDebts]
+              .sort((a, b) => b.remainingAmount - a.remainingAmount)
+              .slice(0, 3)
+              .map((debt) => (
+                <div key={debt.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+                  <p className="text-sm font-semibold text-white">{debt.creditor}</p>
+                  <p className="mt-1 text-xs text-slate-500">{debt.category}</p>
+                  <p className="mt-4 text-xl font-black text-amber-300">{formatCurrency(debt.remainingAmount)}</p>
+                  <p className="mt-2 text-xs text-slate-500">Vence todo dia {debt.dueDay}</p>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const InvestmentsView = ({
   investments,
   onAddInvestment,
@@ -3994,7 +4313,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
       category: initialData.category || GOAL_CATEGORIES[0],
       deadline: normalizedDeadline,
     };
-  }, [initialData]);
+  }, [initialData, initialDraft]);
 
   const [formData, setFormData] = React.useState<GoalFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -5602,6 +5921,7 @@ const LoginView = ({
 
 export default function App() {
   const brandLogo = '/brand/cote-finance-ai-logo.svg';
+  const sidebarCollapsedLogo = '/brand/cote-favicon.svg';
   const [user, setUser] = React.useState<any>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
   const setupTokenRef = React.useRef<string | null>(null);
@@ -5756,6 +6076,7 @@ export default function App() {
       requestedTab === 'goals' ||
       requestedTab === 'debts' ||
       requestedTab === 'investments' ||
+      requestedTab === 'portfolio' ||
       requestedTab === 'reports' ||
       requestedTab === 'assistant' ||
       requestedTab === 'integrations' ||
@@ -5843,6 +6164,17 @@ export default function App() {
             role: workspace.role,
           }))
         );
+      }
+      if (Array.isArray(data.wallets)) {
+        setWallets(
+          data.wallets.map((wallet: any) => ({
+            id: String(wallet.id),
+            name: String(wallet.name || 'Conta'),
+            balance: Number(wallet.balance || 0),
+          }))
+        );
+      } else {
+        setWallets([]);
       }
       if (typeof data.activeWorkspaceId === 'string') {
         setActiveWorkspaceId(data.activeWorkspaceId);
@@ -6087,6 +6419,7 @@ export default function App() {
   }, [user, fetchDashboardData]);
   const [isAssistantOpen, setIsAssistantOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const [showTutorial, setShowTutorial] = React.useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = React.useState(false);
   const [editingTransactionId, setEditingTransactionId] = React.useState<string | number | null>(null);
@@ -6147,6 +6480,7 @@ export default function App() {
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [goals, setGoals] = React.useState<Goal[]>([]);
   const [investments, setInvestments] = React.useState<Investment[]>([]);
+  const [wallets, setWallets] = React.useState<WalletAccount[]>([]);
   const [bills, setBills] = React.useState<Bill[]>([]);
   const [debts, setDebts] = React.useState<Debt[]>([]);
 
@@ -6164,6 +6498,21 @@ export default function App() {
     if (!user?.id || !activeWorkspaceId) return null;
     return getNotificationStorageKey(user.id, activeWorkspaceId);
   }, [activeWorkspaceId, user?.id]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      setIsSidebarCollapsed(window.localStorage.getItem(SIDEBAR_PREFERENCE_STORAGE_KEY) === 'true');
+    } catch {
+      setIsSidebarCollapsed(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(SIDEBAR_PREFERENCE_STORAGE_KEY, String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   React.useEffect(() => {
     if (!notificationStorageKey || typeof window === 'undefined') {
@@ -7071,15 +7420,15 @@ export default function App() {
     const expenseCount = onboardingCurrentMonthExpenses.length;
     const incomeCount = onboardingCurrentMonthIncomeCount;
     const hasGoal = goals.length > 0;
-    const hasInsight = onboardingInsightViewed || dashboardInsights.length > 0;
+    const hasInsightPreview = onboardingInsightViewed;
 
     return [
       { label: 'Adicionar 3 despesas', done: expenseCount >= 3 },
       { label: 'Adicionar uma receita', done: incomeCount >= 1 },
       { label: 'Criar uma meta financeira', done: hasGoal },
-      { label: 'Ver seu primeiro insight da IA', done: hasInsight },
+      { label: 'Conhecer a prévia das análises com IA', done: hasInsightPreview },
     ];
-  }, [dashboardInsights.length, goals.length, onboardingCurrentMonthExpenses.length, onboardingCurrentMonthIncomeCount, onboardingInsightViewed]);
+  }, [goals.length, onboardingCurrentMonthExpenses.length, onboardingCurrentMonthIncomeCount, onboardingInsightViewed]);
 
   const onboardingChecklistProgress = React.useMemo(() => {
     const completed = onboardingChecklist.filter((item) => item.done).length;
@@ -8468,7 +8817,7 @@ export default function App() {
                       <li>saldo atual</li>
                       <li>despesas por categoria</li>
                       <li>evolução dos gastos</li>
-                      <li>insights da inteligência artificial</li>
+                      <li>análises completas disponíveis no Pro</li>
                     </ul>
                   </div>
                   <div className="flex justify-between">
@@ -8491,8 +8840,10 @@ export default function App() {
               {onboardingStep === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Sua primeira análise financeira</h4>
-                    <p className="text-sm text-slate-400">A IA analisou seus primeiros dados.</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Prévia das análises com IA</h4>
+                    <p className="text-sm text-slate-400">
+                      Este é um exemplo do tipo de insight automático disponível nos planos Pro e Premium.
+                    </p>
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
                     Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
@@ -8514,7 +8865,7 @@ export default function App() {
                       }}
                       className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
-                      Ver mais insights
+                      Entendi como funciona
                     </button>
                   </div>
                 </div>
@@ -8524,7 +8875,9 @@ export default function App() {
                 <div className="space-y-5">
                   <div>
                     <h4 className="text-xl font-bold text-white mb-1">Complete seu setup</h4>
-                    <p className="text-sm text-slate-400">Conclua estas ações para ativar todo o potencial da IA.</p>
+                    <p className="text-sm text-slate-400">
+                      Conclua estas ações para deixar sua conta pronta para análises mais avançadas.
+                    </p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
                     <div className="h-2 w-full rounded-full bg-slate-700">
@@ -8563,8 +8916,10 @@ export default function App() {
               {onboardingStep === 7 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Insight detectado</h4>
-                    <p className="text-sm text-slate-400">A IA encontrou um padrão para economizar mais.</p>
+                    <h4 className="text-xl font-bold text-white mb-1">Exemplo de oportunidade detectada</h4>
+                    <p className="text-sm text-slate-400">
+                      Nos planos Pro e Premium, a IA destaca padrões e oportunidades automaticamente.
+                    </p>
                   </div>
                   <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 p-5 text-sm leading-relaxed text-cyan-100">
                     Você gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
@@ -8703,65 +9058,191 @@ export default function App() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-[100] flex h-full w-[18rem] max-w-[88vw] flex-shrink-0 flex-col border-r border-slate-900 bg-slate-950/96 backdrop-blur-xl transition-transform duration-300 lg:relative lg:w-64 lg:max-w-none lg:translate-x-0',
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-slate-900 bg-slate-950/96 backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64'
         )}
       >
-        <div className="p-6 flex items-center justify-between" id="sidebar-logo">
+        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-4' : 'p-6')} id="sidebar-logo">
           <Image
-            src={brandLogo}
+            src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo}
             alt="Cote Finance AI - By Cote Juros"
-            width={420}
-            height={112}
-            className="h-auto w-full max-w-[280px]"
+            width={isSidebarCollapsed ? 48 : 420}
+            height={isSidebarCollapsed ? 48 : 112}
+            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-11' : 'w-full max-w-[280px]')}
           />
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-500 hover:text-white">
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed((current) => !current)}
+              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-300 transition hover:border-slate-700 hover:text-white lg:inline-flex"
+              title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+            >
+              {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+            <button onClick={() => setIsSidebarOpen(false)} className="text-slate-500 hover:text-white lg:hidden">
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-          <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={ReceiptText} label="Transações" active={activeTab === 'transactions'} onClick={() => { setActiveTab('transactions'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={Target} label="Metas" active={activeTab === 'goals'} onClick={() => { setActiveTab('goals'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={CreditCard} label="Dívidas" active={activeTab === 'debts'} onClick={() => { setActiveTab('debts'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={TrendingUp} label="Investimentos" active={activeTab === 'investments'} onClick={() => { setActiveTab('investments'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={PieChart} label="Relatórios" active={activeTab === 'reports'} onClick={() => { setActiveTab('reports'); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={MessageSquare} label="Assistente IA" active={activeTab === 'assistant'} onClick={() => { setActiveTab('assistant'); setIsAssistantOpen(true); setIsSidebarOpen(false); }} />
-          <SidebarItem icon={Settings} label="Configurações" active={activeTab === 'settings'} onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} />
+        <nav className={cn('flex-1 py-4 space-y-1 overflow-y-auto custom-scrollbar', isSidebarCollapsed ? 'px-2' : 'px-4')}>
+          <SidebarItem
+            icon={LayoutDashboard}
+            label="Dashboard"
+            active={activeTab === 'dashboard'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('dashboard');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={ReceiptText}
+            label="Transações"
+            active={activeTab === 'transactions'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('transactions');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Target}
+            label="Metas"
+            active={activeTab === 'goals'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('goals');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={CreditCard}
+            label="Dívidas"
+            active={activeTab === 'debts'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('debts');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={TrendingUp}
+            label="Investimentos"
+            active={activeTab === 'investments'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('investments');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Wallet}
+            label="Carteira"
+            active={activeTab === 'portfolio'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('portfolio');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={PieChart}
+            label="Relatórios"
+            active={activeTab === 'reports'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('reports');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={MessageSquare}
+            label="Assistente IA"
+            active={activeTab === 'assistant'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('assistant');
+              setIsAssistantOpen(true);
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Settings}
+            label="Configurações"
+            active={activeTab === 'settings'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('settings');
+              setIsSidebarOpen(false);
+            }}
+          />
         </nav>
 
         <div className="p-4">
-          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4">
-            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">
-              Plano {planLabel}
-            </p>
-            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-              {isFreePlan
-                ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
-                : currentPlan === 'PREMIUM'
-                ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
-                : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
-            </p>
-            <button
-              onClick={() => {
-                if (isFreePlan) {
-                  void handleUpgrade('Pro Mensal');
-                  return;
-                }
-                handleManageSubscription();
-              }}
-              className="w-full bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
+          {isSidebarCollapsed ? (
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-2 py-3 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{planLabel}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isFreePlan) {
+                    void handleUpgrade('Pro Mensal');
+                    return;
+                  }
+                  handleManageSubscription();
+                }}
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-emerald-500 text-slate-950 transition-all duration-200 hover:bg-emerald-400"
+                title={isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
               >
-              {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
-            </button>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full mt-4 flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-white transition-colors text-sm font-medium"
-          >
-            <LogOut size={18} /> Sair
-          </button>
+                <ArrowUpRight size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-800 text-white transition-all duration-200 hover:bg-slate-700"
+                title="Sair"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4">
+                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">
+                  Plano {planLabel}
+                </p>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  {isFreePlan
+                    ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
+                    : currentPlan === 'PREMIUM'
+                    ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
+                    : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
+                </p>
+                <button
+                  onClick={() => {
+                    if (isFreePlan) {
+                      void handleUpgrade('Pro Mensal');
+                      return;
+                    }
+                    handleManageSubscription();
+                  }}
+                  className="w-full bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
+                >
+                  {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
+                </button>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="mt-4 flex w-full items-center justify-center gap-3 px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:text-white"
+              >
+                <LogOut size={18} /> Sair
+              </button>
+            </>
+          )}
         </div>
       </aside>
 
@@ -8787,6 +9268,8 @@ export default function App() {
                 ? 'Dívidas'
                 : activeTab === 'investments'
                 ? 'Investimentos'
+                : activeTab === 'portfolio'
+                ? 'Carteira'
                 : activeTab === 'reports'
                 ? 'Relatórios'
                 : activeTab === 'assistant'
@@ -9358,6 +9841,15 @@ export default function App() {
                   onDeleteInvestment={handleDeleteInvestment}
                 />
               )}
+              {activeTab === 'portfolio' && (
+                <PortfolioView
+                  wallets={wallets}
+                  investments={investments}
+                  debts={debts}
+                  transactions={transactions}
+                  totalBalance={totalBalance}
+                />
+              )}
               {activeTab === 'agenda' && <AgendaView bills={bills} />}
               {activeTab === 'reports' && (
                 <ReportsView
@@ -9793,4 +10285,5 @@ export default function App() {
     </AppErrorBoundary>
   );
 }
+
 
