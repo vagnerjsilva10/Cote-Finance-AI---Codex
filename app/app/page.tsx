@@ -191,6 +191,7 @@ type Message = {
 };
 
 type SubscriptionPlan = 'FREE' | 'PRO' | 'PREMIUM';
+type ReportAccessLevel = 'basic' | 'full';
 
 type WorkspaceOption = {
   id: string;
@@ -243,6 +244,10 @@ type AppNotification = {
   tone: 'info' | 'warning' | 'error' | 'success';
   timestamp?: string;
   targetTab?: Tab;
+};
+
+type PremiumSmartAlertOptions = {
+  includeOkState?: boolean;
 };
 
 type WhatsAppMetaDiagnostic = {
@@ -1362,9 +1367,11 @@ type DashboardViewProps = {
   transactions: Transaction[];
   insights: string[];
   onAddTransaction: () => void;
+  currentPlan: SubscriptionPlan;
+  onUpgrade: () => void;
 };
 
-const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardViewProps) => {
+const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, onUpgrade }: DashboardViewProps) => {
   const now = React.useMemo(() => new Date(), []);
   const enrichedTransactions = React.useMemo(
     () =>
@@ -1577,17 +1584,36 @@ const DashboardView = ({ transactions, insights, onAddTransaction }: DashboardVi
               </p>
             </div>
 
-            {insights.map((insight, index) => (
-              <div
-                key={`${index}-${insight.slice(0, 24)}`}
-                className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"
-              >
+            {currentPlan === 'FREE' ? (
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
                 <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
-                  Insight automático
+                  Disponível no Pro
                 </p>
-                <p className="text-sm text-emerald-100/90">{insight}</p>
+                <p className="text-sm text-emerald-100/90 leading-relaxed">
+                  Receba insights financeiros automáticos com base no seu histórico para identificar padrões,
+                  desperdícios e oportunidades de ajuste.
+                </p>
+                <button
+                  type="button"
+                  onClick={onUpgrade}
+                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-400"
+                >
+                  Liberar insights automáticos
+                </button>
               </div>
-            ))}
+            ) : (
+              insights.map((insight, index) => (
+                <div
+                  key={`${index}-${insight.slice(0, 24)}`}
+                  className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"
+                >
+                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
+                    Insight automático
+                  </p>
+                  <p className="text-sm text-emerald-100/90">{insight}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -1952,7 +1978,13 @@ const IntegrationsView = ({
   onSendWhatsAppTest,
 }: IntegrationsViewProps) => {
   const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annually'>('monthly');
+  const [showAdvancedWhatsAppSettings, setShowAdvancedWhatsAppSettings] = React.useState(false);
+  const [showWhatsAppConnectionDetails, setShowWhatsAppConnectionDetails] = React.useState(false);
   const hasWhatsAppAccess = currentPlan !== 'FREE';
+  const hasWhatsAppValidationIssues = Boolean(
+    whatsAppDiagnostic &&
+      (whatsAppDiagnostic.validationIssues.length > 0 || whatsAppDiagnostic.validationResult === 'ERRO')
+  );
 
   const plans = [
     {
@@ -1961,8 +1993,9 @@ const IntegrationsView = ({
       annualPrice: 290,
       features: [
         'Lançamentos ilimitados',
-        'IA completa',
-        'Relatórios avançados',
+        'Análises inteligentes com IA',
+        'Relatórios completos e gráficos avançados',
+        'Insights financeiros automáticos',
         'Metas ilimitadas',
         'Investimentos',
         'Alertas e resumos no WhatsApp',
@@ -1974,10 +2007,12 @@ const IntegrationsView = ({
       annualPrice: 490,
       features: [
         'Tudo do Pro',
-        'Insights semanais automáticos',
+        'IA financeira sem limite mensal',
+        'Insights financeiros avançados',
+        'Previsões de saldo e alertas inteligentes',
         'Planejamento estratégico',
-        'Suporte prioritário',
         'Automação financeira no WhatsApp',
+        'Suporte prioritário',
       ],
     },
   ];
@@ -2111,168 +2146,230 @@ const IntegrationsView = ({
               </div>
             ) : (
               <>
-            <p className="leading-relaxed text-slate-400">
-              Conecte o WhatsApp deste workspace para receber resumos financeiros e alertas importantes no celular.
-            </p>
+                <p className="leading-relaxed text-slate-400">
+                  Receba resumos financeiros e alertas importantes no WhatsApp deste workspace sem depender de e-mail ou
+                  planilhas paralelas.
+                </p>
 
-            <div className="space-y-4">
-              {[
-                'Informe o número que vai receber os alertas',
-                'Conecte o WhatsApp deste workspace',
-                'Envie um teste e confirme que as mensagens chegaram',
-              ].map((step, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <div className="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-500">
-                    {index + 1}
+                <div className="space-y-4">
+                  {[
+                    'Informe o número que vai receber os avisos',
+                    'Conecte o WhatsApp deste workspace',
+                    'Envie um teste e confirme que a mensagem chegou',
+                  ].map((step, index) => (
+                    <div key={index} className="flex items-start gap-4">
+                      <div className="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-500">
+                        {index + 1}
+                      </div>
+                      <p className="text-sm text-slate-300">{step}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2 sm:col-span-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                      Número do WhatsApp do workspace
+                    </label>
+                    <input
+                      type="tel"
+                      value={whatsAppPhoneNumber}
+                      onChange={(e) => onWhatsAppPhoneNumberChange(e.target.value)}
+                      placeholder="+55 (11) 99999-9999"
+                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                    />
                   </div>
-                  <p className="text-sm text-slate-300">{step}</p>
-                </div>
-              ))}
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Número do WhatsApp do workspace
-                </label>
-                <input
-                  type="tel"
-                  value={whatsAppPhoneNumber}
-                  onChange={(e) => onWhatsAppPhoneNumberChange(e.target.value)}
-                  placeholder="+55 (11) 99999-9999"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                      Número para teste
+                    </label>
+                    <input
+                      type="tel"
+                      value={whatsAppTestPhoneNumber}
+                      onChange={(e) => onWhatsAppTestPhoneNumberChange(e.target.value)}
+                      placeholder="+55 (11) 99999-9999"
+                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Número para teste
-                </label>
-                <input
-                  type="tel"
-                  value={whatsAppTestPhoneNumber}
-                  onChange={(e) => onWhatsAppTestPhoneNumberChange(e.target.value)}
-                  placeholder="+55 (11) 99999-9999"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <details className="rounded-2xl border border-slate-800 bg-slate-950/50">
-              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-slate-200 marker:hidden">
-                Opções do administrador
-              </summary>
-              <div className="grid gap-4 border-t border-slate-800 px-4 py-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    Template de conexão
-                  </label>
-                  <input
-                    type="text"
-                    value={whatsAppConnectTemplateName}
-                    onChange={(e) => onWhatsAppConnectTemplateNameChange(e.target.value)}
-                    placeholder="cote_connect_success"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                      Status da configuração
+                    </label>
+                    <div className="flex min-h-[52px] items-center rounded-xl border border-slate-800 bg-slate-950/60 px-4 text-sm text-slate-300">
+                      {hasWhatsAppValidationIssues
+                        ? 'Há um ajuste pendente antes do envio.'
+                        : isWhatsAppConnected
+                        ? 'Configuração pronta para envio.'
+                        : 'Preencha os números e conecte quando quiser ativar.'}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    Idioma do template
-                  </label>
-                  <input
-                    type="text"
-                    value={whatsAppTemplateLanguage}
-                    onChange={(e) => onWhatsAppTemplateLanguageChange(e.target.value)}
-                    placeholder="pt_BR"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
-                  />
+                {whatsAppFeedback && (
+                  <div className={cn('rounded-2xl border px-4 py-3', feedbackToneClass)}>
+                    <p className="text-sm font-bold">{whatsAppFeedback.title}</p>
+                    <p className="mt-1 text-sm leading-relaxed opacity-90">{whatsAppFeedback.message}</p>
+                  </div>
+                )}
+
+                {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
+                  <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                    <p className="text-sm font-bold text-amber-200">Revisão necessária</p>
+                    <ul className="mt-2 space-y-2 text-sm text-amber-100/90">
+                      {whatsAppDiagnostic.validationIssues.map((issue) => (
+                        <li key={issue}>{issue}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-4">
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <button
+                      onClick={onSaveWhatsAppConfig}
+                      disabled={isSavingWhatsAppConfig}
+                      className={cn(
+                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
+                        isSavingWhatsAppConfig
+                          ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
+                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
+                      )}
+                    >
+                      {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar números'}
+                    </button>
+
+                    <button
+                      onClick={onConnectWhatsApp}
+                      disabled={isConnectingWhatsApp || !whatsAppPhoneNumber.trim()}
+                      className={cn(
+                        'flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all shadow-lg',
+                        isConnectingWhatsApp || !whatsAppPhoneNumber.trim()
+                          ? 'cursor-not-allowed bg-slate-800 text-slate-500'
+                          : 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600'
+                      )}
+                    >
+                      {isConnectingWhatsApp ? 'Conectando...' : isWhatsAppConnected ? 'Reconectar' : 'Conectar'}
+                    </button>
+
+                    <button
+                      onClick={onSendWhatsAppTest}
+                      disabled={isSendingWhatsAppTest}
+                      className={cn(
+                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
+                        isSendingWhatsAppTest
+                          ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
+                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
+                      )}
+                    >
+                      {isSendingWhatsAppTest ? 'Enviando teste...' : 'Testar envio'}
+                    </button>
+
+                    <button
+                      onClick={onDisconnectWhatsApp}
+                      disabled={!isWhatsAppConnected}
+                      className={cn(
+                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
+                        !isWhatsAppConnected
+                          ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
+                          : 'border-rose-500/20 bg-rose-500/10 text-rose-300 hover:bg-rose-500 hover:text-white'
+                      )}
+                    >
+                      Desconectar
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvancedWhatsAppSettings((current) => !current)}
+                      className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
+                    >
+                      {showAdvancedWhatsAppSettings ? 'Ocultar ajustes avançados' : 'Mostrar ajustes avançados'}
+                    </button>
+                    {(hasWhatsAppValidationIssues || whatsAppDiagnostic?.metaResult) && (
+                      <button
+                        type="button"
+                        onClick={() => setShowWhatsAppConnectionDetails((current) => !current)}
+                        className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
+                      >
+                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da conexão' : 'Ver detalhes da conexão'}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2 sm:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                    Template de resumo
-                  </label>
-                  <input
-                    type="text"
-                    value={whatsAppDigestTemplateName}
-                    onChange={(e) => onWhatsAppDigestTemplateNameChange(e.target.value)}
-                    placeholder="cote_daily_digest"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
+                {showAdvancedWhatsAppSettings && (
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+                    <div className="mb-4">
+                      <p className="text-sm font-bold text-slate-200">Ajustes avançados</p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                        Use este bloco apenas se você precisar revisar templates ou idioma do WhatsApp.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                          Template de conexão
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsAppConnectTemplateName}
+                          onChange={(e) => onWhatsAppConnectTemplateNameChange(e.target.value)}
+                          placeholder="cote_connect_success"
+                          className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                        />
+                      </div>
 
-                <button
-                  onClick={onSaveWhatsAppConfig}
-                  disabled={isSavingWhatsAppConfig}
-                  className={cn(
-                    'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all sm:col-span-1',
-                    isSavingWhatsAppConfig
-                      ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                      : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
-                  )}
-                >
-                  {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar configuração'}
-                </button>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                          Idioma do template
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsAppTemplateLanguage}
+                          onChange={(e) => onWhatsAppTemplateLanguageChange(e.target.value)}
+                          placeholder="pt_BR"
+                          className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                        />
+                      </div>
 
-                <button
-                  onClick={onRunWhatsAppDiagnostic}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500/50 hover:text-white sm:col-span-1"
-                >
-                  Validar configuração
-                </button>
-              </div>
-            </details>
+                      <div className="space-y-2 sm:col-span-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                          Template de resumo
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsAppDigestTemplateName}
+                          onChange={(e) => onWhatsAppDigestTemplateNameChange(e.target.value)}
+                          placeholder="cote_daily_digest"
+                          className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                        />
+                      </div>
 
-            {whatsAppFeedback && (
-              <div className={cn('rounded-2xl border px-4 py-3', feedbackToneClass)}>
-                <p className="text-sm font-bold">{whatsAppFeedback.title}</p>
-                <p className="mt-1 text-sm leading-relaxed opacity-90">{whatsAppFeedback.message}</p>
-              </div>
-            )}
+                      <button
+                        onClick={onSaveWhatsAppConfig}
+                        disabled={isSavingWhatsAppConfig}
+                        className={cn(
+                          'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all sm:col-span-1',
+                          isSavingWhatsAppConfig
+                            ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
+                            : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
+                        )}
+                      >
+                        {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar ajustes'}
+                      </button>
 
-            <div className="flex flex-col gap-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <button
-                  onClick={onConnectWhatsApp}
-                  disabled={isConnectingWhatsApp || !whatsAppPhoneNumber.trim()}
-                  className={cn(
-                    'flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all shadow-lg',
-                    isConnectingWhatsApp || !whatsAppPhoneNumber.trim()
-                      ? 'cursor-not-allowed bg-slate-800 text-slate-500'
-                      : 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600'
-                  )}
-                >
-                  {isConnectingWhatsApp ? 'Conectando...' : isWhatsAppConnected ? 'Reconectar' : 'Conectar WhatsApp'}
-                </button>
-
-                <button
-                  onClick={onDisconnectWhatsApp}
-                  disabled={!isWhatsAppConnected}
-                  className={cn(
-                    'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
-                    !isWhatsAppConnected
-                      ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                      : 'border-rose-500/20 bg-rose-500/10 text-rose-300 hover:bg-rose-500 hover:text-white'
-                  )}
-                >
-                  Desconectar
-                </button>
-
-                <button
-                  onClick={onSendWhatsAppTest}
-                  disabled={isSendingWhatsAppTest}
-                  className={cn(
-                    'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
-                    isSendingWhatsAppTest
-                      ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                      : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
-                  )}
-                >
-                  {isSendingWhatsAppTest ? 'Enviando teste...' : 'Testar envio'}
-                </button>
-              </div>
-            </div>
+                      <button
+                        onClick={onRunWhatsAppDiagnostic}
+                        className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500/50 hover:text-white sm:col-span-1"
+                      >
+                        Validar configuração
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -2309,12 +2406,12 @@ const IntegrationsView = ({
               </div>
             </div>
 
-            {whatsAppDiagnostic && (
-              <details className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70">
-                <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-slate-200 marker:hidden">
+            {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
+              <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70">
+                <div className="border-b border-slate-800 px-4 py-3 text-sm font-bold text-slate-200">
                   Detalhes da conexão
-                </summary>
-                <div className="border-t border-slate-800 p-4">
+                </div>
+                <div className="p-4">
                   <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Template conexão</p>
@@ -2335,10 +2432,6 @@ const IntegrationsView = ({
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Número conectado</p>
                       <p className="mt-1 break-all">{whatsAppDiagnostic.numeroConectado || 'Não configurado'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Phone Number ID</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.phoneNumberId || 'Não configurado'}</p>
                     </div>
                   </div>
 
@@ -2376,7 +2469,7 @@ const IntegrationsView = ({
                     </div>
                   )}
                 </div>
-              </details>
+              </div>
             )}
 
             <p className="mt-4 text-xs leading-relaxed text-slate-500">
@@ -2890,18 +2983,28 @@ const InvestmentsView = ({
 };
 type ReportsViewProps = {
   transactions: Transaction[];
+  totalBalance: number;
+  goals: Goal[];
   onExportPDF: () => void;
   onExportCSV: () => void;
   onBeforeUseAI?: () => boolean;
   getApiHeaders: (withJsonContentType?: boolean) => Promise<Record<string, string>>;
+  accessLevel: ReportAccessLevel;
+  currentPlan: SubscriptionPlan;
+  onUpgrade: () => void;
 };
 
 const ReportsView = ({
   transactions,
+  totalBalance,
+  goals,
   onExportPDF,
   onExportCSV,
   onBeforeUseAI,
   getApiHeaders,
+  accessLevel,
+  currentPlan,
+  onUpgrade,
 }: ReportsViewProps) => {
   const [isGeneratingInsight, setIsGeneratingInsight] = React.useState(false);
   const [aiInsight, setAiInsight] = React.useState<string | null>(null);
@@ -3008,6 +3111,146 @@ const ReportsView = ({
 
   const pieData = categoryData.length > 0 ? categoryData : [{ name: 'Sem dados', value: 1, color: '#334155' }];
 
+  const expenseDeepDive = React.useMemo(() => {
+    const currentMonthReference = new Date(now.getFullYear(), now.getMonth(), 1);
+    const previousMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const currentMonthExpenses = enrichedTransactions.filter(
+      (tx) =>
+        tx.type === 'expense' &&
+        tx.parsedDate &&
+        tx.parsedDate.getFullYear() === currentMonthReference.getFullYear() &&
+        tx.parsedDate.getMonth() === currentMonthReference.getMonth()
+    );
+
+    const previousMonthExpenses = enrichedTransactions.filter(
+      (tx) =>
+        tx.type === 'expense' &&
+        tx.parsedDate &&
+        tx.parsedDate.getFullYear() === previousMonthReference.getFullYear() &&
+        tx.parsedDate.getMonth() === previousMonthReference.getMonth()
+    );
+
+    const buildCategoryMap = (items: Array<typeof enrichedTransactions[number]>) => {
+      const map = new Map<string, number>();
+      for (const item of items) {
+        const key = item.cat || 'Outros';
+        map.set(key, (map.get(key) || 0) + parseCurrency(item.amount));
+      }
+      return map;
+    };
+
+    const currentCategoryMap = buildCategoryMap(currentMonthExpenses);
+    const previousCategoryMap = buildCategoryMap(previousMonthExpenses);
+    const currentMonthTotal = currentMonthExpenses.reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+    const previousMonthTotal = previousMonthExpenses.reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+    const monthOverMonthVariation =
+      previousMonthTotal > 0 ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 : null;
+
+    const topCurrentCategory = Array.from(currentCategoryMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name, value }))[0] ?? null;
+
+    const growingCategories = Array.from(currentCategoryMap.entries())
+      .map(([name, currentValue]) => {
+        const previousValue = previousCategoryMap.get(name) ?? 0;
+        const diff = currentValue - previousValue;
+        const variation = previousValue > 0 ? (diff / previousValue) * 100 : currentValue > 0 ? 100 : 0;
+        return {
+          name,
+          currentValue,
+          previousValue,
+          diff,
+          variation,
+        };
+      })
+      .filter((item) => item.currentValue > 0 && item.diff > 0)
+      .sort((a, b) => b.diff - a.diff)
+      .slice(0, 3);
+
+    const recurringHeavyCategories = Array.from(
+      currentMonthExpenses.reduce((acc, tx) => {
+        const key = tx.cat || 'Outros';
+        const current = acc.get(key) || { name: key, count: 0, total: 0 };
+        current.count += 1;
+        current.total += parseCurrency(tx.amount);
+        acc.set(key, current);
+        return acc;
+      }, new Map<string, { name: string; count: number; total: number }>())
+    )
+      .map(([, value]) => value)
+      .filter((item) => item.count >= 2)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 3);
+
+    const largestExpense = currentMonthExpenses
+      .map((tx) => ({
+        id: tx.id,
+        amount: parseCurrency(tx.amount),
+        description: tx.description || tx.cat || 'Despesa sem descrição',
+        category: tx.cat || 'Outros',
+        date: tx.parsedDate,
+      }))
+      .sort((a, b) => b.amount - a.amount)[0] ?? null;
+
+    return {
+      currentMonthTotal,
+      previousMonthTotal,
+      monthOverMonthVariation,
+      topCurrentCategory,
+      growingCategories,
+      recurringHeavyCategories,
+      largestExpense,
+    };
+  }, [enrichedTransactions, now]);
+
+  const balanceForecast = React.useMemo(() => {
+    const forecastWindowDays = 60;
+    const horizonDays = [7, 15, 30];
+    const windowStart = new Date(now.getTime() - forecastWindowDays * 24 * 60 * 60 * 1000);
+    const recentTransactions = enrichedTransactions.filter(
+      (tx) => tx.parsedDate && tx.parsedDate >= windowStart
+    );
+
+    const recentNetFlow = recentTransactions.reduce((acc, tx) => {
+      const amount = parseCurrency(tx.amount);
+      return acc + (tx.type === 'income' ? amount : -amount);
+    }, 0);
+
+    const dailyNetFlow = recentTransactions.length > 0 ? recentNetFlow / forecastWindowDays : 0;
+    const projections = horizonDays.map((days) => ({
+      days,
+      projectedBalance: totalBalance + dailyNetFlow * days,
+    }));
+
+    const trend =
+      dailyNetFlow > 5 ? 'positive' : dailyNetFlow < -5 ? 'negative' : 'stable';
+
+    const projectedNegativeInDays =
+      dailyNetFlow < 0 && totalBalance > 0
+        ? Math.max(1, Math.floor(totalBalance / Math.abs(dailyNetFlow)))
+        : null;
+
+    return {
+      projections,
+      dailyNetFlow,
+      trend,
+      projectedNegativeInDays,
+    };
+  }, [enrichedTransactions, now, totalBalance]);
+
+  const premiumSmartAlerts = React.useMemo(
+    () =>
+      buildPremiumSmartAlerts({
+        transactions,
+        totalBalance,
+        goals,
+        now,
+        includeOkState: true,
+      }),
+    [goals, now, totalBalance, transactions]
+  );
+
   const generateAIInsight = async () => {
     if (onBeforeUseAI && !onBeforeUseAI()) {
       return;
@@ -3043,6 +3286,95 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
     }
   };
 
+  if (accessLevel === 'basic') {
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-bold text-white">Relatórios</h3>
+            <p className="text-sm text-slate-400">
+              Visão básica da sua movimentação financeira atual.
+            </p>
+          </div>
+          {currentPlan === 'FREE' && (
+            <button
+              onClick={onUpgrade}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+            >
+              <Sparkles size={16} /> Liberar relatórios completos
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
+            <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
+          </div>
+          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
+            <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
+          </div>
+          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
+            <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Resumo por categoria</h4>
+            <div className="space-y-3">
+              {categoryData.length === 0 ? (
+                <p className="text-sm text-slate-500">Registre despesas para visualizar um resumo por categoria.</p>
+              ) : (
+                categoryData.slice(0, 5).map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-sm text-slate-200 truncate">{item.name}</span>
+                    </div>
+                    <span className="text-sm font-bold text-white">{formatCurrency(item.value)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Disponível no Pro</h4>
+            <div className="space-y-3">
+              {[
+                'Gráficos comparativos completos',
+                'Insights automáticos com IA',
+                'Exportação em PDF e CSV',
+                'Comparativos avançados de receita, despesa e economia',
+              ].map((feature) => (
+                <div
+                  key={feature}
+                  className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-100/90"
+                >
+                  {feature}
+                </div>
+              ))}
+            </div>
+            {currentPlan === 'FREE' && (
+              <button
+                onClick={onUpgrade}
+                className="mt-5 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+              >
+                <Sparkles size={16} /> Fazer upgrade para Pro
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -3077,6 +3409,246 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
         </div>
       </div>
+
+      {currentPlan === 'PREMIUM' ? (
+        <div className="space-y-6">
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
+              <div>
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previsão de saldo</h4>
+                <p className="text-sm text-slate-400 mt-2">
+                  Projeção baseada no ritmo médio das suas movimentações dos últimos 60 dias.
+                </p>
+              </div>
+              <div
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${
+                  balanceForecast.trend === 'positive'
+                    ? 'bg-emerald-500/10 text-emerald-300'
+                    : balanceForecast.trend === 'negative'
+                      ? 'bg-rose-500/10 text-rose-300'
+                      : 'bg-slate-800 text-slate-300'
+                }`}
+              >
+                {balanceForecast.trend === 'positive'
+                  ? 'Tendência positiva'
+                  : balanceForecast.trend === 'negative'
+                    ? 'Tendência de queda'
+                    : 'Tendência estável'}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {balanceForecast.projections.map((item) => (
+                <div
+                  key={item.days}
+                  className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5"
+                >
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    Em {item.days} dias
+                  </p>
+                  <p
+                    className={`text-2xl font-black ${
+                      item.projectedBalance >= 0 ? 'text-white' : 'text-rose-400'
+                    }`}
+                  >
+                    {formatCurrency(item.projectedBalance)}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {item.projectedBalance >= 0
+                      ? 'Mantendo o ritmo atual, seu caixa permanece saudável.'
+                      : 'Se nada mudar, o saldo projetado fica negativo.'}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  Alertas inteligentes
+                </p>
+                <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                  Premium
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+                {premiumSmartAlerts.map((alert) => (
+                  <div
+                    key={alert.id}
+                    className={cn(
+                      'rounded-2xl border p-4',
+                      alert.tone === 'error'
+                        ? 'border-rose-500/30 bg-rose-500/10'
+                        : alert.tone === 'warning'
+                          ? 'border-amber-400/30 bg-amber-400/10'
+                          : 'border-emerald-500/20 bg-emerald-500/10'
+                    )}
+                  >
+                    <p
+                      className={cn(
+                        'text-xs font-bold uppercase tracking-widest',
+                        alert.tone === 'error'
+                          ? 'text-rose-300'
+                          : alert.tone === 'warning'
+                            ? 'text-amber-200'
+                            : 'text-emerald-300'
+                      )}
+                    >
+                      {alert.title}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-200">{alert.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+            <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Análises profundas de despesas</h4>
+                <p className="mt-2 max-w-3xl text-sm text-slate-400">
+                  Veja quais categorias mais cresceram, onde estão os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
+                </p>
+              </div>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                Premium
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Despesas do mês</p>
+                <p className="text-2xl font-black text-white">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
+                <p className="mt-2 text-xs text-slate-400">
+                  {expenseDeepDive.previousMonthTotal > 0
+                    ? `Mês anterior: ${formatCurrency(expenseDeepDive.previousMonthTotal)}`
+                    : 'Sem comparação válida com o mês anterior.'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Variação mensal</p>
+                <p
+                  className={cn(
+                    'text-2xl font-black',
+                    expenseDeepDive.monthOverMonthVariation === null
+                      ? 'text-white'
+                      : expenseDeepDive.monthOverMonthVariation > 0
+                        ? 'text-amber-300'
+                        : 'text-emerald-300'
+                  )}
+                >
+                  {expenseDeepDive.monthOverMonthVariation === null
+                    ? 'Sem base'
+                    : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
+                </p>
+                <p className="mt-2 text-xs text-slate-400">
+                  Comparação entre as despesas do mês atual e do mês anterior.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Categoria mais pesada</p>
+                <p className="text-lg font-black text-white">
+                  {expenseDeepDive.topCurrentCategory?.name || 'Sem dados'}
+                </p>
+                <p className="mt-2 text-xs text-slate-400">
+                  {expenseDeepDive.topCurrentCategory
+                    ? formatCurrency(expenseDeepDive.topCurrentCategory.value)
+                    : 'Registre mais despesas para gerar a análise.'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Maior despesa individual</p>
+                <p className="text-lg font-black text-white">
+                  {expenseDeepDive.largestExpense?.description || 'Sem dados'}
+                </p>
+                <p className="mt-2 text-xs text-slate-400">
+                  {expenseDeepDive.largestExpense
+                    ? `${formatCurrency(expenseDeepDive.largestExpense.amount)} em ${expenseDeepDive.largestExpense.category}`
+                    : 'Ainda não há lançamentos suficientes neste mês.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
+              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Categorias que mais cresceram</p>
+                <div className="space-y-3">
+                  {expenseDeepDive.growingCategories.length === 0 ? (
+                    <p className="text-sm text-slate-400">
+                      Nenhuma categoria apresentou crescimento relevante em relação ao mês anterior.
+                    </p>
+                  ) : (
+                    expenseDeepDive.growingCategories.map((item) => (
+                      <div key={item.name} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-bold text-white">{item.name}</p>
+                          <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
+                            +{item.variation.toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-400">
+                          <span>Mês atual: {formatCurrency(item.currentValue)}</span>
+                          <span>Mês anterior: {formatCurrency(item.previousValue)}</span>
+                        </div>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Crescimento absoluto de {formatCurrency(item.diff)} nesta categoria.
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Categorias recorrentes que mais pesam</p>
+                <div className="space-y-3">
+                  {expenseDeepDive.recurringHeavyCategories.length === 0 ? (
+                    <p className="text-sm text-slate-400">
+                      Ainda não há categorias recorrentes suficientes neste mês para uma análise mais profunda.
+                    </p>
+                  ) : (
+                    expenseDeepDive.recurringHeavyCategories.map((item) => (
+                      <div key={item.name} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-bold text-white">{item.name}</p>
+                          <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
+                            {item.count} lançamentos
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm text-slate-300">{formatCurrency(item.total)}</p>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Vale revisar frequência, assinatura recorrente ou padrão de consumo nesta categoria.
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-widest">Disponível no Premium</h4>
+              <p className="text-sm text-slate-400 mt-2 max-w-2xl">
+                Desbloqueie previsões de saldo em 7, 15 e 30 dias, alertas inteligentes e análises profundas de despesas para identificar crescimento por categoria e padrões que pressionam seu caixa.
+              </p>
+            </div>
+            <button
+              onClick={onUpgrade}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+            >
+              <Sparkles size={16} /> Conhecer Premium
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
         <div className="mb-5">
@@ -4324,8 +4896,110 @@ const LoginView = ({
       return 'A senha deve conter letras e números.';
     }
     if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
-    return null;
-  };
+  return null;
+};
+
+const buildPremiumSmartAlerts = ({
+  transactions,
+  totalBalance,
+  goals,
+  now,
+  includeOkState = false,
+}: {
+  transactions: Transaction[];
+  totalBalance: number;
+  goals: Goal[];
+  now: Date;
+} & PremiumSmartAlertOptions): AppNotification[] => {
+  const alerts: AppNotification[] = [];
+  const forecastWindowDays = 60;
+  const windowStart = new Date(now.getTime() - forecastWindowDays * 24 * 60 * 60 * 1000);
+  const enrichedTransactions = transactions.map((tx) => ({ ...tx, parsedDate: parseTransactionDate(tx.date) }));
+  const recentTransactions = enrichedTransactions.filter(
+    (tx) => tx.parsedDate && tx.parsedDate >= windowStart
+  );
+
+  const recentNetFlow = recentTransactions.reduce((acc, tx) => {
+    const amount = parseCurrency(tx.amount);
+    return acc + (tx.type === 'income' ? amount : -amount);
+  }, 0);
+  const dailyNetFlow = recentTransactions.length > 0 ? recentNetFlow / forecastWindowDays : 0;
+  const projectedNegativeInDays =
+    dailyNetFlow < 0 && totalBalance > 0 ? Math.max(1, Math.floor(totalBalance / Math.abs(dailyNetFlow))) : null;
+
+  if (projectedNegativeInDays !== null && projectedNegativeInDays <= 30) {
+    alerts.push({
+      id: 'premium-balance-risk',
+      title: 'Alerta inteligente: risco de saldo',
+      message: `No ritmo atual, seu saldo pode ficar negativo em cerca de ${projectedNegativeInDays} dias.`,
+      tone: 'error',
+      targetTab: 'reports',
+    });
+  }
+
+  const currentMonthExpenses = enrichedTransactions
+    .filter((tx) => tx.type === 'expense' && isInCurrentMonth(tx.parsedDate ?? null))
+    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+
+  const previousMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonthExpenses = enrichedTransactions
+    .filter(
+      (tx) =>
+        tx.type === 'expense' &&
+        tx.parsedDate &&
+        tx.parsedDate.getFullYear() === previousMonthReference.getFullYear() &&
+        tx.parsedDate.getMonth() === previousMonthReference.getMonth()
+    )
+    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+
+  if (previousMonthExpenses > 0 && currentMonthExpenses > previousMonthExpenses * 1.18) {
+    const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
+    alerts.push({
+      id: 'premium-expense-spike',
+      title: 'Alerta inteligente: gasto acima do padrão',
+      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
+      tone: 'warning',
+      targetTab: 'reports',
+    });
+  }
+
+  const riskyGoal = goals
+    .filter((goal) => goal.deadline && goal.current < goal.target)
+    .map((goal) => {
+      const deadline = new Date(goal.deadline as string);
+      const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+      const remaining = Math.max(0, goal.target - goal.current);
+      return {
+        goal,
+        daysUntilDeadline,
+        remaining,
+      };
+    })
+    .filter((item) => item.daysUntilDeadline >= 0 && item.daysUntilDeadline <= 30)
+    .sort((a, b) => a.daysUntilDeadline - b.daysUntilDeadline)[0];
+
+  if (riskyGoal) {
+    alerts.push({
+      id: `premium-goal-risk-${riskyGoal.goal.id}`,
+      title: 'Alerta inteligente: meta em risco',
+      message: `A meta ${riskyGoal.goal.name} vence em ${riskyGoal.daysUntilDeadline} dias e ainda faltam ${formatCurrency(riskyGoal.remaining)}.`,
+      tone: 'warning',
+      targetTab: 'goals',
+    });
+  }
+
+  if (alerts.length === 0 && includeOkState) {
+    alerts.push({
+      id: 'premium-smart-alerts-ok',
+      title: 'Alertas inteligentes monitorando seu caixa',
+      message: 'Nenhum sinal crítico foi detectado agora. Seu fluxo está estável e dentro do esperado.',
+      tone: 'success',
+      targetTab: 'reports',
+    });
+  }
+
+  return alerts;
+};
 
   const runSetupForToken = async (accessToken: string) => {
     const setupRes = await fetch('/api/setup-user', {
@@ -4989,6 +5663,8 @@ export default function App() {
     };
     setUser(null);
     setActiveTab('dashboard');
+    setCurrentPlan('FREE');
+    setReportAccessLevel('basic');
   };
 
   const [activeTab, setActiveTab] = React.useState<Tab>('dashboard');
@@ -4996,6 +5672,7 @@ export default function App() {
   const [totalBalance, setTotalBalance] = React.useState(0);
   const [dashboardInsights, setDashboardInsights] = React.useState<string[]>([]);
   const [currentPlan, setCurrentPlan] = React.useState<SubscriptionPlan>('FREE');
+  const [reportAccessLevel, setReportAccessLevel] = React.useState<ReportAccessLevel>('basic');
   const [currentMonthTransactionCount, setCurrentMonthTransactionCount] = React.useState(0);
   const [aiUsageCount, setAiUsageCount] = React.useState(0);
   const [isUpgradeLimitModalOpen, setIsUpgradeLimitModalOpen] = React.useState(false);
@@ -5090,6 +5767,11 @@ export default function App() {
         setCurrentPlan(normalizePlan(data.plan));
       } else {
         setCurrentPlan('FREE');
+      }
+      if (data.limits?.reports === 'basic' || data.limits?.reports === 'full') {
+        setReportAccessLevel(data.limits.reports);
+      } else {
+        setReportAccessLevel(data.plan === 'FREE' ? 'basic' : 'full');
       }
       if (typeof data.currentMonthTransactionCount === 'number') {
         setCurrentMonthTransactionCount(Math.max(0, data.currentMonthTransactionCount));
@@ -5234,6 +5916,12 @@ export default function App() {
         workspaceDashboardCacheRef.current[resolvedWorkspaceId] = {
           totalBalance: data.totalBalance !== undefined ? Number(data.totalBalance) : 0,
           currentPlan: data.plan ? normalizePlan(data.plan) : 'FREE',
+          reportAccessLevel:
+            data.limits?.reports === 'basic' || data.limits?.reports === 'full'
+              ? data.limits.reports
+              : data.plan === 'FREE'
+                ? 'basic'
+                : 'full',
           currentMonthTransactionCount:
             typeof data.currentMonthTransactionCount === 'number' ? Math.max(0, data.currentMonthTransactionCount) : 0,
           aiUsageCount: typeof data.currentMonthAiUsage === 'number' ? Math.max(0, data.currentMonthAiUsage) : 0,
@@ -5456,6 +6144,7 @@ export default function App() {
       {
         totalBalance: number;
         currentPlan: SubscriptionPlan;
+        reportAccessLevel: ReportAccessLevel;
         currentMonthTransactionCount: number;
         aiUsageCount: number;
         transactions: Transaction[];
@@ -5490,6 +6179,8 @@ export default function App() {
       setSubscriptionActionLoading(null);
       setDashboardInsights([]);
       setTotalBalance(0);
+      setCurrentPlan('FREE');
+      setReportAccessLevel('basic');
       setCurrentMonthTransactionCount(0);
       setAiUsageCount(0);
       setIsWhatsAppConnected(false);
@@ -5527,6 +6218,7 @@ export default function App() {
 
     setTotalBalance(cachedWorkspaceData.totalBalance);
     setCurrentPlan(cachedWorkspaceData.currentPlan);
+    setReportAccessLevel(cachedWorkspaceData.reportAccessLevel);
     setCurrentMonthTransactionCount(cachedWorkspaceData.currentMonthTransactionCount);
     setAiUsageCount(cachedWorkspaceData.aiUsageCount);
     setTransactions(cachedWorkspaceData.transactions);
@@ -5877,6 +6569,19 @@ export default function App() {
     setBills(derivedAgendaBills);
   }, [derivedAgendaBills]);
 
+  const premiumSmartNotifications = React.useMemo(
+    () =>
+      currentPlan === 'PREMIUM'
+        ? buildPremiumSmartAlerts({
+            transactions,
+            totalBalance,
+            goals,
+            now: new Date(),
+          })
+        : [],
+    [currentPlan, goals, totalBalance, transactions]
+  );
+
   const appNotifications = React.useMemo<AppNotification[]>(() => {
     const notifications: AppNotification[] = [];
     const overdueBills = derivedAgendaBills.filter((bill) => bill.status === 'overdue');
@@ -5960,6 +6665,8 @@ export default function App() {
       });
     }
 
+    notifications.push(...premiumSmartNotifications.slice(0, 3));
+
     for (const event of workspaceEvents.slice(0, 2)) {
       notifications.push({
         id: `event-${event.id}`,
@@ -5977,6 +6684,7 @@ export default function App() {
     currentPlan,
     derivedAgendaBills,
     isWhatsAppConnected,
+    premiumSmartNotifications,
     subscriptionSummary,
     workspaceEvents,
   ]);
@@ -7900,7 +8608,9 @@ export default function App() {
             <p className="text-xs text-slate-400 mb-4 leading-relaxed">
               {isFreePlan
                 ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
-                : 'Seu plano atual possui lançamentos e IA ilimitados.'}
+                : currentPlan === 'PREMIUM'
+                ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
+                : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
             </p>
             <button
               onClick={() => {
@@ -8390,6 +9100,8 @@ export default function App() {
                   transactions={transactions}
                   insights={dashboardInsights}
                   onAddTransaction={handleOpenCreateTransaction}
+                  currentPlan={currentPlan}
+                  onUpgrade={handleUpgrade}
                 />
               )}
               {activeTab === 'transactions' && (
@@ -8428,10 +9140,15 @@ export default function App() {
               {activeTab === 'reports' && (
                 <ReportsView
                   transactions={transactions}
+                  totalBalance={totalBalance}
+                  goals={goals}
                   onExportPDF={handleExportPDF}
                   onExportCSV={handleExportCSV}
                   onBeforeUseAI={consumeAiQuota}
                   getApiHeaders={getAuthHeaders}
+                  accessLevel={reportAccessLevel}
+                  currentPlan={currentPlan}
+                  onUpgrade={handleUpgrade}
                 />
               )}
               {activeTab === 'assistant' && (
