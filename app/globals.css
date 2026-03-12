@@ -38,12 +38,22 @@ body {
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+    scrollbar-color: transparent transparent;
   }
 
   .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent !important;
+    border: 0 !important;
   }
 }
 

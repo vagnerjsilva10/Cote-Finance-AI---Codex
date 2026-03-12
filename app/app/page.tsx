@@ -625,6 +625,22 @@ const TRANSFER_TRANSACTION_CATEGORIES: readonly string[] = ['Outros'];
 
 const TRANSACTION_WALLETS = ['Nubank', 'Itaú', 'Santander', 'Bradesco', 'Dinheiro', 'Outros'];
 
+const MAIN_BANK_OPTIONS = [
+  'Nubank',
+  'Banco do Brasil',
+  'Caixa',
+  'Itaú',
+  'Bradesco',
+  'Santander',
+  'Inter',
+  'C6 Bank',
+  'BTG Pactual',
+  'XP',
+  'PicPay',
+  'Mercado Pago',
+  'Outro banco',
+] as const;
+
 const GOAL_CATEGORIES = [
   'Reserva de emergência',
   'Viagem',
@@ -636,13 +652,41 @@ const GOAL_CATEGORIES = [
   'Outros',
 ];
 
-const DEBT_CATEGORIES = [
+const RECURRING_BILL_CATEGORIES: readonly string[] = [
+  'Água',
+  'Luz',
+  'Internet',
+  'Aluguel',
+  'Telefone',
+  'Condomínio',
+  'Assinatura',
+];
+
+const DEBT_CATEGORIES: readonly string[] = [
+  ...RECURRING_BILL_CATEGORIES,
   'Cartão de crédito',
   'Empréstimo',
   'Financiamento',
   'Cheque especial',
   'Outros',
 ];
+
+const RECURRING_BILL_PRESETS: ReadonlyArray<{
+  category: string;
+  title: string;
+  description: string;
+  dueDay: string;
+}> = [
+  { category: 'Água', title: 'Água', description: 'Conta mensal da residência.', dueDay: '10' },
+  { category: 'Luz', title: 'Luz', description: 'Energia com vencimento recorrente.', dueDay: '10' },
+  { category: 'Internet', title: 'Internet', description: 'Plano fixo da conexão principal.', dueDay: '15' },
+  { category: 'Aluguel', title: 'Aluguel', description: 'Compromisso recorrente da moradia.', dueDay: '5' },
+];
+
+const isRecurringBillCategory = (category: string) => RECURRING_BILL_CATEGORIES.includes(category);
+
+const getRecurringBillDefaultDueDay = (category: string) =>
+  RECURRING_BILL_PRESETS.find((preset) => preset.category === category)?.dueDay ?? '10';
 
 const INVESTMENT_TYPES = [
   'Renda fixa',
@@ -2838,15 +2882,20 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
 type DebtsViewProps = {
   debts: Debt[];
   onAddDebt: () => void;
+  onAddRecurringDebt: (category: string) => void;
   onEditDebt: (id: string | number) => void;
   onDeleteDebt: (id: string | number) => void;
 };
 
-const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProps) => {
+const DebtsView = ({ debts, onAddDebt, onAddRecurringDebt, onEditDebt, onDeleteDebt }: DebtsViewProps) => {
   const totalOriginal = debts.reduce((acc, debt) => acc + debt.originalAmount, 0);
   const totalRemaining = debts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
   const totalPaid = totalOriginal - totalRemaining;
   const progress = totalOriginal > 0 ? (totalPaid / totalOriginal) * 100 : 0;
+  const recurringBills = debts.filter((debt) => isRecurringBillCategory(debt.category));
+  const activeRecurringBills = recurringBills.filter((debt) => debt.status === 'Ativa');
+  const recurringMonthlyTotal = activeRecurringBills.reduce((acc, debt) => acc + debt.remainingAmount, 0);
+  const otherDebts = debts.filter((debt) => !isRecurringBillCategory(debt.category));
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -2875,7 +2924,138 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
         </div>
       </div>
 
+      <div className="theme-report-card bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Contas recorrentes</p>
+            <div>
+              <h4 className="text-xl font-bold text-white">Organize água, luz, internet e aluguel</h4>
+              <p className="max-w-2xl text-sm leading-7 text-slate-400">
+                Cadastre compromissos fixos com vencimento mensal para acompanhar o que pesa no orçamento e
+                antecipar alertas na agenda financeira.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:min-w-[360px]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Contas ativas</p>
+              <p className="mt-2 text-2xl font-black text-white">{activeRecurringBills.length}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Compromisso mensal</p>
+              <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(recurringMonthlyTotal)}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Categorias prontas</p>
+              <p className="mt-2 text-2xl font-black text-white">{RECURRING_BILL_PRESETS.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Atalhos de criação</p>
+            <button
+              onClick={onAddDebt}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              <Plus size={14} /> Nova dívida manual
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {RECURRING_BILL_PRESETS.map((preset) => (
+              <button
+                key={preset.category}
+                type="button"
+                onClick={() => onAddRecurringDebt(preset.category)}
+                className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-900"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold text-white">{preset.title}</p>
+                    <p className="mt-1 text-xs leading-6 text-slate-400">{preset.description}</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                    Dia {preset.dueDay}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Contas cadastradas</p>
+            <span className="text-xs text-slate-500">{recurringBills.length} conta(s) recorrente(s)</span>
+          </div>
+
+          {recurringBills.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-950/60 p-6 text-sm leading-7 text-slate-400">
+              Você ainda não cadastrou contas recorrentes. Use os atalhos acima para registrar água, luz,
+              internet, aluguel e outras despesas fixas do mês.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              {recurringBills.map((debt) => (
+                <article
+                  key={debt.id}
+                  className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-colors hover:border-slate-700"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h5 className="text-base font-bold text-white">{debt.creditor}</h5>
+                        <span className="rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300">
+                          {debt.category}
+                        </span>
+                        <span
+                          className={cn(
+                            'rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
+                            debt.status === 'Quitada'
+                              ? 'bg-emerald-500/10 text-emerald-400'
+                              : 'bg-amber-500/10 text-amber-400'
+                          )}
+                        >
+                          {debt.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-400">
+                        Vencimento todo dia {debt.dueDay}. Valor em aberto: {formatCurrency(debt.remainingAmount)}.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onEditDebt(debt.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                      >
+                        <Pencil size={12} /> Editar
+                      </button>
+                      <button
+                        onClick={() => onDeleteDebt(debt.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20"
+                      >
+                        <Trash2 size={12} /> Excluir
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="border-b border-slate-800 bg-slate-900/60 px-6 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Outras dívidas</p>
+            <h4 className="mt-1 text-lg font-bold text-white">Parcelamentos, empréstimos e financiamentos</h4>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -2891,14 +3071,14 @@ const DebtsView = ({ debts, onAddDebt, onEditDebt, onDeleteDebt }: DebtsViewProp
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {debts.length === 0 && (
+              {otherDebts.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Nenhuma dívida cadastrada.
+                    Nenhuma dívida adicional cadastrada.
                   </td>
                 </tr>
               )}
-              {debts.map((debt) => (
+              {otherDebts.map((debt) => (
                 <tr key={debt.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="px-6 py-4 text-sm font-semibold text-white">{debt.creditor}</td>
                   <td className="px-6 py-4 text-sm text-slate-400">{debt.category}</td>
@@ -3060,9 +3240,10 @@ type PortfolioViewProps = {
   debts: Debt[];
   transactions: Transaction[];
   totalBalance: number;
+  onAddWallet: () => void;
 };
 
-const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance }: PortfolioViewProps) => {
+const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance, onAddWallet }: PortfolioViewProps) => {
   const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
   const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
   const totalDebt = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
@@ -3130,12 +3311,22 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-2">
-        <h3 className="text-xl font-bold text-white">Carteira</h3>
-        <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
-          Acompanhe seu patrimônio consolidado, veja a distribuição entre contas, investimentos e dívidas e entenda
-          onde sua carteira está mais concentrada.
-        </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold text-white">Carteira</h3>
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
+            Acompanhe seu patrimônio consolidado, veja a distribuição entre contas, investimentos e dívidas e entenda
+            onde sua carteira está mais concentrada.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onAddWallet}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white"
+        >
+          <Plus size={16} />
+          Nova carteira
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -4650,19 +4841,25 @@ type DebtModalProps = {
   onClose: () => void;
   onSubmit: (debt: DebtFormData) => Promise<void> | void;
   initialData?: Debt | null;
+  initialDraft?: Partial<DebtFormData> | null;
 };
 
-const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalProps) => {
+const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft = null }: DebtModalProps) => {
   const getInitialFormData = React.useCallback((): DebtFormData => {
     if (!initialData) {
+      const draftCategory =
+        typeof initialDraft?.category === 'string' && DEBT_CATEGORIES.includes(initialDraft.category)
+          ? initialDraft.category
+          : DEBT_CATEGORIES[0];
+
       return {
-        creditor: '',
-        originalAmount: '',
-        remainingAmount: '',
-        interestRateMonthly: '',
-        dueDay: '10',
-        category: DEBT_CATEGORIES[0],
-        status: 'Ativa',
+        creditor: initialDraft?.creditor ?? '',
+        originalAmount: initialDraft?.originalAmount ?? '',
+        remainingAmount: initialDraft?.remainingAmount ?? '',
+        interestRateMonthly: initialDraft?.interestRateMonthly ?? '0',
+        dueDay: initialDraft?.dueDay ?? getRecurringBillDefaultDueDay(draftCategory),
+        category: draftCategory,
+        status: initialDraft?.status ?? 'Ativa',
       };
     }
 
@@ -4675,7 +4872,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
       category: initialData.category,
       status: initialData.status,
     };
-  }, [initialData]);
+  }, [initialData, initialDraft]);
 
   const [formData, setFormData] = React.useState<DebtFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -4796,6 +4993,11 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null }: DebtModalP
                   </option>
                 ))}
               </select>
+              {isRecurringBillCategory(formData.category) && (
+                <p className="text-[11px] leading-5 text-slate-500">
+                  Conta recorrente: acompanhe vencimento mensal e use a agenda para não perder o prazo.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Status</label>
@@ -5020,7 +5222,11 @@ const TransactionModal = ({
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="theme-modal-surface hide-scrollbar box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+        }}
       >
         <div className="mb-4 flex justify-center sm:hidden">
           <div className="h-1.5 w-12 rounded-full bg-slate-700" />
@@ -6114,6 +6320,12 @@ export default function App() {
   const [newWorkspaceName, setNewWorkspaceName] = React.useState('');
   const [createWorkspaceError, setCreateWorkspaceError] = React.useState<string | null>(null);
   const [isCreatingWorkspace, setIsCreatingWorkspace] = React.useState(false);
+  const [isCreateWalletModalOpen, setIsCreateWalletModalOpen] = React.useState(false);
+  const [newWalletBank, setNewWalletBank] = React.useState('');
+  const [newWalletName, setNewWalletName] = React.useState('');
+  const [newWalletInitialBalance, setNewWalletInitialBalance] = React.useState('');
+  const [createWalletError, setCreateWalletError] = React.useState<string | null>(null);
+  const [isCreatingWallet, setIsCreatingWallet] = React.useState(false);
   const [loginModeFromQuery, setLoginModeFromQuery] = React.useState<'login' | 'signup'>('login');
   const [pendingPlanFromQuery, setPendingPlanFromQuery] = React.useState<string | null>(null);
   const [pendingPlanHandled, setPendingPlanHandled] = React.useState(false);
@@ -6489,6 +6701,7 @@ export default function App() {
   const [editingInvestmentId, setEditingInvestmentId] = React.useState<string | number | null>(null);
   const [isDebtModalOpen, setIsDebtModalOpen] = React.useState(false);
   const [editingDebtId, setEditingDebtId] = React.useState<string | number | null>(null);
+  const [debtDraft, setDebtDraft] = React.useState<Partial<DebtFormData> | null>(null);
   const [isWhatsAppConnected, setIsWhatsAppConnected] = React.useState(false);
   const [isConnectingWhatsApp, setIsConnectingWhatsApp] = React.useState(false);
   const [isSendingWhatsAppTest, setIsSendingWhatsAppTest] = React.useState(false);
@@ -8425,16 +8638,31 @@ export default function App() {
     }
 
     setEditingDebtId(null);
+    setDebtDraft(null);
     await fetchDashboardData();
   };
 
   const handleOpenCreateDebt = () => {
     setEditingDebtId(null);
+    setDebtDraft(null);
+    setIsDebtModalOpen(true);
+  };
+
+  const handleOpenCreateRecurringDebt = (category: string) => {
+    setEditingDebtId(null);
+    setDebtDraft({
+      creditor: category,
+      category,
+      dueDay: getRecurringBillDefaultDueDay(category),
+      interestRateMonthly: '0',
+      status: 'Ativa',
+    });
     setIsDebtModalOpen(true);
   };
 
   const handleStartEditDebt = (id: string | number) => {
     setEditingDebtId(id);
+    setDebtDraft(null);
     setIsDebtModalOpen(true);
   };
 
@@ -8456,6 +8684,7 @@ export default function App() {
         }
         if (editingDebtId === id) {
           setEditingDebtId(null);
+          setDebtDraft(null);
           setIsDebtModalOpen(false);
         }
         await fetchDashboardData();
@@ -8514,6 +8743,61 @@ export default function App() {
       setCreateWorkspaceError(error instanceof Error ? error.message : 'Falha ao criar conta.');
     } finally {
       setIsCreatingWorkspace(false);
+    }
+  };
+
+  const handleOpenCreateWalletModal = () => {
+    setCreateWalletError(null);
+    setNewWalletBank('');
+    setNewWalletName('');
+    setNewWalletInitialBalance('');
+    setIsCreateWalletModalOpen(true);
+  };
+
+  const handleCreateWallet = async () => {
+    const resolvedBank = newWalletBank.trim();
+    const resolvedName = newWalletName.trim() || resolvedBank;
+
+    if (!resolvedName) {
+      setCreateWalletError('Selecione um banco ou informe um nome para a nova carteira.');
+      return;
+    }
+
+    setIsCreatingWallet(true);
+    setCreateWalletError(null);
+    try {
+      const response = await fetch('/api/wallets', {
+        method: 'POST',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({
+          bank: resolvedBank,
+          name: resolvedName,
+          type: 'BANK',
+          initialBalance: newWalletInitialBalance.trim() || '0',
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.wallet?.id) {
+        const message =
+          typeof payload?.error === 'string' ? payload.error : `Falha ao criar carteira (HTTP ${response.status}).`;
+        throw new Error(message);
+      }
+
+      const createdWallet = payload.wallet as WalletAccount;
+      setWallets((prev) => [...prev, createdWallet].sort((a, b) => b.balance - a.balance));
+      if (typeof createdWallet.balance === 'number' && Number.isFinite(createdWallet.balance)) {
+        setTotalBalance((prev) => prev + createdWallet.balance);
+      }
+      setIsCreateWalletModalOpen(false);
+      setNewWalletBank('');
+      setNewWalletName('');
+      setNewWalletInitialBalance('');
+      void fetchDashboardData({ silent: true });
+    } catch (error) {
+      console.error('Create wallet error:', error);
+      setCreateWalletError(error instanceof Error ? error.message : 'Falha ao criar carteira.');
+    } finally {
+      setIsCreatingWallet(false);
     }
   };
 
@@ -8716,6 +9000,143 @@ export default function App() {
                     className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isCreatingWorkspace ? 'Criando conta...' : 'Criar conta'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isCreateWalletModalOpen && (
+          <motion.div
+            className="fixed inset-0 z-[133] flex items-end justify-center p-0 sm:items-center sm:p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              type="button"
+              aria-label="Fechar modal de nova carteira"
+              onClick={() => {
+                if (isCreatingWallet) return;
+                setIsCreateWalletModalOpen(false);
+                setCreateWalletError(null);
+              }}
+              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: 16, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 16, opacity: 0, scale: 0.98 }}
+              className="relative z-10 w-full max-w-lg rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 p-5 shadow-2xl sm:rounded-3xl sm:border sm:p-6"
+            >
+              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                    Nova carteira
+                  </p>
+                  <h3 className="text-xl font-bold text-white">Criar carteira</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    Selecione o banco de origem e crie uma nova carteira para acompanhar melhor seus saldos.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isCreatingWallet) return;
+                    setIsCreateWalletModalOpen(false);
+                    setCreateWalletError(null);
+                  }}
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                >
+                  Fechar
+                </button>
+              </div>
+
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleCreateWallet();
+                }}
+              >
+                <div>
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    Banco de origem
+                  </label>
+                  <select
+                    value={newWalletBank}
+                    onChange={(event) => {
+                      const nextBank = event.target.value;
+                      setNewWalletBank(nextBank);
+                      setNewWalletName((prev) => (prev.trim() ? prev : nextBank));
+                    }}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-emerald-500"
+                  >
+                    <option value="">Selecione um banco</option>
+                    {MAIN_BANK_OPTIONS.map((bank) => (
+                      <option key={bank} value={bank}>
+                        {bank}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    Nome da carteira
+                  </label>
+                  <input
+                    type="text"
+                    value={newWalletName}
+                    onChange={(event) => setNewWalletName(event.target.value)}
+                    placeholder="Ex.: Nubank pessoal ou Caixa empresa"
+                    maxLength={80}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    Saldo inicial (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={newWalletInitialBalance}
+                    onChange={(event) => setNewWalletInitialBalance(event.target.value)}
+                    placeholder="Ex.: 1500 ou 1.500,00"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
+                  />
+                </div>
+
+                {createWalletError && (
+                  <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                    {createWalletError}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isCreatingWallet) return;
+                      setIsCreateWalletModalOpen(false);
+                      setCreateWalletError(null);
+                    }}
+                    className="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-bold text-slate-300 transition-colors hover:text-white"
+                  >
+                    Agora não
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreatingWallet}
+                    className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isCreatingWallet ? 'Criando carteira...' : 'Criar carteira'}
                   </button>
                 </div>
               </form>
@@ -9208,9 +9629,11 @@ export default function App() {
         onClose={() => {
           setIsDebtModalOpen(false);
           setEditingDebtId(null);
+          setDebtDraft(null);
         }}
         onSubmit={handleSubmitDebt}
         initialData={editingDebt}
+        initialDraft={debtDraft}
       />
       {/* Sidebar Overlay for Mobile */}
       <AnimatePresence>
@@ -9999,6 +10422,7 @@ export default function App() {
                 <DebtsView
                   debts={debts}
                   onAddDebt={handleOpenCreateDebt}
+                  onAddRecurringDebt={handleOpenCreateRecurringDebt}
                   onEditDebt={handleStartEditDebt}
                   onDeleteDebt={handleDeleteDebt}
                 />
@@ -10018,6 +10442,7 @@ export default function App() {
                   debts={debts}
                   transactions={transactions}
                   totalBalance={totalBalance}
+                  onAddWallet={handleOpenCreateWalletModal}
                 />
               )}
               {activeTab === 'agenda' && <AgendaView bills={bills} />}
