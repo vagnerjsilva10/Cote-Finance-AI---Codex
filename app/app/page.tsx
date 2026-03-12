@@ -4966,7 +4966,7 @@ const TransactionModal = ({
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="theme-modal-surface mobile-hide-scrollbar box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
+        className="theme-modal-surface hide-scrollbar box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <div className="mb-4 flex justify-center sm:hidden">
