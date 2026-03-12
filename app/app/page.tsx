@@ -3147,7 +3147,7 @@ const PortfolioView = ({ wallets, investments, debts, transactions, totalBalance
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number) => formatCurrency(Number(value))}
+                      formatter={(value) => formatCurrency(Number(value ?? 0))}
                       contentStyle={{
                         backgroundColor: '#0f172a',
                         borderColor: '#1e293b',
