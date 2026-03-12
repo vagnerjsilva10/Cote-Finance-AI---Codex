@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -36,7 +36,7 @@ export function SuperadminUserDetailPage() {
         const next = await fetchSuperadminJson<SuperadminUserDetailResponse>(`/api/superadmin/users/${userId}`);
         if (active) setData(next);
       } catch (fetchError) {
-        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuÃ¡rio.');
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuário.');
       } finally {
         if (active) setIsLoading(false);
       }
@@ -48,10 +48,16 @@ export function SuperadminUserDetailPage() {
     };
   }, [userId]);
 
-  if (isLoading) return <LoadingState label="Carregando usuÃ¡rio..." />;
-  if (error || !data) return <ErrorState message={error || 'UsuÃ¡rio nÃ£o encontrado.'} />;
+  if (isLoading) return <LoadingState label="Carregando usuário..." />;
+  if (error || !data) return <ErrorState message={error || 'Usuário não encontrado.'} />;
 
   const { user } = data;
+  const currentPlan = user.subscription?.plan || user.profilePlan || 'FREE';
+  const subscriptionStatus = user.subscription?.status || null;
+  const workspaceCount = user.workspaces.length;
+  const aiUsageCount = user.usage.aiUsageLast30Days;
+  const whatsappWorkspaceCount = user.workspaces.filter((workspace) => workspace.whatsappStatus === 'CONNECTED').length;
+  const estimatedMrr = currentPlan === 'PREMIUM' ? 49 : currentPlan === 'PRO' ? 29 : 0;
 
   return (
     <div className="space-y-6">
@@ -71,35 +77,35 @@ export function SuperadminUserDetailPage() {
             <p className="mt-2 text-xs text-slate-500">{user.id}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge label={formatPlanLabel(user.currentPlan)} tone="emerald" />
+            <Badge label={formatPlanLabel(currentPlan)} tone="emerald" />
             <Badge label={formatPlatformRole(user.platformRole)} tone="sky" />
-            <Badge label={formatSubscriptionStatus(user.subscriptionStatus)} toneClass={getSubscriptionTone(user.subscriptionStatus)} />
+            <Badge label={formatSubscriptionStatus(subscriptionStatus)} toneClass={getSubscriptionTone(subscriptionStatus)} />
           </div>
         </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <InfoCard label="Workspaces" value={formatAdminNumber(user.workspaceCount)} />
-        <InfoCard label="Uso de IA" value={formatAdminNumber(user.aiUsageCount)} />
-        <InfoCard label="WhatsApp ativo" value={formatAdminNumber(user.whatsappWorkspaceCount)} />
+        <InfoCard label="Workspaces" value={formatAdminNumber(workspaceCount)} />
+        <InfoCard label="Uso de IA" value={formatAdminNumber(aiUsageCount)} />
+        <InfoCard label="WhatsApp ativo" value={formatAdminNumber(whatsappWorkspaceCount)} />
         <InfoCard label="Cadastro" value={formatAdminDate(user.createdAt)} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold text-white">Dados do usuÃ¡rio</h2>
+          <h2 className="text-lg font-semibold text-white">Dados do usuário</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <InfoRow label="Nome" value={user.name || 'Sem nome'} />
             <InfoRow label="E-mail" value={user.email} />
-            <InfoRow label="Plano atual" value={formatPlanLabel(user.currentPlan)} />
-            <InfoRow label="Assinatura" value={formatSubscriptionStatus(user.subscriptionStatus)} />
+            <InfoRow label="Plano atual" value={formatPlanLabel(currentPlan)} />
+            <InfoRow label="Assinatura" value={formatSubscriptionStatus(subscriptionStatus)} />
             <InfoRow label="Role da plataforma" value={formatPlatformRole(user.platformRole)} />
-            <InfoRow label="Ãšltimo acesso" value={user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'} />
+            <InfoRow label="Último acesso" value={user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'} />
             <InfoRow
-              label="Fim do perÃ­odo atual"
-              value={user.subscriptionCurrentPeriodEnd ? formatAdminDate(user.subscriptionCurrentPeriodEnd) : 'Sem perÃƒÂ­odo ativo'}
+              label="Fim do período atual"
+              value={user.subscription?.currentPeriodEnd ? formatAdminDate(user.subscription.currentPeriodEnd) : 'Sem período ativo'}
             />
-            <InfoRow label="MRR estimado" value={formatAdminCurrency(user.estimatedMrr)} />
+            <InfoRow label="MRR estimado" value={formatAdminCurrency(estimatedMrr)} />
           </div>
         </div>
 
@@ -107,7 +113,7 @@ export function SuperadminUserDetailPage() {
           <h2 className="text-lg font-semibold text-white">Workspaces vinculados</h2>
           <div className="mt-5 space-y-3">
             {user.workspaces.length === 0 ? (
-              <EmptyState text="Este usuÃ¡rio ainda nÃ£o participa de nenhum workspace." />
+              <EmptyState text="Este usuário ainda não participa de nenhum workspace." />
             ) : (
               user.workspaces.map((workspace) => (
                 <Link
@@ -119,7 +125,7 @@ export function SuperadminUserDetailPage() {
                     <div>
                       <div className="font-semibold text-white">{workspace.name}</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        {workspace.role} Â· {formatPlanLabel(workspace.plan)}
+                        {workspace.role} · {formatPlanLabel(workspace.plan)}
                       </div>
                     </div>
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(workspace.subscriptionStatus)}`}>
@@ -137,7 +143,7 @@ export function SuperadminUserDetailPage() {
         <h2 className="text-lg font-semibold text-white">Eventos recentes</h2>
         <div className="mt-5 space-y-3">
           {user.recentEvents.length === 0 ? (
-            <EmptyState text="Nenhum evento recente associado a este usuÃ¡rio." />
+            <EmptyState text="Nenhum evento recente associado a este usuário." />
           ) : (
             user.recentEvents.map((event) => (
               <div key={event.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3">
