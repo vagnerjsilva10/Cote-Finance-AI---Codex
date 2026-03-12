@@ -26,9 +26,9 @@ import {
 import type { SuperadminOverviewResponse } from '@/lib/superadmin/types';
 
 const KPI_CARDS = [
-  { key: 'totalUsers', label: 'UsuÃƒÂ¡rios', icon: Users },
+  { key: 'totalUsers', label: 'Usuarios', icon: Users },
   { key: 'totalWorkspaces', label: 'Workspaces', icon: Wallet },
-  { key: 'activeUsersLast30Days', label: 'UsuÃƒÂ¡rios ativos', icon: Activity },
+  { key: 'activeUsers', label: 'Usuarios ativos', icon: Activity },
   { key: 'estimatedMrr', label: 'MRR estimado', icon: DollarSign },
 ] as const;
 
@@ -45,13 +45,17 @@ export function SuperadminOverviewPage() {
         setIsLoading(true);
         setError(null);
         const next = await fetchSuperadminJson<SuperadminOverviewResponse>('/api/superadmin/overview');
-        if (active) setData(next);
+        if (active) {
+          setData(next);
+        }
       } catch (fetchError) {
         if (active) {
-          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar a VisÃ£o Geral.');
+          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar a Visao Geral.');
         }
       } finally {
-        if (active) setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -66,7 +70,7 @@ export function SuperadminOverviewPage() {
       <div className="flex min-h-[420px] items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4 text-slate-200">
           <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
-          Carregando VisÃ£o Geral...
+          Carregando Visao Geral...
         </div>
       </div>
     );
@@ -75,7 +79,7 @@ export function SuperadminOverviewPage() {
   if (error || !data) {
     return (
       <div className="rounded-3xl border border-rose-500/20 bg-slate-900/70 p-8">
-        <h1 className="text-2xl font-semibold text-white">VisÃ£o Geral</h1>
+        <h1 className="text-2xl font-semibold text-white">Visao Geral</h1>
         <p className="mt-4 text-sm leading-7 text-rose-200">{error || 'Falha ao carregar dados.'}</p>
       </div>
     );
@@ -87,10 +91,10 @@ export function SuperadminOverviewPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white">VisÃ£o Geral</h1>
+            <h1 className="mt-2 text-3xl font-semibold text-white">Visao Geral</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Acompanhe os indicadores principais da operaÃ§Ã£o, identifique riscos de churn e monitore uso de IA,
-              WhatsApp e billing em um sÃƒÂ³ lugar.
+              Acompanhe os indicadores principais da operacao, identifique sinais de churn e monitore uso de IA,
+              WhatsApp e billing em um unico lugar.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -98,7 +102,7 @@ export function SuperadminOverviewPage() {
               href="/superadmin/users"
               className="inline-flex rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
             >
-              Ver Usuários
+              Ver usuarios
             </Link>
             <Link
               href="/superadmin/workspaces"
@@ -112,8 +116,12 @@ export function SuperadminOverviewPage() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {KPI_CARDS.map(({ key, label, icon: Icon }) => {
-          const rawValue = data.kpis[key];
-          const value = key === 'estimatedMrr' ? formatAdminCurrency(Number(rawValue)) : formatAdminNumber(Number(rawValue));
+          const rawValue = data.metrics[key];
+          const value =
+            key === 'estimatedMrr'
+              ? formatAdminCurrency(Number(rawValue))
+              : formatAdminNumber(Number(rawValue));
+
           return (
             <div key={key} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
               <div className="flex items-start justify-between">
@@ -138,22 +146,29 @@ export function SuperadminOverviewPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white">Billing</h2>
-              <p className="text-sm text-slate-400">ConversÃ£o, trials e churn.</p>
+              <p className="text-sm text-slate-400">Conversao, trials e churn.</p>
             </div>
           </div>
           <div className="mt-6 space-y-4 text-sm">
-            <MetricRow label="Trials ativos" value={formatAdminNumber(data.kpis.trialActiveWorkspaces)} />
-            <MetricRow label="Workspaces Pro" value={formatAdminNumber(data.kpis.proWorkspaces)} />
-            <MetricRow label="Workspaces Premium" value={formatAdminNumber(data.kpis.premiumWorkspaces)} />
-            <MetricRow label="Churn / cancelados" value={formatAdminNumber(data.kpis.canceledWorkspaces)} tone="danger" />
             <MetricRow
-              label="ConversÃ£o Pro"
-              value={formatAdminPercent(data.kpis.proConversionRate)}
+              label="Trials ativos"
+              value={data.metrics.activeTrials === null ? 'Nao rastreado' : formatAdminNumber(data.metrics.activeTrials)}
+            />
+            <MetricRow label="Workspaces Pro" value={formatAdminNumber(data.metrics.proWorkspaces)} />
+            <MetricRow label="Workspaces Premium" value={formatAdminNumber(data.metrics.premiumWorkspaces)} />
+            <MetricRow
+              label="Cancelamentos"
+              value={formatAdminNumber(data.metrics.canceledWorkspaces)}
+              tone="danger"
+            />
+            <MetricRow
+              label="Conversao Pro"
+              value={formatAdminPercent(data.conversion.proRate)}
               icon={<TrendingUp className="h-4 w-4 text-emerald-300" />}
             />
             <MetricRow
-              label="ConversÃ£o Premium"
-              value={formatAdminPercent(data.kpis.premiumConversionRate)}
+              label="Conversao Premium"
+              value={formatAdminPercent(data.conversion.premiumRate)}
               icon={<TrendingUp className="h-4 w-4 text-sky-300" />}
             />
           </div>
@@ -170,16 +185,16 @@ export function SuperadminOverviewPage() {
             </div>
           </div>
           <div className="mt-6 space-y-4 text-sm">
-            <MetricRow label="Eventos de IA (30 dias)" value={formatAdminNumber(data.kpis.aiUsageEventsLast30Days)} />
+            <MetricRow label="Eventos de IA (30 dias)" value={formatAdminNumber(data.metrics.aiUsageLast30Days)} />
             <MetricRow
               label="WhatsApp conectado"
-              value={formatAdminNumber(data.kpis.whatsappConnectedWorkspaces)}
+              value={formatAdminNumber(data.metrics.whatsappConnectedWorkspaces)}
               icon={<MessageSquare className="h-4 w-4 text-emerald-300" />}
             />
-            <MetricRow label="TransaÃ§Ãµes" value={formatAdminNumber(data.kpis.totalTransactions)} />
-            <MetricRow label="Carteiras" value={formatAdminNumber(data.kpis.totalWallets)} />
-            <MetricRow label="Investimentos" value={formatAdminNumber(data.kpis.totalInvestments)} />
-            <MetricRow label="DÃ­vidas" value={formatAdminNumber(data.kpis.totalDebts)} />
+            <MetricRow label="Transacoes" value={formatAdminNumber(data.metrics.totalTransactions)} />
+            <MetricRow label="Carteiras" value={formatAdminNumber(data.metrics.totalWallets)} />
+            <MetricRow label="Investimentos" value={formatAdminNumber(data.metrics.totalInvestments)} />
+            <MetricRow label="Dividas" value={formatAdminNumber(data.metrics.totalDebts)} />
           </div>
         </div>
 
@@ -189,21 +204,21 @@ export function SuperadminOverviewPage() {
               <TrendingDown className="h-5 w-5 text-rose-300" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">SaÃƒÂºde da operaÃ§Ã£o</h2>
-              <p className="text-sm text-slate-400">Monitoramento do que merece atenÃ§Ã£o.</p>
+              <h2 className="text-lg font-semibold text-white">Saude da operacao</h2>
+              <p className="text-sm text-slate-400">Monitoramento do que merece atencao.</p>
             </div>
           </div>
           <div className="mt-6 space-y-4 text-sm">
-            <MetricRow label="Novos cadastros (30 dias)" value={formatAdminNumber(data.kpis.newSignupsLast30Days)} />
-            <MetricRow label="UsuÃƒÂ¡rios ativos (30 dias)" value={formatAdminNumber(data.kpis.activeUsersLast30Days)} />
+            <MetricRow label="Novos cadastros (30 dias)" value={formatAdminNumber(data.metrics.newSignupsLast30Days)} />
+            <MetricRow label="Usuarios ativos (30 dias)" value={formatAdminNumber(data.metrics.activeUsers)} />
             <MetricRow
               label="Erros recentes"
-              value={formatAdminNumber(data.kpis.errorEventsLast30Days)}
-              tone={data.kpis.errorEventsLast30Days > 0 ? 'danger' : 'neutral'}
+              value={formatAdminNumber(data.metrics.errorEventsLast30Days)}
+              tone={data.metrics.errorEventsLast30Days > 0 ? 'danger' : 'neutral'}
             />
-            <MetricRow label="MRR estimado" value={formatAdminCurrency(data.kpis.estimatedMrr)} />
+            <MetricRow label="MRR estimado" value={formatAdminCurrency(data.metrics.estimatedMrr)} />
             <p className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 leading-7 text-slate-300">
-              Use esta visÃƒÂ£o como termÃ´metro rÃ¡pido. Para aÃƒÂ§ÃƒÂ£o operacional, siga para usuÃƒÂ¡rios e workspaces.
+              Use esta visao como termometro rapido. Para acao operacional, siga para usuarios e workspaces.
             </p>
           </div>
         </div>
@@ -235,7 +250,7 @@ export function SuperadminOverviewPage() {
                   </div>
                   <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-400">
                     <span>Workspace: {event.workspaceName || 'Sem workspace'}</span>
-                    <span>UsuÃ¡rio: {event.userEmail || 'Sistema'}</span>
+                    <span>Usuario: {event.userEmail || 'Sistema'}</span>
                   </div>
                 </div>
               ))
@@ -245,36 +260,37 @@ export function SuperadminOverviewPage() {
 
         <div className="space-y-4">
           <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-            <h2 className="text-lg font-semibold text-white">Arquitetura pronta para expansÃƒÂ£o</h2>
+            <h2 className="text-lg font-semibold text-white">Arquitetura pronta para expansao</h2>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              Esta base jÃ¡ estÃ¡ preparada para adicionar mÃ³dulos administrativos mais profundos sem quebrar a
-              experiÃƒÂªncia principal do SaaS.
+              Esta base ja esta preparada para adicionar modulos administrativos mais profundos sem quebrar a
+              experiencia principal do SaaS.
             </p>
             <ul className="mt-5 space-y-3 text-sm text-slate-300">
               <li>Planos e assinaturas</li>
               <li>Feature flags</li>
               <li>IA e monitoramento</li>
               <li>WhatsApp</li>
-              <li>RelatÃ³rios operacionais</li>
+              <li>Relatorios operacionais</li>
               <li>Logs e auditoria</li>
             </ul>
           </div>
+
           <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
             <h2 className="text-lg font-semibold text-white">Limites atuais</h2>
             <div className="mt-4 space-y-4 text-sm text-slate-300">
-              {Object.entries(data.planLimits).map(([plan, limits]) => (
+              {Object.entries(data.limitsReference).map(([plan, limits]) => (
                 <div key={plan} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
                   <div className="font-semibold text-white">{plan}</div>
                   <div className="mt-2 text-xs leading-6 text-slate-400">
                     {typeof limits.transactionsPerMonth === 'number'
-                      ? `${formatAdminNumber(limits.transactionsPerMonth)} TransaÃ§Ãµes/mÃƒÂªs`
-                      : 'TransaÃ§Ãµes ilimitadas'}
-                    {' Â· '}
+                      ? `${formatAdminNumber(limits.transactionsPerMonth)} transacoes/mes`
+                      : 'Transacoes ilimitadas'}
+                    {' · '}
                     {typeof limits.aiInteractionsPerMonth === 'number'
-                      ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} IA/mÃƒÂªs`
+                      ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} IA/mes`
                       : 'IA ilimitada'}
-                    {' Â· '}
-                    RelatÃ³rios {limits.reports}
+                    {' · '}
+                    Relatorios {limits.reports}
                   </div>
                 </div>
               ))}
@@ -309,5 +325,9 @@ function MetricRow({
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>;
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
+      {text}
+    </div>
+  );
 }

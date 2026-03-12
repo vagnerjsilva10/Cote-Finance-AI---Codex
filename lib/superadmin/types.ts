@@ -41,6 +41,14 @@ export type SuperadminOverviewResponse = {
     trialsTracked: boolean;
     churnTracked: boolean;
   };
+  limitsReference: Record<
+    string,
+    {
+      transactionsPerMonth: number | null;
+      aiInteractionsPerMonth: number | null;
+      reports: 'basic' | 'full';
+    }
+  >;
 };
 
 export type SuperadminUserSummary = {
