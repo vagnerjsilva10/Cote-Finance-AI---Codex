@@ -246,6 +246,11 @@ type AppNotification = {
   targetTab?: Tab;
 };
 
+type NotificationPreferenceState = {
+  readIds: string[];
+  deletedIds: string[];
+};
+
 type PremiumSmartAlertOptions = {
   includeOkState?: boolean;
 };
@@ -670,12 +675,43 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'workspace.whatsapp.disconnected': 'WhatsApp desconectado',
     'stripe.checkout.created': 'Checkout iniciado',
     'stripe.portal.created': 'Portal de assinatura aberto',
+    'stripe.customer.subscription.created': 'Assinatura criada',
+    'stripe.customer.subscription.updated': 'Assinatura atualizada',
+    'stripe.customer.subscription.deleted': 'Assinatura encerrada',
+    'stripe.invoice.paid': 'Pagamento confirmado',
+    'stripe.invoice.payment_failed': 'Falha na cobrança',
     'ai.chat.used': 'Assistente IA utilizado',
     'ai.classify.used': 'Classificação automática usada',
   };
 
   return labels[eventType] || eventType.replace(/\./g, ' • ');
 };
+
+const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
+  const messages: Record<string, string> = {
+    'transaction.created': 'Uma nova movimentação foi registrada e já apareceu no seu painel.',
+    'transaction.updated': 'Uma movimentação foi atualizada com os dados mais recentes.',
+    'transaction.deleted': 'Uma movimentação foi removida do histórico deste workspace.',
+    'workspace.created': 'Seu espaço financeiro foi criado e está pronto para uso.',
+    'onboarding.completed': 'Sua configuração inicial foi concluída com sucesso.',
+    'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
+    'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
+    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
+    'stripe.portal.created': 'A área de gerenciamento da assinatura foi aberta.',
+    'stripe.customer.subscription.created': 'Sua assinatura foi criada e está sendo preparada para uso.',
+    'stripe.customer.subscription.updated': 'Houve uma atualização recente na sua assinatura.',
+    'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada neste workspace.',
+    'stripe.invoice.paid': 'Recebemos a confirmação do pagamento da sua assinatura.',
+    'stripe.invoice.payment_failed': 'A última tentativa de cobrança não foi concluída.',
+    'ai.chat.used': 'Uma análise com IA foi gerada para este workspace.',
+    'ai.classify.used': 'Uma classificação automática foi aplicada em uma movimentação.',
+  };
+
+  return messages[event.type] || 'Uma atualização recente foi registrada neste workspace.';
+};
+
+const getNotificationStorageKey = (userId: string, workspaceId: string) =>
+  `cote-notifications:${userId}:${workspaceId}`;
 
 const formatEventTimestamp = (isoString: string) => {
   const date = new Date(isoString);
@@ -4505,12 +4541,16 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-3 pt-6 backdrop-blur-sm sm:items-center sm:p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-auto bg-slate-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface my-4 w-full max-w-[calc(100vw-1rem)] overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-900 p-4 shadow-2xl sm:my-6 sm:max-w-lg sm:rounded-3xl sm:p-6"
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="theme-modal-surface box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
+        <div className="mb-4 flex justify-center sm:hidden">
+          <div className="h-1.5 w-12 rounded-full bg-slate-700" />
+        </div>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
@@ -4595,26 +4635,51 @@ const TransactionModal = ({
           )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="min-w-0 space-y-2">
+            <div className="min-w-0 overflow-hidden space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Data</label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                className="block w-full min-w-0 appearance-none rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-              />
+              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                  className="block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-white [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                />
+              </div>
             </div>
 
-            <div className="min-w-0 space-y-2">
+            <div className="min-w-0 overflow-hidden space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
+              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                >
+                  {TRANSACTION_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
+              Método de pagamento
+            </label>
+            <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
               <select
-                value={formData.category}
-                onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                value={formData.paymentMethod}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
+                }
+                className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
               >
-                {TRANSACTION_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                {PAYMENT_METHODS.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
                   </option>
                 ))}
               </select>
@@ -4623,28 +4688,9 @@ const TransactionModal = ({
 
           <div className="space-y-2">
             <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-              Método de pagamento
-            </label>
-            <select
-              value={formData.paymentMethod}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
-              }
-              className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-            >
-              {PAYMENT_METHODS.map((method) => (
-                <option key={method} value={method}>
-                  {method}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
               Comprovante (JPG, PNG, PDF)
             </label>
-            <div className="flex w-full min-w-0 flex-col items-stretch gap-3 rounded-xl border border-slate-700 bg-slate-800 p-3 sm:flex-row sm:items-center">
+            <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-3 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => receiptInputRef.current?.click()}
@@ -4676,50 +4722,56 @@ const TransactionModal = ({
 
           {formData.flowType === 'Transferência' ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="min-w-0 space-y-2">
+              <div className="min-w-0 overflow-hidden space-y-2">
                 <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta origem</label>
-                <select
-                  value={formData.wallet}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                  className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-                >
-                  {TRANSACTION_WALLETS.map((wallet) => (
-                    <option key={wallet} value={wallet}>
-                      {wallet}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                  <select
+                    value={formData.wallet}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
+                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                  >
+                    {TRANSACTION_WALLETS.map((wallet) => (
+                      <option key={wallet} value={wallet}>
+                        {wallet}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div className="min-w-0 space-y-2">
+              <div className="min-w-0 overflow-hidden space-y-2">
                 <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta destino</label>
-                <select
-                  value={formData.destinationWallet}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
-                  className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-                >
-                  <option value="">Selecione</option>
-                  {TRANSACTION_WALLETS.map((wallet) => (
-                    <option key={wallet} value={wallet}>
-                      {wallet}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                  <select
+                    value={formData.destinationWallet}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
+                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                  >
+                    <option value="">Selecione</option>
+                    {TRANSACTION_WALLETS.map((wallet) => (
+                      <option key={wallet} value={wallet}>
+                        {wallet}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           ) : (
             <div className="space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta / Carteira</label>
-              <select
-                value={formData.wallet}
-                onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-              >
-                {TRANSACTION_WALLETS.map((wallet) => (
-                  <option key={wallet} value={wallet}>
-                    {wallet}
-                  </option>
-                ))}
-              </select>
+              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <select
+                  value={formData.wallet}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
+                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                >
+                  {TRANSACTION_WALLETS.map((wallet) => (
+                    <option key={wallet} value={wallet}>
+                      {wallet}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
@@ -6051,6 +6103,10 @@ export default function App() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = React.useState(false);
+  const [notificationPreferences, setNotificationPreferences] = React.useState<NotificationPreferenceState>({
+    readIds: [],
+    deletedIds: [],
+  });
   const [settingsName, setSettingsName] = React.useState('');
   const [settingsEmail, setSettingsEmail] = React.useState('');
   const [settingsAvatarUrl, setSettingsAvatarUrl] = React.useState('');
@@ -6104,6 +6160,39 @@ export default function App() {
 
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const notificationStorageKey = React.useMemo(() => {
+    if (!user?.id || !activeWorkspaceId) return null;
+    return getNotificationStorageKey(user.id, activeWorkspaceId);
+  }, [activeWorkspaceId, user?.id]);
+
+  React.useEffect(() => {
+    if (!notificationStorageKey || typeof window === 'undefined') {
+      setNotificationPreferences({ readIds: [], deletedIds: [] });
+      return;
+    }
+
+    try {
+      const raw = window.localStorage.getItem(notificationStorageKey);
+      if (!raw) {
+        setNotificationPreferences({ readIds: [], deletedIds: [] });
+        return;
+      }
+
+      const parsed = JSON.parse(raw) as Partial<NotificationPreferenceState>;
+      setNotificationPreferences({
+        readIds: Array.isArray(parsed.readIds) ? parsed.readIds.map(String) : [],
+        deletedIds: Array.isArray(parsed.deletedIds) ? parsed.deletedIds.map(String) : [],
+      });
+    } catch {
+      setNotificationPreferences({ readIds: [], deletedIds: [] });
+    }
+  }, [notificationStorageKey]);
+
+  React.useEffect(() => {
+    if (!notificationStorageKey || typeof window === 'undefined') return;
+    window.localStorage.setItem(notificationStorageKey, JSON.stringify(notificationPreferences));
+  }, [notificationPreferences, notificationStorageKey]);
+
   const hasUserMessages = React.useMemo(
     () => messages.some((message) => message.role === 'user'),
     [messages]
@@ -6671,7 +6760,7 @@ export default function App() {
       notifications.push({
         id: `event-${event.id}`,
         title: getWorkspaceEventLabel(event.type),
-        message: event.user_id ? 'Atividade recente registrada neste workspace.' : 'Evento automático registrado pelo sistema.',
+        message: getWorkspaceEventMessage(event),
         tone: 'success',
         timestamp: formatEventTimestamp(event.created_at),
       });
@@ -6689,8 +6778,50 @@ export default function App() {
     workspaceEvents,
   ]);
 
+  const visibleNotifications = React.useMemo(
+    () => appNotifications.filter((notification) => !notificationPreferences.deletedIds.includes(notification.id)),
+    [appNotifications, notificationPreferences.deletedIds]
+  );
+
+  const unreadNotifications = React.useMemo(
+    () => visibleNotifications.filter((notification) => !notificationPreferences.readIds.includes(notification.id)),
+    [notificationPreferences.readIds, visibleNotifications]
+  );
+
+  const readNotifications = React.useMemo(
+    () => visibleNotifications.filter((notification) => notificationPreferences.readIds.includes(notification.id)),
+    [notificationPreferences.readIds, visibleNotifications]
+  );
+
+  const markNotificationAsRead = React.useCallback((notificationId: string) => {
+    setNotificationPreferences((current) => {
+      if (current.readIds.includes(notificationId)) return current;
+      return {
+        ...current,
+        readIds: [...current.readIds, notificationId],
+      };
+    });
+  }, []);
+
+  const markAllNotificationsAsRead = React.useCallback(() => {
+    setNotificationPreferences((current) => ({
+      ...current,
+      readIds: Array.from(new Set([...current.readIds, ...visibleNotifications.map((notification) => notification.id)])),
+    }));
+  }, [visibleNotifications]);
+
+  const deleteNotification = React.useCallback((notificationId: string) => {
+    setNotificationPreferences((current) => ({
+      readIds: current.readIds.filter((id) => id !== notificationId),
+      deletedIds: current.deletedIds.includes(notificationId)
+        ? current.deletedIds
+        : [...current.deletedIds, notificationId],
+    }));
+  }, []);
+
   const handleNotificationClick = React.useCallback(
     (notification: AppNotification) => {
+      markNotificationAsRead(notification.id);
       setIsNotificationsOpen(false);
       if (notification.targetTab) {
         setActiveTab(notification.targetTab);
@@ -6699,7 +6830,7 @@ export default function App() {
         }
       }
     },
-    [setActiveTab]
+    [markNotificationAsRead, setActiveTab]
   );
 
   const assistantFinancialContext = React.useMemo(() => {
@@ -8874,13 +9005,13 @@ export default function App() {
                   onClick={() => setIsNotificationsOpen((current) => !current)}
                   className={cn(
                     'relative rounded-xl border border-slate-800 bg-slate-900 p-2 transition-all hover:text-white',
-                    appNotifications.length > 0 ? 'text-white' : 'text-slate-500'
+                    unreadNotifications.length > 0 ? 'text-white' : 'text-slate-500'
                   )}
                 >
                   <Bell size={18} />
-                  {appNotifications.length > 0 && (
+                  {unreadNotifications.length > 0 && (
                     <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
-                      {appNotifications.length}
+                      {unreadNotifications.length}
                     </span>
                   )}
                 </button>
@@ -8901,37 +9032,58 @@ export default function App() {
                             <div>
                               <p className="text-sm font-bold text-white">Notificações</p>
                               <p className="text-xs text-slate-400">
-                                {appNotifications.length > 0
-                                  ? `${appNotifications.length} atualização(ões) relevantes para este workspace`
-                                  : 'Nada urgente no momento'}
+                                {visibleNotifications.length > 0
+                                  ? unreadNotifications.length > 0
+                                    ? `${unreadNotifications.length} nova(s) e ${readNotifications.length} já revisada(s)`
+                                    : 'Tudo revisado por aqui'
+                                  : 'Nada novo por enquanto'}
                               </p>
                             </div>
-                            {appNotifications.length > 0 && (
-                              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
-                                Novas
-                              </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {unreadNotifications.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={markAllNotificationsAsRead}
+                                  className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-200 transition hover:border-emerald-500 hover:text-white"
+                                >
+                                  <CheckCircle2 size={12} />
+                                  Marcar lidas
+                                </button>
+                              )}
+                              {unreadNotifications.length > 0 && (
+                                <span className="rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-200">
+                                  {unreadNotifications.length} novas
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        {appNotifications.length === 0 ? (
+                        {visibleNotifications.length === 0 ? (
                           <div className="px-4 py-5">
-                            <p className="text-sm text-slate-300">Nenhuma notificação nova no momento.</p>
+                            <p className="text-sm text-slate-300">Nenhuma atualização pendente no momento.</p>
                             <p className="mt-1 text-xs text-slate-500">
                               Quando surgir algo importante sobre sua conta, assinatura ou agenda, isso aparece aqui.
                             </p>
                           </div>
                         ) : (
                           <div className="max-h-[26rem] overflow-y-auto p-2">
-                            {appNotifications.map((notification) => (
-                              <button
+                            {unreadNotifications.length > 0 && (
+                              <div className="px-2 pb-2 pt-1">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">Novas</p>
+                              </div>
+                            )}
+                            {unreadNotifications.map((notification) => (
+                              <div
                                 key={notification.id}
-                                type="button"
-                                onClick={() => handleNotificationClick(notification)}
-                                className="w-full rounded-2xl border border-transparent px-3 py-3 text-left transition-colors hover:border-slate-700 hover:bg-slate-900/80"
+                                className="mb-2 rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-3"
                               >
                                 <div className="flex items-start justify-between gap-3">
-                                  <div className="min-w-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleNotificationClick(notification)}
+                                    className="min-w-0 flex-1 text-left"
+                                  >
                                     <div className="flex items-center gap-2">
                                       <span
                                         className={cn(
@@ -8948,12 +9100,82 @@ export default function App() {
                                       <p className="truncate text-sm font-semibold text-white">{notification.title}</p>
                                     </div>
                                     <p className="mt-1 text-sm leading-relaxed text-slate-300">{notification.message}</p>
+                                  </button>
+                                  <div className="flex shrink-0 flex-col items-end gap-2">
+                                    {notification.timestamp && (
+                                      <span className="text-[11px] text-slate-500">{notification.timestamp}</span>
+                                    )}
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => markNotificationAsRead(notification.id)}
+                                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                                        aria-label="Marcar como lida"
+                                      >
+                                        <CheckCircle2 size={14} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => deleteNotification(notification.id)}
+                                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
+                                        aria-label="Apagar notificação"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
                                   </div>
-                                  {notification.timestamp && (
-                                    <span className="shrink-0 text-[11px] text-slate-500">{notification.timestamp}</span>
-                                  )}
                                 </div>
-                              </button>
+                              </div>
+                            ))}
+
+                            {readNotifications.length > 0 && (
+                              <div className="px-2 pb-2 pt-2">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">Lidas</p>
+                              </div>
+                            )}
+                            {readNotifications.map((notification) => (
+                              <div
+                                key={notification.id}
+                                className="mb-2 rounded-2xl border border-transparent px-3 py-3 opacity-75 transition hover:border-slate-800 hover:bg-slate-900/50 hover:opacity-100"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleNotificationClick(notification)}
+                                    className="min-w-0 flex-1 text-left"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={cn(
+                                          'inline-flex size-2 rounded-full',
+                                          notification.tone === 'error'
+                                            ? 'bg-rose-500/70'
+                                            : notification.tone === 'warning'
+                                              ? 'bg-amber-400/70'
+                                              : notification.tone === 'success'
+                                                ? 'bg-emerald-500/70'
+                                                : 'bg-cyan-400/70'
+                                        )}
+                                      />
+                                      <p className="truncate text-sm font-medium text-slate-200">{notification.title}</p>
+                                    </div>
+                                    <p className="mt-1 text-sm leading-relaxed text-slate-400">{notification.message}</p>
+                                  </button>
+                                  <div className="flex shrink-0 flex-col items-end gap-2">
+                                    {notification.timestamp && (
+                                      <span className="text-[11px] text-slate-500">{notification.timestamp}</span>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteNotification(notification.id)}
+                                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
+                                      aria-label="Apagar notificação"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             ))}
                           </div>
                         )}

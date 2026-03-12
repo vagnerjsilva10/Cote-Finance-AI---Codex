@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -679,6 +679,7 @@ function CheckoutPageContent() {
           'Lançamentos ilimitados',
           'Relatórios completos e gráficos avançados',
           'Análises inteligentes com IA',
+          'Insights financeiros automáticos',
           'Metas financeiras ilimitadas',
           'Acompanhamento de dívidas',
           'Controle de investimentos',
@@ -989,3 +990,5 @@ export default function CheckoutPage() {
     </React.Suspense>
   );
 }
+
+

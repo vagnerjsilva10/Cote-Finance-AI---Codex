@@ -24,7 +24,7 @@ export type WorkspaceContext = {
 
 export const PLAN_LIMITS: Record<
   WorkspacePlan,
-  { transactionsPerMonth: number; aiInteractionsPerMonth: number | null; reports: 'basic' | 'full' }
+  { transactionsPerMonth: number | null; aiInteractionsPerMonth: number | null; reports: 'basic' | 'full' }
 > = {
   FREE: {
     transactionsPerMonth: 20,
@@ -32,12 +32,12 @@ export const PLAN_LIMITS: Record<
     reports: 'basic',
   },
   PRO: {
-    transactionsPerMonth: 1000,
+    transactionsPerMonth: null,
     aiInteractionsPerMonth: 500,
     reports: 'full',
   },
   PREMIUM: {
-    transactionsPerMonth: 100000,
+    transactionsPerMonth: null,
     aiInteractionsPerMonth: null,
     reports: 'full',
   },

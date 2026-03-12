@@ -378,7 +378,9 @@ export async function POST(req: Request) {
     }
     const receiptUrl = normalizeReceiptUrl(body.receiptUrl);
 
-    if (Number.isFinite(planLimits.transactionsPerMonth)) {
+    const transactionLimit = planLimits.transactionsPerMonth;
+
+    if (typeof transactionLimit === 'number') {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -393,12 +395,12 @@ export async function POST(req: Request) {
         },
       });
 
-      if (currentMonthCount >= planLimits.transactionsPerMonth) {
+      if (currentMonthCount >= transactionLimit) {
         return NextResponse.json(
           {
             error: `Transaction limit reached for ${plan}. Upgrade to continue.`,
             code: 'PLAN_LIMIT_REACHED',
-            limit: planLimits.transactionsPerMonth,
+            limit: transactionLimit,
             plan,
           },
           { status: 403 }

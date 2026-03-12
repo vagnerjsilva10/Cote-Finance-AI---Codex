@@ -322,7 +322,7 @@ export async function GET(req: Request) {
       (acc, item) => acc + Number(item.current_amount),
       0
     );
-    const insights = buildFinancialInsights(transactions as any, totalBalance);
+    const insights = plan === 'FREE' ? [] : buildFinancialInsights(transactions as any, totalBalance);
 
     return NextResponse.json({
       totalBalance,
