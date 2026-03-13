@@ -5439,12 +5439,6 @@ const TransactionModal = ({
         amount: '',
         flowType: draftFlowType,
         category: getDefaultCategoryForFlow(draftFlowType),
-        paymentMethod: normalizedPaymentMethod,
-        wallet: draftWallet,
-        destinationWallet:
-          draftFlowType === 'Transferência'
-            ? normalizeDestinationWalletSelection(initialDraft?.destinationWallet, draftWallet)
-            : '',
         receiptUrl: null,
         date: new Date().toISOString().split('T')[0],
         ...initialDraft,
