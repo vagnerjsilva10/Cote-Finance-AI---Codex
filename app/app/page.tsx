@@ -3374,6 +3374,7 @@ type PortfolioViewProps = {
   onAddDebt: () => void;
   onViewWalletHistory: (walletName?: string) => void;
   onAdjustWalletBalance: (walletName?: string) => void;
+  onDeleteWallet: (wallet: WalletAccount) => void;
   onOpenInvestments: () => void;
   onOpenDebts: () => void;
   onOpenReports: () => void;
@@ -3441,11 +3442,13 @@ const PortfolioView = ({
   onAddDebt,
   onViewWalletHistory,
   onAdjustWalletBalance,
+  onDeleteWallet,
   onOpenInvestments,
   onOpenDebts,
   onOpenReports,
   onUpgrade,
 }: PortfolioViewProps) => {
+  void onDeleteWallet;
   const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
   const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
   const totalDebt = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
