@@ -21,9 +21,16 @@ const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '70
 
 const analysisMessages = [
   'Analisando seus hábitos financeiros...',
+  'Comparando com milhares de diagnósticos...',
   'Identificando padrões de gasto...',
-  'Gerando diagnóstico personalizado...',
+  'Gerando seu diagnóstico financeiro...',
 ];
+
+const suspenseMessages: Partial<Record<number, string>> = {
+  1: 'Estamos analisando seus hábitos financeiros...',
+  2: 'Estamos identificando padrões de gasto...',
+  3: 'Seu diagnóstico está quase pronto...',
+};
 
 export default function QuizClient() {
   const router = useRouter();
@@ -32,6 +39,7 @@ export default function QuizClient() {
   const [answers, setAnswers] = React.useState<QuizAnswer[]>([]);
   const [selectedOptionId, setSelectedOptionId] = React.useState<string | null>(null);
   const [feedback, setFeedback] = React.useState<string | null>(null);
+  const [progressMessage, setProgressMessage] = React.useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
   const [analysisIndex, setAnalysisIndex] = React.useState(0);
 
@@ -84,10 +92,12 @@ export default function QuizClient() {
     setAnswers([]);
     setSelectedOptionId(null);
     setFeedback(null);
+    setProgressMessage(null);
     trackQuizEvent('quiz_start');
   }, []);
 
   const currentQuestion = quizQuestions[questionIndex];
+  const diagnosisPercent = started ? Math.round(((questionIndex + 1) / quizQuestions.length) * 100) : 0;
 
   const handleAnswer = React.useCallback(
     (optionId: string) => {
@@ -106,7 +116,7 @@ export default function QuizClient() {
       const nextAnswers = [...answers, nextAnswer];
       setAnswers(nextAnswers);
       setSelectedOptionId(option.id);
-      setFeedback(option.feedback || 'Boa resposta.');
+      setFeedback(option.feedback || 'Boa resposta 👍');
 
       answerTimeoutRef.current = window.setTimeout(() => {
         setSelectedOptionId(null);
@@ -115,30 +125,33 @@ export default function QuizClient() {
         if (questionIndex === quizQuestions.length - 1) {
           setIsAnalyzing(true);
           setAnalysisIndex(0);
+          setProgressMessage('Seu perfil financeiro está sendo identificado');
           trackQuizEvent('quiz_complete', { totalScore: nextAnswers.reduce((sum, answer) => sum + answer.score, 0) });
 
           analysisIntervalRef.current = window.setInterval(() => {
             setAnalysisIndex((prev) => (prev + 1) % analysisMessages.length);
-          }, 850);
+          }, 700);
 
           analysisTimeoutRef.current = window.setTimeout(() => {
             if (analysisIntervalRef.current) window.clearInterval(analysisIntervalRef.current);
             const result = buildQuizResult(nextAnswers);
             saveQuizResult(result);
             router.push('/quiz/result');
-          }, 2600);
+          }, 2800);
 
           return;
         }
 
-        setQuestionIndex((prev) => prev + 1);
-      }, 380);
+        const nextQuestionIndex = questionIndex + 1;
+        setQuestionIndex(nextQuestionIndex);
+        setProgressMessage(suspenseMessages[nextQuestionIndex] || null);
+      }, 360);
     },
     [answers, currentQuestion, questionIndex, router, selectedOptionId]
   );
 
   return (
-    <QuizContainer className={`${displayFont.variable} ${bodyFont.variable}`} >
+    <QuizContainer className={`${displayFont.variable} ${bodyFont.variable}`}>
       <div className="mx-auto max-w-3xl" style={{ fontFamily: 'var(--font-body)' }}>
         <AnimatePresence mode="wait">
           {!started ? (
@@ -169,7 +182,7 @@ export default function QuizClient() {
                   </p>
 
                   <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-                    <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar" />
+                    <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar" percentageLabel="Diagnóstico 0% concluído" />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
@@ -205,10 +218,12 @@ export default function QuizClient() {
               transition={{ duration: 0.35 }}
             >
               <AnalysisScreen
-                title="Seu diagnóstico está sendo finalizado"
+                title="Seu diagnóstico financeiro está pronto"
                 text="Estamos cruzando suas respostas com padrões financeiros comuns para estimar onde o seu dinheiro pode estar escapando."
                 messages={analysisMessages}
                 activeIndex={analysisIndex}
+                statusLabel="Comparando suas respostas com milhares de diagnósticos financeiros..."
+                rewardLabel="Seu perfil financeiro foi identificado."
               />
             </motion.div>
           ) : (
@@ -225,7 +240,22 @@ export default function QuizClient() {
                   current={questionIndex + 1}
                   total={quizQuestions.length}
                   label="Diagnóstico financeiro em andamento"
+                  percentageLabel={`Diagnóstico ${diagnosisPercent}% concluído`}
                 />
+                <AnimatePresence mode="wait">
+                  {progressMessage ? (
+                    <motion.p
+                      key={progressMessage}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.22 }}
+                      className="mt-3 text-sm font-medium text-cyan-200"
+                    >
+                      {progressMessage}
+                    </motion.p>
+                  ) : null}
+                </AnimatePresence>
               </div>
 
               <QuestionCard eyebrow="Pré-diagnóstico financeiro" title={currentQuestion.title}>

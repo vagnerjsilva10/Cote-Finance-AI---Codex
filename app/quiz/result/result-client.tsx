@@ -61,7 +61,7 @@ export default function ResultClient() {
           className="rounded-[2rem] border border-white/10 bg-slate-900/65 p-6 sm:p-8"
         >
           <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
-            Seu diagnóstico foi gerado agora
+            Seu perfil financeiro foi identificado
           </span>
           <h1 className="mt-4 text-3xl font-bold text-white sm:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             Seu perfil financeiro
@@ -70,7 +70,7 @@ export default function ResultClient() {
             <div className="space-y-4">
               <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-5">
                 <p className="text-sm text-emerald-100">Resultado principal</p>
-                <p className="mt-2 text-3xl font-bold text-white">{result.profileTitle}</p>
+                <p className="mt-2 text-3xl font-bold text-white">{result.profileTitle.replace('Perfil ', '')}</p>
                 <p className="mt-3 text-slate-100">{result.profileText}</p>
               </div>
 
@@ -110,13 +110,13 @@ export default function ResultClient() {
                   Isso pode representar até {formatCurrency(result.annualLossMax)} por ano.
                 </p>
                 <p className="mt-4 text-xs text-slate-300">
-                  Estimativa com base nas suas respostas e em padrões financeiros comuns.
+                  Estimativa baseada nas suas respostas e em padrões financeiros comuns.
                 </p>
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-                <p className="text-sm text-slate-400">Pontuação do diagnóstico</p>
-                <p className="mt-2 text-3xl font-bold text-white">{result.totalScore} pontos</p>
+                <p className="text-sm text-slate-400">Comparando suas respostas com milhares de diagnósticos financeiros...</p>
+                <p className="mt-3 text-2xl font-bold text-white">{result.totalScore} pontos</p>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
                   <motion.div
                     initial={{ width: 0 }}
@@ -191,7 +191,7 @@ export default function ResultClient() {
               >
                 Ver meu diagnóstico completo
               </CTAButton>
-              <p className="text-sm text-slate-400">Leva menos de 30 segundos.</p>
+              <p className="text-sm text-slate-400">Crie sua conta em menos de 30 segundos.</p>
             </div>
           </div>
         </motion.section>

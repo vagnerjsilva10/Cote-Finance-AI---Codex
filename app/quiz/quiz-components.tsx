@@ -18,10 +18,12 @@ export function ProgressBar({
   current,
   total,
   label,
+  percentageLabel,
 }: {
   current: number;
   total: number;
   label: string;
+  percentageLabel?: string;
 }) {
   const width = total > 0 ? Math.min(100, Math.max(0, (current / total) * 100)) : 0;
 
@@ -29,9 +31,12 @@ export function ProgressBar({
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm text-slate-300">
         <span>{label}</span>
-        <span>
-          Pergunta {Math.min(current, total)} de {total}
-        </span>
+        <div className="text-right">
+          <span className="block">
+            Pergunta {Math.min(current, total)} de {total}
+          </span>
+          {percentageLabel ? <span className="block text-xs text-emerald-200">{percentageLabel}</span> : null}
+        </div>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-white/10">
         <motion.div
@@ -91,12 +96,12 @@ export function AnswerButton({
     <motion.button
       type="button"
       whileHover={disabled ? undefined : { y: -2 }}
-      whileTap={disabled ? undefined : { scale: 0.99 }}
+      whileTap={disabled ? undefined : { scale: 0.985 }}
       onClick={onClick}
       disabled={disabled}
       className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-base font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 ${
         selected
-          ? 'border-emerald-300/50 bg-emerald-500/10 text-white'
+          ? 'border-emerald-300/50 bg-emerald-500/10 text-white shadow-[0_16px_36px_-24px_rgba(16,185,129,.7)]'
           : 'border-white/10 bg-slate-950/65 text-slate-200 hover:border-white/20 hover:bg-slate-900'
       } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
     >
@@ -117,15 +122,24 @@ export function AnalysisScreen({
   text,
   messages,
   activeIndex,
+  statusLabel,
+  rewardLabel,
 }: {
   title: string;
   text: string;
   messages: string[];
   activeIndex: number;
+  statusLabel?: string;
+  rewardLabel?: string;
 }) {
   return (
     <QuestionCard eyebrow="Diagnóstico em andamento" title={title}>
       <div className="space-y-6">
+        {statusLabel ? (
+          <div className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+            {statusLabel}
+          </div>
+        ) : null}
         <p className="text-base leading-7 text-slate-300">{text}</p>
         <div className="grid gap-4 lg:grid-cols-[1fr_.95fr]">
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
@@ -149,6 +163,16 @@ export function AnalysisScreen({
                 </motion.div>
               ))}
             </div>
+            {rewardLabel ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.2 }}
+                className="mt-5 rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-100"
+              >
+                {rewardLabel}
+              </motion.div>
+            ) : null}
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
