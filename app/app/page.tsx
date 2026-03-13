@@ -38,6 +38,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Lock,
   Workflow,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -3242,6 +3243,7 @@ type PortfolioViewProps = {
   debts: Debt[];
   transactions: Transaction[];
   totalBalance: number;
+  currentPlan: SubscriptionPlan;
   onAddWallet: () => void;
   onTransferBalance: (walletName?: string) => void;
   onAddInvestment: () => void;
@@ -3251,6 +3253,7 @@ type PortfolioViewProps = {
   onOpenInvestments: () => void;
   onOpenDebts: () => void;
   onOpenReports: () => void;
+  onUpgrade: () => void;
 };
 
 const buildPortfolioInsights = ({
@@ -3307,6 +3310,7 @@ const PortfolioView = ({
   debts,
   transactions,
   totalBalance,
+  currentPlan,
   onAddWallet,
   onTransferBalance,
   onAddInvestment,
@@ -3316,6 +3320,7 @@ const PortfolioView = ({
   onOpenInvestments,
   onOpenDebts,
   onOpenReports,
+  onUpgrade,
 }: PortfolioViewProps) => {
   const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
   const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
@@ -3323,6 +3328,7 @@ const PortfolioView = ({
   const netWorth = totalBalance + totalInvested - totalDebt;
   const [showAllWallets, setShowAllWallets] = React.useState(false);
   const hasAnyPortfolioData = wallets.length > 0 || investments.length > 0 || activeDebts.length > 0 || transactions.length > 0;
+  const hasPortfolioAiInsights = currentPlan !== 'FREE';
 
   const assetMix = React.useMemo(
     () =>
@@ -3372,15 +3378,20 @@ const PortfolioView = ({
   );
 
   const portfolioInsights = React.useMemo(
-    () =>
-      buildPortfolioInsights({
+    () => {
+      if (!hasPortfolioAiInsights) {
+        return [];
+      }
+
+      return buildPortfolioInsights({
         wallets,
         totalBalance,
         totalInvested,
         totalDebt,
         netWorth,
-      }),
-    [wallets, totalBalance, totalInvested, totalDebt, netWorth]
+      });
+    },
+    [wallets, totalBalance, totalInvested, totalDebt, netWorth, hasPortfolioAiInsights]
   );
 
   return (
@@ -3747,20 +3758,49 @@ const PortfolioView = ({
       <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
         <div className="mb-4">
           <h4 className="text-lg font-bold text-white">Insights da IA</h4>
-          <p className="text-sm text-slate-500">Mensagens rápidas para ajudar você a entender a composição da sua carteira.</p>
+          <p className="text-sm text-slate-500">
+            {hasPortfolioAiInsights
+              ? 'Mensagens rápidas para ajudar você a entender a composição da sua carteira.'
+              : 'Descubra para onde seu dinheiro está indo com os Insights automáticos da IA.'}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-          {portfolioInsights.map((insight, index) => (
-            <div key={`${index}-${insight}`} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
-                <Sparkles size={12} />
-                Insight
+        {hasPortfolioAiInsights ? (
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            {portfolioInsights.map((insight, index) => (
+              <div key={`${index}-${insight}`} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                  <Sparkles size={12} />
+                  Insight
+                </div>
+                <p className="text-sm leading-relaxed text-slate-200">{insight}</p>
               </div>
-              <p className="text-sm leading-relaxed text-slate-200">{insight}</p>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-slate-950/90 via-slate-950/70 to-emerald-950/20 p-5">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                  <Lock size={12} />
+                  Disponível no plano Pro
+                </div>
+                <p className="text-sm leading-relaxed text-slate-200">
+                  Receba análises automáticas da sua vida financeira com inteligência artificial e veja rapidamente onde seu
+                  patrimônio está concentrado, quais pontos exigem atenção e quais oportunidades merecem prioridade.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onUpgrade}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-400"
+              >
+                <Sparkles size={16} />
+                Ativar plano Pro
+              </button>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -10674,6 +10714,7 @@ export default function App() {
                   debts={debts}
                   transactions={transactions}
                   totalBalance={totalBalance}
+                  currentPlan={currentPlan}
                   onAddWallet={handleOpenCreateWalletModal}
                   onTransferBalance={(walletName) => {
                     const sourceWallet = walletName ?? wallets[0]?.name ?? '';
@@ -10713,6 +10754,7 @@ export default function App() {
                   onOpenInvestments={() => setActiveTab('investments')}
                   onOpenDebts={() => setActiveTab('debts')}
                   onOpenReports={() => setActiveTab('reports')}
+                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
                 />
               )}
               {activeTab === 'agenda' && <AgendaView bills={bills} />}
