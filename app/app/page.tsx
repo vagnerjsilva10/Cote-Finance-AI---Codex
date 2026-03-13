@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -9993,6 +9993,7 @@ React.useEffect(() => {
         onParseReceipt={handleParseTransactionReceipt}
         initialData={editingTransaction}
         initialDraft={transactionModalDraft}
+        walletOptions={wallets}
       />
 
       <GoalModal
