@@ -5393,13 +5393,15 @@ const TransactionModal = ({
   initialData = null,
   initialDraft = null,
 }: TransactionModalProps) => {
+  const fallbackWalletChoices = React.useMemo(() => ['Carteira principal'], []);
+
   const walletChoices = React.useMemo(() => {
     const names = walletOptions
       .map((wallet) => wallet.name.trim())
       .filter((name, index, array) => name.length > 0 && array.indexOf(name) === index);
 
-    return names.length > 0 ? names : TRANSACTION_WALLETS;
-  }, [walletOptions]);
+    return names.length > 0 ? names : fallbackWalletChoices;
+  }, [fallbackWalletChoices, walletOptions]);
 
   const normalizeWalletSelection = React.useCallback(
     (value?: string | null) => {
@@ -5407,9 +5409,9 @@ const TransactionModal = ({
         return value;
       }
 
-      return walletChoices[0] || TRANSACTION_WALLETS[0];
+      return walletChoices[0] || fallbackWalletChoices[0];
     },
-    [walletChoices]
+    [fallbackWalletChoices, walletChoices]
   );
 
   const normalizeDestinationWalletSelection = React.useCallback(
@@ -5853,7 +5855,7 @@ const TransactionModal = ({
                   onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
                   className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
                 >
-                  {TRANSACTION_WALLETS.map((wallet) => (
+                  {walletChoices.map((wallet) => (
                     <option key={wallet} value={wallet}>
                       {wallet}
                     </option>
