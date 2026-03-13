@@ -22,8 +22,6 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
 const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
@@ -39,6 +37,7 @@ type PlanCard = {
   microcopy: string;
   features: string[];
   checkoutPlan?: CheckoutPlan;
+  signupHref?: string;
   popular?: boolean;
   proof?: string;
   accent?: 'subtle' | 'highlight' | 'premium';
@@ -125,7 +124,7 @@ const legacyPricingFaqs = [
   },
 ] as const;
 
-const plans: PlanCard[] = [
+const currentPlans: PlanCard[] = [
   {
     name: 'Free',
     price: 'R$0/mês',
@@ -181,7 +180,7 @@ const plans: PlanCard[] = [
   },
 ];
 
-const pricingFaqs = [
+const currentPricingFaqs = [
   {
     question: 'Posso começar gratuitamente?',
     answer:
@@ -209,7 +208,7 @@ const pricingFaqs = [
   },
 ] as const;
 
-const features = [
+const currentFeatures = [
   {
     icon: LayoutDashboard,
     title: 'Dashboard inteligente',
@@ -247,6 +246,118 @@ const features = [
   },
 ];
 
+const plans: PlanCard[] = [
+  {
+    name: 'Free',
+    price: 'R$0/mês',
+    label: 'Entrada',
+    benefit: 'Ideal para começar a organizar suas finanças',
+    buttonText: 'Criar conta grátis',
+    microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
+    signupHref: '/signup?plan=free',
+    features: [
+      'Controle básico de receitas e despesas',
+      'Dashboard financeiro',
+      'Gráficos essenciais',
+      'Organização simples das movimentações',
+    ],
+    accent: 'subtle',
+  },
+  {
+    name: 'Pro',
+    price: 'R$29/mês',
+    label: 'Melhor escolha',
+    benefit: 'A melhor escolha para quem quer entender melhor os gastos e usar a IA no dia a dia',
+    buttonText: 'Começar teste grátis',
+    microcopy: 'Crie sua conta, teste grátis e evolua no seu ritmo.',
+    signupHref: '/signup?plan=pro&trial=true',
+    popular: true,
+    proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
+    features: [
+      'Insights automáticos da IA',
+      'Análise avançada de gastos',
+      'Relatórios financeiros detalhados',
+      'Previsões financeiras',
+      'Alertas financeiros automáticos',
+    ],
+    accent: 'highlight',
+  },
+  {
+    name: 'Premium',
+    price: 'R$49/mês',
+    label: 'Controle total',
+    benefit: 'Controle financeiro mais completo com automações e análises mais profundas',
+    buttonText: 'Assinar Premium',
+    microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
+    signupHref: '/signup?plan=premium',
+    features: [
+      'Alertas financeiros via WhatsApp',
+      'Resumos financeiros automáticos',
+      'Insights avançados da IA',
+      'Ferramentas avançadas de análise',
+      'Suporte prioritário',
+    ],
+    accent: 'premium',
+  },
+];
+
+const pricingFaqs = [
+  {
+    question: 'O Cote Finance AI é gratuito?',
+    answer: 'Sim. Você pode começar com o plano gratuito e evoluir para um plano pago quando quiser mais recursos.',
+  },
+  {
+    question: 'Preciso conectar minha conta bancária?',
+    answer: 'Não. Você pode registrar suas receitas e despesas manualmente e acompanhar tudo pela plataforma.',
+  },
+  {
+    question: 'Como funciona a inteligência artificial?',
+    answer:
+      'A IA analisa seus lançamentos, identifica padrões e entrega insights automáticos para ajudar você a entender melhor seus gastos.',
+  },
+  {
+    question: 'Posso cancelar quando quiser?',
+    answer: 'Sim. Os planos pagos não exigem contrato de longo prazo.',
+  },
+] as const;
+
+const features = [
+  {
+    icon: LayoutDashboard,
+    title: 'Receitas e despesas',
+    text: 'Registro simples de receitas e despesas.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Gráficos inteligentes',
+    text: 'Gráficos financeiros inteligentes para visualizar tudo com mais clareza.',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'Análise automática',
+    text: 'Análise automática com IA e insights financeiros personalizados.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Insights financeiros',
+    text: 'Insights financeiros personalizados para apoiar decisões melhores.',
+  },
+  {
+    icon: MessageCircle,
+    title: 'Alertas no WhatsApp',
+    text: 'Alertas e resumos via WhatsApp.',
+  },
+  {
+    icon: Target,
+    title: 'Previsões financeiras',
+    text: 'Previsões financeiras para acompanhar tendências e próximos passos.',
+  },
+];
+
+void currentPlans;
+void currentPricingFaqs;
+void currentFeatures;
+
 export default function LandingPage() {
   const brandLogo = '/brand/cote-finance-ai-logo.svg';
   const router = useRouter();
@@ -277,112 +388,17 @@ export default function LandingPage() {
     setHeroParallax({ x: 0, y: 0 });
   }, []);
 
-  const openAuth = React.useCallback(
-    (mode: 'signup' | 'login', plan?: string) => {
-      const search = new URLSearchParams();
-      search.set('auth', mode);
-      if (plan) search.set('plan', plan);
-      router.push(`/app?${search.toString()}`);
+  const navigateToSignup = React.useCallback(
+    (href: string) => {
+      setError(null);
+      router.push(href);
     },
     [router]
   );
 
-  const startFree = React.useCallback(async () => {
-    setIsBusy(true);
-    setError(null);
-
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        openAuth('signup');
-        return;
-      }
-
-      // Never block navigation to app on setup latency/error.
-      void fetch('/api/setup-user', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      }).catch((setupError) => {
-        console.error('setup-user warmup failed:', setupError);
-      });
-
-      router.push('/app');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao iniciar cadastro.');
-    } finally {
-      setIsBusy(false);
-    }
-  }, [openAuth, router]);
-
-  const checkoutPlan = React.useCallback(
-    async (plan?: CheckoutPlan) => {
-      if (!plan) {
-        await startFree();
-        return;
-      }
-
-      setIsBusy(true);
-      setError(null);
-
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          openAuth('signup', plan);
-          return;
-        }
-
-        const setupResponse = await fetch('/api/setup-user', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }).catch(() => null);
-
-        if (setupResponse && !setupResponse.ok && (setupResponse.status === 401 || setupResponse.status === 403)) {
-          openAuth('login', plan);
-          return;
-        }
-
-        const dashboardResponse = await fetch('/api/dashboard', {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }).catch(() => null);
-
-        const dashboardPayload = dashboardResponse
-          ? await dashboardResponse.json().catch(() => ({}))
-          : {};
-        const workspaceId =
-          typeof dashboardPayload?.activeWorkspaceId === 'string' ? dashboardPayload.activeWorkspaceId : undefined;
-
-        const selectedPlan = parseCheckoutPlanLabel(plan);
-        if (!selectedPlan) {
-          throw new Error('Plano invalido para checkout.');
-        }
-
-        router.push(
-          getCheckoutPath({
-            plan: selectedPlan.plan,
-            interval: selectedPlan.interval,
-            workspaceId,
-          })
-        );
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao iniciar checkout.');
-      } finally {
-        setIsBusy(false);
-      }
-    },
-    [openAuth, router, startFree]
-  );
+  const startFree = React.useCallback(() => {
+    navigateToSignup('/signup');
+  }, [navigateToSignup]);
 
   return (
     <div
@@ -432,7 +448,7 @@ export default function LandingPage() {
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
-              onClick={() => openAuth('login')}
+              onClick={() => router.push('/app?auth=login')}
               className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 sm:min-w-[112px] sm:px-4 sm:text-sm"
             >
               Entrar
@@ -461,14 +477,15 @@ export default function LandingPage() {
             className="space-y-6 text-center lg:text-left"
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
-              <Sparkles size={14} /> Controle financeiro com IA
+              <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
             <h1 className="text-[2.35rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Entenda para onde o seu dinheiro está indo em minutos
+              Descubra para onde seu dinheiro está indo — e assuma o controle das suas finanças.
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-slate-300">
-              O Cote Finance AI organiza suas finanças automaticamente e usa inteligência artificial para mostrar como
-              você pode economizar mais e tomar decisões financeiras melhores.
+              Cote Finance AI usa inteligência artificial para analisar seus gastos, organizar sua rotina financeira e
+              mostrar com clareza como seu dinheiro está sendo usado. Receba insights automáticos, gráficos
+              inteligentes e alertas via WhatsApp.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
               <button
@@ -476,7 +493,7 @@ export default function LandingPage() {
                 disabled={isBusy}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
               >
-                Começar grátis <ArrowRight size={16} />
+              Começar grátis <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => scrollTo('como-funciona')}
@@ -574,27 +591,27 @@ export default function LandingPage() {
               <TrendingDown size={14} /> Problemas comuns no controle financeiro
             </span>
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Seu dinheiro sai, mas você não enxerga para onde.
+              Seu dinheiro sai… mas você não enxerga para onde.
             </h2>
             <p className="text-slate-300">No fim do mês, a sensação é sempre a mesma:</p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> o dinheiro simplesmente desaparece
+                <TrendingDown size={16} className="text-rose-300" /> O dinheiro acaba antes do esperado
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> pequenas despesas viram grandes problemas
+                <TrendingDown size={16} className="text-rose-300" /> Pequenos gastos passam despercebidos
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> falta clareza para decidir com confiança
+                <TrendingDown size={16} className="text-rose-300" /> Falta clareza sobre receitas e despesas
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> economizar parece difícil de manter
+                <TrendingDown size={16} className="text-rose-300" /> O saldo no fim do mês sempre surpreende
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> decisões financeiras viram um chute
+                <TrendingDown size={16} className="text-rose-300" /> Organizar tudo parece complicado
               </li>
             </ul>
-            <p className="text-slate-300">Sem visibilidade real, melhorar suas finanças fica lento e cansativo.</p>
+            <p className="text-slate-300">Sem clareza, fica difícil entender o que ajustar e tomar decisões melhores.</p>
           </div>
 
           <motion.div
@@ -654,24 +671,27 @@ export default function LandingPage() {
               <Sparkles size={14} /> Clareza financeira com inteligência artificial
             </span>
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Tenha visão completa da sua vida financeira em minutos.
+              Clareza financeira muda tudo
             </h2>
-            <p className="text-emerald-100">Com o Cote Finance AI você entende exatamente o que acontece com seu dinheiro:</p>
+            <p className="text-emerald-100">
+              Cote Finance AI foi criado para transformar a forma como você entende seu dinheiro. Em vez de planilhas
+              complicadas, você tem uma inteligência financeira trabalhando por você.
+            </p>
             <ul className="space-y-2 text-emerald-100">
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> exatamente para onde seu dinheiro está indo
+                <Check size={16} className="text-emerald-300" /> IA analisando gastos automaticamente
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> quais gastos estão aumentando e por quê
+                <Check size={16} className="text-emerald-300" /> Gráficos financeiros inteligentes
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> quanto você realmente está economizando
+                <Check size={16} className="text-emerald-300" /> Insights personalizados
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> quais ações práticas melhoram seus hábitos financeiros
+                <Check size={16} className="text-emerald-300" /> Organização financeira mais simples
               </li>
             </ul>
-            <p className="text-emerald-100">Tudo explicado de forma simples, direta e acionável.</p>
+            <p className="text-emerald-100">Tudo explicado de forma simples, clara e prática.</p>
           </div>
         </motion.section>
 
@@ -687,21 +707,21 @@ export default function LandingPage() {
             className="text-center text-3xl font-bold text-white md:text-4xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            Como funciona
+            Um sistema completo para organizar sua vida financeira
           </h2>
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Passo 1</p>
-              <p className="text-slate-200">Adicione suas receitas e despesas rapidamente.</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Funcionalidade 1</p>
+              <p className="text-slate-200">Registro simples de receitas e despesas.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Passo 2</p>
-              <p className="text-slate-200">Veja tudo em um dashboard financeiro claro.</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Funcionalidade 2</p>
+              <p className="text-slate-200">Gráficos financeiros inteligentes para entender o mês com clareza.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Passo 3</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Funcionalidade 3</p>
               <p className="text-slate-200">
-                Receba insights da inteligência artificial e alertas no WhatsApp para agir mais rápido.
+                Análise automática com IA, insights personalizados e alertas via WhatsApp.
               </p>
             </div>
           </div>
@@ -722,23 +742,24 @@ export default function LandingPage() {
                 <Sparkles size={14} /> Demonstração do produto
               </span>
               <h3 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-                Veja o Cote Finance AI em ação
+                Tenha visão completa da sua vida financeira
               </h3>
               <p className="text-slate-300">
-                Demonstração dinâmica da plataforma analisando finanças em tempo real.
+                No dashboard do Cote Finance AI você acompanha receitas, despesas, saldo, categorias de gastos,
+                tendências financeiras e análises automáticas da inteligência artificial.
               </p>
               <ul className="space-y-2 text-slate-200">
                 <li className="flex items-center justify-center gap-2">
-                  <Check size={16} className="text-emerald-300" /> movimentação automática de receitas e despesas
+                  <Check size={16} className="text-emerald-300" /> Visualizar receitas e despesas com clareza
                 </li>
                 <li className="flex items-center justify-center gap-2">
-                  <Check size={16} className="text-cyan-300" /> análise instantânea de gastos por categoria
+                  <Check size={16} className="text-cyan-300" /> Acompanhar a evolução do saldo
                 </li>
                 <li className="flex items-center justify-center gap-2">
-                  <Check size={16} className="text-blue-300" /> insights acionáveis da IA
+                  <Check size={16} className="text-blue-300" /> Identificar padrões de gastos
                 </li>
                 <li className="flex items-center justify-center gap-2">
-                  <Check size={16} className="text-emerald-300" /> alertas e resumos financeiros no WhatsApp
+                  <Check size={16} className="text-emerald-300" /> Entender tendências financeiras e receber alertas importantes
                 </li>
               </ul>
               <button
@@ -746,7 +767,7 @@ export default function LandingPage() {
                 disabled={isBusy}
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
               >
-                Testar no meu painel <ArrowRight size={16} />
+                Começar grátis <ArrowRight size={16} />
               </button>
             </div>
 
@@ -860,14 +881,14 @@ export default function LandingPage() {
                 transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute -left-5 top-12 hidden rounded-xl border border-cyan-300/30 bg-slate-900/92 px-3 py-2 text-xs text-cyan-200 xl:block"
               >
-                IA analisando padrões
+                IA analisando gastos
               </motion.div>
               <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute -right-4 -bottom-2 hidden rounded-xl border border-emerald-300/30 bg-slate-900/92 px-3 py-2 text-xs text-emerald-200 xl:block"
               >
-                Atualização em tempo real
+                Organização em tempo real
               </motion.div>
             </motion.div>
           </div>
@@ -885,7 +906,7 @@ export default function LandingPage() {
             className="text-center text-3xl font-bold text-white md:text-4xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            Um sistema completo para sua vida financeira
+            Um sistema completo para organizar sua vida financeira
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
@@ -913,25 +934,25 @@ export default function LandingPage() {
 
           <div className="space-y-5">
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Clareza financeira muda tudo.
+              Quando você entende seu dinheiro, tudo muda
             </h2>
-            <p className="text-slate-300">Quando você entende seus números:</p>
+            <p className="text-slate-300">Quando você entende seu dinheiro:</p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> economizar fica mais fácil
+                <TrendingUp size={16} className="text-emerald-300" /> Pare de perder dinheiro sem perceber
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> decisões ficam melhores
+                <TrendingUp size={16} className="text-emerald-300" /> Visualize seus gastos com mais clareza
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> metas se tornam possíveis
+                <TrendingUp size={16} className="text-emerald-300" /> Tome decisões financeiras melhores
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> dívidas deixam de ser um problema
+                <TrendingUp size={16} className="text-emerald-300" /> Tenha mais controle sobre sua rotina financeira
               </li>
             </ul>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
-              Resultado: Mais controle sobre sua vida financeira.
+              Resultado: mais clareza, mais controle e decisões mais seguras.
             </div>
           </div>
 
@@ -965,12 +986,13 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Controle financeiro não precisa ser complicado.
+            Centenas de pessoas já estão organizando suas finanças
           </h2>
           <p className="mb-6 text-slate-300">
-            Milhares de usuários já começaram a organizar suas finanças com o Cote Finance AI.
+            Cada vez mais usuários estão usando o Cote Finance AI para visualizar melhor os gastos, entender seus
+            hábitos financeiros e tomar decisões com mais clareza.
           </p>
-          <p className="mb-6 text-slate-300">Nossa missão é simples: Dar clareza sobre o seu dinheiro.</p>
+          <p className="mb-6 text-slate-300">Nossa missão é simples: ajudar você a enxergar o que acontece com o seu dinheiro.</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">+12k</p>
@@ -1000,7 +1022,7 @@ export default function LandingPage() {
               Planos para cada fase da sua organização
             </span>
             <h2 className="text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Escolha o plano ideal para sair do descontrole financeiro
+              Escolha o plano ideal para assumir o controle do seu dinheiro
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
               Use inteligência artificial para entender seus gastos, organizar sua rotina financeira e parar de perder
@@ -1072,7 +1094,7 @@ export default function LandingPage() {
                 </ul>
 
                 <button
-                  onClick={() => void checkoutPlan(plan.checkoutPlan)}
+                  onClick={() => navigateToSignup(plan.signupHref || '/signup')}
                   disabled={isBusy}
                   className={`mt-auto w-full rounded-xl px-4 py-3.5 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.accent === 'highlight'
@@ -1160,7 +1182,7 @@ export default function LandingPage() {
                 </ul>
 
                 <button
-                  onClick={() => void checkoutPlan(plan.checkoutPlan)}
+                  onClick={() => navigateToSignup(plan.signupHref || '/signup')}
                   disabled={isBusy}
                   className={`mt-auto w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.popular
@@ -1198,8 +1220,7 @@ export default function LandingPage() {
             Sem contrato. Cancele quando quiser.
           </h2>
           <p className="mx-auto max-w-3xl text-slate-300">
-            Comece gratuitamente e evolua para um plano pago apenas se quiser. Seus dados são protegidos e você mantém
-            controle total da sua conta.
+            Comece gratuitamente, use no seu ritmo e evolua para um plano pago quando quiser mais recursos.
           </p>
           <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-300">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
@@ -1229,14 +1250,14 @@ export default function LandingPage() {
             Seu dinheiro merece mais clareza.
           </h2>
           <p className="mx-auto mb-6 max-w-2xl text-slate-100/90">
-            Comece hoje, descubra exatamente para onde seu dinheiro está indo e receba alertas importantes no WhatsApp.
+            Comece gratuitamente e descubra exatamente para onde seu dinheiro está indo.
           </p>
           <button
             onClick={startFree}
             disabled={isBusy}
             className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60"
           >
-            Começar grátis <ArrowRight size={16} />
+            Criar conta grátis <ArrowRight size={16} />
           </button>
         </motion.section>
       </main>
@@ -1260,7 +1281,7 @@ export default function LandingPage() {
             <Link href="/app" className="hover:text-slate-300">
               App
             </Link>
-            <button onClick={() => openAuth('signup')} className="hover:text-slate-300">
+            <button onClick={() => navigateToSignup('/signup')} className="hover:text-slate-300">
               Cadastro
             </button>
           </div>
