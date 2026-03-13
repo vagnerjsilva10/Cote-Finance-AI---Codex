@@ -161,7 +161,7 @@ export default function QuizClient() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -18 }}
               transition={{ duration: 0.35 }}
-              className="space-y-6"
+              className="space-y-5"
             >
               <QuestionCard
                 eyebrow="Leva menos de 1 minuto"
@@ -170,13 +170,13 @@ export default function QuizClient() {
                   <button
                     type="button"
                     onClick={startQuiz}
-                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70"
+                    className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 sm:w-auto"
                   >
                     Começar diagnóstico
                   </button>
                 }
               >
-                <div className="space-y-5">
+                <div className="space-y-4">
                   <p className="text-lg leading-7 text-slate-300">
                     Mais de 12.000 pessoas já fizeram esse diagnóstico financeiro.
                   </p>
@@ -233,9 +233,9 @@ export default function QuizClient() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.32 }}
-              className="space-y-5"
+              className="space-y-4"
             >
-              <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-5">
+              <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-4 sm:p-5">
                 <ProgressBar
                   current={questionIndex + 1}
                   total={quizQuestions.length}
@@ -250,7 +250,7 @@ export default function QuizClient() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.22 }}
-                      className="mt-3 text-sm font-medium text-cyan-200"
+                      className="mt-3 text-sm font-medium leading-6 text-cyan-200"
                     >
                       {progressMessage}
                     </motion.p>
