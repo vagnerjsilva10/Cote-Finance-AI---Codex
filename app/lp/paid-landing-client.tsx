@@ -21,43 +21,43 @@ const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], 
 const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
 
 const heroBullets = [
-  'Analise automatica de gastos',
-  'Insights financeiros com inteligencia artificial',
+  'Análise automática de gastos',
+  'Insights financeiros com inteligência artificial',
   'Alertas e resumos no WhatsApp',
 ];
 
 const storyLines = [
-  'No comeco do mes parece que tudo esta sob controle.',
-  'O salario entra.',
-  'Algumas contas sao pagas.',
+  'No começo do mês parece que tudo está sob controle.',
+  'O salário entra.',
+  'Algumas contas são pagas.',
   'Pequenas compras acontecem.',
-  'E quando voce percebe...',
+  'E quando você percebe...',
   'o dinheiro simplesmente desapareceu.',
-  'Voce nao sabe exatamente onde foi parar.',
+  'Você não sabe exatamente onde foi parar.',
 ];
 
 const invisibleExpenseList = ['Assinaturas esquecidas', 'Delivery frequente', 'Compras impulsivas', 'Parcelas acumuladas'];
 
 const solutionList = [
-  'Onde voce esta gastando demais',
+  'Onde você está gastando demais',
   'Categorias que consomem mais dinheiro',
-  'Padroes invisiveis de gasto',
+  'Padrões invisíveis de gasto',
   'Oportunidades reais de economia',
 ];
 
 const dashboardItems = [
-  'Resumo financeiro do mes',
+  'Resumo financeiro do mês',
   'Categorias de despesas',
-  'Graficos inteligentes',
-  'Tendencias financeiras',
-  'Insights automaticos da IA',
+  'Gráficos inteligentes',
+  'Tendências financeiras',
+  'Insights automáticos da IA',
 ];
 
 const benefits = [
-  { title: 'Clareza total', text: 'Veja exatamente para onde seu dinheiro esta indo.' },
-  { title: 'Controle financeiro real', text: 'Tome decisoes melhores.' },
-  { title: 'Organizacao automatica', text: 'Sem planilhas complicadas.' },
-  { title: 'Tranquilidade no fim do mes', text: 'Sem surpresas desagradaveis.' },
+  { title: 'Clareza total', text: 'Veja exatamente para onde seu dinheiro está indo.' },
+  { title: 'Controle financeiro real', text: 'Tome decisões melhores.' },
+  { title: 'Organização automática', text: 'Sem planilhas complicadas.' },
+  { title: 'Tranquilidade no fim do mês', text: 'Sem surpresas desagradáveis.' },
 ];
 
 const testimonials = [
@@ -69,35 +69,35 @@ const testimonials = [
 const plans = [
   {
     name: 'Free',
-    price: 'R$0/mes',
+    price: 'R$0/mês',
     href: '/signup',
-    cta: 'Criar conta gratis',
+    cta: 'Criar conta grátis',
     badge: 'Entrada',
-    features: ['Dashboard financeiro', 'Categorizacao automatica', 'Analise basica de despesas'],
+    features: ['Dashboard financeiro', 'Categorização automática', 'Análise básica de despesas'],
   },
   {
     name: 'Pro',
-    price: 'R$29/mes',
+    price: 'R$29/mês',
     href: '/signup?plan=pro',
-    cta: 'Comecar teste gratis',
+    cta: 'Começar teste grátis',
     badge: 'Mais popular',
     highlight: true,
-    features: ['Tudo do Free', 'Insights avancados da IA', 'Alertas financeiros', 'Resumos no WhatsApp', 'Relatorios detalhados'],
+    features: ['Tudo do Free', 'Insights avançados da IA', 'Alertas financeiros', 'Resumos no WhatsApp', 'Relatórios detalhados'],
   },
   {
     name: 'Premium',
-    price: 'R$49/mes',
+    price: 'R$49/mês',
     href: '/signup?plan=premium',
     cta: 'Assinar Premium',
     badge: 'Completo',
-    features: ['Tudo do Pro', 'Analises financeiras profundas', 'Recomendacoes personalizadas'],
+    features: ['Tudo do Pro', 'Análises financeiras profundas', 'Recomendações personalizadas'],
   },
 ];
 
 const faqs = [
-  { question: 'Preciso conectar conta bancaria?', answer: 'Nao necessariamente.' },
+  { question: 'Preciso conectar conta bancária?', answer: 'Não necessariamente.' },
   { question: 'O app usa IA?', answer: 'Sim.' },
-  { question: 'Meus dados sao seguros?', answer: 'Sim, usamos criptografia.' },
+  { question: 'Meus dados são seguros?', answer: 'Sim, usamos criptografia.' },
   { question: 'Existe plano gratuito?', answer: 'Sim.' },
   { question: 'Posso cancelar quando quiser?', answer: 'Sim.' },
 ];
@@ -163,7 +163,7 @@ export default function PaidLandingClient() {
             priority
           />
         </Link>
-        <PrimaryCta href="/signup">Criar conta gratis</PrimaryCta>
+        <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 pb-20 pt-4 sm:px-6 sm:pb-24">
@@ -178,10 +178,10 @@ export default function PaidLandingClient() {
               <Sparkles size={14} /> Leva menos de 30 segundos
             </span>
             <h1 className="text-[2.45rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Seu dinheiro esta sumindo - e voce nem sabe por que.
+              Seu dinheiro está sumindo - e você nem sabe por quê.
             </h1>
             <p className="max-w-2xl text-lg leading-relaxed text-slate-300">
-              O Cote Finance AI analisa seus gastos automaticamente e mostra exatamente para onde seu dinheiro esta indo.
+              O Cote Finance AI analisa seus gastos automaticamente e mostra exatamente para onde seu dinheiro está indo.
             </p>
 
             <motion.ul {...staggerMotion} className="space-y-3 text-left text-slate-200">
@@ -218,7 +218,7 @@ export default function PaidLandingClient() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
-              <PrimaryCta href="/signup">Criar conta gratis</PrimaryCta>
+              <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
               <p className="text-sm text-slate-400">Leva menos de 30 segundos.</p>
             </div>
           </motion.div>
@@ -303,11 +303,11 @@ export default function PaidLandingClient() {
 
               <div className="grid gap-3 md:grid-cols-[1.1fr_.9fr]">
                 <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="mb-2 text-xs text-slate-400">Categorias do mes</p>
+                  <p className="mb-2 text-xs text-slate-400">Categorias do mês</p>
                   <div className="space-y-3">
                     {[
                       { name: 'Moradia', width: '78%', color: 'bg-emerald-400' },
-                      { name: 'Alimentacao', width: '61%', color: 'bg-cyan-400' },
+                      { name: 'Alimentação', width: '61%', color: 'bg-cyan-400' },
                       { name: 'Transporte', width: '42%', color: 'bg-sky-400' },
                       { name: 'Lazer', width: '33%', color: 'bg-amber-400' },
                     ].map((item, index) => (
@@ -336,7 +336,7 @@ export default function PaidLandingClient() {
                     className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-3"
                   >
                     <p className="mb-1 text-[11px] text-emerald-200">Insight da IA</p>
-                    <p className="text-sm text-emerald-50">Delivery subiu 18%. Existe espaco para economizar neste mes.</p>
+                    <p className="text-sm text-emerald-50">Delivery subiu 18%. Existe espaço para economizar neste mês.</p>
                   </motion.div>
                   <motion.div
                     animate={{ y: [0, 3, 0] }}
@@ -344,7 +344,7 @@ export default function PaidLandingClient() {
                     className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-3"
                   >
                     <p className="mb-1 text-[11px] text-cyan-200">WhatsApp</p>
-                    <p className="text-sm text-cyan-50">Resumo automatico entregue com o que mais merece sua atencao.</p>
+                    <p className="text-sm text-cyan-50">Resumo automático entregue com o que mais merece sua atenção.</p>
                   </motion.div>
                 </div>
               </div>
@@ -357,27 +357,23 @@ export default function PaidLandingClient() {
             <div className="space-y-3">
               <p className="text-amber-300">★★★★★</p>
               <h2 className="text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-                Mais de 1.000 pessoas ja comecaram a organizar suas financas com o Cote Finance AI.
+                Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.
               </h2>
               <p className="text-slate-300">&ldquo;Finalmente entendi para onde meu dinheiro estava indo.&rdquo;</p>
             </div>
-            <PrimaryCta href="/signup">Criar conta gratis</PrimaryCta>
+            <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
           </div>
         </motion.section>
 
         <motion.section {...sectionMotion} className="grid gap-6 lg:grid-cols-2">
           <FadeCard className="rounded-3xl border border-white/10 bg-slate-900/55 p-6 md:p-8">
             <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              O problema nao e quanto voce ganha.
+              O problema não é quanto você ganha.
             </h2>
-            <p className="mb-5 text-lg text-slate-300">
-              A maioria das pessoas acredita que precisa ganhar mais dinheiro.
-            </p>
-            <p className="mb-5 text-slate-300">
-              Mas na pratica o problema e nao enxergar para onde o dinheiro esta indo.
-            </p>
+            <p className="mb-5 text-lg text-slate-300">A maioria das pessoas acredita que precisa ganhar mais dinheiro.</p>
+            <p className="mb-5 text-slate-300">Mas na prática o problema é não enxergar para onde o dinheiro está indo.</p>
             <motion.ul {...staggerMotion} className="space-y-3 text-slate-200">
-              {['O salario entra', 'As despesas aparecem', 'O dinheiro desaparece'].map((item) => (
+              {['O salário entra', 'As despesas aparecem', 'O dinheiro desaparece'].map((item) => (
                 <motion.li
                   key={item}
                   initial={{ opacity: 0, x: -10 }}
@@ -399,7 +395,7 @@ export default function PaidLandingClient() {
 
           <FadeCard className="rounded-3xl border border-white/10 bg-slate-900/55 p-6 md:p-8">
             <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Pequenos gastos invisiveis estao drenando sua renda.
+              Pequenos gastos invisíveis estão drenando sua renda.
             </h2>
             <p className="mb-5 text-slate-300">
               Separados parecem pequenos. Mas juntos podem consumir uma parte significativa da sua renda todos os meses.
@@ -425,11 +421,9 @@ export default function PaidLandingClient() {
         <motion.section {...sectionMotion} className="grid gap-8 lg:grid-cols-[1fr_.95fr] lg:items-center">
           <div className="space-y-5">
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              O Cote Finance AI mostra exatamente para onde seu dinheiro esta indo.
+              O Cote Finance AI mostra exatamente para onde seu dinheiro está indo.
             </h2>
-            <p className="text-lg text-slate-300">
-              O Cote Finance AI funciona como um raio-X da sua vida financeira.
-            </p>
+            <p className="text-lg text-slate-300">O Cote Finance AI funciona como um raio-X da sua vida financeira.</p>
             <p className="text-slate-300">
               Ele analisa automaticamente suas receitas e despesas e transforma seus dados em insights claros.
             </p>
@@ -458,13 +452,13 @@ export default function PaidLandingClient() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-4">
                 <BarChart3 size={18} className="mb-3 text-cyan-200" />
-                <p className="font-semibold text-white">Visao por categoria</p>
-                <p className="mt-2 text-sm text-slate-300">Veja com clareza o peso de cada tipo de gasto no seu mes.</p>
+                <p className="font-semibold text-white">Visão por categoria</p>
+                <p className="mt-2 text-sm text-slate-300">Veja com clareza o peso de cada tipo de gasto no seu mês.</p>
               </div>
               <div className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-4">
                 <BrainCircuit size={18} className="mb-3 text-emerald-200" />
                 <p className="font-semibold text-white">IA aplicada no dia a dia</p>
-                <p className="mt-2 text-sm text-slate-300">Receba sinais rapidos do que esta piorando e do que pode melhorar.</p>
+                <p className="mt-2 text-sm text-slate-300">Receba sinais rápidos do que está piorando e do que pode melhorar.</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 sm:col-span-2">
                 <MessageCircle size={18} className="mb-3 text-emerald-200" />
@@ -477,7 +471,7 @@ export default function PaidLandingClient() {
 
         <motion.section {...sectionMotion} className="rounded-3xl border border-white/10 bg-slate-900/55 p-6 md:p-8">
           <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Um dashboard simples. Uma visao completa.
+            Um dashboard simples. Uma visão completa.
           </h2>
           <motion.div {...staggerMotion} className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {dashboardItems.map((item) => (
@@ -499,21 +493,21 @@ export default function PaidLandingClient() {
         <motion.section {...sectionMotion} className="grid gap-6 lg:grid-cols-2">
           <FadeCard className="rounded-3xl border border-white/10 bg-slate-900/55 p-6 md:p-8">
             <h2 className="mb-5 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Planilhas vs Inteligencia Financeira
+              Planilhas vs Inteligência Financeira
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
                 <h3 className="mb-4 text-xl font-semibold text-white">Planilhas</h3>
                 <ul className="space-y-3 text-slate-300">
                   <li>Controle manual</li>
-                  <li>Dificil manter</li>
-                  <li>Dificil identificar padroes</li>
+                  <li>Difícil manter</li>
+                  <li>Difícil identificar padrões</li>
                 </ul>
               </div>
               <div className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-5">
                 <h3 className="mb-4 text-xl font-semibold text-white">Cote Finance AI</h3>
                 <ul className="space-y-3 text-emerald-50">
-                  <li>Analise automatica</li>
+                  <li>Análise automática</li>
                   <li>Insights inteligentes</li>
                   <li>Clareza financeira</li>
                 </ul>
@@ -523,10 +517,10 @@ export default function PaidLandingClient() {
 
           <FadeCard className="rounded-3xl border border-white/10 bg-slate-900/55 p-6 md:p-8">
             <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Quando voce entende seu dinheiro, tudo muda.
+              Quando você entende seu dinheiro, tudo muda.
             </h2>
             <p className="mb-6 text-slate-300">
-              Quando voce finalmente enxerga para onde seu dinheiro esta indo, tomar decisoes financeiras se torna muito mais simples.
+              Quando você finalmente enxerga para onde seu dinheiro está indo, tomar decisões financeiras se torna muito mais simples.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               {benefits.map((benefit) => (
@@ -549,7 +543,7 @@ export default function PaidLandingClient() {
 
         <motion.section {...sectionMotion} className="space-y-6">
           <h2 className="text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Quem usa entende rapido a diferenca.
+            Quem usa entende rápido a diferença.
           </h2>
           <motion.div {...staggerMotion} className="grid gap-4 md:grid-cols-3">
             {testimonials.map((item) => (
@@ -651,13 +645,11 @@ export default function PaidLandingClient() {
           className="rounded-[2rem] border border-emerald-300/20 bg-[linear-gradient(180deg,rgba(16,185,129,0.14),rgba(15,23,42,0.94)_35%,rgba(2,6,23,0.98)_100%)] px-6 py-10 text-center md:px-10"
         >
           <h2 className="mx-auto max-w-3xl text-3xl font-bold text-white md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Descubra para onde seu dinheiro esta indo.
+            Descubra para onde seu dinheiro está indo.
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-slate-200">
-            Comece gratuitamente e tenha controle real da sua vida financeira.
-          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-slate-200">Comece gratuitamente e tenha controle real da sua vida financeira.</p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3">
-            <PrimaryCta href="/signup">Criar conta gratis</PrimaryCta>
+            <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
             <p className="text-sm text-slate-400">Leva menos de 30 segundos.</p>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">
               <ShieldCheck size={14} className="text-emerald-300" />
