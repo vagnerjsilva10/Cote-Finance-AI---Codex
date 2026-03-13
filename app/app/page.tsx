@@ -219,6 +219,71 @@ type WorkspaceEventItem = {
   payload?: Record<string, unknown> | null;
 };
 
+type WorkspaceDashboardSnapshot = {
+  totalBalance: number;
+  currentPlan: SubscriptionPlan;
+  reportAccessLevel: ReportAccessLevel;
+  currentMonthTransactionCount: number;
+  aiUsageCount: number;
+  transactions: Transaction[];
+  goals: Goal[];
+  investments: Investment[];
+  debts: Debt[];
+  workspaceEvents: WorkspaceEventItem[];
+  dashboardInsights: string[];
+  isWhatsAppConnected: boolean;
+  workspaceWhatsAppPhoneNumber: string;
+  workspaceWhatsAppTestPhoneNumber: string;
+  workspaceWhatsAppConnectTemplateName: string;
+  workspaceWhatsAppDigestTemplateName: string;
+  workspaceWhatsAppTemplateLanguage: string;
+};
+
+const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 1;
+
+function getDashboardSnapshotStorageKey(userId: string, workspaceId: string) {
+  return `cote-dashboard-snapshot:v${DASHBOARD_SNAPSHOT_STORAGE_VERSION}:${userId}:${workspaceId}`;
+}
+
+function readDashboardSnapshot(userId: string, workspaceId: string): WorkspaceDashboardSnapshot | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const rawSnapshot = window.sessionStorage.getItem(
+      getDashboardSnapshotStorageKey(userId, workspaceId)
+    );
+
+    if (!rawSnapshot) {
+      return null;
+    }
+
+    return JSON.parse(rawSnapshot) as WorkspaceDashboardSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+function writeDashboardSnapshot(
+  userId: string,
+  workspaceId: string,
+  snapshot: WorkspaceDashboardSnapshot
+) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      getDashboardSnapshotStorageKey(userId, workspaceId),
+      JSON.stringify(snapshot)
+    );
+  } catch {
+    // Ignore storage failures. The in-memory cache still handles the fast path.
+  }
+}
+
 type SubscriptionOverview = {
   workspaceId: string;
   workspaceName: string;
@@ -6838,7 +6903,7 @@ export default function App() {
       }
       const resolvedWorkspaceId = typeof data.activeWorkspaceId === 'string' ? data.activeWorkspaceId : activeWorkspaceId;
       if (resolvedWorkspaceId) {
-        workspaceDashboardCacheRef.current[resolvedWorkspaceId] = {
+        const workspaceSnapshot: WorkspaceDashboardSnapshot = {
           totalBalance: data.totalBalance !== undefined ? Number(data.totalBalance) : 0,
           currentPlan: data.plan ? normalizePlan(data.plan) : 'FREE',
           reportAccessLevel:
@@ -6936,6 +7001,10 @@ export default function App() {
               ? data.workspace.whatsapp_template_language
               : 'pt_BR',
         };
+        workspaceDashboardCacheRef.current[resolvedWorkspaceId] = workspaceSnapshot;
+        if (user?.id) {
+          writeDashboardSnapshot(user.id, resolvedWorkspaceId, workspaceSnapshot);
+        }
       }
       hasFetchedDashboardRef.current = true;
       // Update other states as needed
@@ -7120,30 +7189,27 @@ export default function App() {
   const hasFetchedDashboardRef = React.useRef(false);
   const quickCreateMenuRef = React.useRef<HTMLDivElement | null>(null);
   const avatarInputRef = React.useRef<HTMLInputElement | null>(null);
-  const workspaceDashboardCacheRef = React.useRef<
-    Record<
-      string,
-      {
-        totalBalance: number;
-        currentPlan: SubscriptionPlan;
-        reportAccessLevel: ReportAccessLevel;
-        currentMonthTransactionCount: number;
-        aiUsageCount: number;
-        transactions: Transaction[];
-        goals: Goal[];
-        investments: Investment[];
-        debts: Debt[];
-        workspaceEvents: WorkspaceEventItem[];
-        dashboardInsights: string[];
-        isWhatsAppConnected: boolean;
-        workspaceWhatsAppPhoneNumber: string;
-        workspaceWhatsAppTestPhoneNumber: string;
-        workspaceWhatsAppConnectTemplateName: string;
-        workspaceWhatsAppDigestTemplateName: string;
-        workspaceWhatsAppTemplateLanguage: string;
-      }
-    >
-  >({});
+  const workspaceDashboardCacheRef = React.useRef<Record<string, WorkspaceDashboardSnapshot>>({});
+
+  const applyDashboardSnapshot = React.useCallback((snapshot: WorkspaceDashboardSnapshot) => {
+    setTotalBalance(snapshot.totalBalance);
+    setCurrentPlan(snapshot.currentPlan);
+    setReportAccessLevel(snapshot.reportAccessLevel);
+    setCurrentMonthTransactionCount(snapshot.currentMonthTransactionCount);
+    setAiUsageCount(snapshot.aiUsageCount);
+    setTransactions(snapshot.transactions);
+    setGoals(snapshot.goals);
+    setInvestments(snapshot.investments);
+    setDebts(snapshot.debts);
+    setWorkspaceEvents(snapshot.workspaceEvents);
+    setDashboardInsights(snapshot.dashboardInsights);
+    setIsWhatsAppConnected(snapshot.isWhatsAppConnected);
+    setWorkspaceWhatsAppPhoneNumber(snapshot.workspaceWhatsAppPhoneNumber);
+    setWorkspaceWhatsAppTestPhoneNumber(snapshot.workspaceWhatsAppTestPhoneNumber);
+    setWorkspaceWhatsAppConnectTemplateName(snapshot.workspaceWhatsAppConnectTemplateName);
+    setWorkspaceWhatsAppDigestTemplateName(snapshot.workspaceWhatsAppDigestTemplateName);
+    setWorkspaceWhatsAppTemplateLanguage(snapshot.workspaceWhatsAppTemplateLanguage);
+  }, []);
 
   React.useEffect(() => {
     const nextUserId = user?.id ?? null;
@@ -7190,32 +7256,17 @@ export default function App() {
     }
   }, [user?.id]);
 
-  React.useEffect(() => {
-    if (!user?.id) return;
-    if (lastWorkspaceIdRef.current === activeWorkspaceId) return;
-    lastWorkspaceIdRef.current = activeWorkspaceId;
-    if (!activeWorkspaceId) return;
-    const cachedWorkspaceData = workspaceDashboardCacheRef.current[activeWorkspaceId];
-    if (!cachedWorkspaceData) return;
-
-    setTotalBalance(cachedWorkspaceData.totalBalance);
-    setCurrentPlan(cachedWorkspaceData.currentPlan);
-    setReportAccessLevel(cachedWorkspaceData.reportAccessLevel);
-    setCurrentMonthTransactionCount(cachedWorkspaceData.currentMonthTransactionCount);
-    setAiUsageCount(cachedWorkspaceData.aiUsageCount);
-    setTransactions(cachedWorkspaceData.transactions);
-    setGoals(cachedWorkspaceData.goals);
-    setInvestments(cachedWorkspaceData.investments);
-    setDebts(cachedWorkspaceData.debts);
-    setWorkspaceEvents(cachedWorkspaceData.workspaceEvents);
-    setDashboardInsights(cachedWorkspaceData.dashboardInsights);
-    setIsWhatsAppConnected(cachedWorkspaceData.isWhatsAppConnected);
-    setWorkspaceWhatsAppPhoneNumber(cachedWorkspaceData.workspaceWhatsAppPhoneNumber);
-    setWorkspaceWhatsAppTestPhoneNumber(cachedWorkspaceData.workspaceWhatsAppTestPhoneNumber);
-    setWorkspaceWhatsAppConnectTemplateName(cachedWorkspaceData.workspaceWhatsAppConnectTemplateName);
-    setWorkspaceWhatsAppDigestTemplateName(cachedWorkspaceData.workspaceWhatsAppDigestTemplateName);
-    setWorkspaceWhatsAppTemplateLanguage(cachedWorkspaceData.workspaceWhatsAppTemplateLanguage);
-  }, [activeWorkspaceId, user?.id]);
+React.useEffect(() => {
+  if (!user?.id) return;
+  if (lastWorkspaceIdRef.current === activeWorkspaceId) return;
+  lastWorkspaceIdRef.current = activeWorkspaceId;
+  if (!activeWorkspaceId) return;
+  const cachedWorkspaceData =
+    workspaceDashboardCacheRef.current[activeWorkspaceId] ?? readDashboardSnapshot(user.id, activeWorkspaceId);
+  if (!cachedWorkspaceData) return;
+  workspaceDashboardCacheRef.current[activeWorkspaceId] = cachedWorkspaceData;
+  applyDashboardSnapshot(cachedWorkspaceData);
+}, [activeWorkspaceId, applyDashboardSnapshot, user?.id]);
 
   React.useEffect(() => {
     if (!isQuickCreateOpen) return;
