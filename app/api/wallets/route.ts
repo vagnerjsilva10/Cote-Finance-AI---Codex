@@ -15,7 +15,7 @@ type CreateWalletBody = {
 function parseInitialBalance(value: number | string | undefined) {
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) {
-      throw new HttpError(400, 'Saldo inicial inválido.');
+      throw new HttpError(400, 'Saldo inicial invÃ¡lido.');
     }
     return value;
   }
@@ -32,7 +32,7 @@ function parseInitialBalance(value: number | string | undefined) {
 
     const parsed = Number(normalizedValue.replace(/\./g, '').replace(',', '.'));
     if (!Number.isFinite(parsed)) {
-      throw new HttpError(400, 'Saldo inicial inválido.');
+      throw new HttpError(400, 'Saldo inicial invÃ¡lido.');
     }
     return parsed;
   }
@@ -102,5 +102,80 @@ export async function POST(req: Request) {
 
     console.error('Wallets POST Error:', error);
     return NextResponse.json({ error: 'Failed to create wallet' }, { status: 500 });
+  }
+}
+export async function DELETE(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const url = new URL(req.url);
+    const walletId = url.searchParams.get('id')?.trim();
+    if (!walletId) {
+      throw new HttpError(400, 'Wallet id is required');
+    }
+    const wallet = await prisma.wallet.findFirst({
+      where: {
+        id: walletId,
+        workspace_id: context.workspaceId,
+      },
+      select: {
+        id: true,
+        name: true,
+        balance: true,
+      },
+    });
+    if (!wallet) {
+      throw new HttpError(404, 'Wallet not found');
+    }
+    const [linkedTransactionsCount, linkedInvestmentsCount] = await Promise.all([
+      prisma.transaction.count({
+        where: {
+          OR: [
+            { wallet_id: wallet.id },
+            { destination_wallet_id: wallet.id },
+          ],
+        },
+      }),
+      prisma.investment.count({
+        where: {
+          workspace_id: context.workspaceId,
+          institution: wallet.name,
+        },
+      }),
+    ]);
+    if (linkedTransactionsCount > 0 || linkedInvestmentsCount > 0) {
+      throw new HttpError(
+        409,
+        'Nao e possivel excluir uma carteira com transacoes ou investimentos vinculados.'
+      );
+    }
+    await prisma.wallet.delete({
+      where: {
+        id: wallet.id,
+      },
+    });
+    await logWorkspaceEventSafe({
+      workspaceId: context.workspaceId,
+      type: 'wallet.deleted',
+      payload: {
+        walletId: wallet.id,
+        walletName: wallet.name,
+      },
+    });
+    return NextResponse.json({
+      ok: true,
+      walletId: wallet.id,
+      walletName: wallet.name,
+      balance: Number(wallet.balance),
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+    console.error('Delete wallet error:', error);
+    return NextResponse.json({ error: 'Failed to delete wallet' }, { status: 500 });
   }
 }
