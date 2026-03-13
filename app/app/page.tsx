@@ -691,7 +691,7 @@ const EXPENSE_TRANSACTION_CATEGORIES: readonly string[] = [
 ] as const;
 const TRANSFER_TRANSACTION_CATEGORIES: readonly string[] = ['Outros'];
 
-const TRANSACTION_WALLETS = ['Nubank', 'Itaú', 'Santander', 'Bradesco', 'Dinheiro', 'Outros'];
+const DEFAULT_TRANSACTION_WALLET = 'Carteira principal';
 
 const MAIN_BANK_OPTIONS = [
   'Nubank',
@@ -798,7 +798,7 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
   flowType: 'Despesa',
   category: 'Alimentação',
   paymentMethod: 'PIX',
-  wallet: TRANSACTION_WALLETS[0],
+  wallet: DEFAULT_TRANSACTION_WALLET,
   destinationWallet: '',
   receiptUrl: null,
   date: new Date().toISOString().split('T')[0],
@@ -5388,6 +5388,7 @@ const TransactionModal = ({
   onSubmit,
   onSuggestCategory,
   onParseReceipt,
+  walletOptions,
   initialData = null,
   initialDraft = null,
 }: TransactionModalProps) => {
@@ -5745,7 +5746,7 @@ const TransactionModal = ({
                     onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
                     className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
                   >
-                    {TRANSACTION_WALLETS.map((wallet) => (
+                    {walletChoices.map((wallet) => (
                       <option key={wallet} value={wallet}>
                         {wallet}
                       </option>
@@ -5762,7 +5763,7 @@ const TransactionModal = ({
                     className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
                   >
                     <option value="">Selecione</option>
-                    {TRANSACTION_WALLETS.map((wallet) => (
+                    {walletChoices.map((wallet) => (
                       <option key={wallet} value={wallet}>
                         {wallet}
                       </option>
@@ -11243,5 +11244,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
