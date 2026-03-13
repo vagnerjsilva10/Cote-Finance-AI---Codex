@@ -33,7 +33,7 @@ type CheckoutPlan = 'Pro Mensal' | 'Premium Mensal';
 type PlanCard = {
   name: 'Free' | 'Pro' | 'Premium';
   price: string;
-  label: string;
+  label?: string;
   benefit: string;
   buttonText: string;
   microcopy: string;
