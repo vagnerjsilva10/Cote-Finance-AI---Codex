@@ -5378,6 +5378,7 @@ type TransactionModalProps = {
       }
     | null
   >;
+  walletOptions: WalletAccount[];
   initialData?: Transaction | null;
   initialDraft?: Partial<TransactionFormData> | null;
 };
@@ -5392,19 +5393,65 @@ const TransactionModal = ({
   initialData = null,
   initialDraft = null,
 }: TransactionModalProps) => {
+  const walletChoices = React.useMemo(() => {
+    const names = walletOptions
+      .map((wallet) => wallet.name.trim())
+      .filter((name, index, array) => name.length > 0 && array.indexOf(name) === index);
+
+    return names.length > 0 ? names : TRANSACTION_WALLETS;
+  }, [walletOptions]);
+
+  const normalizeWalletSelection = React.useCallback(
+    (value?: string | null) => {
+      if (value && walletChoices.includes(value)) {
+        return value;
+      }
+
+      return walletChoices[0] || TRANSACTION_WALLETS[0];
+    },
+    [walletChoices]
+  );
+
+  const normalizeDestinationWalletSelection = React.useCallback(
+    (value?: string | null, sourceWallet?: string | null) => {
+      const alternatives = walletChoices.filter((wallet) => wallet !== sourceWallet);
+      if (value && alternatives.includes(value)) {
+        return value;
+      }
+
+      return alternatives[0] || '';
+    },
+    [walletChoices]
+  );
+
   const getInitialFormData = React.useCallback((): TransactionFormData => {
     if (!initialData) {
+      const draftFlowType = initialDraft?.flowType || 'Despesa';
+      const draftWallet = normalizeWalletSelection(initialDraft?.wallet);
+      const normalizedPaymentMethod =
+        initialDraft?.paymentMethod ||
+        (draftFlowType === 'Transferência' ? 'Transferência bancária' : 'PIX');
+
       return {
         description: '',
         amount: '',
-        flowType: 'Despesa',
-        category: getDefaultCategoryForFlow('Despesa'),
-        paymentMethod: 'PIX',
-        wallet: TRANSACTION_WALLETS[0],
-        destinationWallet: '',
+        flowType: draftFlowType,
+        category: getDefaultCategoryForFlow(draftFlowType),
+        paymentMethod: normalizedPaymentMethod,
+        wallet: draftWallet,
+        destinationWallet:
+          draftFlowType === 'Transferência'
+            ? normalizeDestinationWalletSelection(initialDraft?.destinationWallet, draftWallet)
+            : '',
         receiptUrl: null,
         date: new Date().toISOString().split('T')[0],
         ...initialDraft,
+        wallet: draftWallet,
+        destinationWallet:
+          draftFlowType === 'Transferência'
+            ? normalizeDestinationWalletSelection(initialDraft?.destinationWallet, draftWallet)
+            : '',
+        paymentMethod: normalizedPaymentMethod,
       };
     }
 
@@ -5419,12 +5466,15 @@ const TransactionModal = ({
       flowType: initialData.flowType,
       category: initialData.cat || 'Outros',
       paymentMethod: initialData.paymentMethod || getDefaultPaymentMethodForFlow(initialData.flowType),
-      wallet: initialData.wallet,
-      destinationWallet: initialData.destinationWallet || '',
+      wallet: normalizeWalletSelection(initialData.wallet),
+      destinationWallet:
+        initialData.flowType === 'Transferência'
+          ? normalizeDestinationWalletSelection(initialData.destinationWallet, initialData.wallet)
+          : '',
       receiptUrl: initialData.receiptUrl || null,
       date: normalizedDate,
     };
-  }, [initialData]);
+  }, [initialData, initialDraft, normalizeDestinationWalletSelection, normalizeWalletSelection]);
 
   const [formData, setFormData] = React.useState<TransactionFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -5458,6 +5508,28 @@ const TransactionModal = ({
       }));
     }
   }, [availableCategories, formData.category]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    setFormData((prev) => {
+      const nextWallet = normalizeWalletSelection(prev.wallet);
+      const nextDestinationWallet =
+        prev.flowType === 'Transferência'
+          ? normalizeDestinationWalletSelection(prev.destinationWallet, nextWallet)
+          : '';
+
+      if (nextWallet === prev.wallet && nextDestinationWallet === prev.destinationWallet) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        wallet: nextWallet,
+        destinationWallet: nextDestinationWallet,
+      };
+    });
+  }, [isOpen, normalizeDestinationWalletSelection, normalizeWalletSelection]);
 
   React.useEffect(() => {
     if (!isOpen || !onSuggestCategory) return;
