@@ -9496,10 +9496,10 @@ React.useEffect(() => {
                   </label>
                   <input
                     type="text"
-                    inputMode="decimal"
+                    inputMode="numeric"
                     value={newWalletInitialBalance}
-                    onChange={(event) => setNewWalletInitialBalance(event.target.value)}
-                    placeholder="Ex.: 1500 ou 1.500,00"
+                    onChange={(event) => setNewWalletInitialBalance(maskMoneyInput(event.target.value))}
+                    placeholder="R$ 0,00"
                     className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
                   />
                 </div>

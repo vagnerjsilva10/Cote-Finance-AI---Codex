@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { HttpError, logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
@@ -21,7 +21,11 @@ function parseInitialBalance(value: number | string | undefined) {
   }
 
   if (typeof value === 'string') {
-    const normalizedValue = value.trim();
+    const normalizedValue = value
+      .trim()
+      .replace(/^R\$\s?/i, '')
+      .replace(/\s/g, '')
+      .replace(/\u00A0/g, '');
     if (!normalizedValue) {
       return 0;
     }
