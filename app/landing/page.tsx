@@ -480,7 +480,7 @@ export default function LandingPage() {
               <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
             <h1 className="text-[2.35rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Descubra para onde seu dinheiro está indo — e assuma o controle das suas finanças.
+              Descubra para onde seu dinheiro está indo e assuma o controle.
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-slate-300">
               Cote Finance AI usa inteligência artificial para analisar seus gastos, organizar sua rotina financeira e
@@ -711,15 +711,15 @@ export default function LandingPage() {
           </h2>
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Funcionalidade 1</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Receitas e despesas</p>
               <p className="text-slate-200">Registro simples de receitas e despesas.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Funcionalidade 2</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Gráficos inteligentes</p>
               <p className="text-slate-200">Gráficos financeiros inteligentes para entender o mês com clareza.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Funcionalidade 3</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">IA e alertas</p>
               <p className="text-slate-200">
                 Análise automática com IA, insights personalizados e alertas via WhatsApp.
               </p>
