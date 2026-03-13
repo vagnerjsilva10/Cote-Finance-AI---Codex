@@ -9249,6 +9249,34 @@ React.useEffect(() => {
     }
   };
 
+  const handleDeleteWallet = async (wallet: WalletAccount) => {
+    const confirmed = window.confirm(`Excluir a carteira "${wallet.name}"? Essa acao nao pode ser desfeita.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/wallets?id=${encodeURIComponent(wallet.id)}`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(true),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = typeof payload?.error === 'string' ? payload.error : `Falha ao excluir carteira (HTTP ${response.status}).`;
+        throw new Error(message);
+      }
+
+      setWallets((prev) => prev.filter((item) => item.id !== wallet.id));
+      if (typeof wallet.balance === 'number' && Number.isFinite(wallet.balance)) {
+        setTotalBalance((prev) => prev - wallet.balance);
+      }
+      void fetchDashboardData({ silent: true });
+    } catch (error) {
+      console.error('Delete wallet error:', error);
+      window.alert(error instanceof Error ? error.message : 'Falha ao excluir carteira.');
+    }
+  };
+
   const handleOpenNew = () => {
     setIsQuickCreateOpen((prev) => !prev);
   };
