@@ -146,6 +146,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { id } = await params;
 
     const body = (await req.json()) as {
+      action?: string;
+      memberId?: string | null;
+      memberRole?: string | null;
       name?: string;
       whatsappStatus?: string;
       whatsappPhoneNumber?: string | null;
@@ -157,6 +160,77 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       lifecycleReason?: string | null;
       ownerUserId?: string | null;
     };
+
+    if (body.action === 'update-member-role') {
+      const memberId = typeof body.memberId === 'string' ? body.memberId.trim() : '';
+      const memberRole =
+        body.memberRole === 'OWNER' || body.memberRole === 'ADMIN' || body.memberRole === 'MEMBER'
+          ? body.memberRole
+          : null;
+
+      if (!memberId || !memberRole) {
+        return NextResponse.json({ error: 'Membro ou papel inválido para atualização.' }, { status: 400 });
+      }
+
+      const workspaceWithMembers = await prisma.workspace.findUnique({
+        where: { id },
+        include: {
+          members: true,
+          preference: true,
+        },
+      });
+
+      if (!workspaceWithMembers) {
+        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      }
+
+      const targetMember = workspaceWithMembers.members.find((member) => member.id === memberId);
+      if (!targetMember) {
+        return NextResponse.json({ error: 'Membro não encontrado neste workspace.' }, { status: 404 });
+      }
+
+      await prisma.$transaction(async (tx) => {
+        if (memberRole === 'OWNER') {
+          await tx.workspaceMember.updateMany({
+            where: {
+              workspace_id: id,
+              role: 'OWNER',
+            },
+            data: {
+              role: 'ADMIN',
+            },
+          });
+        }
+
+        await tx.workspaceMember.update({
+          where: { id: memberId },
+          data: {
+            role: memberRole,
+          },
+        });
+      });
+
+      await prisma.workspaceEvent.create({
+        data: {
+          workspace_id: id,
+          user_id: targetMember.user_id,
+          type: 'superadmin.workspace.member.updated',
+          payload: {
+            source: 'superadmin',
+            memberId,
+            memberRole,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        ok: true,
+        member: {
+          id: memberId,
+          role: memberRole,
+        },
+      });
+    }
 
     const workspace = await prisma.workspace.findUnique({
       where: { id },

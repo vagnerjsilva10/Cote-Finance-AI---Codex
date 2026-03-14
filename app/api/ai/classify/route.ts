@@ -9,6 +9,7 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import { getAiUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,7 +20,7 @@ async function getCurrentMonthAiUsage(workspaceId: string) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    return await prisma.workspaceEvent.count({
+    const actualUsage = await prisma.workspaceEvent.count({
       where: {
         workspace_id: workspaceId,
         type: {
@@ -31,6 +32,8 @@ async function getCurrentMonthAiUsage(workspaceId: string) {
         },
       },
     });
+    const offset = await getAiUsageEffectiveOffset(workspaceId);
+    return Math.max(0, actualUsage + offset);
   } catch {
     return 0;
   }

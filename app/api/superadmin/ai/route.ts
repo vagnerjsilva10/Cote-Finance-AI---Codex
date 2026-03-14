@@ -4,6 +4,11 @@ import { PLAN_LIMITS, type WorkspacePlan } from '@/lib/billing/limits';
 import { prisma } from '@/lib/prisma';
 import { HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
+import {
+  getAiUsageOverrideMap,
+  getMonthKeyFromDate,
+  setAiUsageResetForWorkspace,
+} from '@/lib/server/superadmin-governance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -154,7 +159,7 @@ export async function GET(req: Request) {
       });
     }
 
-    const [currentMonthGroups, lastAiEventGroups, recentEvents, trendEvents] = await Promise.all([
+    const [currentMonthGroups, lastAiEventGroups, recentEvents, trendEvents, aiOverrides] = await Promise.all([
       prisma.workspaceEvent.groupBy({
         by: ['workspace_id', 'type'],
         where: {
@@ -215,6 +220,7 @@ export async function GET(req: Request) {
           created_at: true,
         },
       }),
+      getAiUsageOverrideMap(),
     ]);
 
     const usageByWorkspace = new Map<string, WorkspaceUsageAccumulator>();
@@ -229,14 +235,18 @@ export async function GET(req: Request) {
       lastAiEventGroups.map((row) => [row.workspace_id, toIso(row._max.created_at)])
     );
 
+    const currentMonthKey = getMonthKeyFromDate(now);
     const workspaceRows = workspaces
       .map((workspace) => {
         const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
         const resolvedPlan = (workspace.subscription?.plan || 'FREE') as WorkspacePlan;
         const usage = usageByWorkspace.get(workspace.id) ?? emptyUsageAccumulator();
         const currentMonthUsage = usage.chat + usage.classify;
+        const resetOffset = aiOverrides[`${workspace.id}:${currentMonthKey}`]?.offset || 0;
+        const resetReason = aiOverrides[`${workspace.id}:${currentMonthKey}`]?.reason || null;
+        const effectiveUsage = Math.max(0, currentMonthUsage + resetOffset);
         const limit = PLAN_LIMITS[resolvedPlan].aiInteractionsPerMonth;
-        const usageRate = getUsageRate(currentMonthUsage, limit);
+        const usageRate = getUsageRate(effectiveUsage, limit);
 
         return {
           workspaceId: workspace.id,
@@ -245,12 +255,15 @@ export async function GET(req: Request) {
           ownerEmail: owner?.user.email ?? null,
           plan: resolvedPlan,
           currentMonthUsage,
+          effectiveUsage,
           chatUsage: usage.chat,
           classifyUsage: usage.classify,
           limit,
           usageRate,
-          nearLimit: typeof limit === 'number' ? currentMonthUsage >= Math.ceil(limit * 0.8) : false,
+          nearLimit: typeof limit === 'number' ? effectiveUsage >= Math.ceil(limit * 0.8) : false,
           aiSuggestionsEnabled: workspace.preference?.ai_suggestions_enabled ?? false,
+          resetOffset,
+          resetReason,
           lastAiEventAt: lastEventByWorkspace.get(workspace.id) ?? null,
         };
       })
@@ -308,5 +321,71 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ error: 'Falha ao carregar métricas de IA.' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const access = await requireSuperadminAccess(req);
+    const body = (await req.json()) as {
+      workspaceId?: string;
+      action?: string;
+      reason?: string | null;
+    };
+
+    const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
+    if (!workspaceId) {
+      return NextResponse.json({ error: 'Workspace inválido para a operação de IA.' }, { status: 400 });
+    }
+
+    if (body.action !== 'reset-usage') {
+      return NextResponse.json({ error: 'Ação de IA não suportada.' }, { status: 400 });
+    }
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const actualUsage = await prisma.workspaceEvent.count({
+      where: {
+        workspace_id: workspaceId,
+        type: { in: [...AI_EVENT_TYPES] },
+        created_at: { gte: monthStart, lt: nextMonthStart },
+      },
+    });
+
+    const reset = await setAiUsageResetForWorkspace({
+      workspaceId,
+      actualUsage,
+      reason: body.reason || `Reset administrativo por ${access.email || 'superadmin'}`,
+    });
+
+    await prisma.workspaceEvent.create({
+      data: {
+        workspace_id: workspaceId,
+        type: 'superadmin.ai.usage.reset',
+        payload: {
+          source: 'superadmin',
+          resetBy: access.email,
+          actualUsage,
+          offset: reset.offset,
+          reason: reset.reason,
+          monthKey: reset.monthKey,
+        },
+      },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      workspaceId,
+      effectiveUsage: 0,
+      resetOffset: reset.offset,
+      resetReason: reset.reason,
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    return NextResponse.json({ error: 'Falha ao executar ação administrativa de IA.' }, { status: 500 });
   }
 }

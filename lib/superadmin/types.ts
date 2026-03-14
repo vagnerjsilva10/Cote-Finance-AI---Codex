@@ -399,6 +399,9 @@ export type SuperadminAiWorkspaceUsageSummary = {
   usageRate: number | null;
   nearLimit: boolean;
   aiSuggestionsEnabled: boolean;
+  resetOffset: number;
+  resetReason: string | null;
+  effectiveUsage: number;
   lastAiEventAt: string | null;
 };
 
@@ -446,6 +449,14 @@ export type SuperadminAiResponse = {
   total: number;
   workspaces: SuperadminAiWorkspaceUsageSummary[];
   recentEvents: SuperadminAiRecentEvent[];
+};
+
+export type SuperadminAiResetResponse = {
+  ok: boolean;
+  workspaceId: string;
+  effectiveUsage: number;
+  resetOffset: number;
+  resetReason: string | null;
 };
 
 export type SuperadminWhatsappWorkspaceSummary = {
