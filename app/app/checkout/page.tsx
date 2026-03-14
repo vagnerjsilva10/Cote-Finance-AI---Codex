@@ -1407,22 +1407,21 @@ function CheckoutPageContent() {
                 </div>
               </div>
 
-              <div className="space-y-3 rounded-[1.3rem] border border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">
-                <div className="flex items-start gap-2">
-                  <LockKeyhole className="mt-0.5 size-4 text-emerald-300" />
-                  <div className="space-y-2">
-                    <p>Pagamento seguro processado pela Stripe.</p>
-                    <p>Seus dados são protegidos por criptografia SSL.</p>
-                  </div>
+              <div className="space-y-5 border-t border-white/10 pt-5 text-sm text-slate-400">
+                <div className="space-y-2">
+                  <p className="flex items-start gap-2">
+                    <LockKeyhole className="mt-0.5 size-4 text-emerald-300" />
+                    <span>Pagamento seguro processado pela Stripe.</span>
+                  </p>
+                  <p>Seus dados são protegidos por criptografia SSL.</p>
+                  <p>Cancele sua assinatura a qualquer momento.</p>
                 </div>
-                <p className="text-slate-500">Cancele sua assinatura a qualquer momento.</p>
-              </div>
 
-              <footer className="flex flex-col gap-4 border-t border-white/10 pt-5 text-sm text-slate-400 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-1">
                   <p className="font-semibold text-slate-200">Cote Finance AI</p>
                   <p>By Cote Juros</p>
                 </div>
+
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                   <Link href="/termos-de-uso" className="transition hover:text-white">
                     Termos de uso
@@ -1434,7 +1433,7 @@ function CheckoutPageContent() {
                     suporte@cotejuros.com.br
                   </a>
                 </div>
-              </footer>
+              </div>
             </div>
           </section>
         </div>
