@@ -251,7 +251,7 @@ const plans: PlanCard[] = [
     name: 'Free',
     price: 'R$0/mês',
     label: 'Entrada',
-    benefit: 'Ideal para começar a organizar suas finanças',
+    benefit: 'Ideal para começar a organizar suas finanças.',
     buttonText: 'Criar conta grátis',
     microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
     signupHref: '/signup?plan=free',
@@ -267,7 +267,7 @@ const plans: PlanCard[] = [
     name: 'Pro',
     price: 'R$29/mês',
     label: 'Melhor escolha',
-    benefit: 'A melhor escolha para quem quer entender melhor os gastos e usar a IA no dia a dia',
+    benefit: 'Mais escolhido por quem quer controle financeiro completo.',
     buttonText: 'Começar teste grátis',
     microcopy: 'Crie sua conta, teste grátis e evolua no seu ritmo.',
     signupHref: '/signup?plan=pro&trial=true',
@@ -286,7 +286,7 @@ const plans: PlanCard[] = [
     name: 'Premium',
     price: 'R$49/mês',
     label: 'Controle total',
-    benefit: 'Controle financeiro mais completo com automações e análises mais profundas',
+    benefit: 'Controle total e automações avançadas.',
     buttonText: 'Assinar Premium',
     microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
     signupHref: '/signup?plan=premium',
@@ -318,6 +318,24 @@ const pricingFaqs = [
   {
     question: 'Posso cancelar quando quiser?',
     answer: 'Sim. Os planos pagos não exigem contrato de longo prazo.',
+  },
+] as const;
+
+const testimonials = [
+  {
+    quote: 'Finalmente entendi para onde meu dinheiro estava indo.',
+    author: 'João',
+    location: 'São Paulo',
+  },
+  {
+    quote: 'Hoje consigo acompanhar meus gastos sem planilhas complicadas.',
+    author: 'Mariana',
+    location: 'Rio de Janeiro',
+  },
+  {
+    quote: 'Os alertas e insights me ajudaram a organizar minha rotina financeira de verdade.',
+    author: 'Carlos',
+    location: 'Belo Horizonte',
   },
 ] as const;
 
@@ -1005,17 +1023,52 @@ export default function LandingPage() {
           <p className="mb-6 text-slate-300">Nossa missão é simples: ajudar você a enxergar o que acontece com o seu dinheiro.</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-              <p className="text-2xl font-bold text-white">+12k</p>
-              <p className="text-sm text-slate-400">usuários ativos</p>
+              <p className="text-2xl font-bold text-white">+12.000</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">usuários organizando suas finanças</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-              <p className="text-2xl font-bold text-white">R$ 320M</p>
-              <p className="text-sm text-slate-400">em movimentações acompanhadas</p>
+              <p className="text-2xl font-bold text-white">R$320 milhões</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">monitorados na plataforma</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">94%</p>
-              <p className="text-sm text-slate-400">avaliam a plataforma como fácil de usar</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">dos usuários relatam mais clareza financeira</p>
             </div>
+          </div>
+        </motion.section>
+
+        <motion.section
+          className="space-y-6"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-120px' }}
+          transition={{ duration: 0.45 }}
+        >
+          <div className="space-y-3 text-center">
+            <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100">
+              Histórias de quem usa
+            </span>
+            <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+              Mais confiança para organizar sua vida financeira
+            </h2>
+            <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+              Depoimentos curtos de pessoas que passaram a enxergar o dinheiro com mais clareza no dia a dia.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            {testimonials.map((testimonial) => (
+              <div
+                key={`${testimonial.author}-${testimonial.location}`}
+                className="rounded-[1.75rem] border border-white/10 bg-slate-900/55 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,.9)]"
+              >
+                <p className="text-base leading-7 text-slate-100">&ldquo;{testimonial.quote}&rdquo;</p>
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <p className="text-sm font-semibold text-white">{testimonial.author}</p>
+                  <p className="text-sm text-slate-400">{testimonial.location}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.section>
 
@@ -1257,18 +1310,22 @@ export default function LandingPage() {
         >
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-52 -translate-y-1/2 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,.28),transparent_55%),radial-gradient(circle_at_60%_70%,rgba(56,189,248,.22),transparent_45%)] blur-xl" />
           <h2 className="mx-auto mb-4 max-w-3xl text-3xl font-bold text-white md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Seu dinheiro merece mais clareza.
+            Comece a organizar suas finanças hoje
           </h2>
           <p className="mx-auto mb-6 max-w-2xl text-slate-100/90">
-            Comece gratuitamente e descubra exatamente para onde seu dinheiro está indo.
+            Crie sua conta grátis em menos de 30 segundos.
           </p>
           <button
             onClick={startFree}
             disabled={isBusy}
             className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60"
           >
-            Criar conta grátis <ArrowRight size={16} />
+            Começar grátis <ArrowRight size={16} />
           </button>
+          <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-white/10 bg-slate-900/55 px-4 py-2 text-sm text-slate-300">
+            <ShieldCheck size={14} className="text-emerald-300" />
+            Seus dados são protegidos com criptografia e práticas modernas de segurança.
+          </div>
         </motion.section>
       </main>
 
