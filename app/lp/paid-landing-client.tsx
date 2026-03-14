@@ -312,7 +312,7 @@ export default function PaidLandingClient() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
               <p className="text-amber-300">★★★★★</p>
-              <h2 className="text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas ja comecaram a organizar suas finanças com o Cote Finance AI.</h2>
+              <h2 className="text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.</h2>
               <p className="text-slate-300">&ldquo;Finalmente entendi para onde meu dinheiro estava indo.&rdquo; - Usuário do Cote Finance</p>
               <div className="flex flex-wrap gap-3 pt-1 text-sm text-slate-200">
                 {socialBullets.map((item) => (
@@ -332,16 +332,16 @@ export default function PaidLandingClient() {
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="mb-4 text-slate-300">No começo do mês parece que tudo está sob controle.</p>
               <ul className="space-y-3 text-slate-200">
-                <li className="flex items-center gap-3"><Check size={16} className="text-emerald-300" /> o salario entra</li>
+                <li className="flex items-center gap-3"><Check size={16} className="text-emerald-300" /> o salário entra</li>
                 <li className="flex items-center gap-3"><Check size={16} className="text-emerald-300" /> algumas contas são pagas</li>
               </ul>
             </div>
             <div className="mt-5 rounded-2xl border border-rose-300/20 bg-rose-500/10 p-4 text-slate-100">
-              <p className="mb-2 font-semibold">Mas entao aparecem:</p>
+              <p className="mb-2 font-semibold">Mas então aparecem:</p>
               <ul className="space-y-2 text-sm text-rose-50">
                 <li>- pequenas compras</li>
                 <li>- assinaturas esquecidas</li>
-                <li>- gastos invisiveis</li>
+                <li>- gastos invisíveis</li>
               </ul>
               <p className="mt-4 font-semibold">E no final do mês o dinheiro simplesmente desaparece.</p>
             </div>
@@ -394,7 +394,7 @@ export default function PaidLandingClient() {
         </motion.section>
 
         <motion.section {...sectionMotion} className="rounded-[2rem] border border-white/10 bg-slate-900/55 p-6 md:p-8">
-          <SectionTitle eyebrow="Como funciona" title="Comecar e simples." />
+          <SectionTitle eyebrow="Como funciona" title="Começar é simples." />
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {howItWorks.map((item, index) => (
               <MotionCard key={item.step} className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
@@ -432,7 +432,7 @@ export default function PaidLandingClient() {
               <div className="space-y-3 text-slate-50">
                 <p>Com o Cote Finance AI você consegue:</p>
                 <ul className="space-y-2">
-                  <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> identificar gastos invisiveis</li>
+                  <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> identificar gastos invisíveis</li>
                   <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> descobrir hábitos que drenam sua renda</li>
                   <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> encontrar oportunidades reais de economia</li>
                 </ul>
@@ -444,7 +444,7 @@ export default function PaidLandingClient() {
         </motion.section>
         <motion.section {...sectionMotion} className="grid gap-6 lg:grid-cols-2">
           <MotionCard className="rounded-[2rem] border border-white/10 bg-slate-900/55 p-6 md:p-8">
-            <h2 className="mb-5 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Planilhas vs Inteligencia Financeira</h2>
+            <h2 className="mb-5 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Planilhas vs Inteligência Financeira</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
                 <h3 className="mb-4 text-xl font-semibold text-white">Planilhas</h3>
@@ -478,7 +478,7 @@ export default function PaidLandingClient() {
         </motion.section>
 
         <motion.section {...sectionMotion} className="space-y-6">
-          <SectionTitle title="Quem usa entende rapido a diferenca." />
+          <SectionTitle title="Quem usa entende rápido a diferença." />
           <div className="grid gap-4 md:grid-cols-3">
             {testimonials.map((item) => (
               <MotionCard key={item.author} className="rounded-[1.75rem] border border-white/10 bg-slate-900/55 p-6 backdrop-blur-sm"><p className="text-slate-100">&ldquo;{item.quote}&rdquo;</p><footer className="mt-4 text-sm text-slate-400">- {item.author}</footer></MotionCard>
@@ -525,6 +525,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
