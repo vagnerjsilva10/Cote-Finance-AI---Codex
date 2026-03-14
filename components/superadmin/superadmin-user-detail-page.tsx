@@ -31,6 +31,12 @@ const statusOptions = [
   { value: 'CANCELED', label: 'Cancelado' },
 ];
 
+const platformRoleOptions = [
+  { value: 'user', label: 'Usuário padrão' },
+  { value: 'admin', label: 'Admin da plataforma' },
+  { value: 'superadmin', label: 'Super Admin' },
+];
+
 export function SuperadminUserDetailPage() {
   const params = useParams<{ id: string }>();
   const userId = typeof params?.id === 'string' ? params.id : '';
@@ -121,6 +127,7 @@ export function SuperadminUserDetailPage() {
             <InfoRow label="Plano atual" value={formatPlanLabel(currentPlan)} />
             <InfoRow label="Assinatura" value={formatSubscriptionStatus(subscriptionStatus)} />
             <InfoRow label="Role da plataforma" value={formatPlatformRole(user.platformRole)} />
+            <InfoRow label="Origem do role" value={formatRoleSource(user.platformRoleSource)} />
             <InfoRow label="Último acesso" value={user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'} />
             <InfoRow
               label="Fim do período atual"
@@ -156,6 +163,7 @@ export function SuperadminUserDetailPage() {
                         name: response.user.name,
                         profilePlan: response.user.profilePlan,
                         platformRole: response.user.platformRole,
+                        platformRoleSource: response.user.platformRoleSource,
                         subscription: response.user.entitlement,
                       },
                     }
@@ -237,6 +245,7 @@ function UserActionsCard({
     entitlementPlan: string;
     entitlementStatus: string;
     currentPeriodEnd: string | null;
+    platformRole: string;
   }) => Promise<void>;
 }) {
   const [name, setName] = React.useState(user.name || '');
@@ -246,6 +255,7 @@ function UserActionsCard({
   const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState(
     user.subscription?.currentPeriodEnd ? user.subscription.currentPeriodEnd.slice(0, 10) : ''
   );
+  const [platformRole, setPlatformRole] = React.useState(user.platformRole || 'user');
 
   React.useEffect(() => {
     setName(user.name || '');
@@ -253,15 +263,15 @@ function UserActionsCard({
     setEntitlementPlan(user.subscription?.plan || user.profilePlan || 'FREE');
     setEntitlementStatus(user.subscription?.status || 'ACTIVE');
     setCurrentPeriodEnd(user.subscription?.currentPeriodEnd ? user.subscription.currentPeriodEnd.slice(0, 10) : '');
+    setPlatformRole(user.platformRole || 'user');
   }, [user]);
 
   return (
     <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
       <h2 className="text-lg font-semibold text-white">Ações administrativas</h2>
       <p className="mt-3 text-sm leading-7 text-slate-400">
-        Ajuste nome, plano do perfil e entitlement do usuário. O papel da plataforma continua controlado por
-        <span className="font-medium text-slate-200"> `SUPERADMIN_EMAILS` </span>e
-        <span className="font-medium text-slate-200"> `ADMIN_EMAILS`</span>.
+        Ajuste nome, plano do perfil, entitlement e override de acesso da plataforma. Se existir override salvo,
+        ele prevalece sobre as env vars.
       </p>
 
       <div className="mt-5 space-y-4">
@@ -296,6 +306,17 @@ function UserActionsCard({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Role da plataforma</span>
+            <select value={platformRole} onChange={(event) => setPlatformRole(event.target.value)} className={fieldClassName}>
+              {platformRoleOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Status do entitlement</span>
             <select value={entitlementStatus} onChange={(event) => setEntitlementStatus(event.target.value)} className={fieldClassName}>
               {statusOptions.map((option) => (
@@ -323,6 +344,7 @@ function UserActionsCard({
                 entitlementPlan,
                 entitlementStatus,
                 currentPeriodEnd: currentPeriodEnd || null,
+                platformRole,
               })
             }
             className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
@@ -345,6 +367,12 @@ function LoadingState({ label }: { label: string }) {
       </div>
     </div>
   );
+}
+
+function formatRoleSource(source: 'env' | 'override' | 'default') {
+  if (source === 'override') return 'Override salvo no Superadmin';
+  if (source === 'env') return 'Env da plataforma';
+  return 'Padrão do sistema';
 }
 
 function ErrorState({ message }: { message: string }) {

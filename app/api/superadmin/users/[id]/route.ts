@@ -1,12 +1,14 @@
-﻿import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
 import { HttpError, normalizePlan } from '@/lib/server/multi-tenant';
-import { getPlatformRoleForEmail, requireSuperadminAccess } from '@/lib/server/platform-access';
+import { requireSuperadminAccess, resolvePlatformRoleForEmail } from '@/lib/server/platform-access';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const PLATFORM_ROLE_OVERRIDES_KEY = 'superadmin.platform-role-overrides';
 const ALLOWED_STATUSES = new Set(['ACTIVE', 'PENDING', 'CANCELED']);
 
 function toIso(value: Date | null | undefined) {
@@ -65,24 +67,26 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const aiUsageLast30Days = await prisma.workspaceEvent.count({
-      where: {
-        user_id: user.id,
-        created_at: {
-          gte: thirtyDaysAgo,
+    const [aiUsageLast30Days, eventsLast30Days, resolvedRole] = await Promise.all([
+      prisma.workspaceEvent.count({
+        where: {
+          user_id: user.id,
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+          OR: [{ type: { contains: 'ai' } }, { type: { contains: 'insight' } }],
         },
-        OR: [{ type: { contains: 'ai' } }, { type: { contains: 'insight' } }],
-      },
-    });
-
-    const eventsLast30Days = await prisma.workspaceEvent.count({
-      where: {
-        user_id: user.id,
-        created_at: {
-          gte: thirtyDaysAgo,
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          user_id: user.id,
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
         },
-      },
-    });
+      }),
+      resolvePlatformRoleForEmail(user.email),
+    ]);
 
     return NextResponse.json({
       user: {
@@ -91,7 +95,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         email: user.email,
         createdAt: toIso(user.created_at),
         updatedAt: toIso(user.updated_at),
-        platformRole: getPlatformRoleForEmail(user.email),
+        platformRole: resolvedRole.role,
+        platformRoleSource: resolvedRole.source,
         profilePlan: user.profile?.plan || 'FREE',
         lastAccessAt: toIso(user.workspace_events[0]?.created_at ?? null),
         subscription: user.subscription
@@ -141,6 +146,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       entitlementPlan?: string;
       entitlementStatus?: string;
       currentPeriodEnd?: string | null;
+      platformRole?: string;
     };
 
     const user = await prisma.user.findUnique({
@@ -168,6 +174,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.currentPeriodEnd && !currentPeriodEnd) {
       return NextResponse.json({ error: 'Período atual inválido.' }, { status: 400 });
     }
+
+    const normalizedRoleInput =
+      body.platformRole === 'superadmin' || body.platformRole === 'admin' || body.platformRole === 'user'
+        ? body.platformRole
+        : null;
 
     const [updatedUser, updatedProfile, updatedSubscription] = await prisma.$transaction([
       prisma.user.update({
@@ -200,18 +211,45 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }),
     ]);
 
+    if (updatedUser.email && normalizedRoleInput) {
+      const normalizedEmail = updatedUser.email.trim().toLowerCase();
+      const currentSetting = await prisma.platformSetting.findUnique({
+        where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
+        select: { value: true },
+      });
+      const currentOverrides =
+        currentSetting?.value && typeof currentSetting.value === 'object' && !Array.isArray(currentSetting.value)
+          ? { ...(currentSetting.value as Record<string, unknown>) }
+          : {};
+
+      if (normalizedRoleInput === 'user') {
+        delete currentOverrides[normalizedEmail];
+      } else {
+        currentOverrides[normalizedEmail] = normalizedRoleInput;
+      }
+
+      await prisma.platformSetting.upsert({
+        where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
+        update: { value: currentOverrides as Prisma.InputJsonValue },
+        create: { key: PLATFORM_ROLE_OVERRIDES_KEY, value: currentOverrides as Prisma.InputJsonValue },
+      });
+    }
+
+    const resolvedRole = await resolvePlatformRoleForEmail(updatedUser.email);
+
     return NextResponse.json({
       ok: true,
       user: {
         id: updatedUser.id,
         name: updatedUser.name,
         profilePlan: updatedProfile.plan,
+        platformRole: resolvedRole.role,
+        platformRoleSource: resolvedRole.source,
         entitlement: {
           plan: updatedSubscription.plan,
           status: updatedSubscription.status,
           currentPeriodEnd: toIso(updatedSubscription.current_period_end),
         },
-        platformRole: getPlatformRoleForEmail(updatedUser.email),
       },
     });
   } catch (error) {

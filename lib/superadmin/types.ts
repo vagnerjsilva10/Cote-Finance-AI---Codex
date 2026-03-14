@@ -61,6 +61,7 @@ export type SuperadminUserSummary = {
   currentPlan: string;
   subscriptionStatus: string | null;
   platformRole: string;
+  platformRoleSource: 'env' | 'override' | 'default';
   whatsappConnected: boolean;
   aiUsageLast30Days: number;
 };
@@ -79,6 +80,7 @@ export type SuperadminUserDetailResponse = {
     createdAt: string;
     updatedAt: string;
     platformRole: string;
+    platformRoleSource: 'env' | 'override' | 'default';
     profilePlan: string;
     lastAccessAt: string | null;
     subscription: {
@@ -113,6 +115,7 @@ export type SuperadminUserUpdateResponse = {
     id: string;
     name: string | null;
     profilePlan: string;
+    platformRoleSource: 'env' | 'override' | 'default';
     entitlement: {
       plan: string;
       status: string;

@@ -1,4 +1,5 @@
-﻿import { HttpError, requireAuthenticatedUser } from '@/lib/server/multi-tenant';
+import { prisma } from '@/lib/prisma';
+import { HttpError, requireAuthenticatedUser } from '@/lib/server/multi-tenant';
 
 export type PlatformRole = 'user' | 'admin' | 'superadmin';
 
@@ -6,9 +7,12 @@ export type PlatformAccess = {
   userId: string;
   email: string | null;
   platformRole: PlatformRole;
+  roleSource: 'env' | 'override' | 'default';
   isAdmin: boolean;
   isSuperadmin: boolean;
 };
+
+const PLATFORM_ROLE_OVERRIDES_KEY = 'superadmin.platform-role-overrides';
 
 function parseEmailList(value: string | undefined) {
   return new Set(
@@ -31,14 +35,55 @@ export function getPlatformRoleForEmail(email: string | null): PlatformRole {
   return 'user';
 }
 
+function normalizeOverrideRole(value: unknown): PlatformRole | null {
+  if (value === 'superadmin' || value === 'admin' || value === 'user') return value;
+  return null;
+}
+
+async function readPlatformRoleOverrides() {
+  const setting = await prisma.platformSetting.findUnique({
+    where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
+    select: { value: true },
+  });
+
+  const raw = setting?.value;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return {} as Record<string, PlatformRole>;
+  }
+
+  return Object.entries(raw as Record<string, unknown>).reduce<Record<string, PlatformRole>>((acc, [email, role]) => {
+    const normalizedRole = normalizeOverrideRole(role);
+    if (normalizedRole) acc[email.trim().toLowerCase()] = normalizedRole;
+    return acc;
+  }, {});
+}
+
+export async function resolvePlatformRoleForEmail(email: string | null): Promise<{
+  role: PlatformRole;
+  source: 'env' | 'override' | 'default';
+}> {
+  if (!email) return { role: 'user', source: 'default' };
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const envRole = getPlatformRoleForEmail(normalizedEmail);
+  const overrides = await readPlatformRoleOverrides();
+  const overrideRole = overrides[normalizedEmail];
+
+  if (overrideRole) return { role: overrideRole, source: 'override' };
+  if (envRole !== 'user') return { role: envRole, source: 'env' };
+  return { role: 'user', source: 'default' };
+}
+
 export async function resolvePlatformAccess(req: Request): Promise<PlatformAccess> {
   const authUser = await requireAuthenticatedUser(req);
-  const platformRole = getPlatformRoleForEmail(authUser.email);
+  const resolvedRole = await resolvePlatformRoleForEmail(authUser.email);
+  const platformRole = resolvedRole.role;
 
   return {
     userId: authUser.userId,
     email: authUser.email,
     platformRole,
+    roleSource: resolvedRole.source,
     isAdmin: platformRole === 'admin' || platformRole === 'superadmin',
     isSuperadmin: platformRole === 'superadmin',
   };

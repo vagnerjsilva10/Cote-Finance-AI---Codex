@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { HttpError } from '@/lib/server/multi-tenant';
-import { getPlatformRoleForEmail, requireSuperadminAccess } from '@/lib/server/platform-access';
+import { requireSuperadminAccess, resolvePlatformRoleForEmail } from '@/lib/server/platform-access';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -110,7 +110,7 @@ export async function GET(req: Request) {
       aiUsageByUser.set(event.user_id, (aiUsageByUser.get(event.user_id) || 0) + 1);
     }
 
-    const responseUsers = users.map((user) => {
+    const responseUsers = await Promise.all(users.map(async (user) => {
       let currentPlan = user.profile?.plan || user.subscription?.plan || 'FREE';
       let subscriptionStatus = user.subscription?.status || null;
 
@@ -123,6 +123,8 @@ export async function GET(req: Request) {
         }
       }
 
+      const platformRole = await resolvePlatformRoleForEmail(user.email);
+
       return {
         id: user.id,
         name: user.name,
@@ -132,11 +134,12 @@ export async function GET(req: Request) {
         workspaceCount: user.workspaces.length,
         currentPlan,
         subscriptionStatus,
-        platformRole: getPlatformRoleForEmail(user.email),
+        platformRole: platformRole.role,
+        platformRoleSource: platformRole.source,
         whatsappConnected: user.workspaces.some((membership) => membership.workspace.whatsapp_status === 'CONNECTED'),
         aiUsageLast30Days: aiUsageByUser.get(user.id) || 0,
       };
-    });
+    }));
 
     return NextResponse.json({
       query,
