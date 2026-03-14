@@ -480,7 +480,7 @@ export default function LandingPage() {
               <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
             <h1 className="text-[2.35rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Descubra para onde seu dinheiro está indo e assuma o controle.
+              Descubra para onde seu dinheiro está indo e assuma o controle
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-slate-300">
               Cote Finance AI usa inteligência artificial para analisar seus gastos, organizar sua rotina financeira e
