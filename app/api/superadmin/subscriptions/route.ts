@@ -1,11 +1,13 @@
 ﻿import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { HttpError } from '@/lib/server/multi-tenant';
+import { HttpError, normalizePlan } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const ALLOWED_STATUSES = new Set(['ACTIVE', 'PENDING', 'CANCELED']);
 
 function toIso(value: Date | null | undefined) {
   return value ? value.toISOString() : null;
@@ -16,6 +18,18 @@ function getEstimatedMrr(plan: string, status: string | null) {
   if (plan === 'PREMIUM') return 49;
   if (plan === 'PRO') return 29;
   return 0;
+}
+
+function normalizeStatus(value: unknown) {
+  const normalized = typeof value === 'string' ? value.trim().toUpperCase() : '';
+  return ALLOWED_STATUSES.has(normalized) ? normalized : null;
+}
+
+function normalizePeriodEnd(value: unknown) {
+  if (value === null || value === '' || typeof value === 'undefined') return null;
+  if (typeof value !== 'string') return null;
+  const nextDate = new Date(value);
+  return Number.isNaN(nextDate.getTime()) ? null : nextDate;
 }
 
 export async function GET(req: Request) {
@@ -126,5 +140,97 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ error: 'Falha ao carregar assinaturas do Super Admin.' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    await requireSuperadminAccess(req);
+
+    const body = (await req.json()) as {
+      workspaceId?: string;
+      plan?: string;
+      status?: string;
+      currentPeriodEnd?: string | null;
+    };
+
+    const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
+    if (!workspaceId) {
+      return NextResponse.json({ error: 'Workspace inválido para atualização de assinatura.' }, { status: 400 });
+    }
+
+    const plan = normalizePlan(body.plan);
+    const status = normalizeStatus(body.status);
+    if (!status) {
+      return NextResponse.json({ error: 'Status de assinatura inválido.' }, { status: 400 });
+    }
+
+    const currentPeriodEnd = normalizePeriodEnd(body.currentPeriodEnd);
+    if (body.currentPeriodEnd && !currentPeriodEnd) {
+      return NextResponse.json({ error: 'Período atual inválido.' }, { status: 400 });
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: { subscription: true },
+    });
+
+    if (!workspace) {
+      return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+    }
+
+    const subscription = await prisma.workspaceSubscription.upsert({
+      where: { workspace_id: workspaceId },
+      update: {
+        plan,
+        status,
+        current_period_end: currentPeriodEnd,
+      },
+      create: {
+        workspace_id: workspaceId,
+        plan,
+        status,
+        current_period_end: currentPeriodEnd,
+      },
+    });
+
+    await prisma.workspaceEvent.create({
+      data: {
+        workspace_id: workspaceId,
+        type: 'superadmin.subscription.updated',
+        payload: {
+          source: 'superadmin',
+          previous: workspace.subscription
+            ? {
+                plan: workspace.subscription.plan,
+                status: workspace.subscription.status,
+                currentPeriodEnd: toIso(workspace.subscription.current_period_end),
+              }
+            : null,
+          next: {
+            plan: subscription.plan,
+            status: subscription.status,
+            currentPeriodEnd: toIso(subscription.current_period_end),
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      subscription: {
+        workspaceId,
+        plan: subscription.plan,
+        status: subscription.status,
+        currentPeriodEnd: toIso(subscription.current_period_end),
+        estimatedMrr: getEstimatedMrr(subscription.plan, subscription.status),
+      },
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    return NextResponse.json({ error: 'Falha ao atualizar assinatura.' }, { status: 500 });
   }
 }

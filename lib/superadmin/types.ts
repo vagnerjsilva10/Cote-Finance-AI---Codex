@@ -179,6 +179,22 @@ export type SuperadminWorkspaceDetailResponse = {
   };
 };
 
+export type SuperadminWorkspaceUpdateResponse = {
+  ok: boolean;
+  workspace: {
+    id: string;
+    name: string;
+    whatsappStatus: string | null;
+    whatsappPhoneNumber: string | null;
+    preference: {
+      onboardingCompleted: boolean;
+      aiSuggestionsEnabled: boolean;
+      objective: string | null;
+      financialProfile: string | null;
+    };
+  };
+};
+
 export type SuperadminTrackingSettingsResponse = {
   settings: import('@/lib/tracking/types').TrackingSettings;
   publicSettings: import('@/lib/tracking/types').PublicTrackingSettings;
@@ -223,6 +239,17 @@ export type SuperadminSubscriptionsResponse = {
   };
   total: number;
   subscriptions: SuperadminSubscriptionSummary[];
+};
+
+export type SuperadminSubscriptionUpdateResponse = {
+  ok: boolean;
+  subscription: {
+    workspaceId: string;
+    plan: string;
+    status: string;
+    currentPeriodEnd: string | null;
+    estimatedMrr: number;
+  };
 };
 
 export type SuperadminFeatureFlagRecord = {
@@ -439,5 +466,48 @@ export type SuperadminReportsResponse = {
     billing: number;
     tracking: number;
     product: number;
+  };
+};
+
+export type SuperadminContentResponse = {
+  config: {
+    brand: {
+      productName: string;
+      signature: string;
+      supportEmail: string;
+      privacyUrl: string;
+      termsUrl: string;
+    };
+    acquisition: {
+      defaultPrimaryCta: string;
+      defaultSecondaryCta: string;
+      riskReversal: string;
+      trustLine: string;
+    };
+    pricing: {
+      freeDescription: string;
+      proDescription: string;
+      premiumDescription: string;
+    };
+    editorial: {
+      voiceAndTone: string;
+      priorityMessage: string;
+      currentFocus: string;
+    };
+  };
+  surfaces: Array<{
+    key: string;
+    label: string;
+    route: string;
+    file: string;
+    status: string;
+    objective: string;
+    notes: string;
+  }>;
+  summary: {
+    surfaces: number;
+    activeSurfaces: number;
+    primaryCta: string;
+    supportEmail: string;
   };
 };
