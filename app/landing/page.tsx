@@ -215,38 +215,38 @@ const currentPricingFaqs = [
 const currentFeatures = [
   {
     icon: LayoutDashboard,
-    title: 'Dashboard inteligente',
-    text: 'Visualize saldo, receitas e despesas instantaneamente.',
+    title: 'Registro inteligente de despesas',
+    text: 'Todos os seus gastos organizados automaticamente.',
   },
   {
     icon: BrainCircuit,
-    title: 'Insights com IA',
-    text: 'Receba recomendações automáticas para melhorar suas finanças.',
+    title: 'Análise automática',
+    text: 'Insights claros para melhorar suas decisões financeiras.',
   },
   {
     icon: Target,
-    title: 'Metas financeiras',
-    text: 'Defina metas e acompanhe seu progresso.',
+    title: 'Previsões financeiras futuras',
+    text: 'Entenda tendências e acompanhe o impacto das suas decisões.',
   },
   {
     icon: CreditCard,
-    title: 'Controle de dívidas',
-    text: 'Saiba exatamente quanto deve e quanto já pagou.',
+    title: 'Alertas e notificações financeiras',
+    text: 'Saiba o que merece atenção antes de virar problema.',
   },
   {
     icon: BarChart3,
-    title: 'Previsões financeiras',
-    text: 'Entenda como seus gastos impactam seu saldo no futuro.',
+    title: 'Gráficos e relatórios inteligentes',
+    text: 'Visualize seus hábitos financeiros com mais clareza.',
   },
   {
     icon: Wallet,
-    title: 'Multi-contas',
-    text: 'Gerencie contas e carteiras separadas sem misturar seus dados.',
+    title: 'Registro automático de despesas',
+    text: 'Mantenha sua vida financeira organizada sem complicação.',
   },
   {
     icon: MessageCircle,
-    title: 'WhatsApp inteligente',
-    text: 'Receba resumos, alertas e lembretes financeiros direto no seu WhatsApp.',
+    title: 'Insights financeiros personalizados',
+    text: 'Receba recomendações úteis para melhorar sua rotina financeira.',
   },
 ];
 
@@ -255,7 +255,7 @@ const plans: PlanCard[] = [
     name: 'Free',
     price: 'R$0/mês',
     label: 'Entrada',
-    benefit: 'Ideal para começar a organizar suas finanças.',
+    benefit: 'Perfeito para começar a organizar suas finanças.',
     buttonText: 'Criar conta grátis',
     microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
     signupHref: '/signup?plan=free',
@@ -264,8 +264,8 @@ const plans: PlanCard[] = [
       'Até 15 interações com IA por mês',
       'Controle básico de receitas e despesas',
       'Dashboard financeiro',
-      'Gráficos essenciais',
-      'Organização simples das movimentações',
+      'Gráficos simples',
+      'Organização de gastos',
     ],
     accent: 'subtle',
   },
@@ -273,20 +273,18 @@ const plans: PlanCard[] = [
     name: 'Pro',
     price: 'R$29/mês',
     label: 'Melhor escolha',
-    benefit: 'Mais escolhido por quem quer controle financeiro completo.',
+    benefit: 'Para quem quer realmente melhorar sua vida financeira.',
     buttonText: 'Começar teste grátis',
     microcopy: 'Crie sua conta, teste grátis e evolua no seu ritmo.',
     signupHref: '/signup?plan=pro&trial=true',
     popular: true,
     proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
     features: [
-      'Lançamentos ilimitados',
-      '500 interações com IA por mês',
-      'Insights automáticos da IA',
-      'Análise avançada de gastos',
-      'Relatórios financeiros detalhados',
+      'Todos os recursos do plano Free',
+      'Insights automáticos de IA',
+      'Alertas de gastos',
       'Previsões financeiras',
-      'Resumos e alertas financeiros no WhatsApp',
+      'Relatórios avançados',
     ],
     accent: 'highlight',
   },
@@ -294,18 +292,15 @@ const plans: PlanCard[] = [
     name: 'Premium',
     price: 'R$49/mês',
     label: 'Controle total',
-    benefit: 'Controle total e automações avançadas.',
+    benefit: 'Controle total e inteligência financeira avançada.',
     buttonText: 'Assinar Premium',
     microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
     signupHref: '/signup?plan=premium',
     features: [
-      'Lançamentos ilimitados',
-      'IA ilimitada',
-      'Automações financeiras no WhatsApp',
-      'Resumos financeiros automáticos',
-      'Insights avançados da IA',
-      'Ferramentas avançadas de análise',
-      'Suporte prioritário',
+      'Todos os recursos do plano Pro',
+      'Análises financeiras completas',
+      'Alertas inteligentes',
+      'Planejamento financeiro avançado',
     ],
     accent: 'premium',
   },
@@ -508,12 +503,11 @@ export default function LandingPage() {
               <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
             <h1 className="text-[2rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Descubra para onde seu dinheiro está indo e assuma o controle
+              Assuma o controle total do seu dinheiro.
             </h1>
             <p className="max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-relaxed">
-              Cote Finance AI usa inteligência artificial para organizar seus gastos, mostrar padrões e trazer
-              clareza sobre como seu dinheiro está sendo usado. Receba insights automáticos, gráficos
-              inteligentes e alertas via WhatsApp.
+              Conecte suas contas e veja automaticamente para onde seu dinheiro está indo. Entenda seus gastos,
+              organize sua vida financeira e tome decisões melhores sem planilhas complicadas.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
               <button
@@ -521,7 +515,7 @@ export default function LandingPage() {
                 disabled={isBusy}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:w-auto"
               >
-              Começar grátis <ArrowRight size={16} />
+              Criar conta grátis <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => scrollTo('como-funciona')}
@@ -621,25 +615,21 @@ export default function LandingPage() {
             <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Seu dinheiro sai… mas você não enxerga para onde.
             </h2>
-            <p className="text-slate-300">No fim do mês, a sensação é sempre a mesma:</p>
+            <p className="text-slate-300">
+              Você trabalha, recebe, paga algumas contas... e quando percebe, o saldo já acabou.
+            </p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> O dinheiro acaba antes do esperado
+                <TrendingDown size={16} className="text-rose-300" /> Para onde seu dinheiro está indo
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> Pequenos gastos passam despercebidos
+                <TrendingDown size={16} className="text-rose-300" /> Quais gastos estão crescendo
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> Falta clareza sobre receitas e despesas
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> O saldo no fim do mês sempre surpreende
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> Organizar tudo parece complicado
+                <TrendingDown size={16} className="text-rose-300" /> Onde você poderia economizar
               </li>
             </ul>
-            <p className="text-slate-300">Sem clareza, fica difícil entender o que ajustar e tomar decisões melhores.</p>
+            <p className="text-slate-300">Sem clareza financeira, tomar boas decisões fica quase impossível.</p>
           </div>
 
           <motion.div
@@ -702,20 +692,20 @@ export default function LandingPage() {
               Clareza financeira muda tudo
             </h2>
             <p className="text-emerald-100">
-              Em vez de planilhas complicadas, você passa a contar com uma inteligência financeira trabalhando por você.
+              O Cote Finance AI foi criado para transformar a forma como você entende seu dinheiro.
             </p>
             <ul className="space-y-2 text-emerald-100">
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> IA analisando gastos automaticamente
+                <Check size={16} className="text-emerald-300" /> Para onde seu dinheiro está indo
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> Gráficos financeiros inteligentes
+                <Check size={16} className="text-emerald-300" /> Quais gastos estão aumentando
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> Insights personalizados
+                <Check size={16} className="text-emerald-300" /> Onde você pode economizar
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> Organização financeira mais simples
+                <Check size={16} className="text-emerald-300" /> Como melhorar sua saúde financeira
               </li>
             </ul>
             <p className="text-emerald-100">Tudo explicado de forma simples, clara e prática.</p>
@@ -772,17 +762,16 @@ export default function LandingPage() {
                 <h3 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
                   Tenha visão completa da sua vida financeira
                 </h3>
-                <p className="max-w-lg text-base leading-7 text-slate-300">
-                  Veja receitas, despesas, saldo e oportunidades de ajuste em uma única visão.
-                </p>
+                <p className="max-w-lg text-base leading-7 text-slate-300">Com o Cote Finance AI você pode:</p>
               </div>
 
               <div className="grid gap-2.5 sm:gap-3">
                 {[
-                  'Receitas e despesas organizadas',
-                  'Evolução do saldo em tempo real',
-                  'Identificação automática de padrões de gastos',
-                  'Alertas e tendências financeiras',
+                  'Acompanhar seus gastos em tempo real',
+                  'Visualizar relatórios simples e claros',
+                  'Identificar despesas desnecessárias',
+                  'Organizar suas finanças sem planilhas',
+                  'Tomar decisões financeiras com confiança',
                 ].map((benefit) => (
                   <div
                     key={benefit}
@@ -802,7 +791,7 @@ export default function LandingPage() {
                   disabled={isBusy}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:w-auto"
                 >
-                  Começar grátis <ArrowRight size={16} />
+                  Criar conta grátis <ArrowRight size={16} />
                 </button>
                 <p className="text-sm leading-6 text-slate-400">Experimente a organização financeira com IA sem complicar sua rotina.</p>
               </div>
@@ -973,19 +962,19 @@ export default function LandingPage() {
             <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Quando você entende seu dinheiro, tudo muda
             </h2>
-            <p className="text-slate-300">Quando você entende seu dinheiro:</p>
+            <p className="text-slate-300">Quando você tem clareza financeira, você pode:</p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Pare de perder dinheiro sem perceber
+                <TrendingUp size={16} className="text-emerald-300" /> Parar de perder dinheiro sem perceber
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Visualize seus gastos com mais clareza
+                <TrendingUp size={16} className="text-emerald-300" /> Identificar gastos desnecessários
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Tome decisões financeiras melhores
+                <TrendingUp size={16} className="text-emerald-300" /> Tomar decisões financeiras melhores
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Tenha mais controle sobre sua rotina financeira
+                <TrendingUp size={16} className="text-emerald-300" /> Planejar seu futuro com mais segurança
               </li>
             </ul>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
@@ -1023,24 +1012,34 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Mais confiança para quem quer clareza financeira
+            Centenas de pessoas já estão organizando suas finanças
           </h2>
           <p className="mb-6 text-slate-300">
-            Cote Finance AI ajuda usuários a entender melhor os gastos, criar rotina financeira e decidir com mais clareza.
+            Cada vez mais usuários usam o Cote Finance AI para:
           </p>
-
+          <ul className="mb-6 space-y-2 text-slate-200">
+            <li className="flex items-center justify-start gap-2">
+              <Check size={16} className="text-emerald-300" /> Entender melhor seus gastos
+            </li>
+            <li className="flex items-center justify-start gap-2">
+              <Check size={16} className="text-emerald-300" /> Melhorar sua saúde financeira
+            </li>
+            <li className="flex items-center justify-start gap-2">
+              <Check size={16} className="text-emerald-300" /> Tomar decisões mais inteligentes com seu dinheiro
+            </li>
+          </ul>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">+12.000</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">usuários organizando suas finanças</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">usuários ativos</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">R$320 milhões</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">monitorados na plataforma</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">analisados em movimentações</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">94%</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">dos usuários relatam mais clareza financeira</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">afirmam ter mais controle financeiro</p>
             </div>
           </div>
         </motion.section>
@@ -1096,7 +1095,7 @@ export default function LandingPage() {
               Escolha o plano ideal para assumir o controle do seu dinheiro
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-              Escolha o plano ideal para entender seus gastos, organizar sua rotina e ganhar mais clareza financeira.
+              Escolha o plano que faz mais sentido para o seu momento e evolua com mais clareza e controle.
             </p>
           </div>
 
@@ -1302,10 +1301,10 @@ export default function LandingPage() {
             >
               Começar grátis <ArrowRight size={16} />
             </button>
-            <p className="mt-4 text-sm font-medium text-slate-300">Sem compromisso • Cancele quando quiser</p>
+            <p className="mt-4 text-sm font-medium text-slate-300">Comece gratuitamente. Cancele quando quiser.</p>
             <div className="mt-3 inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
               <ShieldCheck size={14} className="text-emerald-300" />
-              Seus dados são protegidos com criptografia.
+              Dados protegidos e conexões seguras.
             </div>
           </div>
         </motion.section>
