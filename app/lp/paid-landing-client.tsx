@@ -104,6 +104,13 @@ const testimonials = [
   { quote: 'Muito mais simples que planilhas.', author: 'Rafael S.' },
 ];
 
+const featuredUser = {
+  initials: 'MR',
+  name: 'Mariana R.',
+  city: 'Sao Paulo, SP',
+  quote: 'Finalmente entendi para onde meu dinheiro estava indo.',
+};
+
 const plans = [
   {
     name: 'Free',
@@ -312,18 +319,33 @@ export default function PaidLandingClient() {
         </section>
 
         <motion.section {...sectionMotion} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.62))] p-6 md:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
             <div className="space-y-3">
               <p className="text-amber-300">★★★★★</p>
               <h2 className="text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.</h2>
-              <p className="text-slate-300">&ldquo;Finalmente entendi para onde meu dinheiro estava indo.&rdquo; - Usuário do Cote Finance</p>
+              <p className="text-slate-300">Uma rotina financeira mais clara começa quando você enxerga o que antes passava despercebido.</p>
               <div className="flex flex-wrap gap-3 pt-1 text-sm text-slate-200">
                 {socialBullets.map((item) => (
                   <span key={item} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5"><Check size={14} className="text-emerald-300" /> {item}</span>
                 ))}
               </div>
             </div>
-            <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
+            <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/55 p-4 shadow-[0_24px_64px_-40px_rgba(15,23,42,.95)]">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,.5),rgba(15,23,42,.96))] text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(16,185,129,.8)]">{featuredUser.initials}</div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{featuredUser.name}</p>
+                  <p className="text-xs text-slate-400">{featuredUser.city}</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-200 md:text-base">&ldquo;{featuredUser.quote}&rdquo;</p>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-100">
+                  <ShieldCheck size={14} className="text-emerald-300" /> Prova social realista e discreta
+                </div>
+                <PrimaryCta href="/signup" className="w-full sm:w-auto sm:shrink-0 sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
+              </div>
+            </div>
           </div>
         </motion.section>
 
@@ -528,6 +550,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
