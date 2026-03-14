@@ -107,6 +107,21 @@ export type SuperadminUserDetailResponse = {
   };
 };
 
+export type SuperadminUserUpdateResponse = {
+  ok: boolean;
+  user: {
+    id: string;
+    name: string | null;
+    profilePlan: string;
+    entitlement: {
+      plan: string;
+      status: string;
+      currentPeriodEnd: string | null;
+    };
+    platformRole: string;
+  };
+};
+
 export type SuperadminWorkspaceSummary = {
   id: string;
   name: string;
