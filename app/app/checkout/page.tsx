@@ -341,10 +341,10 @@ function EmbeddedPaymentForm(props: {
       </button>
       <div className="space-y-2 text-center">
         <p className="text-xs font-medium text-slate-300">Sem compromisso • Cancele quando quiser</p>
-        <p className="flex items-center justify-center gap-2 text-xs text-slate-400">
-          <LockKeyhole className="size-3.5 text-emerald-300" />
-          <span>{props.helperText}</span>
-        </p>
+        <div className="mx-auto flex max-w-md items-start justify-center gap-2 text-left text-xs text-slate-400">
+          <LockKeyhole className="mt-0.5 size-3.5 shrink-0 text-emerald-300" />
+          <p className="leading-5">{props.helperText}</p>
+        </div>
       </div>
       {!isPaymentElementReady ? (
         <p className="text-center text-xs text-slate-500">Carregando formulário de pagamento seguro...</p>
