@@ -360,8 +360,8 @@ type WhatsAppDiagnostic = {
   metaResult?: string | WhatsAppMetaDiagnostic | null;
 };
 
-const FREE_TRANSACTION_LIMIT_PER_MONTH = 20;
-const FREE_AI_LIMIT_PER_MONTH = 20;
+const FREE_TRANSACTION_LIMIT_PER_MONTH = 15;
+const FREE_AI_LIMIT_PER_MONTH = 15;
 const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const AVATAR_OUTPUT_SIZE = 256;
 
@@ -10299,7 +10299,7 @@ React.useEffect(() => {
                 </p>
                 <p className="text-xs text-slate-400 mb-4 leading-relaxed">
                   {isFreePlan
-                    ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
+                    ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e ${FREE_AI_LIMIT_PER_MONTH} interações de IA (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
                     : currentPlan === 'PREMIUM'
                     ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
                     : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
