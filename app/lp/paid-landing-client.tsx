@@ -326,10 +326,7 @@ export default function PaidLandingClient() {
                 transition={{ duration: 0.35 }}
                 className="space-y-4"
               >
-                <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200">
-                  <span>★★★★★</span>
-                  <span>★★★★★</span>
-                </div>
+                <p className="text-amber-300">★★★★★</p>
                 <h2 className="max-w-2xl text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
                   Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.
                 </h2>
@@ -399,7 +396,7 @@ export default function PaidLandingClient() {
             >
               <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/30 to-transparent" />
               <div className="absolute -right-12 top-10 h-28 w-28 rounded-full bg-emerald-500/12 blur-3xl" />
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Depoimento</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">História real de quem ganhou mais controle</p>
               <p className="mt-5 text-lg leading-8 text-slate-100 md:text-[1.15rem]">
                 &ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;
               </p>
@@ -661,6 +658,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
