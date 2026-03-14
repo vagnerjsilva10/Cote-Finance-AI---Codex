@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Users,
   Wallet,
+  ShieldAlert,
 } from 'lucide-react';
 
 import { fetchSuperadminJson } from '@/components/superadmin/fetch-superadmin-json';
@@ -211,11 +212,13 @@ export function SuperadminOverviewPage() {
           <div className="mt-6 space-y-4 text-sm">
             <MetricRow label="Novos cadastros (30 dias)" value={formatAdminNumber(data.metrics.newSignupsLast30Days)} />
             <MetricRow label="Usuarios ativos (30 dias)" value={formatAdminNumber(data.metrics.activeUsers)} />
-            <MetricRow
+          <MetricRow
               label="Erros recentes"
               value={formatAdminNumber(data.metrics.errorEventsLast30Days)}
               tone={data.metrics.errorEventsLast30Days > 0 ? 'danger' : 'neutral'}
             />
+            <MetricRow label="Ações admin (30 dias)" value={formatAdminNumber(data.metrics.adminActionsLast30Days)} />
+            <MetricRow label="Workspaces suspensos" value={formatAdminNumber(data.metrics.suspendedWorkspaces)} tone={data.metrics.suspendedWorkspaces > 0 ? 'danger' : 'neutral'} />
             <MetricRow label="MRR estimado" value={formatAdminCurrency(data.metrics.estimatedMrr)} />
             <p className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 leading-7 text-slate-300">
               Use esta visao como termometro rapido. Para acao operacional, siga para usuarios e workspaces.
@@ -259,6 +262,48 @@ export function SuperadminOverviewPage() {
         </div>
 
         <div className="space-y-4">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
+                <ShieldAlert className="h-5 w-5 text-amber-300" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">Alertas operacionais</h2>
+                <p className="text-sm text-slate-400">Sinais que pedem ação direta do Super Admin.</p>
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
+              {data.alerts.length === 0 ? (
+                <EmptyState text="Nenhum alerta operacional relevante no momento." />
+              ) : (
+                data.alerts.map((alert) => (
+                  <div
+                    key={alert.id}
+                    className={
+                      alert.tone === 'danger'
+                        ? 'rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4'
+                        : alert.tone === 'warning'
+                          ? 'rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4'
+                          : 'rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4'
+                    }
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-white">{alert.title}</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-200">{alert.description}</p>
+                      </div>
+                      {alert.href ? (
+                        <Link href={alert.href} className="text-xs font-semibold text-white underline-offset-4 hover:underline">
+                          Abrir
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
             <h2 className="text-lg font-semibold text-white">Arquitetura pronta para expansao</h2>
             <p className="mt-3 text-sm leading-7 text-slate-300">

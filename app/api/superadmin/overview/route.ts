@@ -4,6 +4,11 @@ import { prisma } from '@/lib/prisma';
 import { PLAN_LIMITS } from '@/lib/server/multi-tenant';
 import { HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
+import {
+  getSubscriptionMetadataMap,
+  getUserLifecycleMap,
+  getWorkspaceLifecycleMap,
+} from '@/lib/server/superadmin-governance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,6 +38,10 @@ export async function GET(req: Request) {
       aiUsageEvents,
       errorEvents,
       activeUserEvents,
+      userLifecycleMap,
+      workspaceLifecycleMap,
+      subscriptionMetadataMap,
+      adminActionsLast30Days,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.workspace.count(),
@@ -108,6 +117,19 @@ export async function GET(req: Request) {
           user_id: true,
         },
       }),
+      getUserLifecycleMap(),
+      getWorkspaceLifecycleMap(),
+      getSubscriptionMetadataMap(),
+      prisma.workspaceEvent.count({
+        where: {
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+          type: {
+            startsWith: 'superadmin.',
+          },
+        },
+      }),
     ]);
 
     const activeSubscriptions = subscriptions.filter((subscription) => subscription.status === 'ACTIVE');
@@ -116,6 +138,49 @@ export async function GET(req: Request) {
     const canceledWorkspaces = subscriptions.filter((subscription) => subscription.status === 'CANCELED').length;
     const payingWorkspaces = proWorkspaces + premiumWorkspaces;
     const estimatedMrr = proWorkspaces * 29 + premiumWorkspaces * 49;
+    const suspendedUsers = Object.values(userLifecycleMap).filter((entry) => entry.status === 'SUSPENDED').length;
+    const blockedUsers = Object.values(userLifecycleMap).filter((entry) => entry.status === 'BLOCKED').length;
+    const suspendedWorkspaces = Object.values(workspaceLifecycleMap).filter((entry) => entry.status === 'SUSPENDED').length;
+    const subscriptionsWithNotes = Object.values(subscriptionMetadataMap).filter((entry) => Boolean(entry.adminNote)).length;
+
+    const alerts = [
+      suspendedWorkspaces > 0
+        ? {
+            id: 'suspended-workspaces',
+            tone: 'warning' as const,
+            title: `${suspendedWorkspaces} workspace(s) suspenso(s)`,
+            description: 'Há ambientes operando com bloqueio administrativo ativo.',
+            href: '/superadmin/workspaces',
+          }
+        : null,
+      blockedUsers > 0
+        ? {
+            id: 'blocked-users',
+            tone: 'danger' as const,
+            title: `${blockedUsers} usuário(s) bloqueado(s)`,
+            description: 'Contas bloqueadas exigem revisão de suporte ou risco.',
+            href: '/superadmin/users',
+          }
+        : null,
+      subscriptionsWithNotes > 0
+        ? {
+            id: 'subscription-notes',
+            tone: 'info' as const,
+            title: `${subscriptionsWithNotes} assinatura(s) com observação`,
+            description: 'Billing possui contas com notas administrativas para acompanhamento.',
+            href: '/superadmin/subscriptions',
+          }
+        : null,
+      errorEvents > 0
+        ? {
+            id: 'recent-errors',
+            tone: 'danger' as const,
+            title: `${errorEvents} erro(s) recentes`,
+            description: 'A trilha operacional registrou falhas nos últimos 30 dias.',
+            href: '/superadmin/audit-logs',
+          }
+        : null,
+    ].filter(Boolean);
 
     return NextResponse.json({
       metrics: {
@@ -136,11 +201,17 @@ export async function GET(req: Request) {
         totalInvestments,
         totalDebts,
         errorEventsLast30Days: errorEvents,
+        suspendedUsers,
+        blockedUsers,
+        suspendedWorkspaces,
+        subscriptionsWithNotes,
+        adminActionsLast30Days,
       },
       conversion: {
         proRate: totalWorkspaces > 0 ? Number(((proWorkspaces / totalWorkspaces) * 100).toFixed(1)) : 0,
         premiumRate: totalWorkspaces > 0 ? Number(((premiumWorkspaces / totalWorkspaces) * 100).toFixed(1)) : 0,
       },
+      alerts,
       recentEvents: recentEvents.map((event) => ({
         id: event.id,
         type: event.type,
