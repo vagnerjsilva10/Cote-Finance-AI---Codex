@@ -1,10 +1,17 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import { CreditCard, Loader2, Search, ShieldCheck, Sparkles } from 'lucide-react';
 
 import { fetchSuperadminJson, useDebouncedValue } from '@/components/superadmin/fetch-superadmin-json';
+import {
+  SuperadminActionLink,
+  SuperadminGhostAction,
+  SuperadminMetricChip,
+  SuperadminPageHeader,
+  SuperadminSectionCard,
+} from '@/components/superadmin/superadmin-page-primitives';
 import {
   formatAdminCurrency,
   formatAdminDate,
@@ -13,12 +20,6 @@ import {
   formatSubscriptionStatus,
   getSubscriptionTone,
 } from '@/components/superadmin/superadmin-utils';
-import {
-  SuperadminActionLink,
-  SuperadminMetricChip,
-  SuperadminPageHeader,
-  SuperadminSectionCard,
-} from '@/components/superadmin/superadmin-page-primitives';
 import type {
   SuperadminSubscriptionSummary,
   SuperadminSubscriptionUpdateResponse,
@@ -85,14 +86,21 @@ export function SuperadminSubscriptionsPage() {
   const metrics = data?.metrics;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 xl:space-y-7">
       <SuperadminPageHeader
         eyebrow="Billing"
         title="Assinaturas"
-        description="Monitore receita recorrente, base pagante e saúde do billing em uma leitura mais limpa, com filtros mais claros e uma tabela pronta para operação diária."
-        actions={<SuperadminActionLink href="/superadmin/plans">Ver catálogo de planos</SuperadminActionLink>}
+        description="Acompanhe receita recorrente, saúde da base pagante e movimentações críticas do billing em uma visão mais nobre, limpa e pronta para operação executiva."
+        actions={
+          <div className="flex flex-wrap gap-3">
+            <SuperadminGhostAction href="/superadmin/plans">Ver catálogo</SuperadminGhostAction>
+            <SuperadminActionLink href="/superadmin/reports" primary>
+              Abrir relatórios
+            </SuperadminActionLink>
+          </div>
+        }
       >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.3fr_.9fr_.9fr_.9fr]">
           <SuperadminMetricChip label="Assinaturas" value={formatAdminNumber(metrics?.total || 0)} />
           <SuperadminMetricChip label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} tone="success" />
           <SuperadminMetricChip label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} tone="info" />
@@ -100,19 +108,16 @@ export function SuperadminSubscriptionsPage() {
         </div>
       </SuperadminPageHeader>
 
-      {actionMessage ? (
-        <SuccessState message={actionMessage} />
-      ) : null}
-
+      {actionMessage ? <SuccessState message={actionMessage} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <SuperadminSectionCard
         title="Operação de billing"
-        description="Busca e filtros desenhados para escanear rápido a base e isolar planos, pendências e contas canceladas sem perder contexto."
+        description="Busque por workspace, owner ou identificador e cruze rapidamente plano, status e sinais de estabilidade antes de agir."
       >
-        <div className="grid gap-4 xl:grid-cols-[1.35fr_0.42fr_0.42fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.35fr_.48fr_.48fr]">
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
+            <span className="field-label">Buscar</span>
             <div className="relative mt-2">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
               <input
@@ -125,7 +130,7 @@ export function SuperadminSubscriptionsPage() {
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+            <span className="field-label">Plano</span>
             <select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>
               {PLAN_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -136,7 +141,7 @@ export function SuperadminSubscriptionsPage() {
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Status</span>
+            <span className="field-label">Status</span>
             <select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -147,24 +152,24 @@ export function SuperadminSubscriptionsPage() {
           </label>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <QuickInsight
+        <div className="mt-5 grid gap-3 lg:grid-cols-3">
+          <InsightTile
             icon={<Sparkles className="h-4 w-4 text-emerald-300" />}
-            label="Conversão visível"
-            value={`${formatAdminNumber(metrics?.paying || 0)} pagantes`}
-            description="Workspaces ativos nos planos Pro e Premium."
+            label="Base pagante"
+            value={`${formatAdminNumber(metrics?.paying || 0)} contas`}
+            description="Workspaces em Pro e Premium concentrados em uma leitura de valor."
           />
-          <QuickInsight
+          <InsightTile
             icon={<ShieldCheck className="h-4 w-4 text-sky-300" />}
-            label="Base estável"
+            label="Estabilidade"
             value={`${formatAdminNumber(metrics?.active || 0)} ativas`}
-            description="Assinaturas saudáveis e com boa continuidade."
+            description="Assinaturas saudáveis com menor fricção operacional no ciclo atual."
           />
-          <QuickInsight
+          <InsightTile
             icon={<CreditCard className="h-4 w-4 text-slate-200" />}
-            label="Acompanhamento"
+            label="Atenção de churn"
             value={`${formatAdminNumber(metrics?.canceled || 0)} canceladas`}
-            description="Contas que pedem leitura de churn e retenção."
+            description="Contas que pedem revisão de retenção, suporte e recuperação de receita."
           />
         </div>
       </SuperadminSectionCard>
@@ -173,7 +178,7 @@ export function SuperadminSubscriptionsPage() {
         title="Base de assinaturas"
         description={
           data
-            ? `${formatAdminNumber(data.total)} assinatura(s) encontradas. Ações administrativas e navegação rápida ficam alinhadas ao lado do status.`
+            ? `${formatAdminNumber(data.total)} assinatura(s) encontradas. A nova tabela privilegia leitura executiva, comparação rápida e ações limpas.`
             : 'Carregando base de assinaturas.'
         }
       >
@@ -185,60 +190,59 @@ export function SuperadminSubscriptionsPage() {
           <EmptyState />
         ) : (
           <div className="space-y-5">
-            <div className="hidden overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.26),rgba(2,6,23,.14))] xl:block">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-white/[0.03] text-[11px] uppercase tracking-[0.22em] text-slate-500">
+            <div className="hidden overflow-hidden rounded-[1.85rem] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(8,14,25,.72),rgba(8,14,25,.52))] xl:block">
+              <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.28em] text-slate-500">
                   <tr>
-                    <th className="px-6 py-4 font-semibold">Workspace</th>
-                    <th className="px-6 py-4 font-semibold">Owner</th>
-                    <th className="px-6 py-4 font-semibold">Plano</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">Período</th>
-                    <th className="px-6 py-4 font-semibold">Stripe</th>
-                    <th className="px-6 py-4 font-semibold">MRR</th>
-                    <th className="px-6 py-4 font-semibold text-right">Ações</th>
+                    <th className="px-7 py-4 font-semibold">Workspace</th>
+                    <th className="px-7 py-4 font-semibold">Owner</th>
+                    <th className="px-7 py-4 font-semibold">Plano</th>
+                    <th className="px-7 py-4 font-semibold">Status</th>
+                    <th className="px-7 py-4 font-semibold">Período</th>
+                    <th className="px-7 py-4 font-semibold">Stripe</th>
+                    <th className="px-7 py-4 font-semibold">MRR</th>
+                    <th className="px-7 py-4 font-semibold text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/8">
-                  {data.subscriptions.map((item) => (
-                    <tr key={item.workspaceId} className="transition hover:bg-white/[0.025]">
-                      <td className="px-6 py-5 align-top">
-                        <div className="min-w-[220px]">
+                <tbody>
+                  {data.subscriptions.map((item, index) => (
+                    <tr key={item.workspaceId} className="group transition hover:bg-white/[0.02]">
+                      <td className={rowCellClassName(index)}>
+                        <div className="min-w-[230px]">
                           <div className="font-semibold text-white">{item.workspaceName}</div>
-                          <div className="mt-1 text-xs text-slate-500">{item.workspaceId}</div>
+                          <div className="mt-1.5 text-[11px] text-slate-500">{item.workspaceId}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-5 align-top">
-                        <div className="min-w-[180px] text-sm text-slate-300">{item.ownerEmail || 'Sem owner'}</div>
+                      <td className={rowCellClassName(index)}>
+                        <div className="min-w-[190px] text-sm text-slate-300">{item.ownerEmail || 'Sem owner'}</div>
                       </td>
-                      <td className="px-6 py-5 align-top">
+                      <td className={rowCellClassName(index)}>
                         <PlanBadge plan={item.plan} />
                       </td>
-                      <td className="px-6 py-5 align-top">
+                      <td className={rowCellClassName(index)}>
                         <StatusBadge status={item.status} />
                       </td>
-                      <td className="px-6 py-5 align-top text-sm text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
-                      <td className="px-6 py-5 align-top text-sm text-slate-400">
-                        {item.hasStripeSubscription
-                          ? 'Assinatura Stripe'
-                          : item.hasStripeCustomer
-                            ? 'Cliente Stripe'
-                            : 'Sem vínculo'}
+                      <td className={rowCellClassName(index)}>
+                        <div className="text-sm text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</div>
                       </td>
-                      <td className="px-6 py-5 align-top text-sm font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</td>
-                      <td className="px-6 py-5 align-top">
-                        <div className="flex justify-end gap-2">
+                      <td className={rowCellClassName(index)}>
+                        <div className="text-sm text-slate-400">
+                          {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vínculo'}
+                        </div>
+                      </td>
+                      <td className={rowCellClassName(index)}>
+                        <div className="text-sm font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</div>
+                      </td>
+                      <td className={rowCellClassName(index)}>
+                        <div className="flex justify-end gap-2.5">
                           <button
                             type="button"
                             onClick={() => setSelectedSubscription(item)}
-                            className="inline-flex rounded-full border border-emerald-400/18 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/15"
+                            className="inline-flex rounded-full border border-emerald-400/16 bg-emerald-400/[0.08] px-3.5 py-2 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-400/[0.12]"
                           >
                             Editar
                           </button>
-                          <Link
-                            href={`/superadmin/workspaces/${item.workspaceId}`}
-                            className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/18 hover:bg-white/[0.05] hover:text-white"
-                          >
+                          <Link href={`/superadmin/workspaces/${item.workspaceId}`} className={secondaryActionClassName}>
                             Ver workspace
                           </Link>
                         </div>
@@ -253,7 +257,7 @@ export function SuperadminSubscriptionsPage() {
               {data.subscriptions.map((item) => (
                 <article
                   key={item.workspaceId}
-                  className="rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,.72),rgba(15,23,42,.56))] p-5 shadow-[0_18px_56px_-38px_rgba(2,6,23,.92)]"
+                  className="rounded-[1.75rem] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(10,17,30,.86),rgba(10,17,30,.7))] p-5 shadow-[0_24px_70px_-48px_rgba(2,6,23,.95)]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -266,32 +270,25 @@ export function SuperadminSubscriptionsPage() {
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <InfoPill label="Plano" value={formatPlanLabel(item.plan)} />
                     <InfoPill label="Owner" value={item.ownerEmail || 'Sem owner'} />
-                    <InfoPill label="Período atual" value={formatAdminDate(item.currentPeriodEnd)} />
+                    <InfoPill label="Período" value={formatAdminDate(item.currentPeriodEnd)} />
                     <InfoPill label="MRR" value={formatAdminCurrency(item.estimatedMrr)} />
                   </div>
 
                   <div className="mt-4">
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-slate-300">
-                      {item.hasStripeSubscription
-                        ? 'Assinatura Stripe'
-                        : item.hasStripeCustomer
-                          ? 'Cliente Stripe'
-                          : 'Sem Stripe'}
+                    <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-slate-300">
+                      {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem Stripe'}
                     </span>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap gap-2">
+                  <div className="mt-5 flex flex-wrap gap-2.5">
                     <button
                       type="button"
                       onClick={() => setSelectedSubscription(item)}
-                      className="inline-flex rounded-full border border-emerald-400/18 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/15"
+                      className="inline-flex rounded-full border border-emerald-400/16 bg-emerald-400/[0.08] px-3.5 py-2 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-400/[0.12]"
                     >
                       Editar assinatura
                     </button>
-                    <Link
-                      href={`/superadmin/workspaces/${item.workspaceId}`}
-                      className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/18 hover:bg-white/[0.05] hover:text-white"
-                    >
+                    <Link href={`/superadmin/workspaces/${item.workspaceId}`} className={secondaryActionClassName}>
                       Ver workspace
                     </Link>
                   </div>
@@ -315,13 +312,10 @@ export function SuperadminSubscriptionsPage() {
               setError(null);
               setActionMessage(null);
 
-              const response = await fetchSuperadminJson<SuperadminSubscriptionUpdateResponse>(
-                '/api/superadmin/subscriptions',
-                {
-                  method: 'PATCH',
-                  body: JSON.stringify(payload),
-                }
-              );
+              const response = await fetchSuperadminJson<SuperadminSubscriptionUpdateResponse>('/api/superadmin/subscriptions', {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+              });
 
               setData((current) =>
                 current
@@ -364,35 +358,26 @@ function SubscriptionActionSheet({
   subscription: SuperadminSubscriptionSummary;
   isSaving: boolean;
   onClose: () => void;
-  onSubmit: (payload: {
-    workspaceId: string;
-    plan: string;
-    status: string;
-    currentPeriodEnd: string | null;
-  }) => Promise<void>;
+  onSubmit: (payload: { workspaceId: string; plan: string; status: string; currentPeriodEnd: string | null }) => Promise<void>;
 }) {
   const [plan, setPlan] = React.useState(subscription.plan);
   const [status, setStatus] = React.useState(subscription.status);
-  const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState(
-    subscription.currentPeriodEnd ? subscription.currentPeriodEnd.slice(0, 10) : ''
-  );
+  const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState(subscription.currentPeriodEnd ? subscription.currentPeriodEnd.slice(0, 10) : '');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/78 p-4 backdrop-blur-sm xl:items-center">
-      <div className="w-full max-w-xl rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.96),rgba(9,17,30,.94))] p-6 shadow-[0_34px_120px_-60px_rgba(2,6,23,.98)]">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/82 p-4 backdrop-blur-md xl:items-center">
+      <div className="w-full max-w-xl rounded-[2rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(8,15,28,.98),rgba(8,15,28,.92))] p-6 shadow-[0_42px_120px_-70px_rgba(2,6,23,.98)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Ação administrativa</p>
-            <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-white">{subscription.workspaceName}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
-              Ajuste plano, status e período atual com a mesma linguagem visual do painel.
-            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">Ação administrativa</p>
+            <h3 className="mt-3 text-[1.45rem] font-semibold tracking-[-0.04em] text-white">{subscription.workspaceName}</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste plano, status e período atual com o mesmo acabamento visual do painel.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/[0.05]"
+            className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/[0.05]"
           >
             Fechar
           </button>
@@ -400,61 +385,37 @@ function SubscriptionActionSheet({
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+            <span className="field-label">Plano</span>
             <select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>
               {PLAN_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </label>
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Status</span>
+            <span className="field-label">Status</span>
             <select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>
               {STATUS_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </label>
+          <label className="block sm:col-span-2">
+            <span className="field-label">Período atual</span>
+            <input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={filterFieldClassName} />
+          </label>
         </div>
 
-        <label className="mt-4 block">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Período atual</span>
-          <input
-            type="date"
-            value={currentPeriodEnd}
-            onChange={(event) => setCurrentPeriodEnd(event.target.value)}
-            className={filterFieldClassName}
-          />
-        </label>
-
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3">
+          <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>Cancelar</button>
           <button
             type="button"
-            onClick={onClose}
             disabled={isSaving}
-            className="rounded-full border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/[0.05] disabled:opacity-60"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              void onSubmit({
-                workspaceId: subscription.workspaceId,
-                plan,
-                status,
-                currentPeriodEnd: currentPeriodEnd || null,
-              })
-            }
-            disabled={isSaving}
+            onClick={() => void onSubmit({ workspaceId: subscription.workspaceId, plan, status, currentPeriodEnd: currentPeriodEnd || null })}
             className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
           >
             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Salvar assinatura
+            Salvar ajustes
           </button>
         </div>
       </div>
@@ -462,56 +423,29 @@ function SubscriptionActionSheet({
   );
 }
 
-function QuickInsight({
-  icon,
-  label,
-  value,
-  description,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  description: string;
-}) {
+function InsightTile({ icon, label, value, description }: { icon: React.ReactNode; label: string; value: string; description: string }) {
   return (
-    <div className="rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.02))] p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">{icon}</div>
-      </div>
-      <p className="mt-3 text-lg font-semibold text-white">{value}</p>
+    <div className="rounded-[1.5rem] border border-white/[0.07] bg-slate-950/35 px-4 py-4">
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">{icon}{label}</div>
+      <p className="mt-3 text-sm font-semibold text-white">{value}</p>
       <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
     </div>
   );
 }
 
 function PlanBadge({ plan }: { plan: string }) {
-  const toneClassName =
-    plan === 'PREMIUM'
-      ? 'border-cyan-400/18 bg-cyan-500/10 text-cyan-100'
-      : plan === 'PRO'
-        ? 'border-emerald-400/18 bg-emerald-500/10 text-emerald-100'
-        : 'border-white/10 bg-white/[0.04] text-slate-200';
-
-  return (
-    <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold ${toneClassName}`}>
-      {formatPlanLabel(plan)}
-    </span>
-  );
+  const tone = plan === 'PREMIUM' ? 'border-sky-400/16 bg-sky-400/[0.08] text-sky-100' : plan === 'PRO' ? 'border-emerald-400/16 bg-emerald-400/[0.08] text-emerald-100' : 'border-white/[0.08] bg-white/[0.03] text-slate-200';
+  return <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${tone}`}>{formatPlanLabel(plan)}</span>;
 }
 
 function StatusBadge({ status }: { status: string | null }) {
-  return (
-    <span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${getSubscriptionTone(status)}`}>
-      {formatSubscriptionStatus(status)}
-    </span>
-  );
+  return <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>;
 }
 
 function InfoPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.3rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.42),rgba(2,6,23,.28))] p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+    <div className="rounded-[1.25rem] border border-white/[0.07] bg-slate-950/40 px-4 py-3.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500">{label}</p>
       <p className="mt-2 text-sm font-semibold text-white">{value}</p>
     </div>
   );
@@ -520,7 +454,7 @@ function InfoPill({ label, value }: { label: string; value: string }) {
 function LoadingState({ message }: { message: string }) {
   return (
     <div className="flex min-h-[260px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-5 py-4 text-slate-200">
+      <div className="flex items-center gap-3 rounded-[1.5rem] border border-white/[0.08] bg-slate-950/55 px-5 py-4 text-slate-200">
         <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
         {message}
       </div>
@@ -528,29 +462,24 @@ function LoadingState({ message }: { message: string }) {
   );
 }
 
-function ErrorState({ message }: { message: string }) {
-  return (
-    <div className="rounded-[1.4rem] border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">
-      {message}
-    </div>
-  );
+function SuccessState({ message }: { message: string }) {
+  return <div className="rounded-[1.6rem] border border-emerald-500/18 bg-emerald-400/[0.08] px-4 py-5 text-sm text-emerald-100">{message}</div>;
 }
 
-function SuccessState({ message }: { message: string }) {
-  return (
-    <div className="rounded-[1.4rem] border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">
-      {message}
-    </div>
-  );
+function ErrorState({ message }: { message: string }) {
+  return <div className="rounded-[1.6rem] border border-rose-500/18 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
 }
 
 function EmptyState() {
-  return (
-    <div className="rounded-[1.4rem] border border-dashed border-white/10 bg-slate-950/40 px-4 py-8 text-sm text-slate-400">
-      Nenhuma assinatura encontrada para os filtros atuais.
-    </div>
-  );
+  return <div className="rounded-[1.6rem] border border-dashed border-white/[0.08] bg-slate-950/35 px-4 py-8 text-sm text-slate-400">Nenhuma assinatura encontrada com os filtros atuais.</div>;
+}
+
+function rowCellClassName(index: number) {
+  return `px-7 py-5 align-top ${index > 0 ? 'border-t border-white/[0.06]' : ''}`;
 }
 
 const filterFieldClassName =
-  'mt-2 w-full rounded-[1.25rem] border border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,.52),rgba(2,6,23,.36))] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400';
+  'w-full rounded-[1.35rem] border border-white/[0.08] bg-slate-950/45 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/45 focus:bg-slate-950';
+
+const secondaryActionClassName =
+  'inline-flex rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/[0.16] hover:bg-white/[0.05] hover:text-white';
