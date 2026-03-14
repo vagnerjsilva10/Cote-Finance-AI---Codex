@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -286,7 +286,7 @@ const plans: PlanCard[] = [
       'Análise avançada de gastos',
       'Relatórios financeiros detalhados',
       'Previsões financeiras',
-      'Alertas financeiros automáticos',
+      'Resumos e alertas financeiros no WhatsApp',
     ],
     accent: 'highlight',
   },
@@ -301,7 +301,7 @@ const plans: PlanCard[] = [
     features: [
       'Lançamentos ilimitados',
       'IA ilimitada',
-      'Alertas financeiros via WhatsApp',
+      'Automações financeiras no WhatsApp',
       'Resumos financeiros automáticos',
       'Insights avançados da IA',
       'Ferramentas avançadas de análise',
@@ -1342,4 +1342,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
 
