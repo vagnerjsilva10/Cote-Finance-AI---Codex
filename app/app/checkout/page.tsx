@@ -1157,9 +1157,9 @@ function CheckoutPageContent() {
                   <p className="mt-3 text-sm text-slate-300">
                     {paymentMethod === 'card'
                       ? trialDays > 0
-                        ? 'Você não será cobrado hoje.'
-                        : 'Pagamento seguro processado pela Stripe.'
-                      : 'Pix ativa o pagamento instantaneamente via banco.'}
+                        ? 'Você não será cobrado hoje. Após o teste, a assinatura renova automaticamente.'
+                        : 'Pagamento seguro processado pela Stripe com renovação automática.'
+                      : 'Pix ativa o plano por 1 ciclo, sem renovação automática.'}
                   </p>
                 </div>
               </div>
@@ -1173,12 +1173,15 @@ function CheckoutPageContent() {
                     {
                       value: 'card',
                       title: 'Cartão de crédito',
-                      description: 'Recomendado para assinaturas mensais automáticas.',
+                      description:
+                        trialDays > 0
+                          ? '3 dias de teste grátis e renovação automática depois.'
+                          : 'Recomendado para assinaturas com renovação automática.',
                     },
                     {
                       value: 'pix',
                       title: 'Pix',
-                      description: 'Pagamento instantâneo via banco.',
+                      description: 'Pagamento instantâneo com acesso por 1 ciclo, sem renovação automática.',
                     },
                   ] as const).map((option) => (
                     <button
@@ -1211,7 +1214,9 @@ function CheckoutPageContent() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500">Assinaturas mensais funcionam melhor com cartão.</p>
+                <p className="text-xs leading-5 text-slate-500">
+                  Assinaturas mensais funcionam melhor com cartão. Pix libera acesso por um ciclo e não renova sozinho.
+                </p>
               </div>
 
               {isLoading ? (
