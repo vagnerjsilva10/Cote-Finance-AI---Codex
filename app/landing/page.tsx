@@ -492,9 +492,9 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl space-y-16 px-4 pb-20 pt-10 sm:space-y-20 sm:px-6 sm:pb-24 sm:pt-14">
+      <main className="mx-auto w-full max-w-7xl space-y-14 px-4 pb-16 pt-8 sm:space-y-20 sm:px-6 sm:pb-24 sm:pt-14">
         <section
-          className="grid items-center gap-10 lg:grid-cols-2"
+          className="grid items-center gap-8 lg:grid-cols-2 lg:gap-10"
           onMouseMove={handleHeroMouseMove}
           onMouseLeave={handleHeroMouseLeave}
         >
@@ -502,15 +502,15 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="space-y-6 text-center lg:text-left"
+            className="space-y-5 text-center lg:space-y-6 lg:text-left"
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
               <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
-            <h1 className="text-[2.35rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1 className="text-[2rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
               Descubra para onde seu dinheiro está indo e assuma o controle
             </h1>
-            <p className="max-w-xl text-lg leading-relaxed text-slate-300">
+            <p className="max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-relaxed">
               Cote Finance AI usa inteligência artificial para analisar seus gastos, organizar sua rotina financeira e
               mostrar com clareza como seu dinheiro está sendo usado. Receba insights automáticos, gráficos
               inteligentes e alertas via WhatsApp.
@@ -519,13 +519,13 @@ export default function LandingPage() {
               <button
                 onClick={startFree}
                 disabled={isBusy}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:w-auto"
               >
               Começar grátis <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => scrollTo('como-funciona')}
-                className="rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500"
+                className="w-full rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 sm:w-auto"
               >
                 Ver como funciona
               </button>
@@ -537,7 +537,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08 }}
-            className="relative overflow-hidden sm:overflow-visible"
+            className="relative mx-auto w-full max-w-xl overflow-hidden sm:overflow-visible lg:max-w-none"
             style={{
               transform: `translate3d(${heroParallax.x * -0.35}px, ${heroParallax.y * -0.35}px, 0)`,
             }}
@@ -618,7 +618,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-rose-300/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100">
               <TrendingDown size={14} /> Problemas comuns no controle financeiro
             </span>
-            <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Seu dinheiro sai… mas você não enxerga para onde.
             </h2>
             <p className="text-slate-300">No fim do mês, a sensação é sempre a mesma:</p>
@@ -698,7 +698,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
               <Sparkles size={14} /> Clareza financeira com inteligência artificial
             </span>
-            <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Clareza financeira muda tudo
             </h2>
             <p className="text-emerald-100">
@@ -757,7 +757,7 @@ export default function LandingPage() {
 
                 <motion.section
           id="produto"
-          className="relative scroll-mt-24 overflow-hidden py-4 pb-14 lg:scroll-mt-28 lg:overflow-visible lg:pb-16"
+          className="relative scroll-mt-24 overflow-hidden py-2 pb-12 lg:scroll-mt-28 lg:overflow-visible lg:py-4 lg:pb-16"
           initial={{ opacity: 0, y: 26 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -765,12 +765,12 @@ export default function LandingPage() {
         >
           <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-72 bg-[radial-gradient(circle_at_15%_20%,rgba(16,185,129,.2),transparent_46%),radial-gradient(circle_at_82%_80%,rgba(59,130,246,.18),transparent_42%)]" />
           <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12">
-            <div className="max-w-xl space-y-6 text-left">
+            <div className="max-w-xl space-y-5 text-left">
               <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
                 <Sparkles size={14} /> Demonstração do produto
               </span>
               <div className="space-y-4">
-                <h3 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+                <h3 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
                   Tenha visão completa da sua vida financeira
                 </h3>
                 <p className="max-w-lg text-base leading-7 text-slate-300">
@@ -778,7 +778,7 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="grid gap-3">
+              <div className="grid gap-2.5 sm:gap-3">
                 {[
                   'Receitas e despesas organizadas',
                   'Evolução do saldo em tempo real',
@@ -797,15 +797,15 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              <div className="flex flex-col items-start gap-3 pt-1">
+              <div className="flex flex-col items-stretch gap-3 pt-1 sm:items-start">
                 <button
                   onClick={startFree}
                   disabled={isBusy}
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:w-auto"
                 >
                   Começar grátis <ArrowRight size={16} />
                 </button>
-                <p className="text-sm text-slate-500">Experimente a organização financeira com IA sem complicar sua rotina.</p>
+                <p className="text-sm leading-6 text-slate-400">Experimente a organização financeira com IA sem complicar sua rotina.</p>
               </div>
             </div>
 
@@ -971,7 +971,7 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute inset-x-0 top-10 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(16,185,129,.15),transparent_54%)]" />
 
           <div className="space-y-5">
-            <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Quando você entende seu dinheiro, tudo muda
             </h2>
             <p className="text-slate-300">Quando você entende seu dinheiro:</p>
@@ -1017,7 +1017,7 @@ export default function LandingPage() {
         </motion.section>
 
         <motion.section
-          className="rounded-3xl border border-white/10 bg-slate-900/50 p-6 md:p-10"
+          className="rounded-3xl border border-white/10 bg-slate-900/50 p-5 md:p-10"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -1058,7 +1058,7 @@ export default function LandingPage() {
             <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100">
               Histórias de quem usa
             </span>
-            <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Mais confiança para organizar sua vida financeira
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
@@ -1103,11 +1103,11 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-3 lg:items-stretch">
+          <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative flex h-full flex-col overflow-hidden rounded-[30px] border p-6 sm:p-7 ${
+                className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 sm:p-7 ${
                   plan.accent === 'highlight'
                     ? 'border-emerald-300/50 bg-gradient-to-b from-emerald-400/20 via-slate-900/95 to-slate-950 shadow-[0_30px_90px_rgba(16,185,129,0.24)] ring-1 ring-emerald-300/20 lg:-translate-y-3 lg:scale-[1.02]'
                     : plan.accent === 'premium'
@@ -1219,7 +1219,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-3 lg:items-stretch">
+          <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
             {legacyPlans.map((plan) => (
               <div
                 key={plan.name}
@@ -1282,7 +1282,7 @@ export default function LandingPage() {
         </motion.section>
 
         <motion.section
-          className="relative overflow-hidden py-8 text-center"
+          className="relative overflow-hidden py-6 text-center sm:py-8"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -1297,11 +1297,11 @@ export default function LandingPage() {
               Crie sua conta gratuita e tenha clareza total do seu dinheiro.
             </p>
           </div>
-          <div className="mt-8 flex flex-col items-center">
+          <div className="mx-auto mt-8 flex max-w-sm flex-col items-center">
             <button
               onClick={startFree}
               disabled={isBusy}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60 sm:w-auto"
             >
               Começar grátis <ArrowRight size={16} />
             </button>
@@ -1342,5 +1342,6 @@ export default function LandingPage() {
     </div>
   );
 }
+
 
 
