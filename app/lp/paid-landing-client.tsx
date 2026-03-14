@@ -328,7 +328,7 @@ export default function PaidLandingClient() {
               >
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200">
                   <span>★★★★★</span>
-                  <span>Prova social</span>
+                  <span>★★★★★</span>
                 </div>
                 <h2 className="max-w-2xl text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
                   Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.
@@ -348,7 +348,7 @@ export default function PaidLandingClient() {
                 >
                   <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Usuários</p>
                   <p className="mt-2 text-2xl font-bold text-white">+1.000</p>
-                  <p className="mt-1 text-sm text-slate-400">já começaram a organizar melhor o dinheiro</p>
+                  <p className="mt-1 text-sm text-slate-400">organizando melhor receitas, despesas e hábitos</p>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 14 }}
@@ -359,7 +359,7 @@ export default function PaidLandingClient() {
                 >
                   <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Resultado</p>
                   <p className="mt-2 text-2xl font-bold text-white">Mais controle</p>
-                  <p className="mt-1 text-sm text-emerald-50/80">sobre gastos, categorias e decisões do mês</p>
+                  <p className="mt-1 text-sm text-emerald-50/80">para agir com mais segurança ao longo do mês</p>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 14 }}
@@ -370,11 +370,11 @@ export default function PaidLandingClient() {
                 >
                   <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Rotina</p>
                   <p className="mt-2 text-2xl font-bold text-white">Sem planilhas</p>
-                  <p className="mt-1 text-sm text-cyan-50/80">com alertas e leituras muito mais práticas</p>
+                  <p className="mt-1 text-sm text-cyan-50/80">com alertas e leituras simples no dia a dia</p>
                 </motion.div>
               </div>
 
-              <div className="flex flex-wrap gap-3 text-sm text-slate-200">
+              <div className="flex flex-wrap gap-3 border-t border-white/10 pt-4 text-sm text-slate-200">
                 {socialBullets.map((item, index) => (
                   <motion.span
                     key={item}
@@ -403,14 +403,14 @@ export default function PaidLandingClient() {
               <p className="mt-5 text-lg leading-8 text-slate-100 md:text-[1.15rem]">
                 &ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;
               </p>
-              <div className="mt-8 flex items-center gap-4">
+              <div className="mt-8 flex items-center gap-4 border-t border-white/10 pt-5">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-sm font-bold text-emerald-100">MR</div>
                 <div>
                   <p className="text-sm font-semibold text-white">Mariana R.</p>
                   <p className="text-xs text-slate-400">Usuária do Cote Finance AI</p>
                 </div>
               </div>
-              <div className="mt-8">
+              <div className="mt-8 flex items-start">
                 <PrimaryCta href="/signup" className="w-full sm:w-auto sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
               </div>
             </motion.div>
@@ -661,6 +661,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
