@@ -402,7 +402,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className={`theme-landing-shell ${displayFont.variable} ${bodyFont.variable} min-h-screen bg-slate-950 text-slate-100`}
+      className={`theme-landing-shell ${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`}
       style={{ fontFamily: 'var(--font-body)' }}
     >
       <div className="theme-landing-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,.18),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(59,130,246,.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
@@ -509,7 +509,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08 }}
-            className="relative"
+            className="relative overflow-hidden sm:overflow-visible"
             style={{
               transform: `translate3d(${heroParallax.x * -0.35}px, ${heroParallax.y * -0.35}px, 0)`,
             }}
@@ -729,7 +729,7 @@ export default function LandingPage() {
 
         <motion.section
           id="produto"
-          className="scroll-mt-24 relative overflow-visible py-4 pb-14 lg:scroll-mt-28 lg:pb-16"
+          className="relative scroll-mt-24 overflow-hidden py-4 pb-14 lg:scroll-mt-28 lg:overflow-visible lg:pb-16"
           initial={{ opacity: 0, y: 26 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}

@@ -1,4 +1,5 @@
-﻿import type { Metadata } from 'next';
+import * as React from 'react';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { TrackingProvider } from '@/components/tracking/tracking-provider';
 import { ThemeProvider } from '@/components/theme/theme-provider';
@@ -35,11 +36,12 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <TrackingProvider />
+          <React.Suspense fallback={null}>
+            <TrackingProvider />
+          </React.Suspense>
           {children}
         </ThemeProvider>
       </body>
     </html>
   );
 }
-
