@@ -757,7 +757,7 @@ export default function LandingPage() {
 
                 <motion.section
           id="produto"
-          className="relative scroll-mt-24 overflow-hidden py-2 pb-12 lg:scroll-mt-28 lg:overflow-visible lg:py-4 lg:pb-16"
+          className="relative scroll-mt-24 py-2 pb-12 lg:scroll-mt-28 lg:overflow-visible lg:py-4 lg:pb-16"
           initial={{ opacity: 0, y: 26 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -809,8 +809,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <motion.div whileHover={{ y: -3, scale: 1.005 }} className="relative mx-auto w-full max-w-3xl">
-              <div className="absolute -inset-5 rounded-[2.3rem] bg-[radial-gradient(circle_at_35%_15%,rgba(16,185,129,.35),transparent_48%),radial-gradient(circle_at_70%_80%,rgba(16,185,129,.18),transparent_45%)] blur-2xl" />
+            <motion.div whileHover={{ y: -3, scale: 1.005 }} className="relative mx-auto w-full max-w-3xl px-1 sm:px-0">
+              <div className="absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_35%_15%,rgba(16,185,129,.35),transparent_48%),radial-gradient(circle_at_70%_80%,rgba(16,185,129,.18),transparent_45%)] blur-2xl sm:-inset-5 sm:rounded-[2.3rem]" />
               <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/88 p-3 sm:p-4 ring-1 ring-emerald-300/15 shadow-[0_28px_95px_-38px_rgba(16,185,129,.68)]">
                 <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-900/80 px-3 py-2 sm:px-4">
                   <div className="flex items-center gap-2">
