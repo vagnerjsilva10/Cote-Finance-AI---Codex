@@ -14,18 +14,22 @@ export function SuperadminPageHeader(props: {
   children?: React.ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/72 p-6 shadow-[0_28px_120px_-60px_rgba(15,23,42,.95)] backdrop-blur-xl md:p-8">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,.18),transparent_52%),radial-gradient(circle_at_top_right,rgba(59,130,246,.14),transparent_44%)]" />
-      <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,.92),rgba(9,17,30,.84))] px-6 py-6 shadow-[0_30px_90px_-52px_rgba(2,6,23,.95)] backdrop-blur-xl md:px-8 md:py-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(56,189,248,.12),transparent_26%),linear-gradient(180deg,rgba(255,255,255,.03),transparent_42%)]" />
+      <div className="relative flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
         <div className="max-w-3xl">
           {props.eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">{props.eyebrow}</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-500/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-emerald-200">
+              {props.eyebrow}
+            </div>
           ) : null}
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-4xl">{props.title}</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">{props.description}</p>
-          {props.children ? <div className="mt-6">{props.children}</div> : null}
+          <h1 className="mt-4 text-[2rem] font-semibold tracking-[-0.03em] text-white md:text-[2.45rem]">
+            {props.title}
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 md:text-[15px]">{props.description}</p>
+          {props.children ? <div className="mt-7">{props.children}</div> : null}
         </div>
-        {props.actions ? <div className="flex flex-wrap gap-3">{props.actions}</div> : null}
+        {props.actions ? <div className="flex flex-wrap items-center gap-3">{props.actions}</div> : null}
       </div>
     </section>
   );
@@ -41,14 +45,14 @@ export function SuperadminSectionCard(props: {
   return (
     <section
       className={cn(
-        'rounded-[1.75rem] border border-white/10 bg-slate-900/68 p-5 shadow-[0_24px_90px_-56px_rgba(15,23,42,.95)] backdrop-blur-xl md:p-6',
+        'rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,.78),rgba(15,23,42,.62))] p-5 shadow-[0_22px_80px_-52px_rgba(2,6,23,.92)] backdrop-blur-xl md:p-6',
         props.className
       )}
     >
       {props.title || props.description || props.action ? (
-        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            {props.title ? <h2 className="text-lg font-semibold text-white">{props.title}</h2> : null}
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            {props.title ? <h2 className="text-xl font-semibold tracking-[-0.02em] text-white">{props.title}</h2> : null}
             {props.description ? <p className="mt-2 text-sm leading-6 text-slate-400">{props.description}</p> : null}
           </div>
           {props.action ? <div className="shrink-0">{props.action}</div> : null}
@@ -59,18 +63,22 @@ export function SuperadminSectionCard(props: {
   );
 }
 
-export function SuperadminMetricChip(props: { label: string; value: string; tone?: 'default' | 'success' | 'info' }) {
+export function SuperadminMetricChip(props: {
+  label: string;
+  value: string;
+  tone?: 'default' | 'success' | 'info';
+}) {
   const toneClassName =
     props.tone === 'success'
-      ? 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100'
+      ? 'border-emerald-400/18 bg-[linear-gradient(180deg,rgba(16,185,129,.16),rgba(16,185,129,.08))] text-emerald-50'
       : props.tone === 'info'
-        ? 'border-sky-400/20 bg-sky-500/10 text-sky-100'
-        : 'border-white/10 bg-white/5 text-slate-200';
+        ? 'border-sky-400/18 bg-[linear-gradient(180deg,rgba(14,165,233,.16),rgba(14,165,233,.08))] text-sky-50'
+        : 'border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025))] text-slate-100';
 
   return (
-    <div className={cn('rounded-2xl border px-4 py-3', toneClassName)}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] opacity-75">{props.label}</p>
-      <p className="mt-2 text-lg font-semibold">{props.value}</p>
+    <div className={cn('rounded-[1.4rem] border px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]', toneClassName)}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] opacity-70">{props.label}</p>
+      <p className="mt-3 text-2xl font-semibold tracking-[-0.02em]">{props.value}</p>
     </div>
   );
 }
@@ -80,10 +88,10 @@ export function SuperadminActionLink(props: { href: string; children: React.Reac
     <Link
       href={props.href}
       className={cn(
-        'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition',
+        'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-200',
         props.primary
-          ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
-          : 'border border-white/10 text-slate-200 hover:border-white/20 hover:bg-white/5'
+          ? 'bg-emerald-500 text-slate-950 shadow-[0_12px_30px_-16px_rgba(16,185,129,.65)] hover:bg-emerald-400'
+          : 'border border-white/10 bg-white/[0.03] text-slate-200 hover:border-white/18 hover:bg-white/[0.05] hover:text-white'
       )}
     >
       {props.children}
@@ -101,7 +109,10 @@ export function SuperadminInfoList(props: { items: Array<{ label: string; value:
       )}
     >
       {props.items.map((item) => (
-        <div key={item.label} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+        <div
+          key={item.label}
+          className="rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.42),rgba(2,6,23,.28))] p-4"
+        >
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{item.label}</p>
           <p className="mt-2 text-sm font-semibold text-white">{item.value}</p>
         </div>

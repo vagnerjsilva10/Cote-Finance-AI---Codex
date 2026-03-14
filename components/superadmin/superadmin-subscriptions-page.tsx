@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Loader2, Search } from 'lucide-react';
+import { CreditCard, Loader2, Search, ShieldCheck, Sparkles } from 'lucide-react';
 
 import { fetchSuperadminJson, useDebouncedValue } from '@/components/superadmin/fetch-superadmin-json';
 import {
@@ -19,8 +19,11 @@ import {
   SuperadminPageHeader,
   SuperadminSectionCard,
 } from '@/components/superadmin/superadmin-page-primitives';
-import type { SuperadminSubscriptionsResponse } from '@/lib/superadmin/types';
-import type { SuperadminSubscriptionSummary, SuperadminSubscriptionUpdateResponse } from '@/lib/superadmin/types';
+import type {
+  SuperadminSubscriptionSummary,
+  SuperadminSubscriptionUpdateResponse,
+  SuperadminSubscriptionsResponse,
+} from '@/lib/superadmin/types';
 
 const PLAN_OPTIONS = [
   { value: 'ALL', label: 'Todos os planos' },
@@ -55,7 +58,6 @@ export function SuperadminSubscriptionsPage() {
       try {
         setIsLoading(true);
         setError(null);
-        setActionMessage(null);
 
         const params = new URLSearchParams();
         if (debouncedQuery.trim()) params.set('q', debouncedQuery.trim());
@@ -87,10 +89,10 @@ export function SuperadminSubscriptionsPage() {
       <SuperadminPageHeader
         eyebrow="Billing"
         title="Assinaturas"
-        description="Acompanhe a operação de billing com visão consolidada de plano, status, vencimento, vínculo com Stripe e MRR estimado da base atual."
-        actions={<SuperadminActionLink href="/superadmin/plans">Ver planos</SuperadminActionLink>}
+        description="Monitore receita recorrente, base pagante e saúde do billing em uma leitura mais limpa, com filtros mais claros e uma tabela pronta para operação diária."
+        actions={<SuperadminActionLink href="/superadmin/plans">Ver catálogo de planos</SuperadminActionLink>}
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <SuperadminMetricChip label="Assinaturas" value={formatAdminNumber(metrics?.total || 0)} />
           <SuperadminMetricChip label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} tone="success" />
           <SuperadminMetricChip label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} tone="info" />
@@ -98,31 +100,33 @@ export function SuperadminSubscriptionsPage() {
         </div>
       </SuperadminPageHeader>
 
+      {actionMessage ? (
+        <SuccessState message={actionMessage} />
+      ) : null}
+
+      {error ? <ErrorState message={error} /> : null}
+
       <SuperadminSectionCard
         title="Operação de billing"
-        description="Filtre por plano, status ou workspace para localizar rapidamente contas ativas, pendentes de pagamento e canceladas."
+        description="Busca e filtros desenhados para escanear rápido a base e isolar planos, pendências e contas canceladas sem perder contexto."
       >
-        <div className="grid gap-3 lg:grid-cols-[1.2fr_0.4fr_0.4fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.35fr_0.42fr_0.42fr]">
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
             <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar por workspace, owner ou ID"
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
+                className={filterFieldClassName}
               />
             </div>
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Plano</span>
-            <select
-              value={plan}
-              onChange={(event) => setPlan(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400"
-            >
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+            <select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>
               {PLAN_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -132,12 +136,8 @@ export function SuperadminSubscriptionsPage() {
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Status</span>
-            <select
-              value={status}
-              onChange={(event) => setStatus(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400"
-            >
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Status</span>
+            <select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -146,65 +146,98 @@ export function SuperadminSubscriptionsPage() {
             </select>
           </label>
         </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <QuickInsight
+            icon={<Sparkles className="h-4 w-4 text-emerald-300" />}
+            label="Conversão visível"
+            value={`${formatAdminNumber(metrics?.paying || 0)} pagantes`}
+            description="Workspaces ativos nos planos Pro e Premium."
+          />
+          <QuickInsight
+            icon={<ShieldCheck className="h-4 w-4 text-sky-300" />}
+            label="Base estável"
+            value={`${formatAdminNumber(metrics?.active || 0)} ativas`}
+            description="Assinaturas saudáveis e com boa continuidade."
+          />
+          <QuickInsight
+            icon={<CreditCard className="h-4 w-4 text-slate-200" />}
+            label="Acompanhamento"
+            value={`${formatAdminNumber(metrics?.canceled || 0)} canceladas`}
+            description="Contas que pedem leitura de churn e retenção."
+          />
+        </div>
       </SuperadminSectionCard>
 
       <SuperadminSectionCard
         title="Base de assinaturas"
-        description={data ? `${formatAdminNumber(data.total)} assinatura(s) encontrada(s).` : 'Carregando assinaturas da base.'}
+        description={
+          data
+            ? `${formatAdminNumber(data.total)} assinatura(s) encontradas. Ações administrativas e navegação rápida ficam alinhadas ao lado do status.`
+            : 'Carregando base de assinaturas.'
+        }
       >
         {isLoading ? (
-          <LoadingState />
-        ) : error || !data ? (
+          <LoadingState message="Carregando assinaturas..." />
+        ) : !data ? (
           <ErrorState message={error || 'Falha ao carregar assinaturas.'} />
         ) : data.subscriptions.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-4">
-            <div className="hidden overflow-x-auto xl:block">
+          <div className="space-y-5">
+            <div className="hidden overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.26),rgba(2,6,23,.14))] xl:block">
               <table className="min-w-full text-left text-sm">
-                <thead className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <thead className="bg-white/[0.03] text-[11px] uppercase tracking-[0.22em] text-slate-500">
                   <tr>
-                    <th className="pb-3 pr-4 font-semibold">Workspace</th>
-                    <th className="pb-3 pr-4 font-semibold">Owner</th>
-                    <th className="pb-3 pr-4 font-semibold">Plano</th>
-                    <th className="pb-3 pr-4 font-semibold">Status</th>
-                    <th className="pb-3 pr-4 font-semibold">Período atual</th>
-                    <th className="pb-3 pr-4 font-semibold">Stripe</th>
-                    <th className="pb-3 pr-4 font-semibold">MRR</th>
-                    <th className="pb-3 pr-0 font-semibold">Ações</th>
+                    <th className="px-6 py-4 font-semibold">Workspace</th>
+                    <th className="px-6 py-4 font-semibold">Owner</th>
+                    <th className="px-6 py-4 font-semibold">Plano</th>
+                    <th className="px-6 py-4 font-semibold">Status</th>
+                    <th className="px-6 py-4 font-semibold">Período</th>
+                    <th className="px-6 py-4 font-semibold">Stripe</th>
+                    <th className="px-6 py-4 font-semibold">MRR</th>
+                    <th className="px-6 py-4 font-semibold text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/10">
+                <tbody className="divide-y divide-white/8">
                   {data.subscriptions.map((item) => (
-                    <tr key={item.workspaceId}>
-                      <td className="py-4 pr-4 align-top">
-                        <div className="font-semibold text-white">{item.workspaceName}</div>
-                        <div className="mt-1 text-[11px] text-slate-500">{item.workspaceId}</div>
+                    <tr key={item.workspaceId} className="transition hover:bg-white/[0.025]">
+                      <td className="px-6 py-5 align-top">
+                        <div className="min-w-[220px]">
+                          <div className="font-semibold text-white">{item.workspaceName}</div>
+                          <div className="mt-1 text-xs text-slate-500">{item.workspaceId}</div>
+                        </div>
                       </td>
-                      <td className="py-4 pr-4 align-top text-slate-300">{item.ownerEmail || 'Sem owner'}</td>
-                      <td className="py-4 pr-4 align-top text-slate-200">{formatPlanLabel(item.plan)}</td>
-                      <td className="py-4 pr-4 align-top">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(item.status)}`}>
-                          {formatSubscriptionStatus(item.status)}
-                        </span>
+                      <td className="px-6 py-5 align-top">
+                        <div className="min-w-[180px] text-sm text-slate-300">{item.ownerEmail || 'Sem owner'}</div>
                       </td>
-                      <td className="py-4 pr-4 align-top text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
-                      <td className="py-4 pr-4 align-top text-slate-300">
-                        {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vínculo'}
+                      <td className="px-6 py-5 align-top">
+                        <PlanBadge plan={item.plan} />
                       </td>
-                      <td className="py-4 pr-4 align-top text-slate-200">{formatAdminCurrency(item.estimatedMrr)}</td>
-                      <td className="py-4 pr-0 align-top">
-                        <div className="flex flex-wrap gap-2">
+                      <td className="px-6 py-5 align-top">
+                        <StatusBadge status={item.status} />
+                      </td>
+                      <td className="px-6 py-5 align-top text-sm text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
+                      <td className="px-6 py-5 align-top text-sm text-slate-400">
+                        {item.hasStripeSubscription
+                          ? 'Assinatura Stripe'
+                          : item.hasStripeCustomer
+                            ? 'Cliente Stripe'
+                            : 'Sem vínculo'}
+                      </td>
+                      <td className="px-6 py-5 align-top text-sm font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</td>
+                      <td className="px-6 py-5 align-top">
+                        <div className="flex justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => setSelectedSubscription(item)}
-                            className="inline-flex rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/15"
+                            className="inline-flex rounded-full border border-emerald-400/18 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/15"
                           >
                             Editar
                           </button>
                           <Link
                             href={`/superadmin/workspaces/${item.workspaceId}`}
-                            className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
+                            className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/18 hover:bg-white/[0.05] hover:text-white"
                           >
                             Ver workspace
                           </Link>
@@ -218,15 +251,16 @@ export function SuperadminSubscriptionsPage() {
 
             <div className="grid gap-4 xl:hidden">
               {data.subscriptions.map((item) => (
-                <article key={item.workspaceId} className="rounded-2xl border border-white/10 bg-slate-950/55 p-5">
+                <article
+                  key={item.workspaceId}
+                  className="rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,.72),rgba(15,23,42,.56))] p-5 shadow-[0_18px_56px_-38px_rgba(2,6,23,.92)]"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-semibold text-white">{item.workspaceName}</p>
                       <p className="mt-1 text-xs text-slate-500">{item.workspaceId}</p>
                     </div>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(item.status)}`}>
-                      {formatSubscriptionStatus(item.status)}
-                    </span>
+                    <StatusBadge status={item.status} />
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -236,28 +270,30 @@ export function SuperadminSubscriptionsPage() {
                     <InfoPill label="MRR" value={formatAdminCurrency(item.estimatedMrr)} />
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
-                      {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem Stripe'}
+                  <div className="mt-4">
+                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-slate-300">
+                      {item.hasStripeSubscription
+                        ? 'Assinatura Stripe'
+                        : item.hasStripeCustomer
+                          ? 'Cliente Stripe'
+                          : 'Sem Stripe'}
                     </span>
                   </div>
 
-                  <div className="mt-5">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSubscription(item)}
-                        className="inline-flex rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/15"
-                      >
-                        Editar assinatura
-                      </button>
-                      <Link
-                        href={`/superadmin/workspaces/${item.workspaceId}`}
-                        className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
-                      >
-                        Ver workspace
-                      </Link>
-                    </div>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSubscription(item)}
+                      className="inline-flex rounded-full border border-emerald-400/18 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/15"
+                    >
+                      Editar assinatura
+                    </button>
+                    <Link
+                      href={`/superadmin/workspaces/${item.workspaceId}`}
+                      className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/18 hover:bg-white/[0.05] hover:text-white"
+                    >
+                      Ver workspace
+                    </Link>
                   </div>
                 </article>
               ))}
@@ -265,12 +301,6 @@ export function SuperadminSubscriptionsPage() {
           </div>
         )}
       </SuperadminSectionCard>
-
-      {actionMessage ? (
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">
-          {actionMessage}
-        </div>
-      ) : null}
 
       {selectedSubscription ? (
         <SubscriptionActionSheet
@@ -348,21 +378,21 @@ function SubscriptionActionSheet({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm xl:items-center">
-      <div className="w-full max-w-xl rounded-[1.75rem] border border-white/10 bg-slate-900 p-6 shadow-[0_32px_120px_-60px_rgba(15,23,42,.95)]">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/78 p-4 backdrop-blur-sm xl:items-center">
+      <div className="w-full max-w-xl rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.96),rgba(9,17,30,.94))] p-6 shadow-[0_34px_120px_-60px_rgba(2,6,23,.98)]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Ação administrativa</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">{subscription.workspaceName}</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              Ajuste manual de plano, status e período atual sem depender da interface do cliente.
+            <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-white">{subscription.workspaceName}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Ajuste plano, status e período atual com a mesma linguagem visual do painel.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/5"
+            className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/[0.05]"
           >
             Fechar
           </button>
@@ -371,7 +401,7 @@ function SubscriptionActionSheet({
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Plano</span>
-            <select value={plan} onChange={(event) => setPlan(event.target.value)} className={fieldClassName}>
+            <select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>
               {PLAN_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -381,7 +411,7 @@ function SubscriptionActionSheet({
           </label>
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Status</span>
-            <select value={status} onChange={(event) => setStatus(event.target.value)} className={fieldClassName}>
+            <select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>
               {STATUS_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -397,7 +427,7 @@ function SubscriptionActionSheet({
             type="date"
             value={currentPeriodEnd}
             onChange={(event) => setCurrentPeriodEnd(event.target.value)}
-            className={fieldClassName}
+            className={filterFieldClassName}
           />
         </label>
 
@@ -406,7 +436,7 @@ function SubscriptionActionSheet({
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-full border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/5 disabled:opacity-60"
+            className="rounded-full border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/[0.05] disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -432,33 +462,95 @@ function SubscriptionActionSheet({
   );
 }
 
-const fieldClassName =
-  'mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400';
+function QuickInsight({
+  icon,
+  label,
+  value,
+  description,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.02))] p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">{icon}</div>
+      </div>
+      <p className="mt-3 text-lg font-semibold text-white">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+    </div>
+  );
+}
+
+function PlanBadge({ plan }: { plan: string }) {
+  const toneClassName =
+    plan === 'PREMIUM'
+      ? 'border-cyan-400/18 bg-cyan-500/10 text-cyan-100'
+      : plan === 'PRO'
+        ? 'border-emerald-400/18 bg-emerald-500/10 text-emerald-100'
+        : 'border-white/10 bg-white/[0.04] text-slate-200';
+
+  return (
+    <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold ${toneClassName}`}>
+      {formatPlanLabel(plan)}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: string | null }) {
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${getSubscriptionTone(status)}`}>
+      {formatSubscriptionStatus(status)}
+    </span>
+  );
+}
 
 function InfoPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+    <div className="rounded-[1.3rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.42),rgba(2,6,23,.28))] p-4">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
       <p className="mt-2 text-sm font-semibold text-white">{value}</p>
     </div>
   );
 }
 
-function LoadingState() {
+function LoadingState({ message }: { message: string }) {
   return (
     <div className="flex min-h-[260px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 text-slate-200">
+      <div className="flex items-center gap-3 rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-5 py-4 text-slate-200">
         <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
-        Carregando assinaturas...
+        {message}
       </div>
     </div>
   );
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return (
+    <div className="rounded-[1.4rem] border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">
+      {message}
+    </div>
+  );
+}
+
+function SuccessState({ message }: { message: string }) {
+  return (
+    <div className="rounded-[1.4rem] border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">
+      {message}
+    </div>
+  );
 }
 
 function EmptyState() {
-  return <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">Nenhuma assinatura encontrada para os filtros atuais.</div>;
+  return (
+    <div className="rounded-[1.4rem] border border-dashed border-white/10 bg-slate-950/40 px-4 py-8 text-sm text-slate-400">
+      Nenhuma assinatura encontrada para os filtros atuais.
+    </div>
+  );
 }
+
+const filterFieldClassName =
+  'mt-2 w-full rounded-[1.25rem] border border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,.52),rgba(2,6,23,.36))] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400';
