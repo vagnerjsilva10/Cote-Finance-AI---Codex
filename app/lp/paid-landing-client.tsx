@@ -301,7 +301,7 @@ export default function PaidLandingClient() {
                   </motion.div>
                   <motion.div animate={{ y: [0, 3, 0] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }} className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-3 shadow-[0_20px_40px_-28px_rgba(34,211,238,.75)]">
                     <p className="mb-1 text-[11px] text-cyan-200">WhatsApp</p>
-                    <p className="text-sm text-cyan-50">Resumo automatico entregue com o que mais merece sua atencao.</p>
+                    <p className="text-sm text-cyan-50">Resumo automático entregue com o que mais merece sua atenção.</p>
                   </motion.div>
                 </div>
               </div>
@@ -434,7 +434,7 @@ export default function PaidLandingClient() {
                 <p>Com o Cote Finance AI você consegue:</p>
                 <ul className="space-y-2">
                   <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> identificar gastos invisiveis</li>
-                  <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> descobrir habitos que drenam sua renda</li>
+                  <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> descobrir hábitos que drenam sua renda</li>
                   <li className="flex items-center gap-3"><Check size={16} className="text-emerald-200" /> encontrar oportunidades reais de economia</li>
                 </ul>
               </div>
@@ -470,7 +470,7 @@ export default function PaidLandingClient() {
         </motion.section>
 
         <motion.section {...sectionMotion} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.62))] p-6 md:p-8">
-          <SectionTitle eyebrow="Seguranca e privacidade" title="Suas informações são 100% privadas." description="Seus dados financeiros são extremamente importantes." />
+          <SectionTitle eyebrow="Segurança e privacidade" title="Suas informações são 100% privadas." description="Seus dados financeiros são extremamente importantes." />
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {securityBullets.map((item) => (
               <MotionCard key={item} className="rounded-2xl border border-white/10 bg-slate-950/70 p-5"><ShieldCheck size={18} className="mb-3 text-emerald-300" /><p className="font-semibold text-white">{item}</p></MotionCard>
@@ -526,6 +526,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
