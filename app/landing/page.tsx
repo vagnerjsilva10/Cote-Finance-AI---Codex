@@ -511,8 +511,8 @@ export default function LandingPage() {
               Descubra para onde seu dinheiro está indo e assuma o controle
             </h1>
             <p className="max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-relaxed">
-              Cote Finance AI usa inteligência artificial para analisar seus gastos, organizar sua rotina financeira e
-              mostrar com clareza como seu dinheiro está sendo usado. Receba insights automáticos, gráficos
+              Cote Finance AI usa inteligência artificial para organizar seus gastos, mostrar padrões e trazer
+              clareza sobre como seu dinheiro está sendo usado. Receba insights automáticos, gráficos
               inteligentes e alertas via WhatsApp.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
@@ -702,8 +702,7 @@ export default function LandingPage() {
               Clareza financeira muda tudo
             </h2>
             <p className="text-emerald-100">
-              Cote Finance AI foi criado para transformar a forma como você entende seu dinheiro. Em vez de planilhas
-              complicadas, você tem uma inteligência financeira trabalhando por você.
+              Em vez de planilhas complicadas, você passa a contar com uma inteligência financeira trabalhando por você.
             </p>
             <ul className="space-y-2 text-emerald-100">
               <li className="flex items-center justify-start gap-2">
@@ -735,7 +734,7 @@ export default function LandingPage() {
             className="text-center text-3xl font-bold text-white md:text-4xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            Um sistema completo para organizar sua vida financeira
+            Tudo o que você precisa para organizar sua vida financeira
           </h2>
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
@@ -774,7 +773,7 @@ export default function LandingPage() {
                   Tenha visão completa da sua vida financeira
                 </h3>
                 <p className="max-w-lg text-base leading-7 text-slate-300">
-                  Visualize toda a sua vida financeira em um único lugar.
+                  Veja receitas, despesas, saldo e oportunidades de ajuste em uma única visão.
                 </p>
               </div>
 
@@ -944,7 +943,7 @@ export default function LandingPage() {
             className="text-center text-3xl font-bold text-white md:text-4xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            Um sistema completo para organizar sua vida financeira
+            Tudo o que você precisa para organizar sua vida financeira
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
@@ -1024,13 +1023,12 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Centenas de pessoas já estão organizando suas finanças
+            Mais confiança para quem quer clareza financeira
           </h2>
           <p className="mb-6 text-slate-300">
-            Cada vez mais usuários estão usando o Cote Finance AI para visualizar melhor os gastos, entender seus
-            hábitos financeiros e tomar decisões com mais clareza.
+            Cote Finance AI ajuda usuários a entender melhor os gastos, criar rotina financeira e decidir com mais clareza.
           </p>
-          <p className="mb-6 text-slate-300">Nossa missão é simples: ajudar você a enxergar o que acontece com o seu dinheiro.</p>
+
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">+12.000</p>
@@ -1059,10 +1057,10 @@ export default function LandingPage() {
               Histórias de quem usa
             </span>
             <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Mais confiança para organizar sua vida financeira
+              Histórias de quem ganhou mais clareza
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-              Depoimentos curtos de pessoas que passaram a enxergar o dinheiro com mais clareza no dia a dia.
+              Depoimentos de pessoas que passaram a entender melhor o próprio dinheiro no dia a dia.
             </p>
           </div>
 
@@ -1098,8 +1096,7 @@ export default function LandingPage() {
               Escolha o plano ideal para assumir o controle do seu dinheiro
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-              Use inteligência artificial para entender seus gastos, organizar sua rotina financeira e parar de perder
-              dinheiro sem perceber.
+              Escolha o plano ideal para entender seus gastos, organizar sua rotina e ganhar mais clareza financeira.
             </p>
           </div>
 
@@ -1342,6 +1339,7 @@ export default function LandingPage() {
     </div>
   );
 }
+
 
 
 
