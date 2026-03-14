@@ -104,12 +104,7 @@ const testimonials = [
   { quote: 'Muito mais simples que planilhas.', author: 'Rafael S.' },
 ];
 
-const featuredUser = {
-  initials: 'MR',
-  name: 'Mariana R.',
-  city: 'Sao Paulo, SP',
-  quote: 'Finalmente entendi para onde meu dinheiro estava indo.',
-};
+const featuredPortraitUrl = 'https://purepng.com/public/uploads/large/purepng.com-business-manbusinessmanbusinesssalesrevenuegeneratingsuits-1421526857853si53r.png';
 
 const plans = [
   {
@@ -481,12 +476,24 @@ export default function PaidLandingClient() {
           </MotionCard>
 
           <MotionCard className="rounded-[2rem] border border-white/10 bg-slate-900/55 p-6 md:p-8">
-            <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quando você entende seu dinheiro, tudo muda.</h2>
-            <p className="mb-6 text-slate-300">Quando você tem clareza financeira:</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {transformationBullets.map((item) => (
-                <motion.div key={item} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><p className="text-slate-100">✔ {item}</p></motion.div>
-              ))}
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
+              <div>
+                <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quando você entende seu dinheiro, tudo muda.</h2>
+                <p className="mb-6 text-slate-300">Quando você tem clareza financeira:</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {transformationBullets.map((item) => (
+                    <motion.div key={item} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><p className="text-slate-100">✔ {item}</p></motion.div>
+                  ))}
+                </div>
+              </div>
+              <div className="relative mx-auto flex w-full max-w-sm items-end justify-center overflow-hidden rounded-[1.75rem] border border-emerald-300/16 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,.2),rgba(15,23,42,.96))] px-4 pt-6 shadow-[0_28px_72px_-44px_rgba(16,185,129,.5)]">
+                <div className="pointer-events-none absolute inset-x-8 bottom-0 h-24 rounded-full bg-emerald-500/18 blur-3xl" />
+                <img src={featuredPortraitUrl} alt="Profissional representando mais clareza financeira" className="relative z-10 h-[21rem] w-auto object-contain sm:h-[24rem]" loading="lazy" />
+                <div className="absolute left-4 top-4 rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-left shadow-[0_18px_44px_-28px_rgba(15,23,42,.95)]">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-200">Mais clareza</p>
+                  <p className="mt-1 text-sm text-slate-100">Veja seus gastos com mais segurança e contexto</p>
+                </div>
+              </div>
             </div>
           </MotionCard>
         </motion.section>
@@ -548,6 +555,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
