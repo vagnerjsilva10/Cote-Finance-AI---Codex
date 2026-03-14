@@ -325,19 +325,8 @@ export default function PaidLandingClient() {
                 ))}
               </div>
             </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/55 p-4 shadow-[0_24px_64px_-40px_rgba(15,23,42,.95)]">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,.5),rgba(15,23,42,.96))] text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(16,185,129,.8)]">{featuredUser.initials}</div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{featuredUser.name}</p>
-                  <p className="text-xs text-slate-400">{featuredUser.city}</p>
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-7 text-slate-200 md:text-base">&ldquo;{featuredUser.quote}&rdquo;</p>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                <PrimaryCta href="/signup" className="w-full sm:w-auto sm:shrink-0 sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
-              </div>
+            <div className="flex items-start justify-start lg:justify-end">
+              <PrimaryCta href="/signup" className="w-full sm:w-auto sm:shrink-0 sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
             </div>
           </div>
         </motion.section>
@@ -555,6 +544,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
