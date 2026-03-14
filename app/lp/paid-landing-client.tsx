@@ -220,7 +220,7 @@ export default function PaidLandingClient() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link href="/lp" className="flex items-center">
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={520} height={140} className="h-9 w-auto sm:h-11 lg:h-12" priority />
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-11 w-auto sm:h-14 lg:h-16" priority />
           </Link>
           <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
         </div>
@@ -525,6 +525,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
