@@ -153,6 +153,7 @@ const currentPlans: PlanCard[] = [
     proof: 'Mais escolhido por quem quer sair do descontrole sem complicar a rotina.',
     features: [
       'Lançamentos ilimitados para acompanhar tudo em um só lugar',
+      '500 interações com IA por mês',
       'IA que identifica padrões e mostra onde você está perdendo dinheiro',
       'Relatórios e gráficos completos para decisões mais claras',
       'Insights automáticos para economizar e ajustar sua rotina',
@@ -171,6 +172,8 @@ const currentPlans: PlanCard[] = [
     checkoutPlan: 'Premium Mensal',
     features: [
       'Tudo do Pro com camada extra de automação',
+      'Lançamentos ilimitados',
+      'IA ilimitada',
       'Previsão de saldo para antecipar apertos e sobras',
       'Alertas inteligentes para agir antes do problema virar bola de neve',
       'Análises mais profundas de despesas e comportamento financeiro',
@@ -277,6 +280,8 @@ const plans: PlanCard[] = [
     popular: true,
     proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
     features: [
+      'Lançamentos ilimitados',
+      '500 interações com IA por mês',
       'Insights automáticos da IA',
       'Análise avançada de gastos',
       'Relatórios financeiros detalhados',
@@ -294,6 +299,8 @@ const plans: PlanCard[] = [
     microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
     signupHref: '/signup?plan=premium',
     features: [
+      'Lançamentos ilimitados',
+      'IA ilimitada',
       'Alertas financeiros via WhatsApp',
       'Resumos financeiros automáticos',
       'Insights avançados da IA',
