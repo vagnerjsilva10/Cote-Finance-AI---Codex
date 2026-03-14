@@ -317,8 +317,8 @@ export default function PaidLandingClient() {
           {...sectionMotion}
           className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.86),rgba(15,23,42,.62))] p-6 shadow-[0_32px_90px_-60px_rgba(15,23,42,.95)] md:p-8"
         >
-          <div className="grid gap-6 xl:grid-cols-[1.08fr_.92fr] xl:items-stretch">
-            <div className="space-y-6">
+          <div className="grid gap-8 xl:grid-cols-[1.08fr_.92fr] xl:items-stretch">
+            <div className="space-y-5">
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -403,14 +403,14 @@ export default function PaidLandingClient() {
               <p className="mt-5 text-lg leading-8 text-slate-100 md:text-[1.15rem]">
                 &ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;
               </p>
-              <div className="mt-8 flex items-center gap-4 border-t border-white/10 pt-5">
+              <div className="mt-6 flex items-center gap-4 border-t border-white/10 pt-5">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-sm font-bold text-emerald-100">MR</div>
                 <div>
                   <p className="text-sm font-semibold text-white">Mariana R.</p>
                   <p className="text-xs text-slate-400">Usuária do Cote Finance AI</p>
                 </div>
               </div>
-              <div className="mt-8 flex items-start">
+              <div className="mt-6 flex items-start">
                 <PrimaryCta href="/signup" className="w-full sm:w-auto sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
               </div>
             </motion.div>
@@ -537,7 +537,7 @@ export default function PaidLandingClient() {
         </motion.section>
         <motion.section {...sectionMotion} className="grid gap-6 xl:grid-cols-[1.04fr_.96fr]">
           <MotionCard className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.76),rgba(15,23,42,.58))] p-6 md:p-8">
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Comparação</p>
                 <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Planilhas vs Inteligência Financeira</h2>
@@ -579,7 +579,7 @@ export default function PaidLandingClient() {
           </MotionCard>
 
           <MotionCard className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.76),rgba(15,23,42,.58))] p-6 md:p-8">
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Transformação</p>
                 <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quando você entende seu dinheiro, tudo muda.</h2>
@@ -661,6 +661,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
