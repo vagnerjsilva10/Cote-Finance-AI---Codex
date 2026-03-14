@@ -314,19 +314,44 @@ export default function PaidLandingClient() {
         </section>
 
         <motion.section {...sectionMotion} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.62))] p-6 md:p-8">
-          <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
-            <div className="space-y-3">
+          <div className="grid gap-6 lg:grid-cols-[1.08fr_.92fr] lg:items-center">
+            <div className="space-y-4">
               <p className="text-amber-300">★★★★★</p>
               <h2 className="text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.</h2>
-              <p className="text-slate-300">Uma rotina financeira mais clara começa quando você enxerga o que antes passava despercebido.</p>
+              <p className="max-w-2xl text-slate-300">Uma rotina financeira mais clara começa quando você enxerga o que antes passava despercebido.</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Usuários</p>
+                  <p className="mt-2 text-2xl font-bold text-white">+1.000</p>
+                  <p className="mt-1 text-sm text-slate-400">já começaram a organizar melhor as finanças</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-300/15 bg-emerald-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Resultado</p>
+                  <p className="mt-2 text-2xl font-bold text-white">Mais controle</p>
+                  <p className="mt-1 text-sm text-emerald-50/80">sobre gastos, categorias e decisões do mês</p>
+                </div>
+                <div className="rounded-2xl border border-cyan-300/15 bg-cyan-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Rotina</p>
+                  <p className="mt-2 text-2xl font-bold text-white">Sem planilhas</p>
+                  <p className="mt-1 text-sm text-cyan-50/80">com análises e alertas mais práticos</p>
+                </div>
+              </div>
               <div className="flex flex-wrap gap-3 pt-1 text-sm text-slate-200">
                 {socialBullets.map((item) => (
                   <span key={item} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5"><Check size={14} className="text-emerald-300" /> {item}</span>
                 ))}
               </div>
             </div>
-            <div className="flex items-start justify-start lg:justify-end">
-              <PrimaryCta href="/signup" className="w-full sm:w-auto sm:shrink-0 sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
+            <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/55 p-5 shadow-[0_24px_64px_-40px_rgba(15,23,42,.95)]">
+              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Depoimento</p>
+              <p className="mt-4 text-lg leading-8 text-slate-100">&ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;</p>
+              <div className="mt-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-white">Mariana R.</p>
+                  <p className="text-xs text-slate-400">Usuária do Cote Finance AI</p>
+                </div>
+                <PrimaryCta href="/signup" className="w-full sm:w-auto sm:shrink-0 sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
+              </div>
             </div>
           </div>
         </motion.section>
@@ -477,9 +502,36 @@ export default function PaidLandingClient() {
               </div>
               <div className="relative mx-auto flex w-full max-w-sm items-end justify-center overflow-hidden rounded-[1.75rem] border border-emerald-300/16 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,.2),rgba(15,23,42,.96))] px-4 pt-6 shadow-[0_28px_72px_-44px_rgba(16,185,129,.5)]">
                 <div className="pointer-events-none absolute inset-x-8 bottom-0 h-24 rounded-full bg-emerald-500/18 blur-3xl" />
-                <img src={featuredPortraitUrl} alt="Profissional representando mais controle sobre o dinheiro" className="relative z-10 h-[21rem] w-auto object-contain sm:h-[24rem]" loading="lazy" />
+                <svg viewBox="0 0 320 420" aria-hidden="true" className="relative z-10 h-[20rem] w-auto sm:h-[23rem]" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="164" cy="390" rx="88" ry="18" fill="rgba(16,185,129,.16)" />
+                  <path d="M121 122C121 87.206 149.206 59 184 59C218.794 59 247 87.206 247 122C247 156.794 218.794 185 184 185C149.206 185 121 156.794 121 122Z" fill="rgba(255,255,255,.08)" />
+                  <path d="M119 120C119 86.31 146.31 59 180 59H188C221.69 59 249 86.31 249 120V142C249 175.69 221.69 203 188 203H180C146.31 203 119 175.69 119 142V120Z" fill="url(#face)" />
+                  <path d="M119 117C119 82.758 146.758 55 181 55C215.242 55 243 82.758 243 117V131C228.188 124.477 212.626 121.137 196.44 121.137C168.264 121.137 141.454 131.573 119 150V117Z" fill="url(#hair)" />
+                  <path d="M108 250C108 224.595 128.595 204 154 204H208C233.405 204 254 224.595 254 250V385H108V250Z" fill="url(#shirt)" />
+                  <path d="M87 385C87 357.938 108.938 336 136 336H226C253.062 336 275 357.938 275 385V389H87V385Z" fill="rgba(15,23,42,.92)" />
+                  <path d="M142 216H220L201 281C198.857 288.331 192.138 293.36 184.5 293.36C176.862 293.36 170.143 288.331 168 281L142 216Z" fill="rgba(255,255,255,.07)" />
+                  <path d="M168 202C168 194.82 173.82 189 181 189H185C192.18 189 198 194.82 198 202V227H168V202Z" fill="rgba(230,231,235,.85)" />
+                  <path d="M154 212H208L184 248L154 212Z" fill="rgba(2,6,23,.72)" />
+                  <circle cx="158" cy="122" r="4" fill="rgba(15,23,42,.68)" />
+                  <circle cx="206" cy="122" r="4" fill="rgba(15,23,42,.68)" />
+                  <path d="M162 149C168.667 156.333 177 160 187 160C197 160 205 156.333 211 149" stroke="rgba(15,23,42,.65)" strokeWidth="4" strokeLinecap="round" />
+                  <defs>
+                    <linearGradient id="face" x1="181" y1="59" x2="181" y2="203" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#F4D7C3" />
+                      <stop offset="1" stopColor="#E8BEA5" />
+                    </linearGradient>
+                    <linearGradient id="hair" x1="181" y1="55" x2="181" y2="150" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#0F172A" />
+                      <stop offset="1" stopColor="#1E293B" />
+                    </linearGradient>
+                    <linearGradient id="shirt" x1="181" y1="204" x2="181" y2="385" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#0F766E" />
+                      <stop offset="1" stopColor="#0F172A" />
+                    </linearGradient>
+                  </defs>
+                </svg>
                 <div className="absolute left-4 top-4 rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-left shadow-[0_18px_44px_-28px_rgba(15,23,42,.95)]">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-200">Mais clareza</p>
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-200">Mais controle</p>
                   <p className="mt-1 text-sm text-slate-100">Veja seus gastos com mais segurança e contexto</p>
                 </div>
               </div>
@@ -544,6 +596,8 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
+
 
 
 
