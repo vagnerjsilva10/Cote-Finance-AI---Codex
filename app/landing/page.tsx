@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -46,51 +46,51 @@ type PlanCard = {
 const legacyPlans: PlanCard[] = [
   {
     name: 'Premium',
-    price: 'R$49/mÃªs',
-    benefit: 'Controle financeiro avanÃ§ado com automaÃ§Ãµes inteligentes.',
+    price: 'R$49/mês',
+    benefit: 'Controle financeiro avançado com automações inteligentes.',
     buttonText: 'Assinar Premium',
-    microcopy: 'Mais profundidade, previsÃµes e suporte prioritÃ¡rio.',
+    microcopy: 'Mais profundidade, previsões e suporte prioritário.',
     checkoutPlan: 'Premium Mensal',
     features: [
       'Tudo do plano Pro',
-      'PrevisÃ£o de saldo futuro',
+      'Previsão de saldo futuro',
       'Alertas financeiros inteligentes',
-      'AnÃ¡lise profunda de despesas',
-      'AutomaÃ§Ã£o financeira no WhatsApp',
-      'Suporte prioritÃ¡rio',
+      'Análise profunda de despesas',
+      'Automação financeira no WhatsApp',
+      'Suporte prioritário',
     ],
   },
   {
     name: 'Pro',
-    price: 'R$29/mÃªs',
-    benefit: 'Organize suas finanÃ§as com ajuda da inteligÃªncia artificial.',
-    buttonText: 'Testar 3 dias grÃ¡tis',
+    price: 'R$29/mês',
+    benefit: 'Organize suas finanças com ajuda da inteligência artificial.',
+    buttonText: 'Testar 3 dias grátis',
     microcopy: 'Cancele quando quiser.',
     checkoutPlan: 'Pro Mensal',
     popular: true,
-    proof: 'Mais de 80% dos usuÃ¡rios escolhem o plano Pro',
+    proof: 'Mais de 80% dos usuários escolhem o plano Pro',
     features: [
-      'LanÃ§amentos ilimitados',
-      'Descubra exatamente para onde seu dinheiro estÃ¡ indo',
-      'GrÃ¡ficos financeiros inteligentes',
-      'AnÃ¡lise automÃ¡tica da IA sobre seus gastos',
-      'Insights financeiros automÃ¡ticos',
-      'RelatÃ³rios completos de despesas e receitas',
+      'Lançamentos ilimitados',
+      'Descubra exatamente para onde seu dinheiro está indo',
+      'Gráficos financeiros inteligentes',
+      'Análise automática da IA sobre seus gastos',
+      'Insights financeiros automáticos',
+      'Relatórios completos de despesas e receitas',
       'Resumos e alertas financeiros no WhatsApp',
     ],
   },
   {
     name: 'Free',
-    price: 'R$0/mÃªs',
+    price: 'R$0/mês',
     benefit: 'Experimente o produto sem resolver completamente o problema.',
-    buttonText: 'Criar conta grÃ¡tis',
-    microcopy: 'Experimente gratuitamente. Sem cartÃ£o.',
+    buttonText: 'Criar conta grátis',
+    microcopy: 'Experimente gratuitamente. Sem cartão.',
     features: [
-      'AtÃ© 15 lanÃ§amentos por mÃªs',
-      'Dashboard financeiro bÃ¡sico',
+      'Até 15 lançamentos por mês',
+      'Dashboard financeiro básico',
       'Acompanhamento simples de saldo',
-      'Sem anÃ¡lise da IA',
-      'Sem relatÃ³rios avanÃ§ados',
+      'Sem análise da IA',
+      'Sem relatórios avançados',
       'Sem alertas no WhatsApp',
     ],
   },
@@ -98,83 +98,83 @@ const legacyPlans: PlanCard[] = [
 
 const legacyPricingFaqs = [
   {
-    question: 'Posso comeÃ§ar gratuitamente?',
+    question: 'Posso começar gratuitamente?',
     answer:
-      'Sim. O plano Free permite experimentar o produto, registrar seus primeiros lanÃ§amentos e acompanhar seu saldo sem custo inicial.',
+      'Sim. O plano Free permite experimentar o produto, registrar seus primeiros lançamentos e acompanhar seu saldo sem custo inicial.',
   },
   {
-    question: 'Preciso de cartÃ£o para testar?',
+    question: 'Preciso de cartão para testar?',
     answer:
-      'VocÃª pode criar sua conta grÃ¡tis sem cartÃ£o. Para testar o Pro, o fluxo segue o checkout do produto e vocÃª pode cancelar quando quiser.',
+      'Você pode criar sua conta grátis sem cartão. Para testar o Pro, o fluxo segue o checkout do produto e você pode cancelar quando quiser.',
   },
   {
     question: 'Posso cancelar quando quiser?',
     answer:
-      'Sim. Os planos pagos podem ser cancelados a qualquer momento na Ã¡rea de assinatura do produto.',
+      'Sim. Os planos pagos podem ser cancelados a qualquer momento na área de assinatura do produto.',
   },
   {
-    question: 'Qual a diferenÃ§a entre Pro e Premium?',
+    question: 'Qual a diferença entre Pro e Premium?',
     answer:
-      'O Pro entrega controle financeiro completo com IA, relatÃ³rios e WhatsApp. O Premium adiciona previsÃµes, alertas inteligentes, anÃ¡lises profundas e suporte prioritÃ¡rio.',
+      'O Pro entrega controle financeiro completo com IA, relatórios e WhatsApp. O Premium adiciona previsões, alertas inteligentes, análises profundas e suporte prioritário.',
   },
   {
-    question: 'O WhatsApp estÃ¡ incluÃ­do em quais planos?',
+    question: 'O WhatsApp está incluído em quais planos?',
     answer:
-      'Os resumos e alertas financeiros no WhatsApp estÃ£o disponÃ­veis nos planos Pro e Premium. O Premium tambÃ©m inclui automaÃ§Ãµes financeiras mais avanÃ§adas.',
+      'Os resumos e alertas financeiros no WhatsApp estão disponíveis nos planos Pro e Premium. O Premium também inclui automações financeiras mais avançadas.',
   },
 ] as const;
 
 const currentPlans: PlanCard[] = [
   {
     name: 'Free',
-    price: 'R$0/mÃªs',
+    price: 'R$0/mês',
     label: 'Entrada',
-    benefit: 'Comece a visualizar seus gastos e sentir o produto na prÃ¡tica, sem compromisso.',
-    buttonText: 'ComeÃ§ar grÃ¡tis',
-    microcopy: 'Sem cartÃ£o. Ideal para dar o primeiro passo com seguranÃ§a.',
+    benefit: 'Comece a visualizar seus gastos e sentir o produto na prática, sem compromisso.',
+    buttonText: 'Começar grátis',
+    microcopy: 'Sem cartão. Ideal para dar o primeiro passo com segurança.',
     features: [
-      'AtÃ© 15 lanÃ§amentos por mÃªs',
+      'Até 15 lançamentos por mês',
       'Dashboard financeiro essencial',
-      'VisÃ£o inicial de saldo, entradas e saÃ­das',
-      'OrganizaÃ§Ã£o bÃ¡sica para sair do zero',
+      'Visão inicial de saldo, entradas e saídas',
+      'Organização básica para sair do zero',
     ],
     accent: 'subtle',
   },
   {
     name: 'Pro',
-    price: 'R$29/mÃªs',
+    price: 'R$29/mês',
     label: 'Melhor escolha',
-    benefit: 'Descubra para onde seu dinheiro estÃ¡ indo e transforme seu diagnÃ³stico financeiro em uma rotina organizada.',
-    buttonText: 'Testar Pro grÃ¡tis por 3 dias',
-    microcopy: 'Depois do teste, continue por R$29/mÃªs. Cancele quando quiser.',
+    benefit: 'Descubra para onde seu dinheiro está indo e transforme seu diagnóstico financeiro em uma rotina organizada.',
+    buttonText: 'Testar Pro grátis por 3 dias',
+    microcopy: 'Depois do teste, continue por R$29/mês. Cancele quando quiser.',
     checkoutPlan: 'Pro Mensal',
     popular: true,
     proof: 'Mais escolhido por quem quer sair do descontrole sem complicar a rotina.',
     features: [
-      'LanÃ§amentos ilimitados para acompanhar tudo em um sÃ³ lugar',
-      'IA que identifica padrÃµes e mostra onde vocÃª estÃ¡ perdendo dinheiro',
-      'RelatÃ³rios e grÃ¡ficos completos para decisÃµes mais claras',
-      'Insights automÃ¡ticos para economizar e ajustar sua rotina',
-      'Metas, dÃ­vidas e investimentos com acompanhamento contÃ­nuo',
-      'Resumos e alertas no WhatsApp para nÃ£o deixar nada passar',
+      'Lançamentos ilimitados para acompanhar tudo em um só lugar',
+      'IA que identifica padrões e mostra onde você está perdendo dinheiro',
+      'Relatórios e gráficos completos para decisões mais claras',
+      'Insights automáticos para economizar e ajustar sua rotina',
+      'Metas, dívidas e investimentos com acompanhamento contínuo',
+      'Resumos e alertas no WhatsApp para não deixar nada passar',
     ],
     accent: 'highlight',
   },
   {
     name: 'Premium',
-    price: 'R$49/mÃªs',
+    price: 'R$49/mês',
     label: 'Controle total',
-    benefit: 'Para quem quer mais automaÃ§Ã£o, previsÃµes e profundidade para tomar decisÃµes com antecedÃªncia.',
+    benefit: 'Para quem quer mais automação, previsões e profundidade para tomar decisões com antecedência.',
     buttonText: 'Assinar Premium',
-    microcopy: 'Mais inteligÃªncia, mais automaÃ§Ã£o e uma visÃ£o financeira mais estratÃ©gica.',
+    microcopy: 'Mais inteligência, mais automação e uma visão financeira mais estratégica.',
     checkoutPlan: 'Premium Mensal',
     features: [
-      'Tudo do Pro com camada extra de automaÃ§Ã£o',
-      'PrevisÃ£o de saldo para antecipar apertos e sobras',
+      'Tudo do Pro com camada extra de automação',
+      'Previsão de saldo para antecipar apertos e sobras',
       'Alertas inteligentes para agir antes do problema virar bola de neve',
-      'AnÃ¡lises mais profundas de despesas e comportamento financeiro',
-      'AutomaÃ§Ãµes financeiras no WhatsApp para acompanhamento contÃ­nuo',
-      'Suporte prioritÃ¡rio para quem quer mais agilidade',
+      'Análises mais profundas de despesas e comportamento financeiro',
+      'Automações financeiras no WhatsApp para acompanhamento contínuo',
+      'Suporte prioritário para quem quer mais agilidade',
     ],
     accent: 'premium',
   },
@@ -182,29 +182,29 @@ const currentPlans: PlanCard[] = [
 
 const currentPricingFaqs = [
   {
-    question: 'Posso comeÃ§ar gratuitamente?',
+    question: 'Posso começar gratuitamente?',
     answer:
-      'Sim. O Free Ã© a porta de entrada para organizar seus primeiros lanÃ§amentos e entender como o Cote Finance AI funciona antes de evoluir.',
+      'Sim. O Free é a porta de entrada para organizar seus primeiros lançamentos e entender como o Cote Finance AI funciona antes de evoluir.',
   },
   {
-    question: 'Preciso de cartÃ£o para testar?',
+    question: 'Preciso de cartão para testar?',
     answer:
-      'VocÃª pode criar sua conta no Free sem cartÃ£o. Para testar o Pro, o acesso comeÃ§a pelo checkout e o cancelamento pode ser feito quando quiser.',
+      'Você pode criar sua conta no Free sem cartão. Para testar o Pro, o acesso começa pelo checkout e o cancelamento pode ser feito quando quiser.',
   },
   {
     question: 'Posso cancelar quando quiser?',
     answer:
-      'Sim. Os planos pagos podem ser cancelados a qualquer momento na Ã¡rea de assinatura, sem contrato de fidelidade.',
+      'Sim. Os planos pagos podem ser cancelados a qualquer momento na área de assinatura, sem contrato de fidelidade.',
   },
   {
-    question: 'Qual a diferenÃ§a entre Pro e Premium?',
+    question: 'Qual a diferença entre Pro e Premium?',
     answer:
-      'O Pro Ã© a melhor escolha para quem quer organizar a vida financeira com IA, clareza e acompanhamento diÃ¡rio. O Premium adiciona automaÃ§Ãµes, previsÃµes e anÃ¡lises mais profundas para quem quer controle total.',
+      'O Pro é a melhor escolha para quem quer organizar a vida financeira com IA, clareza e acompanhamento diário. O Premium adiciona automações, previsões e análises mais profundas para quem quer controle total.',
   },
   {
-    question: 'O WhatsApp estÃ¡ incluÃ­do em quais planos?',
+    question: 'O WhatsApp está incluído em quais planos?',
     answer:
-      'Os resumos e alertas no WhatsApp estÃ£o disponÃ­veis no Pro e no Premium. No Premium, esse acompanhamento ganha automaÃ§Ãµes mais avanÃ§adas.',
+      'Os resumos e alertas no WhatsApp estão disponíveis no Pro e no Premium. No Premium, esse acompanhamento ganha automações mais avançadas.',
   },
 ] as const;
 
@@ -217,7 +217,7 @@ const currentFeatures = [
   {
     icon: BrainCircuit,
     title: 'Insights com IA',
-    text: 'Receba recomendaÃ§Ãµes automÃ¡ticas para melhorar suas finanÃ§as.',
+    text: 'Receba recomendações automáticas para melhorar suas finanças.',
   },
   {
     icon: Target,
@@ -226,12 +226,12 @@ const currentFeatures = [
   },
   {
     icon: CreditCard,
-    title: 'Controle de dÃ­vidas',
-    text: 'Saiba exatamente quanto deve e quanto jÃ¡ pagou.',
+    title: 'Controle de dívidas',
+    text: 'Saiba exatamente quanto deve e quanto já pagou.',
   },
   {
     icon: BarChart3,
-    title: 'PrevisÃµes financeiras',
+    title: 'Previsões financeiras',
     text: 'Entenda como seus gastos impactam seu saldo no futuro.',
   },
   {
@@ -249,53 +249,53 @@ const currentFeatures = [
 const plans: PlanCard[] = [
   {
     name: 'Free',
-    price: 'R$0/mÃªs',
+    price: 'R$0/mês',
     label: 'Entrada',
-    benefit: 'Ideal para comeÃ§ar a organizar suas finanÃ§as',
-    buttonText: 'Criar conta grÃ¡tis',
-    microcopy: 'Sem cartÃ£o de crÃ©dito. Crie sua conta em segundos.',
+    benefit: 'Ideal para começar a organizar suas finanças',
+    buttonText: 'Criar conta grátis',
+    microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
     signupHref: '/signup?plan=free',
     features: [
-      'Controle bÃ¡sico de receitas e despesas',
+      'Controle básico de receitas e despesas',
       'Dashboard financeiro',
-      'GrÃ¡ficos essenciais',
-      'OrganizaÃ§Ã£o simples das movimentaÃ§Ãµes',
+      'Gráficos essenciais',
+      'Organização simples das movimentações',
     ],
     accent: 'subtle',
   },
   {
     name: 'Pro',
-    price: 'R$29/mÃªs',
+    price: 'R$29/mês',
     label: 'Melhor escolha',
     benefit: 'A melhor escolha para quem quer entender melhor os gastos e usar a IA no dia a dia',
-    buttonText: 'ComeÃ§ar teste grÃ¡tis',
-    microcopy: 'Crie sua conta, teste grÃ¡tis e evolua no seu ritmo.',
+    buttonText: 'Começar teste grátis',
+    microcopy: 'Crie sua conta, teste grátis e evolua no seu ritmo.',
     signupHref: '/signup?plan=pro&trial=true',
     popular: true,
     proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
     features: [
-      'Insights automÃ¡ticos da IA',
-      'AnÃ¡lise avanÃ§ada de gastos',
-      'RelatÃ³rios financeiros detalhados',
-      'PrevisÃµes financeiras',
-      'Alertas financeiros automÃ¡ticos',
+      'Insights automáticos da IA',
+      'Análise avançada de gastos',
+      'Relatórios financeiros detalhados',
+      'Previsões financeiras',
+      'Alertas financeiros automáticos',
     ],
     accent: 'highlight',
   },
   {
     name: 'Premium',
-    price: 'R$49/mÃªs',
+    price: 'R$49/mês',
     label: 'Controle total',
-    benefit: 'Controle financeiro mais completo com automaÃ§Ãµes e anÃ¡lises mais profundas',
+    benefit: 'Controle financeiro mais completo com automações e análises mais profundas',
     buttonText: 'Assinar Premium',
-    microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automaÃ§Ã£o.',
+    microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
     signupHref: '/signup?plan=premium',
     features: [
       'Alertas financeiros via WhatsApp',
-      'Resumos financeiros automÃ¡ticos',
-      'Insights avanÃ§ados da IA',
-      'Ferramentas avanÃ§adas de anÃ¡lise',
-      'Suporte prioritÃ¡rio',
+      'Resumos financeiros automáticos',
+      'Insights avançados da IA',
+      'Ferramentas avançadas de análise',
+      'Suporte prioritário',
     ],
     accent: 'premium',
   },
@@ -303,21 +303,21 @@ const plans: PlanCard[] = [
 
 const pricingFaqs = [
   {
-    question: 'O Cote Finance AI Ã© gratuito?',
-    answer: 'Sim. VocÃª pode comeÃ§ar com o plano gratuito e evoluir para um plano pago quando quiser mais recursos.',
+    question: 'O Cote Finance AI é gratuito?',
+    answer: 'Sim. Você pode começar com o plano gratuito e evoluir para um plano pago quando quiser mais recursos.',
   },
   {
-    question: 'Preciso conectar minha conta bancÃ¡ria?',
-    answer: 'NÃ£o. VocÃª pode registrar suas receitas e despesas manualmente e acompanhar tudo pela plataforma.',
+    question: 'Preciso conectar minha conta bancária?',
+    answer: 'Não. Você pode registrar suas receitas e despesas manualmente e acompanhar tudo pela plataforma.',
   },
   {
-    question: 'Como funciona a inteligÃªncia artificial?',
+    question: 'Como funciona a inteligência artificial?',
     answer:
-      'A IA analisa seus lanÃ§amentos, identifica padrÃµes e entrega insights automÃ¡ticos para ajudar vocÃª a entender melhor seus gastos.',
+      'A IA analisa seus lançamentos, identifica padrões e entrega insights automáticos para ajudar você a entender melhor seus gastos.',
   },
   {
     question: 'Posso cancelar quando quiser?',
-    answer: 'Sim. Os planos pagos nÃ£o exigem contrato de longo prazo.',
+    answer: 'Sim. Os planos pagos não exigem contrato de longo prazo.',
   },
 ] as const;
 
@@ -329,18 +329,18 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: 'GrÃ¡ficos inteligentes',
-    text: 'GrÃ¡ficos financeiros inteligentes para visualizar tudo com mais clareza.',
+    title: 'Gráficos inteligentes',
+    text: 'Gráficos financeiros inteligentes para visualizar tudo com mais clareza.',
   },
   {
     icon: BrainCircuit,
-    title: 'AnÃ¡lise automÃ¡tica',
-    text: 'AnÃ¡lise automÃ¡tica com IA e insights financeiros personalizados.',
+    title: 'Análise automática',
+    text: 'Análise automática com IA e insights financeiros personalizados.',
   },
   {
     icon: Sparkles,
     title: 'Insights financeiros',
-    text: 'Insights financeiros personalizados para apoiar decisÃµes melhores.',
+    text: 'Insights financeiros personalizados para apoiar decisões melhores.',
   },
   {
     icon: MessageCircle,
@@ -349,8 +349,8 @@ const features = [
   },
   {
     icon: Target,
-    title: 'PrevisÃµes financeiras',
-    text: 'PrevisÃµes financeiras para acompanhar tendÃªncias e prÃ³ximos passos.',
+    title: 'Previsões financeiras',
+    text: 'Previsões financeiras para acompanhar tendências e próximos passos.',
   },
 ];
 
@@ -442,7 +442,7 @@ export default function LandingPage() {
               Blog
             </Link>
             <button type="button" onClick={() => scrollTo('planos')} className="transition-colors hover:text-white">
-              PreÃ§os
+              Preços
             </button>
           </nav>
 
@@ -458,7 +458,7 @@ export default function LandingPage() {
               disabled={isBusy}
               className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:min-w-[152px] sm:px-4 sm:text-sm"
             >
-              ComeÃ§ar grÃ¡tis
+              Começar grátis
             </button>
           </div>
         </div>
@@ -477,14 +477,14 @@ export default function LandingPage() {
             className="space-y-6 text-center lg:text-left"
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
-              <Sparkles size={14} /> Sem cartÃ£o de crÃ©dito â€¢ Crie sua conta em segundos
+              <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
             <h1 className="text-[2.35rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Descubra para onde seu dinheiro estÃ¡ indo e assuma o controle
+              Descubra para onde seu dinheiro está indo e assuma o controle
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-slate-300">
-              Cote Finance AI usa inteligÃªncia artificial para analisar seus gastos, organizar sua rotina financeira e
-              mostrar com clareza como seu dinheiro estÃ¡ sendo usado. Receba insights automÃ¡ticos, grÃ¡ficos
+              Cote Finance AI usa inteligência artificial para analisar seus gastos, organizar sua rotina financeira e
+              mostrar com clareza como seu dinheiro está sendo usado. Receba insights automáticos, gráficos
               inteligentes e alertas via WhatsApp.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
@@ -493,7 +493,7 @@ export default function LandingPage() {
                 disabled={isBusy}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
               >
-              ComeÃ§ar grÃ¡tis <ArrowRight size={16} />
+              Começar grátis <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => scrollTo('como-funciona')}
@@ -557,10 +557,10 @@ export default function LandingPage() {
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-slate-300">
-                  Insight IA: gasto em alimentaÃ§Ã£o subiu 14%.
+                  Insight IA: gasto em alimentação subiu 14%.
                 </div>
                 <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-slate-300">
-                  Meta mensal: 82% concluÃ­da.
+                  Meta mensal: 82% concluída.
                 </div>
               </div>
             </div>
@@ -572,7 +572,7 @@ export default function LandingPage() {
                 transform: `translate3d(${heroParallax.x * 0.45}px, ${heroParallax.y * 0.45}px, 0)`,
               }}
             >
-              ProjeÃ§Ã£o mensal em tempo real
+              Projeção mensal em tempo real
             </motion.div>
           </motion.div>
         </section>
@@ -591,9 +591,9 @@ export default function LandingPage() {
               <TrendingDown size={14} /> Problemas comuns no controle financeiro
             </span>
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Seu dinheiro saiâ€¦ mas vocÃª nÃ£o enxerga para onde.
+              Seu dinheiro sai… mas você não enxerga para onde.
             </h2>
-            <p className="text-slate-300">No fim do mÃªs, a sensaÃ§Ã£o Ã© sempre a mesma:</p>
+            <p className="text-slate-300">No fim do mês, a sensação é sempre a mesma:</p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
                 <TrendingDown size={16} className="text-rose-300" /> O dinheiro acaba antes do esperado
@@ -605,13 +605,13 @@ export default function LandingPage() {
                 <TrendingDown size={16} className="text-rose-300" /> Falta clareza sobre receitas e despesas
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> O saldo no fim do mÃªs sempre surpreende
+                <TrendingDown size={16} className="text-rose-300" /> O saldo no fim do mês sempre surpreende
               </li>
               <li className="flex items-center justify-start gap-2">
                 <TrendingDown size={16} className="text-rose-300" /> Organizar tudo parece complicado
               </li>
             </ul>
-            <p className="text-slate-300">Sem clareza, fica difÃ­cil entender o que ajustar e tomar decisÃµes melhores.</p>
+            <p className="text-slate-300">Sem clareza, fica difícil entender o que ajustar e tomar decisões melhores.</p>
           </div>
 
           <motion.div
@@ -631,7 +631,7 @@ export default function LandingPage() {
               Sem visibilidade real
             </div>
             <div className="absolute right-3 bottom-4 hidden rounded-lg border border-amber-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-amber-200 sm:block lg:-right-3 lg:bottom-7">
-              DecisÃ£o no escuro
+              Decisão no escuro
             </div>
           </motion.div>
         </motion.section>
@@ -659,7 +659,7 @@ export default function LandingPage() {
               priority={false}
             />
             <div className="absolute left-3 top-3 hidden rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-emerald-200 sm:block lg:-left-3 lg:top-5">
-              Insights automÃ¡ticos
+              Insights automáticos
             </div>
             <div className="absolute right-3 bottom-4 hidden rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-cyan-200 sm:block lg:-right-3 lg:bottom-7">
               Clareza em minutos
@@ -668,30 +668,30 @@ export default function LandingPage() {
 
           <div className="space-y-5 lg:order-1">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
-              <Sparkles size={14} /> Clareza financeira com inteligÃªncia artificial
+              <Sparkles size={14} /> Clareza financeira com inteligência artificial
             </span>
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Clareza financeira muda tudo
             </h2>
             <p className="text-emerald-100">
-              Cote Finance AI foi criado para transformar a forma como vocÃª entende seu dinheiro. Em vez de planilhas
-              complicadas, vocÃª tem uma inteligÃªncia financeira trabalhando por vocÃª.
+              Cote Finance AI foi criado para transformar a forma como você entende seu dinheiro. Em vez de planilhas
+              complicadas, você tem uma inteligência financeira trabalhando por você.
             </p>
             <ul className="space-y-2 text-emerald-100">
               <li className="flex items-center justify-start gap-2">
                 <Check size={16} className="text-emerald-300" /> IA analisando gastos automaticamente
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> GrÃ¡ficos financeiros inteligentes
+                <Check size={16} className="text-emerald-300" /> Gráficos financeiros inteligentes
               </li>
               <li className="flex items-center justify-start gap-2">
                 <Check size={16} className="text-emerald-300" /> Insights personalizados
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> OrganizaÃ§Ã£o financeira mais simples
+                <Check size={16} className="text-emerald-300" /> Organização financeira mais simples
               </li>
             </ul>
-            <p className="text-emerald-100">Tudo explicado de forma simples, clara e prÃ¡tica.</p>
+            <p className="text-emerald-100">Tudo explicado de forma simples, clara e prática.</p>
           </div>
         </motion.section>
 
@@ -715,13 +715,13 @@ export default function LandingPage() {
               <p className="text-slate-200">Registro simples de receitas e despesas.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">GrÃ¡ficos inteligentes</p>
-              <p className="text-slate-200">GrÃ¡ficos financeiros inteligentes para entender o mÃªs com clareza.</p>
+              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Gráficos inteligentes</p>
+              <p className="text-slate-200">Gráficos financeiros inteligentes para entender o mês com clareza.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
               <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">IA e alertas</p>
               <p className="text-slate-200">
-                AnÃ¡lise automÃ¡tica com IA, insights personalizados e alertas via WhatsApp.
+                Análise automática com IA, insights personalizados e alertas via WhatsApp.
               </p>
             </div>
           </div>
@@ -944,9 +944,9 @@ export default function LandingPage() {
 
           <div className="space-y-5">
             <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Quando vocÃª entende seu dinheiro, tudo muda
+              Quando você entende seu dinheiro, tudo muda
             </h2>
-            <p className="text-slate-300">Quando vocÃª entende seu dinheiro:</p>
+            <p className="text-slate-300">Quando você entende seu dinheiro:</p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
                 <TrendingUp size={16} className="text-emerald-300" /> Pare de perder dinheiro sem perceber
@@ -955,14 +955,14 @@ export default function LandingPage() {
                 <TrendingUp size={16} className="text-emerald-300" /> Visualize seus gastos com mais clareza
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Tome decisÃµes financeiras melhores
+                <TrendingUp size={16} className="text-emerald-300" /> Tome decisões financeiras melhores
               </li>
               <li className="flex items-center justify-start gap-2">
                 <TrendingUp size={16} className="text-emerald-300" /> Tenha mais controle sobre sua rotina financeira
               </li>
             </ul>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
-              Resultado: mais clareza, mais controle e decisÃµes mais seguras.
+              Resultado: mais clareza, mais controle e decisões mais seguras.
             </div>
           </div>
 
@@ -973,7 +973,7 @@ export default function LandingPage() {
           >
             <Image
               src="/landing/clarity-visual.svg"
-              alt="Visual de evoluÃ§Ã£o financeira com clareza"
+              alt="Visual de evolução financeira com clareza"
               width={880}
               height={620}
               className="h-auto w-full"
@@ -983,7 +983,7 @@ export default function LandingPage() {
               + Controle
             </div>
             <div className="absolute right-3 bottom-4 hidden rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-cyan-200 sm:block lg:-right-3 lg:bottom-7">
-              + DecisÃµes melhores
+              + Decisões melhores
             </div>
           </motion.div>
         </motion.section>
@@ -996,25 +996,25 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Centenas de pessoas jÃ¡ estÃ£o organizando suas finanÃ§as
+            Centenas de pessoas já estão organizando suas finanças
           </h2>
           <p className="mb-6 text-slate-300">
-            Cada vez mais usuÃ¡rios estÃ£o usando o Cote Finance AI para visualizar melhor os gastos, entender seus
-            hÃ¡bitos financeiros e tomar decisÃµes com mais clareza.
+            Cada vez mais usuários estão usando o Cote Finance AI para visualizar melhor os gastos, entender seus
+            hábitos financeiros e tomar decisões com mais clareza.
           </p>
-          <p className="mb-6 text-slate-300">Nossa missÃ£o Ã© simples: ajudar vocÃª a enxergar o que acontece com o seu dinheiro.</p>
+          <p className="mb-6 text-slate-300">Nossa missão é simples: ajudar você a enxergar o que acontece com o seu dinheiro.</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">+12k</p>
-              <p className="text-sm text-slate-400">usuÃ¡rios ativos</p>
+              <p className="text-sm text-slate-400">usuários ativos</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">R$ 320M</p>
-              <p className="text-sm text-slate-400">em movimentaÃ§Ãµes acompanhadas</p>
+              <p className="text-sm text-slate-400">em movimentações acompanhadas</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
               <p className="text-2xl font-bold text-white">94%</p>
-              <p className="text-sm text-slate-400">avaliam a plataforma como fÃ¡cil de usar</p>
+              <p className="text-sm text-slate-400">avaliam a plataforma como fácil de usar</p>
             </div>
           </div>
         </motion.section>
@@ -1029,13 +1029,13 @@ export default function LandingPage() {
         >
           <div className="space-y-5 text-center">
             <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
-              Planos para cada fase da sua organizaÃ§Ã£o
+              Planos para cada fase da sua organização
             </span>
             <h2 className="text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Escolha o plano ideal para assumir o controle do seu dinheiro
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-              Use inteligÃªncia artificial para entender seus gastos, organizar sua rotina financeira e parar de perder
+              Use inteligência artificial para entender seus gastos, organizar sua rotina financeira e parar de perder
               dinheiro sem perceber.
             </p>
           </div>
@@ -1142,17 +1142,17 @@ export default function LandingPage() {
         >
           <div className="space-y-5 text-center">
             <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
-              Planos para cada fase da sua organizaÃ§Ã£o
+              Planos para cada fase da sua organização
             </span>
             <h2
               className="text-center text-3xl font-bold text-white md:text-4xl"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Estas sÃ£o as melhores opÃ§Ãµes para organizar sua vida financeira
+              Estas são as melhores opções para organizar sua vida financeira
             </h2>
             <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
               Escolha o plano que faz mais sentido para o seu momento e transforme o resultado do quiz em uma rotina
-              financeira mais clara, prÃ¡tica e consistente.
+              financeira mais clara, prática e consistente.
             </p>
           </div>
 
@@ -1234,7 +1234,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-300">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
-              <ShieldCheck size={14} className="text-emerald-300" /> SeguranÃ§a de dados
+              <ShieldCheck size={14} className="text-emerald-300" /> Segurança de dados
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
               <Wallet size={14} className="text-cyan-300" /> Controle total da assinatura
@@ -1260,21 +1260,21 @@ export default function LandingPage() {
             Seu dinheiro merece mais clareza.
           </h2>
           <p className="mx-auto mb-6 max-w-2xl text-slate-100/90">
-            Comece gratuitamente e descubra exatamente para onde seu dinheiro estÃ¡ indo.
+            Comece gratuitamente e descubra exatamente para onde seu dinheiro está indo.
           </p>
           <button
             onClick={startFree}
             disabled={isBusy}
             className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60"
           >
-            Criar conta grÃ¡tis <ArrowRight size={16} />
+            Criar conta grátis <ArrowRight size={16} />
           </button>
         </motion.section>
       </main>
 
       <footer className="border-t border-white/10 py-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center text-xs text-slate-500 sm:flex-row sm:px-6 sm:text-left">
-          <p>Â© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <Link href="/blog" className="hover:text-slate-300">
               Blog
