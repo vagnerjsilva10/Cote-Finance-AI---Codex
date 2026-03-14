@@ -225,7 +225,7 @@ export default function PaidLandingClient() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
           <Link href="/lp" className="flex items-center">
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-10 w-auto sm:h-14 lg:h-16" priority />
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-14 w-auto sm:h-14 lg:h-16" priority />
           </Link>
           <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
         </div>
@@ -474,31 +474,37 @@ export default function PaidLandingClient() {
             </div>
           </div>
         </motion.section>
-        <motion.section {...sectionMotion} className="grid gap-6 lg:grid-cols-2">
-          <MotionCard className="rounded-[2rem] border border-white/10 bg-slate-900/55 p-6 md:p-8">
-            <div className="space-y-5">
+        <motion.section {...sectionMotion} className="grid gap-6 xl:grid-cols-[1.04fr_.96fr]">
+          <MotionCard className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.76),rgba(15,23,42,.58))] p-6 md:p-8">
+            <div className="space-y-6">
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Comparação</p>
                 <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Planilhas vs Inteligência Financeira</h2>
-                <p className="text-slate-300">Veja a diferença entre controlar tudo manualmente e ter contexto claro sobre o seu dinheiro.</p>
+                <p className="max-w-2xl text-slate-300">Controle manual consome tempo. Quando o sistema interpreta seus gastos por você, fica mais fácil agir com segurança.</p>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-                  <h3 className="mb-4 text-xl font-semibold text-white">Planilhas</h3>
-                  <ul className="space-y-3 text-slate-300">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/70 p-5">
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-semibold text-white">Planilhas</h3>
+                    <span className="rounded-full border border-rose-300/15 bg-rose-500/10 px-3 py-1 text-[11px] font-medium text-rose-200">Mais esforço</span>
+                  </div>
+                  <ul className="space-y-4 text-slate-300">
                     {comparison.left.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
+                      <li key={item} className="flex items-start gap-3 rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
                         <span className="mt-0.5 text-rose-300">✕</span>
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-5 shadow-[0_18px_44px_-28px_rgba(16,185,129,.38)]">
-                  <h3 className="mb-4 text-xl font-semibold text-white">Cote Finance AI</h3>
-                  <ul className="space-y-3 text-emerald-50">
+                <div className="rounded-[1.75rem] border border-emerald-300/22 bg-[linear-gradient(180deg,rgba(16,185,129,.14),rgba(15,23,42,.78))] p-5 shadow-[0_22px_52px_-34px_rgba(16,185,129,.36)]">
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-semibold text-white">Cote Finance AI</h3>
+                    <span className="rounded-full border border-emerald-300/15 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-100">Mais clareza</span>
+                  </div>
+                  <ul className="space-y-4 text-emerald-50">
                     {comparison.right.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
+                      <li key={item} className="flex items-start gap-3 rounded-xl border border-emerald-300/10 bg-white/[0.03] px-3 py-3">
                         <Check size={16} className="mt-0.5 shrink-0 text-emerald-200" />
                         <span>{item}</span>
                       </li>
@@ -509,25 +515,27 @@ export default function PaidLandingClient() {
             </div>
           </MotionCard>
 
-          <MotionCard className="rounded-[2rem] border border-white/10 bg-slate-900/55 p-6 md:p-8">
+          <MotionCard className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.76),rgba(15,23,42,.58))] p-6 md:p-8">
             <div className="space-y-6">
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Transformação</p>
                 <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quando você entende seu dinheiro, tudo muda.</h2>
-                <p className="text-slate-300">Quando você enxerga melhor o seu dinheiro:</p>
+                <p className="max-w-2xl text-slate-300">Quando você enxerga melhor o seu dinheiro, fica mais fácil ajustar hábitos, cortar excessos e terminar o mês com mais tranquilidade.</p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3">
                 {transformationBullets.map((item) => (
-                  <motion.div key={item} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-[0_18px_44px_-30px_rgba(15,23,42,.95)]">
+                  <motion.div key={item} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-[1.35rem] border border-white/10 bg-slate-950/70 px-4 py-4 shadow-[0_18px_44px_-30px_rgba(15,23,42,.95)]">
                     <div className="flex items-start gap-3">
-                      <Check size={16} className="mt-0.5 shrink-0 text-emerald-300" />
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/12 text-emerald-300">
+                        <Check size={14} />
+                      </span>
                       <p className="text-slate-100">{item}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-              <div className="rounded-2xl border border-emerald-300/16 bg-[linear-gradient(180deg,rgba(16,185,129,.12),rgba(15,23,42,.82))] p-5">
-                <p className="text-sm text-emerald-100">Mais contexto para decidir melhor, reduzir excessos e terminar o mês com mais tranquilidade.</p>
+              <div className="rounded-[1.5rem] border border-emerald-300/16 bg-[linear-gradient(180deg,rgba(16,185,129,.12),rgba(15,23,42,.82))] p-5">
+                <p className="text-sm leading-7 text-emerald-100">Mais contexto para decidir melhor, reduzir excessos e ter uma rotina financeira muito mais previsível.</p>
               </div>
             </div>
           </MotionCard>
@@ -590,6 +598,8 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
+
 
 
 
