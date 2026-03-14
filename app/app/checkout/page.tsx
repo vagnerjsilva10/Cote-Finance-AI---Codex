@@ -1057,10 +1057,10 @@ function CheckoutPageContent() {
               </div>
 
               <div className="space-y-3">
-                <h1 className="max-w-xl text-4xl font-black tracking-tight text-white md:text-5xl">
-                  Checkout seguro
+                <h1 className="max-w-xl text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                  Finalizar assinatura
                 </h1>
-                <p className="max-w-2xl text-base text-slate-300 md:text-lg">
+                <p className="max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
                   Finalize sua assinatura em poucos segundos. Seu pagamento é processado com segurança pela Stripe.
                 </p>
               </div>
@@ -1068,11 +1068,11 @@ function CheckoutPageContent() {
               <div className="grid gap-4 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5 md:grid-cols-2">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Plano selecionado</p>
-                  <h2 className="mt-3 text-3xl font-black text-white">
+                  <h2 className="mt-3 text-4xl font-black tracking-tight text-white">
                     {checkoutPlanName}
                   </h2>
                   <p className="mt-2 text-sm text-slate-300">{checkoutPlanDescription}</p>
-                  <p className="mt-3 text-base font-semibold text-emerald-200">{checkoutPriceLabel}</p>
+                  <p className="mt-4 text-2xl font-black tracking-tight text-emerald-200">{checkoutPriceLabel}</p>
                 </div>
 
                 <div className="rounded-2xl border border-emerald-400/15 bg-emerald-500/8 p-4">
@@ -1136,22 +1136,22 @@ function CheckoutPageContent() {
           <section className="rounded-[2rem] border border-white/10 bg-slate-900/72 p-7 backdrop-blur-xl">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento seguro</p>
-                <h2 className="text-3xl font-black text-white">Finalize sua assinatura</h2>
-                <p className="text-sm text-slate-400">
-                  Preencha os dados de pagamento para ativar seu plano {checkoutPlanName} com segurança.
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento</p>
+                <h2 className="text-xl font-semibold tracking-tight text-white md:text-2xl">Pagamento seguro</h2>
+                <p className="max-w-lg text-sm leading-6 text-slate-400">
+                  Finalize sua assinatura em poucos segundos. Seu pagamento é processado com segurança pela Stripe.
                 </p>
                 <div className="rounded-[1.4rem] border border-white/10 bg-slate-950/60 p-4">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Hoje</p>
-                      <p className="mt-2 text-2xl font-black text-white">{todayPriceLabel}</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-white">{todayPriceLabel}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
                         {trialDays > 0 && paymentMethod === 'card' ? 'Após o período de teste' : 'Plano contratado'}
                       </p>
-                      <p className="mt-2 text-2xl font-black text-white">{postTrialLabel}</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-white">{postTrialLabel}</p>
                     </div>
                   </div>
                   <p className="mt-3 text-sm text-slate-300">
@@ -1197,7 +1197,7 @@ function CheckoutPageContent() {
                       )}
                     >
                       <div>
-                        <p className="text-sm font-semibold text-white">{option.title}</p>
+                        <p className="text-base font-semibold text-white">{option.title}</p>
                         <p className="mt-1 text-sm text-slate-400">{option.description}</p>
                       </div>
                       <div
