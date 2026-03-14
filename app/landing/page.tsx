@@ -744,21 +744,21 @@ export default function LandingPage() {
               <h3 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
                 Tenha visão completa da sua vida financeira
               </h3>
-              <p className="mx-auto max-w-2xl text-left text-slate-300">
+              <p className="mx-auto max-w-2xl text-center leading-7 text-slate-300">
                 No dashboard do Cote Finance AI você acompanha receitas, despesas, saldo, categorias de gastos,
                 tendências financeiras e análises automáticas da inteligência artificial.
               </p>
-              <ul className="mx-auto max-w-2xl space-y-2 text-left text-slate-200">
-                <li className="flex items-center justify-start gap-2">
+              <ul className="mx-auto grid max-w-2xl gap-3 text-slate-200">
+                <li className="flex items-center justify-center gap-2 text-center">
                   <Check size={16} className="text-emerald-300" /> Visualizar receitas e despesas com clareza
                 </li>
-                <li className="flex items-center justify-start gap-2">
+                <li className="flex items-center justify-center gap-2 text-center">
                   <Check size={16} className="text-cyan-300" /> Acompanhar a evolução do saldo
                 </li>
-                <li className="flex items-center justify-start gap-2">
+                <li className="flex items-center justify-center gap-2 text-center">
                   <Check size={16} className="text-blue-300" /> Identificar padrões de gastos
                 </li>
-                <li className="flex items-center justify-start gap-2">
+                <li className="flex items-center justify-center gap-2 text-center">
                   <Check size={16} className="text-emerald-300" /> Entender tendências financeiras e receber alertas importantes
                 </li>
               </ul>
