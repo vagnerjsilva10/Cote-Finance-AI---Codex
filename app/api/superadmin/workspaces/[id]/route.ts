@@ -3,6 +3,10 @@
 import { prisma } from '@/lib/prisma';
 import { PLAN_LIMITS, normalizePlan, HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
+import {
+  getWorkspaceLifecycleStatus,
+  setWorkspaceLifecycleStatus,
+} from '@/lib/server/superadmin-governance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,7 +27,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     await requireSuperadminAccess(req);
     const { id } = await params;
 
-    const workspace = await prisma.workspace.findUnique({
+    const [workspace, lifecycle] = await Promise.all([
+      prisma.workspace.findUnique({
       where: { id },
       include: {
         subscription: true,
@@ -63,7 +68,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           },
         },
       },
-    });
+      }),
+      getWorkspaceLifecycleStatus(id),
+    ]);
 
     if (!workspace) {
       return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
@@ -80,11 +87,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         updatedAt: toIso(workspace.updated_at),
         whatsappStatus: workspace.whatsapp_status || null,
         whatsappPhoneNumber: workspace.whatsapp_phone_number || null,
+        lifecycleStatus: lifecycle.status,
+        lifecycleReason: lifecycle.reason,
         plan,
         subscriptionStatus: workspace.subscription?.status || null,
         currentPeriodEnd: toIso(workspace.subscription?.current_period_end),
         owner: owner
           ? {
+              userId: owner.user_id,
               name: owner.user.name,
               email: owner.user.email,
             }
@@ -143,11 +153,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       aiSuggestionsEnabled?: boolean;
       objective?: string | null;
       financialProfile?: string | null;
+      lifecycleStatus?: 'ACTIVE' | 'SUSPENDED';
+      lifecycleReason?: string | null;
+      ownerUserId?: string | null;
     };
 
     const workspace = await prisma.workspace.findUnique({
       where: { id },
-      include: { preference: true },
+      include: {
+        preference: true,
+        members: true,
+      },
     });
 
     if (!workspace) {
@@ -186,8 +202,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             : workspace.preference?.financial_profile || null,
     };
 
-    const [updatedWorkspace, updatedPreference] = await prisma.$transaction([
-      prisma.workspace.update({
+    const requestedOwnerUserId =
+      typeof body.ownerUserId === 'string' && body.ownerUserId.trim() ? body.ownerUserId.trim() : null;
+    const ownerMember = requestedOwnerUserId
+      ? workspace.members.find((member) => member.user_id === requestedOwnerUserId)
+      : workspace.members.find((member) => member.role === 'OWNER') || null;
+
+    if (requestedOwnerUserId && !ownerMember) {
+      return NextResponse.json({ error: 'O novo owner precisa já fazer parte do workspace.' }, { status: 400 });
+    }
+
+    const requestedLifecycleStatus = body.lifecycleStatus === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE';
+    const [updatedWorkspace, updatedPreference] = await prisma.$transaction(async (tx) => {
+      const nextWorkspace = await tx.workspace.update({
         where: { id },
         data: {
           name: nextName,
@@ -200,16 +227,41 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 ? null
                 : workspace.whatsapp_connected_at,
         },
-      }),
-      prisma.workspacePreference.upsert({
+      });
+
+      const nextPref = await tx.workspacePreference.upsert({
         where: { workspace_id: id },
         update: nextPreference,
         create: {
           workspace_id: id,
           ...nextPreference,
         },
-      }),
-    ]);
+      });
+
+      if (requestedOwnerUserId && ownerMember) {
+        await tx.workspaceMember.updateMany({
+          where: {
+            workspace_id: id,
+            role: 'OWNER',
+          },
+          data: {
+            role: 'ADMIN',
+          },
+        });
+        await tx.workspaceMember.update({
+          where: { id: ownerMember.id },
+          data: { role: 'OWNER' },
+        });
+      }
+
+      return [nextWorkspace, nextPref] as const;
+    });
+
+    const lifecycle = await setWorkspaceLifecycleStatus({
+      workspaceId: id,
+      status: requestedLifecycleStatus,
+      reason: body.lifecycleReason ?? null,
+    });
 
     await prisma.workspaceEvent.create({
       data: {
@@ -234,6 +286,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             name: updatedWorkspace.name,
             whatsappStatus: updatedWorkspace.whatsapp_status,
             whatsappPhoneNumber: updatedWorkspace.whatsapp_phone_number,
+            lifecycleStatus: lifecycle.status,
+            lifecycleReason: lifecycle.reason,
+            ownerUserId: requestedOwnerUserId,
             preference: {
               onboardingCompleted: updatedPreference.onboarding_completed,
               aiSuggestionsEnabled: updatedPreference.ai_suggestions_enabled,
@@ -252,6 +307,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         name: updatedWorkspace.name,
         whatsappStatus: updatedWorkspace.whatsapp_status || null,
         whatsappPhoneNumber: updatedWorkspace.whatsapp_phone_number || null,
+        lifecycleStatus: lifecycle.status,
+        lifecycleReason: lifecycle.reason,
+        ownerUserId: requestedOwnerUserId,
         preference: {
           onboardingCompleted: updatedPreference.onboarding_completed,
           aiSuggestionsEnabled: updatedPreference.ai_suggestions_enabled,

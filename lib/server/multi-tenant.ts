@@ -5,6 +5,7 @@ import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
 import { PLAN_LIMITS, type WorkspacePlan } from '@/lib/billing/limits';
 import { getPlanForStoredSubscription, normalizeBillingPlan } from '@/lib/server/billing-status';
+import { getWorkspaceLifecycleStatus } from '@/lib/server/superadmin-governance';
 
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 export { PLAN_LIMITS };
@@ -172,6 +173,11 @@ export async function resolveWorkspaceContext(req: Request): Promise<WorkspaceCo
 
   if (!membership) {
     throw new HttpError(403, 'Workspace access denied');
+  }
+
+  const lifecycle = await getWorkspaceLifecycleStatus(membership.workspace_id);
+  if (lifecycle.status === 'SUSPENDED') {
+    throw new HttpError(423, lifecycle.reason || 'Workspace suspenso temporariamente pelo administrador.');
   }
 
   return {

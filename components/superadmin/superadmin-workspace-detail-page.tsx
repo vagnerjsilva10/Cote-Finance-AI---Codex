@@ -23,6 +23,10 @@ const whatsappStatusOptions = [
   { value: 'CONNECTING', label: 'Conectando' },
   { value: 'DISCONNECTED', label: 'Desconectado' },
 ];
+const lifecycleOptions = [
+  { value: 'ACTIVE', label: 'Ativo' },
+  { value: 'SUSPENDED', label: 'Suspenso' },
+];
 
 export function SuperadminWorkspaceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -72,7 +76,7 @@ export function SuperadminWorkspaceDetailPage() {
           <div className="space-y-3">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Workspace</p>
             <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">{workspace.name}</h1>
-            <div className="flex flex-wrap gap-2"><PlanBadge label={formatPlanLabel(workspace.plan)} /><StatusBadge status={workspace.subscriptionStatus} /><ChannelBadge label={workspace.whatsappStatus || 'DISCONNECTED'} /></div>
+            <div className="flex flex-wrap gap-2"><PlanBadge label={formatPlanLabel(workspace.plan)} /><StatusBadge status={workspace.subscriptionStatus} /><ChannelBadge label={workspace.whatsappStatus || 'DISCONNECTED'} /><LifecycleBadge status={workspace.lifecycleStatus} /></div>
           </div>
           <Link href="/superadmin/workspaces" className={secondaryActionClassName}>Voltar para workspaces</Link>
         </div>
@@ -95,6 +99,7 @@ export function SuperadminWorkspaceDetailPage() {
             <InfoBlock label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'Não identificado'} />
             <InfoBlock label="Plano" value={formatPlanLabel(workspace.plan)} />
             <InfoBlock label="Assinatura" value={formatSubscriptionStatus(workspace.subscriptionStatus)} />
+            <InfoBlock label="Status operacional" value={workspace.lifecycleStatus === 'SUSPENDED' ? 'Suspenso' : 'Ativo'} />
             <InfoBlock label="Período atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
             <InfoBlock label="WhatsApp" value={workspace.whatsappPhoneNumber || 'Não configurado'} />
             <InfoBlock label="Criado em" value={formatAdminDateTime(workspace.createdAt)} />
@@ -113,7 +118,47 @@ export function SuperadminWorkspaceDetailPage() {
             setError(null);
             setActionMessage(null);
             const response = await fetchSuperadminJson<SuperadminWorkspaceUpdateResponse>(`/api/superadmin/workspaces/${workspace.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
-            setData((current) => current ? { ...current, workspace: { ...current.workspace, name: response.workspace.name, whatsappStatus: response.workspace.whatsappStatus, whatsappPhoneNumber: response.workspace.whatsappPhoneNumber, preference: response.workspace.preference } } : current);
+            setData((current) =>
+              current
+                ? {
+                    ...current,
+                    workspace: {
+                      ...current.workspace,
+                      name: response.workspace.name,
+                      whatsappStatus: response.workspace.whatsappStatus,
+                      whatsappPhoneNumber: response.workspace.whatsappPhoneNumber,
+                      lifecycleStatus: response.workspace.lifecycleStatus,
+                      lifecycleReason: response.workspace.lifecycleReason,
+                      owner:
+                        response.workspace.ownerUserId
+                          ? current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)
+                            ? {
+                                userId: response.workspace.ownerUserId,
+                                name:
+                                  current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)?.name ||
+                                  null,
+                                email:
+                                  current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)?.email ||
+                                  null,
+                              }
+                            : current.workspace.owner
+                          : current.workspace.owner,
+                      preference: response.workspace.preference,
+                      members: response.workspace.ownerUserId
+                        ? current.workspace.members.map((member) => ({
+                            ...member,
+                            role:
+                              member.userId === response.workspace.ownerUserId
+                                ? 'OWNER'
+                                : member.role === 'OWNER'
+                                  ? 'ADMIN'
+                                  : member.role,
+                          }))
+                        : current.workspace.members,
+                    },
+                  }
+                : current
+            );
             setActionMessage('Workspace atualizado com sucesso.');
           } catch (submitError) {
             setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar workspace.');
@@ -138,7 +183,7 @@ export function SuperadminWorkspaceDetailPage() {
   );
 }
 
-function WorkspaceActionsCard({ workspace, isSaving, onSubmit }: { workspace: SuperadminWorkspaceDetailResponse['workspace']; isSaving: boolean; onSubmit: (payload: { name: string; whatsappStatus: string; whatsappPhoneNumber: string | null; onboardingCompleted: boolean; aiSuggestionsEnabled: boolean; objective: string | null; financialProfile: string | null; }) => Promise<void>; }) {
+function WorkspaceActionsCard({ workspace, isSaving, onSubmit }: { workspace: SuperadminWorkspaceDetailResponse['workspace']; isSaving: boolean; onSubmit: (payload: { name: string; whatsappStatus: string; whatsappPhoneNumber: string | null; onboardingCompleted: boolean; aiSuggestionsEnabled: boolean; objective: string | null; financialProfile: string | null; lifecycleStatus: 'ACTIVE' | 'SUSPENDED'; lifecycleReason: string | null; ownerUserId: string | null; }) => Promise<void>; }) {
   const [name, setName] = React.useState(workspace.name);
   const [whatsappStatus, setWhatsappStatus] = React.useState(workspace.whatsappStatus || 'DISCONNECTED');
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = React.useState(workspace.whatsappPhoneNumber || '');
@@ -146,6 +191,9 @@ function WorkspaceActionsCard({ workspace, isSaving, onSubmit }: { workspace: Su
   const [aiSuggestionsEnabled, setAiSuggestionsEnabled] = React.useState(workspace.preference?.aiSuggestionsEnabled ?? true);
   const [objective, setObjective] = React.useState(workspace.preference?.objective || '');
   const [financialProfile, setFinancialProfile] = React.useState(workspace.preference?.financialProfile || '');
+  const [lifecycleStatus, setLifecycleStatus] = React.useState<'ACTIVE' | 'SUSPENDED'>(workspace.lifecycleStatus);
+  const [lifecycleReason, setLifecycleReason] = React.useState(workspace.lifecycleReason || '');
+  const [ownerUserId, setOwnerUserId] = React.useState(workspace.owner?.userId || '');
 
   React.useEffect(() => {
     setName(workspace.name);
@@ -155,18 +203,23 @@ function WorkspaceActionsCard({ workspace, isSaving, onSubmit }: { workspace: Su
     setAiSuggestionsEnabled(workspace.preference?.aiSuggestionsEnabled ?? true);
     setObjective(workspace.preference?.objective || '');
     setFinancialProfile(workspace.preference?.financialProfile || '');
+    setLifecycleStatus(workspace.lifecycleStatus);
+    setLifecycleReason(workspace.lifecycleReason || '');
+    setOwnerUserId(workspace.owner?.userId || '');
   }, [workspace]);
 
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-      <div className="mb-5"><h2 className="text-xl font-black text-white">Ajustes operacionais</h2><p className="mt-2 text-sm leading-7 text-slate-400">Atualize nome, status do canal, onboarding e preferências de IA.</p></div>
+      <div className="mb-5"><h2 className="text-xl font-black text-white">Ajustes operacionais</h2><p className="mt-2 text-sm leading-7 text-slate-400">Atualize nome, owner, status do canal, governança operacional e preferências de IA.</p></div>
       <div className="space-y-4">
         <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Nome do workspace</span><input value={name} onChange={(event) => setName(event.target.value)} className={fieldClassName} /></label>
+        <div className="grid gap-4 sm:grid-cols-2"><SelectField label="Owner do workspace" value={ownerUserId} onChange={setOwnerUserId} options={workspace.members.map((member) => ({ value: member.userId, label: `${member.name || member.email} · ${member.role}` }))} /><SelectField label="Status operacional" value={lifecycleStatus} onChange={(value) => setLifecycleStatus(value as 'ACTIVE' | 'SUSPENDED')} options={lifecycleOptions} /></div>
+        <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Motivo operacional</span><input value={lifecycleReason} onChange={(event) => setLifecycleReason(event.target.value)} placeholder="Opcional. Ex: atraso recorrente, revisão interna, fraude." className={fieldClassName} /></label>
         <div className="grid gap-4 sm:grid-cols-2"><SelectField label="Status do WhatsApp" value={whatsappStatus} onChange={setWhatsappStatus} options={whatsappStatusOptions} /><label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Telefone do WhatsApp</span><input value={whatsappPhoneNumber} onChange={(event) => setWhatsappPhoneNumber(event.target.value)} placeholder="+55 11 99999-9999" className={fieldClassName} /></label></div>
         <div className="grid gap-4 sm:grid-cols-2"><ToggleCard label="Onboarding concluído" checked={onboardingCompleted} onChange={setOnboardingCompleted} /><ToggleCard label="Sugestões de IA ativas" checked={aiSuggestionsEnabled} onChange={setAiSuggestionsEnabled} /></div>
         <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Objetivo</span><input value={objective} onChange={(event) => setObjective(event.target.value)} className={fieldClassName} /></label>
         <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Perfil financeiro</span><input value={financialProfile} onChange={(event) => setFinancialProfile(event.target.value)} className={fieldClassName} /></label>
-        <div className="flex justify-end"><button type="button" disabled={isSaving} onClick={() => void onSubmit({ name, whatsappStatus, whatsappPhoneNumber: whatsappPhoneNumber || null, onboardingCompleted, aiSuggestionsEnabled, objective: objective || null, financialProfile: financialProfile || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button></div>
+        <div className="flex justify-end"><button type="button" disabled={isSaving} onClick={() => void onSubmit({ name, whatsappStatus, whatsappPhoneNumber: whatsappPhoneNumber || null, onboardingCompleted, aiSuggestionsEnabled, objective: objective || null, financialProfile: financialProfile || null, lifecycleStatus, lifecycleReason: lifecycleReason || null, ownerUserId: ownerUserId || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button></div>
       </div>
     </section>
   );
@@ -179,6 +232,7 @@ function InfoBlock({ label, value }: { label: string; value: string }) { return 
 function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>; }
 function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
 function ChannelBadge({ label }: { label: string }) { const normalized = label === 'CONNECTED' ? 'Canal conectado' : label === 'CONNECTING' ? 'Conectando' : 'Sem canal'; return <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-200">{normalized}</span>; }
+function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' }) { return <span className={status === 'SUSPENDED' ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200' : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200'}>{status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
 function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>; }
 function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
 function EmptyState({ text }: { text: string }) { return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>; }

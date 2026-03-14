@@ -1,245 +1,442 @@
 'use client';
 
+import * as React from 'react';
+import { Loader2, Save, Settings2, Sparkles } from 'lucide-react';
+
+import { fetchSuperadminJson } from '@/components/superadmin/fetch-superadmin-json';
 import {
-  BadgeCheck,
-  CircleDollarSign,
-  Gem,
-  Layers3,
-  Sparkles,
-  Wallet,
-} from 'lucide-react';
+  formatAdminCurrency,
+  formatAdminNumber,
+  formatPlanLabel,
+} from '@/components/superadmin/superadmin-utils';
+import type {
+  SuperadminPlanConfig,
+  SuperadminPlansResponse,
+  SuperadminPlansUpdateResponse,
+} from '@/lib/superadmin/types';
 
-import {
-  SuperadminInfoList,
-  SuperadminMetricChip,
-  SuperadminPageHeader,
-  SuperadminSectionCard,
-} from '@/components/superadmin/superadmin-page-primitives';
-import { PLAN_LIMITS } from '@/lib/billing/limits';
-import { formatAdminCurrency, formatAdminNumber } from '@/components/superadmin/superadmin-utils';
-import { BILLING_PLAN_DETAILS, getBillingTrialDays } from '@/lib/billing/plans';
+type EditablePlanState = SuperadminPlanConfig & {
+  featuresText: string;
+  trustBadgesText: string;
+};
 
-const PLAN_ORDER = ['FREE', 'PRO', 'PREMIUM'] as const;
+function toEditablePlan(plan: SuperadminPlanConfig): EditablePlanState {
+  return {
+    ...plan,
+    featuresText: plan.features.join('\n'),
+    trustBadgesText: plan.trustBadges.join('\n'),
+  };
+}
 
-const PLAN_VISUALS = {
-  FREE: {
-    icon: Wallet,
-    title: 'Free',
-    tone: 'border-white/10 bg-slate-900/70',
-    accent: 'text-slate-200',
-  },
-  PRO: {
-    icon: Layers3,
-    title: 'Pro',
-    tone: 'border-emerald-400/20 bg-emerald-500/10',
-    accent: 'text-emerald-100',
-  },
-  PREMIUM: {
-    icon: Gem,
-    title: 'Premium',
-    tone: 'border-sky-400/20 bg-sky-500/10',
-    accent: 'text-sky-100',
-  },
-} as const;
+function fromEditablePlan(plan: EditablePlanState): SuperadminPlanConfig {
+  return {
+    ...plan,
+    features: plan.featuresText
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean),
+    trustBadges: plan.trustBadgesText
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean),
+  };
+}
 
 export function SuperadminPlansPage() {
+  const [data, setData] = React.useState<SuperadminPlansResponse | null>(null);
+  const [plans, setPlans] = React.useState<EditablePlanState[]>([]);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    let active = true;
+    const run = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetchSuperadminJson<SuperadminPlansResponse>('/api/superadmin/plans');
+        if (!active) return;
+        setData(response);
+        setPlans(response.plans.map(toEditablePlan));
+      } catch (fetchError) {
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar os planos.');
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+    void run();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const defaultPlan = plans.find((plan) => plan.default)?.code || 'FREE';
+
+  const updatePlan = React.useCallback(
+    (code: SuperadminPlanConfig['code'], updater: (plan: EditablePlanState) => EditablePlanState) => {
+      setPlans((current) => current.map((plan) => (plan.code === code ? updater(plan) : plan)));
+    },
+    []
+  );
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+      setSuccess(null);
+      const payload = {
+        defaultPlan,
+        plans: plans.map(fromEditablePlan),
+      };
+      const response = await fetchSuperadminJson<SuperadminPlansUpdateResponse>('/api/superadmin/plans', {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+      setPlans(response.plans.map(toEditablePlan));
+      setSuccess('Catálogo de planos atualizado com sucesso.');
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Falha ao salvar os planos.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <SuperadminPageHeader
-        eyebrow="Monetização"
-        title="Planos e oferta comercial"
-        description="Visualize a arquitetura atual de planos, posicionamento de preço, períodos de teste, limites e sinais de expansão. Esta área já fica pronta para receber edição administrativa no próximo passo."
-      >
-        <div className="grid gap-3 sm:grid-cols-3">
-          <SuperadminMetricChip label="Planos ativos" value="3 ofertas" tone="success" />
-          <SuperadminMetricChip label="Trial atual" value={`${getBillingTrialDays('PRO')} dias no Pro`} tone="info" />
-          <SuperadminMetricChip label="Catálogo" value="Estrutura pronta para edição" />
-        </div>
-      </SuperadminPageHeader>
-
-      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <SuperadminSectionCard
-          title="Catálogo atual"
-          description="Resumo comercial das ofertas atuais do produto e como cada uma está posicionada hoje."
-        >
-          <div className="grid gap-4 lg:grid-cols-3">
-            {PLAN_ORDER.map((planKey) => {
-              const planVisual = PLAN_VISUALS[planKey];
-              const planDetails = planKey === 'FREE' ? null : BILLING_PLAN_DETAILS[planKey];
-              const limits = PLAN_LIMITS[planKey];
-              const Icon = planVisual.icon;
-
-              return (
-                <article key={planKey} className={`rounded-[1.6rem] border p-5 ${planVisual.tone}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className={`text-lg font-semibold ${planVisual.accent}`}>{planVisual.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-300">
-                        {planKey === 'FREE'
-                          ? 'Entrada para organização inicial e experimentação do produto.'
-                          : planDetails?.description}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-3">
-                      <Icon className={`h-5 w-5 ${planVisual.accent}`} />
-                    </div>
-                  </div>
-
-                  <div className="mt-5 space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Preço</p>
-                    {planKey === 'FREE' ? (
-                      <p className="text-3xl font-semibold text-white">Grátis</p>
-                    ) : (
-                      <>
-                        <p className="text-3xl font-semibold text-white">
-                          {formatAdminCurrency(planDetails?.monthlyPrice || 0)}
-                          <span className="text-base font-medium text-slate-400"> / mês</span>
-                        </p>
-                        <p className="text-sm text-slate-400">
-                          {formatAdminCurrency(planDetails?.annualPrice || 0)} no anual
-                        </p>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="mt-5 space-y-3 text-sm text-slate-300">
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Trial</p>
-                      <p className="mt-2 font-semibold text-white">
-                        {planKey === 'FREE'
-                          ? 'Sem trial'
-                          : getBillingTrialDays(planKey) > 0
-                            ? `${getBillingTrialDays(planKey)} dias`
-                            : 'Sem trial'}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Limites-chave</p>
-                      <p className="mt-2">
-                        {typeof limits.transactionsPerMonth === 'number'
-                          ? `${formatAdminNumber(limits.transactionsPerMonth)} transações/mês`
-                          : 'Transações ilimitadas'}
-                      </p>
-                      <p className="mt-1">
-                        {typeof limits.aiInteractionsPerMonth === 'number'
-                          ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} interações com IA/mês`
-                          : 'IA ilimitada'}
-                      </p>
-                      <p className="mt-1">Relatórios {limits.reports === 'full' ? 'completos' : 'básicos'}</p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </SuperadminSectionCard>
-
-        <SuperadminSectionCard
-          title="Direção da oferta"
-          description="Leitura rápida do que já está claro na arquitetura atual e do que vale entrar na próxima fase."
-        >
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-3">
-                  <Sparkles className="h-5 w-5 text-emerald-200" />
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Estrutura comercial bem definida</p>
-                  <p className="mt-2 text-sm leading-7 text-slate-400">
-                    O catálogo já diferencia entrada, recorrência principal e valor premium. O próximo passo natural é
-                    permitir edição operacional sem depender de código.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <SuperadminInfoList
-              columns={1}
-              items={[
-                { label: 'Próximo módulo útil', value: 'Editor administrativo de preço, benefício e trial' },
-                { label: 'Gap atual', value: 'Planos ainda estão configurados em código e variáveis de ambiente' },
-                { label: 'Próxima integração natural', value: 'Conectar com billing, subscriptions e feature flags' },
-              ]}
-            />
-          </div>
-        </SuperadminSectionCard>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <SuperadminSectionCard
-          title="Comparação de proposta de valor"
-          description="Visão curta dos principais argumentos de venda e percepção esperada por plano."
-        >
+      <section className="rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
-            {PLAN_ORDER.map((planKey) => {
-              const label = PLAN_VISUALS[planKey].title;
-              const items =
-                planKey === 'FREE'
-                  ? [
-                      'Organização inicial do usuário',
-                      'Entrada sem risco para experimentar o produto',
-                      'Boa camada de ativação e educação',
-                    ]
-                  : BILLING_PLAN_DETAILS[planKey].features.slice(0, 4);
-
-              return (
-                <div key={planKey} className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-                  <p className="text-sm font-semibold text-white">{label}</p>
-                  <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                    {items.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <BadgeCheck className="mt-0.5 h-4 w-4 text-emerald-300" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Planos</p>
+            <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Catálogo de planos</h1>
+            <p className="max-w-3xl text-sm leading-7 text-slate-300">
+              Controle a oferta comercial do produto a partir do Super Admin. O que você altera aqui passa a ser a
+              referência operacional do catálogo administrativo da plataforma.
+            </p>
           </div>
-        </SuperadminSectionCard>
+          <button type="button" onClick={() => void handleSave()} disabled={isSaving || isLoading} className={primaryButtonClassName}>
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Salvar catálogo
+          </button>
+        </div>
 
-        <SuperadminSectionCard
-          title="Arquitetura pronta para crescer"
-          description="A página já fica preparada para a próxima etapa de superadmin funcional."
-        >
-          <div className="grid gap-3">
-            {[
-              {
-                icon: CircleDollarSign,
-                title: 'Ações futuras de pricing',
-                text: 'Editar preço mensal/anual, trials e posicionamento comercial direto pelo painel.',
-              },
-              {
-                icon: Layers3,
-                title: 'Pacotes e benefícios',
-                text: 'Controlar listas de benefícios, badges e diferenciais por plano sem hardcode.',
-              },
-              {
-                icon: Gem,
-                title: 'Expansão enterprise',
-                text: 'Abrir espaço para novos tiers, ofertas limitadas e feature flags comerciais.',
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.title} className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                      <Icon className="h-5 w-5 text-sky-200" />
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <MetricCard label="Planos ativos" value={formatAdminNumber(plans.filter((plan) => plan.active).length)} helper="disponíveis para operação" />
+          <MetricCard label="Visíveis" value={formatAdminNumber(plans.filter((plan) => plan.visible).length)} helper="expostos comercialmente" />
+          <MetricCard label="Plano padrão" value={formatPlanLabel(defaultPlan)} helper="entrada principal da plataforma" />
+          <MetricCard label="Preço Pro" value={formatAdminCurrency(plans.find((plan) => plan.code === 'PRO')?.monthlyPrice || 0)} helper="mensal atual" />
+        </div>
+      </section>
+
+      {success ? <SuccessState message={success} /> : null}
+      {error ? <ErrorState message={error} /> : null}
+
+      {isLoading ? (
+        <LoadingState label="Carregando catálogo de planos..." />
+      ) : (
+        <div className="grid gap-6 xl:grid-cols-3">
+          {plans
+            .slice()
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((plan) => (
+              <section key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-black text-white">{plan.name}</h2>
+                      {plan.default ? (
+                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-200">
+                          Padrão
+                        </span>
+                      ) : null}
                     </div>
-                    <div>
-                      <p className="font-semibold text-white">{item.title}</p>
-                      <p className="mt-2 text-sm leading-7 text-slate-400">{item.text}</p>
-                    </div>
+                    <p className="mt-2 text-sm leading-7 text-slate-400">{plan.description}</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-slate-300">
+                    {plan.code === 'FREE' ? <Settings2 className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Nome</span>
+                    <input
+                      value={plan.name}
+                      onChange={(event) => updatePlan(plan.code, (current) => ({ ...current, name: event.target.value }))}
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ordem</span>
+                    <input
+                      type="number"
+                      value={plan.sortOrder}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          sortOrder: Number(event.target.value) || current.sortOrder,
+                        }))
+                      }
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preço mensal</span>
+                    <input
+                      type="number"
+                      value={plan.monthlyPrice}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          monthlyPrice: Number(event.target.value) || 0,
+                        }))
+                      }
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preço anual</span>
+                    <input
+                      type="number"
+                      value={plan.annualPrice}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          annualPrice: Number(event.target.value) || 0,
+                        }))
+                      }
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Trial (dias)</span>
+                    <input
+                      type="number"
+                      value={plan.trialDays}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          trialDays: Number(event.target.value) || 0,
+                        }))
+                      }
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <div className="grid gap-3">
+                    <ToggleRow
+                      label="Plano ativo"
+                      checked={plan.active}
+                      onChange={(checked) => updatePlan(plan.code, (current) => ({ ...current, active: checked }))}
+                    />
+                    <ToggleRow
+                      label="Visível no produto"
+                      checked={plan.visible}
+                      onChange={(checked) => updatePlan(plan.code, (current) => ({ ...current, visible: checked }))}
+                    />
+                    <ToggleRow
+                      label="Plano padrão"
+                      checked={plan.default}
+                      onChange={(checked) =>
+                        setPlans((current) =>
+                          current.map((item) => ({
+                            ...item,
+                            default: checked ? item.code === plan.code : item.code === 'FREE',
+                          }))
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Transações/mês</span>
+                    <input
+                      value={plan.limits.transactionsPerMonth ?? ''}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          limits: {
+                            ...current.limits,
+                            transactionsPerMonth: event.target.value.trim() ? Number(event.target.value) : null,
+                          },
+                        }))
+                      }
+                      placeholder="Ilimitado"
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">IA/mês</span>
+                    <input
+                      value={plan.limits.aiInteractionsPerMonth ?? ''}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          limits: {
+                            ...current.limits,
+                            aiInteractionsPerMonth: event.target.value.trim() ? Number(event.target.value) : null,
+                          },
+                        }))
+                      }
+                      placeholder="Ilimitado"
+                      className={fieldClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Relatórios</span>
+                    <select
+                      value={plan.limits.reports}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({
+                          ...current,
+                          limits: {
+                            ...current.limits,
+                            reports: event.target.value === 'full' ? 'full' : 'basic',
+                          },
+                        }))
+                      }
+                      className={fieldClassName}
+                    >
+                      <option value="basic">Básicos</option>
+                      <option value="full">Completos</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label className="mt-4 block">
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Descrição</span>
+                  <textarea
+                    value={plan.description}
+                    onChange={(event) => updatePlan(plan.code, (current) => ({ ...current, description: event.target.value }))}
+                    rows={4}
+                    className={textareaClassName}
+                  />
+                </label>
+
+                <div className="mt-4 grid gap-4">
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Benefícios</span>
+                    <textarea
+                      value={plan.featuresText}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({ ...current, featuresText: event.target.value }))
+                      }
+                      rows={6}
+                      className={textareaClassName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Badges de confiança</span>
+                    <textarea
+                      value={plan.trustBadgesText}
+                      onChange={(event) =>
+                        updatePlan(plan.code, (current) => ({ ...current, trustBadgesText: event.target.value }))
+                      }
+                      rows={4}
+                      className={textareaClassName}
+                    />
+                  </label>
+                </div>
+              </section>
+            ))}
+        </div>
+      )}
+
+      {data ? (
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+          <h2 className="text-xl font-black text-white">Leitura rápida do catálogo</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-400">
+            Esta área agora é operacional. Você consegue ajustar preço, trial, benefícios, limites e visibilidade
+            administrativa sem alterar rotas nem mexer manualmente em código.
+          </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {plans.map((plan) => (
+              <div key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-white">{plan.name}</p>
+                  <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                    {plan.active ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+                <p className="mt-3 text-2xl font-bold tracking-tight text-white">
+                  {formatAdminCurrency(plan.monthlyPrice)}
+                  <span className="text-sm font-medium text-slate-500"> / mês</span>
+                </p>
+                <p className="mt-2 text-sm text-slate-400">
+                  {plan.limits.transactionsPerMonth === null
+                    ? 'Transações ilimitadas'
+                    : `${formatAdminNumber(plan.limits.transactionsPerMonth)} transações/mês`}
+                </p>
+                <p className="mt-1 text-sm text-slate-400">
+                  {plan.limits.aiInteractionsPerMonth === null
+                    ? 'IA ilimitada'
+                    : `${formatAdminNumber(plan.limits.aiInteractionsPerMonth)} interações com IA/mês`}
+                </p>
+              </div>
+            ))}
           </div>
-        </SuperadminSectionCard>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+      <p className="text-sm font-medium text-slate-400">{label}</p>
+      <p className="mt-3 text-2xl font-bold tracking-tight text-white">{value}</p>
+      <p className="mt-1 text-sm text-slate-500">{helper}</p>
+    </div>
+  );
+}
+
+function ToggleRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-sm text-white">
+      <span>{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400"
+      />
+    </label>
+  );
+}
+
+function LoadingState({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-[220px] items-center justify-center">
+      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
+        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+        {label}
       </div>
     </div>
   );
 }
+
+function SuccessState({ message }: { message: string }) {
+  return <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">{message}</div>;
+}
+
+function ErrorState({ message }: { message: string }) {
+  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+}
+
+const fieldClassName =
+  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-500';
+const textareaClassName =
+  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+const primaryButtonClassName =
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-emerald-600 disabled:opacity-60';

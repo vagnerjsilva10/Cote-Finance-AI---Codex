@@ -134,6 +134,8 @@ export type SuperadminWorkspaceSummary = {
   memberCount: number;
   plan: string;
   subscriptionStatus: string | null;
+  lifecycleStatus: 'ACTIVE' | 'SUSPENDED';
+  lifecycleReason: string | null;
   whatsappStatus: string | null;
   transactionsCount: number;
   walletsCount: number;
@@ -155,10 +157,13 @@ export type SuperadminWorkspaceDetailResponse = {
     updatedAt: string;
     whatsappStatus: string | null;
     whatsappPhoneNumber: string | null;
+    lifecycleStatus: 'ACTIVE' | 'SUSPENDED';
+    lifecycleReason: string | null;
     plan: string;
     subscriptionStatus: string | null;
     currentPeriodEnd: string | null;
     owner: {
+      userId: string;
       name: string | null;
       email: string | null;
     } | null;
@@ -204,6 +209,9 @@ export type SuperadminWorkspaceUpdateResponse = {
     name: string;
     whatsappStatus: string | null;
     whatsappPhoneNumber: string | null;
+    lifecycleStatus: 'ACTIVE' | 'SUSPENDED';
+    lifecycleReason: string | null;
+    ownerUserId: string | null;
     preference: {
       onboardingCompleted: boolean;
       aiSuggestionsEnabled: boolean;
@@ -211,6 +219,41 @@ export type SuperadminWorkspaceUpdateResponse = {
       financialProfile: string | null;
     };
   };
+};
+
+export type SuperadminPlanConfig = {
+  code: 'FREE' | 'PRO' | 'PREMIUM';
+  name: string;
+  active: boolean;
+  visible: boolean;
+  default: boolean;
+  sortOrder: number;
+  monthlyPrice: number;
+  annualPrice: number;
+  trialDays: number;
+  description: string;
+  features: string[];
+  trustBadges: string[];
+  limits: {
+    transactionsPerMonth: number | null;
+    aiInteractionsPerMonth: number | null;
+    reports: 'basic' | 'full';
+  };
+};
+
+export type SuperadminPlansResponse = {
+  plans: SuperadminPlanConfig[];
+  summary: {
+    total: number;
+    active: number;
+    visible: number;
+    defaultPlan: 'FREE' | 'PRO' | 'PREMIUM';
+  };
+};
+
+export type SuperadminPlansUpdateResponse = {
+  ok: boolean;
+  plans: SuperadminPlanConfig[];
 };
 
 export type SuperadminTrackingSettingsResponse = {
