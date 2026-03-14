@@ -1137,9 +1137,9 @@ function CheckoutPageContent() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento</p>
-                <h2 className="text-xl font-semibold tracking-tight text-white md:text-2xl">Pagamento seguro</h2>
+                <h2 className="text-lg font-semibold tracking-tight text-white md:text-xl">Pagamento seguro</h2>
                 <p className="max-w-lg text-sm leading-6 text-slate-400">
-                  Finalize sua assinatura em poucos segundos. Seu pagamento é processado com segurança pela Stripe.
+                  Ative seu plano em poucos segundos. Pagamento seguro processado pela Stripe.
                 </p>
                 <div className="rounded-[1.4rem] border border-white/10 bg-slate-950/60 p-4">
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1151,7 +1151,9 @@ function CheckoutPageContent() {
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
                         {trialDays > 0 && paymentMethod === 'card' ? 'Após o período de teste' : 'Plano contratado'}
                       </p>
-                      <p className="mt-2 text-3xl font-black tracking-tight text-white">{postTrialLabel}</p>
+                      <p className="mt-2 text-[2.1rem] font-black tracking-tight text-white md:text-[2.25rem]">
+                        {postTrialLabel}
+                      </p>
                     </div>
                   </div>
                   <p className="mt-3 text-sm text-slate-300">
@@ -1312,7 +1314,7 @@ function CheckoutPageContent() {
                     intentType={checkoutData.intentType}
                     returnUrl={checkoutReturnUrl}
                     submitLabel={submitLabel}
-                    helperText="Pagamento seguro processado pela Stripe. Seus dados são protegidos por criptografia SSL. Cancele sua assinatura a qualquer momento."
+                    helperText="Pagamento seguro processado pela Stripe. Seus dados são protegidos por criptografia SSL."
                     onFallbackCheckout={handleLegacyCheckout}
                     onSuccess={() => {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
