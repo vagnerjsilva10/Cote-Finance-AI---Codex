@@ -166,11 +166,11 @@ const sectionMotion = {
   transition: { duration: 0.45 },
 };
 
-function PrimaryCta({ href, children, invert = false }: { href: string; children: ReactNode; invert?: boolean }) {
+function PrimaryCta({ href, children, invert = false, className = '' }: { href: string; children: ReactNode; invert?: boolean; className?: string }) {
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold transition-all duration-200 ${
+      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all duration-200 sm:px-6 sm:py-3.5 ${className} ${
         invert
           ? 'bg-white text-slate-950 shadow-[0_18px_44px_-18px_rgba(255,255,255,.45)] hover:-translate-y-0.5 hover:bg-slate-100'
           : 'bg-emerald-500 text-white shadow-[0_22px_54px_-22px_rgba(16,185,129,.88)] hover:-translate-y-0.5 hover:bg-emerald-400'
@@ -218,40 +218,40 @@ export default function PaidLandingClient() {
     <main className={`${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`} style={{ fontFamily: 'var(--font-body)' }}>
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(16,185,129,.18),transparent_28%),radial-gradient(circle_at_88%_10%,rgba(59,130,246,.18),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_54%,#0b1120_100%)]" />
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
           <Link href="/lp" className="flex items-center">
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-11 w-auto sm:h-14 lg:h-16" priority />
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-10 w-auto sm:h-14 lg:h-16" priority />
           </Link>
-          <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
+          <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 pb-24 pt-8 sm:px-6 sm:gap-20 sm:pb-28">
-        <section className="grid items-center gap-10 lg:grid-cols-[1.04fr_.96fr] lg:gap-14">
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="space-y-7 text-center lg:text-left">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-20 pt-6 sm:px-6 sm:gap-20 sm:pb-28 sm:pt-8">
+        <section className="grid items-center gap-8 lg:grid-cols-[1.04fr_.96fr] lg:gap-14">
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="space-y-6 text-center lg:space-y-7 lg:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 shadow-[0_16px_40px_-28px_rgba(16,185,129,.95)]"><Sparkles size={14} /> Leva menos de 30 segundos</span>
-            <h1 className="text-[2.55rem] font-bold leading-[1.04] text-white sm:text-5xl lg:text-[4.2rem]" style={{ fontFamily: 'var(--font-display)' }}>Seu dinheiro está sumindo e você nem sabe por quê</h1>
-            <div className="space-y-3 text-base leading-7 text-slate-300 sm:text-lg">
+            <h1 className="text-[2.15rem] font-bold leading-[1.04] text-white sm:text-5xl lg:text-[4.2rem]" style={{ fontFamily: 'var(--font-display)' }}>Seu dinheiro está sumindo e você nem sabe por quê</h1>
+            <div className="space-y-3 text-[15px] leading-7 text-slate-300 sm:text-lg">
               <p>O Cote Finance AI analisa seus gastos e mostra exatamente para onde seu dinheiro está indo e o que está drenando sua renda.</p>
               <p>Entenda seus hábitos financeiros, descubra desperdícios invisíveis e tome decisões melhores sem planilhas complicadas.</p>
             </div>
             <div className="space-y-3">
               {heroBullets.map((item, index) => (
-                <motion.div key={item} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.35, delay: 0.12 + index * 0.06 }} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/55 px-4 py-3 text-left text-slate-100 shadow-[0_18px_44px_-30px_rgba(15,23,42,.95)] backdrop-blur-sm">
+                <motion.div key={item} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.35, delay: 0.12 + index * 0.06 }} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/55 px-4 py-3 text-left text-sm text-slate-100 shadow-[0_18px_44px_-30px_rgba(15,23,42,.95)] backdrop-blur-sm sm:items-center sm:text-base">
                   <Check size={16} className="shrink-0 text-emerald-300" />
                   <span>{item}</span>
                 </motion.div>
               ))}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
-              <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
+              <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
               <p className="text-sm text-slate-400">Leva menos de 30 segundos</p>
             </div>
           </motion.div>
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.08 }} className="relative mx-auto w-full max-w-xl">
-            <div className="absolute -inset-6 rounded-[2.4rem] bg-[radial-gradient(circle_at_30%_15%,rgba(16,185,129,.46),transparent_48%),radial-gradient(circle_at_80%_82%,rgba(59,130,246,.26),transparent_44%)] blur-3xl" />
-            <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/78 p-4 shadow-[0_34px_110px_-40px_rgba(16,185,129,.72)]">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.08 }} className="relative mx-auto w-full max-w-xl px-1 sm:px-0">
+            <div className="absolute -inset-3 rounded-[2rem] bg-[radial-gradient(circle_at_30%_15%,rgba(16,185,129,.38),transparent_48%),radial-gradient(circle_at_80%_82%,rgba(59,130,246,.2),transparent_44%)] blur-3xl sm:-inset-6 sm:rounded-[2.4rem] sm:bg-[radial-gradient(circle_at_30%_15%,rgba(16,185,129,.46),transparent_48%),radial-gradient(circle_at_80%_82%,rgba(59,130,246,.26),transparent_44%)]" />
+            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent sm:inset-x-8" />
+            <div className="relative overflow-hidden rounded-[1.65rem] border border-white/10 bg-slate-900/78 p-3.5 shadow-[0_34px_110px_-40px_rgba(16,185,129,.72)] sm:rounded-[2rem] sm:p-4">
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.04),transparent_20%,transparent_80%,rgba(255,255,255,.03))]" />
               <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-950/80 px-4 py-2">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Dashboard do Cote Finance AI</p>
@@ -271,7 +271,7 @@ export default function PaidLandingClient() {
               </div>
               <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                 <div className="mb-3 flex items-center justify-between text-xs text-slate-400"><span>Receitas x despesas (6 meses)</span><span>Atualizado agora</span></div>
-                <svg viewBox="0 0 320 120" className="h-36 w-full">
+                <svg viewBox="0 0 320 120" className="h-32 w-full sm:h-36">
                   <path d="M0,88 C28,78 48,42 74,36 C100,30 122,52 149,42 C176,32 200,18 226,16 C252,14 274,30 300,32 C312,33 318,26 320,24" fill="none" stroke="rgba(16,185,129,.95)" strokeWidth="3.5" />
                   <path d="M0,108 C22,106 48,95 74,90 C98,86 122,98 149,94 C176,90 200,76 226,80 C252,84 274,90 300,94 C312,96 318,92 320,89" fill="none" stroke="rgba(251,113,133,.92)" strokeWidth="3.5" />
                   <circle cx="300" cy="32" r="4" fill="rgba(16,185,129,.95)" />
@@ -320,7 +320,7 @@ export default function PaidLandingClient() {
                 ))}
               </div>
             </div>
-            <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
+            <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
           </div>
         </motion.section>
 
@@ -397,7 +397,7 @@ export default function PaidLandingClient() {
           <SectionTitle eyebrow="Como funciona" title="Começar é simples." />
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {howItWorks.map((item, index) => (
-              <MotionCard key={item.step} className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+              <MotionCard key={item.step} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 sm:p-5">
                 <p className="mb-3 text-sm font-semibold text-emerald-200">{item.step}</p>
                 <p className="text-slate-300">{item.text}</p>
                 <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10"><motion.div initial={{ width: 0 }} whileInView={{ width: `${(index + 1) * 33}%` }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.08 }} className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" /></div>
@@ -490,11 +490,11 @@ export default function PaidLandingClient() {
           <SectionTitle title="Comece gratuitamente" />
           <div className="grid gap-4 lg:grid-cols-3">
             {plans.map((plan) => (
-              <MotionCard key={plan.name} className={`relative flex h-full flex-col overflow-hidden rounded-[30px] border p-6 ${plan.highlight ? 'border-emerald-300/45 bg-gradient-to-b from-emerald-400/18 via-white/10 to-white/8 shadow-[0_34px_100px_rgba(16,185,129,0.24)] lg:-translate-y-3' : 'border-white/10 bg-slate-900/55'}`}>
+              <MotionCard key={plan.name} className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 sm:rounded-[30px] sm:p-6 ${plan.highlight ? 'border-emerald-300/45 bg-gradient-to-b from-emerald-400/18 via-white/10 to-white/8 shadow-[0_34px_100px_rgba(16,185,129,0.24)] lg:-translate-y-3' : 'border-white/10 bg-slate-900/55'}`}>
                 <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${plan.highlight ? 'bg-emerald-500 text-white' : 'border border-white/10 bg-white/5 text-slate-300'}`}>{plan.badge}</span>
                 <div className="mt-4 space-y-2"><h3 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>{plan.name}</h3><p className="text-3xl font-semibold text-white">{plan.price}</p></div>
                 <ul className="mb-6 mt-6 space-y-3 text-sm text-slate-200">{plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><Check size={15} className="mt-0.5 shrink-0 text-emerald-300" /><span>{feature}</span></li>)}</ul>
-                <Link href={plan.href} className={`mt-auto inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors ${plan.highlight ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-slate-100 text-slate-900 hover:bg-white'}`}>{plan.cta}</Link>
+                <Link href={plan.href} className={`mt-auto inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors sm:w-auto ${plan.highlight ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-slate-100 text-slate-900 hover:bg-white'}`}>{plan.cta}</Link>
               </MotionCard>
             ))}
           </div>
@@ -512,11 +512,11 @@ export default function PaidLandingClient() {
           </div>
         </motion.section>
 
-        <motion.section {...sectionMotion} className="rounded-[2rem] border border-emerald-300/20 bg-[linear-gradient(180deg,rgba(16,185,129,0.14),rgba(15,23,42,0.94)_35%,rgba(2,6,23,0.98)_100%)] px-6 py-10 text-center md:px-10">
+        <motion.section {...sectionMotion} className="rounded-[2rem] border border-emerald-300/20 bg-[linear-gradient(180deg,rgba(16,185,129,0.14),rgba(15,23,42,0.94)_35%,rgba(2,6,23,0.98)_100%)] px-5 py-9 text-center sm:px-6 md:px-10">
           <h2 className="mx-auto max-w-3xl text-3xl font-bold text-white md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>Descubra para onde seu dinheiro realmente está indo.</h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-200">Comece gratuitamente e tenha uma visão clara da sua vida financeira.</p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3">
-            <PrimaryCta href="/signup" invert>Criar conta grátis</PrimaryCta>
+            <PrimaryCta href="/signup" invert className="w-full sm:w-auto">Criar conta grátis</PrimaryCta>
             <p className="text-sm text-slate-400">Leva menos de 30 segundos</p>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300"><ShieldCheck size={14} className="text-emerald-300" /> Seus dados protegidos com criptografia</div>
           </div>
@@ -525,6 +525,8 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
+
 
 
 
