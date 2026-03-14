@@ -8,9 +8,12 @@ import {
   ArrowLeft,
   BadgeCheck,
   CheckCircle2,
+  Copy,
   CreditCard,
   Loader2,
   LockKeyhole,
+  QrCode,
+  RefreshCcw,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
@@ -32,6 +35,8 @@ import { markPendingPurchase, pushInternalTrackingEvent, trackPixelStandard } fr
 
 type CheckoutIntentType = 'payment' | 'setup' | 'none';
 type StripeMode = 'live' | 'test' | 'unknown';
+type CheckoutPaymentMethod = 'card' | 'pix';
+type PixCheckoutStatus = 'awaiting_payment' | 'processing' | 'confirmed' | 'expired' | 'failed';
 
 type EmbeddedCheckoutResponse = {
   clientSecret: string | null;
@@ -48,6 +53,23 @@ type EmbeddedCheckoutResponse = {
   priceId: string;
   subscriptionStatus: string;
   requiresConfirmation: boolean;
+};
+
+type PixCheckoutResponse = {
+  paymentIntentId: string;
+  status: PixCheckoutStatus;
+  amount: number;
+  currency: 'BRL';
+  plan: BillingPlanCode;
+  interval: BillingIntervalCode;
+  workspaceId: string;
+  workspaceName: string;
+  planName: string;
+  priceLabel: string;
+  qrCodeUrl: string | null;
+  copyAndPasteCode: string | null;
+  hostedInstructionsUrl: string | null;
+  expiresAt: string | null;
 };
 
 type FormStatus = 'idle' | 'submitting' | 'success';
@@ -165,6 +187,36 @@ function cacheCheckout(payload: EmbeddedCheckoutResponse) {
 function clearCachedCheckout(plan: BillingPlanCode, interval: BillingIntervalCode, workspaceId?: string | null) {
   if (typeof window === 'undefined') return;
   window.sessionStorage.removeItem(buildCacheKey(plan, interval, workspaceId));
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+}
+
+function formatCountdown(remainingMs: number) {
+  if (remainingMs <= 0) return '00:00';
+  const totalSeconds = Math.floor(remainingMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function getPixStatusLabel(status: PixCheckoutStatus) {
+  if (status === 'confirmed') return 'Pagamento confirmado';
+  if (status === 'processing') return 'Pagamento em processamento';
+  if (status === 'expired') return 'Pix expirado';
+  if (status === 'failed') return 'Falha no Pix';
+  return 'Aguardando pagamento';
+}
+
+function getPixStatusTone(status: PixCheckoutStatus) {
+  if (status === 'confirmed') return 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100';
+  if (status === 'processing') return 'border-sky-400/20 bg-sky-500/10 text-sky-100';
+  if (status === 'expired' || status === 'failed') return 'border-rose-400/20 bg-rose-500/10 text-rose-100';
+  return 'border-amber-400/20 bg-amber-500/10 text-amber-100';
 }
 
 function EmbeddedPaymentForm(props: {
@@ -305,6 +357,111 @@ function EmbeddedPaymentForm(props: {
   );
 }
 
+function PixPaymentPanel(props: {
+  data: PixCheckoutResponse | null;
+  isLoading: boolean;
+  error: string | null;
+  countdownLabel: string;
+  onGenerate: () => void;
+  onCopy: () => Promise<void>;
+}) {
+  return (
+    <div className="space-y-4 rounded-[1.6rem] border border-white/10 bg-slate-950/60 p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-white">Pagamento via Pix</p>
+          <p className="mt-1 text-sm text-slate-400">Pagamento instantâneo via banco.</p>
+          <p className="mt-2 text-xs text-slate-500">Assinaturas mensais funcionam melhor com cartão.</p>
+        </div>
+        <button
+          type="button"
+          onClick={props.onGenerate}
+          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+        >
+          <RefreshCcw className="size-3.5" />
+          Gerar novo Pix
+        </button>
+      </div>
+
+      {props.isLoading ? (
+        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-[1.4rem] border border-white/10 bg-slate-900/70 px-6 text-center">
+          <Loader2 className="mb-3 size-7 animate-spin text-emerald-300" />
+          <p className="text-sm font-semibold text-white">Gerando seu QR Code Pix...</p>
+        </div>
+      ) : props.error ? (
+        <div className="rounded-[1.4rem] border border-rose-400/20 bg-rose-500/10 p-4 text-sm text-rose-100">
+          {props.error}
+        </div>
+      ) : props.data ? (
+        <>
+          <div className={cn('rounded-[1.4rem] border p-4', getPixStatusTone(props.data.status))}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] opacity-80">Status</p>
+                <p className="mt-2 text-base font-semibold">{getPixStatusLabel(props.data.status)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] opacity-80">Expira em</p>
+                <p className="mt-2 text-base font-semibold">{props.countdownLabel}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
+            <div className="flex min-h-[220px] items-center justify-center rounded-[1.4rem] border border-white/10 bg-white p-4">
+              {props.data.qrCodeUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={props.data.qrCodeUrl} alt="QR Code Pix" className="h-44 w-44 object-contain" />
+              ) : (
+                <div className="flex flex-col items-center gap-3 text-center text-slate-600">
+                  <QrCode className="size-10" />
+                  <p className="text-sm">QR Code indisponível. Use o código copia e cola abaixo.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4 rounded-[1.4rem] border border-white/10 bg-slate-900/70 p-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Valor</p>
+                <p className="mt-2 text-2xl font-black text-white">{formatCurrency(props.data.amount)}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Código Pix copia e cola</p>
+                <div className="mt-2 rounded-2xl border border-white/10 bg-slate-950/80 p-3">
+                  <p className="break-all text-sm text-slate-200">{props.data.copyAndPasteCode || 'Código indisponível no momento.'}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={props.onCopy}
+                  disabled={!props.data.copyAndPasteCode}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Copy className="size-4" />
+                  Copiar código Pix
+                </button>
+                {props.data.hostedInstructionsUrl ? (
+                  <a
+                    href={props.data.hostedInstructionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+                  >
+                    Abrir instruções do Pix
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function CheckoutLoadingShell() {
   const brandLogo = '/brand/cote-finance-ai-logo.svg';
 
@@ -367,11 +524,17 @@ function CheckoutPageContent() {
   const publishableKeyMode = React.useMemo(() => getPublishableKeyMode(publishableKey), [publishableKey]);
 
   const [checkoutData, setCheckoutData] = React.useState<EmbeddedCheckoutResponse | null>(null);
+  const [paymentMethod, setPaymentMethod] = React.useState<CheckoutPaymentMethod>('card');
   const [isLoading, setIsLoading] = React.useState(true);
   const [isPortalLoading, setIsPortalLoading] = React.useState(false);
+  const [isPixLoading, setIsPixLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [errorCode, setErrorCode] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const [pixData, setPixData] = React.useState<PixCheckoutResponse | null>(null);
+  const [pixError, setPixError] = React.useState<string | null>(null);
+  const [pixCountdownLabel, setPixCountdownLabel] = React.useState('30:00');
+  const [copiedPixCode, setCopiedPixCode] = React.useState(false);
 
   const authPlanLabel = React.useMemo(() => {
     if (!plan || !interval) return null;
@@ -502,7 +665,6 @@ function CheckoutPageContent() {
     }
 
     if (!publishableKey) {
-      setError('Checkout transparente indisponível no momento. Use o checkout legado enquanto a chave pública do Stripe não estiver configurada.');
       setIsLoading(false);
       return;
     }
@@ -724,12 +886,135 @@ function CheckoutPageContent() {
   ];
   const subscriptionCenterPath = '/app?tab=subscription';
   const submitLabel = `Começar meu plano ${checkoutPlanName}`;
+  const trialDays = plan === 'PRO' ? 3 : 0;
+  const todayPriceLabel = paymentMethod === 'card' && trialDays > 0 ? 'R$ 0' : checkoutPriceLabel;
+  const postTrialLabel = checkoutPriceLabel;
 
   React.useEffect(() => {
     if (pendingPurchaseValue > 0 && plan) {
       markPendingPurchase({ plan, value: pendingPurchaseValue, currency: 'BRL' });
     }
   }, [pendingPurchaseValue, plan]);
+
+  const generatePix = React.useCallback(async () => {
+    if (!plan || !interval) return;
+
+    try {
+      setPixError(null);
+      setIsPixLoading(true);
+      setCopiedPixCode(false);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        window.location.href = `/app?auth=signup&plan=${encodeURIComponent(authPlanLabel || 'Pro Mensal')}`;
+        return;
+      }
+
+      const payload = await fetchJsonWithTimeout<PixCheckoutResponse & { error?: string }>(
+        '/api/stripe/pix',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+            ...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
+          },
+          body: JSON.stringify({ plan, interval }),
+        },
+        CHECKOUT_INIT_TIMEOUT_MS
+      );
+
+      if (plan) {
+        markPendingPurchase({ plan, value: payload.amount, currency: 'BRL' });
+      }
+      trackPixelStandard('InitiateCheckout');
+      pushInternalTrackingEvent('checkout_started', { plan, interval, mode: 'pix_checkout' });
+      setPixData(payload);
+    } catch (pixInitError) {
+      setPixError(
+        pixInitError instanceof Error ? pixInitError.message : 'Não foi possível gerar o Pix agora. Tente novamente.'
+      );
+    } finally {
+      setIsPixLoading(false);
+    }
+  }, [authPlanLabel, interval, plan, workspaceId]);
+
+  React.useEffect(() => {
+    if (paymentMethod !== 'pix' || pixData || isPixLoading || pixError) return;
+    void generatePix();
+  }, [generatePix, isPixLoading, paymentMethod, pixData, pixError]);
+
+  React.useEffect(() => {
+    if (!pixData?.expiresAt) {
+      setPixCountdownLabel('30:00');
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remainingMs = new Date(pixData.expiresAt as string).getTime() - Date.now();
+      setPixCountdownLabel(formatCountdown(remainingMs));
+      if (remainingMs <= 0 && pixData.status === 'awaiting_payment') {
+        setPixData((current) => (current ? { ...current, status: 'expired' } : current));
+      }
+    };
+
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timer);
+  }, [pixData?.expiresAt, pixData?.status]);
+
+  React.useEffect(() => {
+    if (paymentMethod !== 'pix' || !pixData?.paymentIntentId) return;
+    if (pixData.status === 'confirmed' || pixData.status === 'expired' || pixData.status === 'failed') return;
+
+    let isCancelled = false;
+    const poll = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+
+        const response = await fetch(`/api/stripe/pix/${pixData.paymentIntentId}`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            ...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
+          },
+        });
+        const payload = (await response.json().catch(() => ({}))) as PixCheckoutResponse & { error?: string };
+        if (!response.ok) {
+          throw new Error(payload.error || 'Não foi possível atualizar o status do Pix.');
+        }
+
+        if (isCancelled) return;
+        setPixData(payload);
+        if (payload.status === 'confirmed') {
+          setSuccessMessage('Pagamento confirmado. O plano do workspace será atualizado em instantes.');
+        }
+      } catch {
+        if (!isCancelled) {
+          setPixError('Não foi possível atualizar o status do Pix em tempo real.');
+        }
+      }
+    };
+
+    void poll();
+    const intervalId = window.setInterval(poll, 5000);
+    return () => {
+      isCancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [paymentMethod, pixData?.paymentIntentId, pixData?.status, workspaceId]);
+
+  const handleCopyPixCode = React.useCallback(async () => {
+    if (!pixData?.copyAndPasteCode) return;
+    await navigator.clipboard.writeText(pixData.copyAndPasteCode);
+    setCopiedPixCode(true);
+    window.setTimeout(() => setCopiedPixCode(false), 2000);
+  }, [pixData?.copyAndPasteCode]);
 
   return (
     <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
@@ -850,9 +1135,77 @@ function CheckoutPageContent() {
                 <p className="text-sm text-slate-400">
                   Preencha os dados de pagamento para ativar seu plano {checkoutPlanName} com segurança.
                 </p>
-                <p className="text-sm text-slate-300">
-                  Comece hoje a ter mais clareza sobre seu dinheiro e acesso a análises mais inteligentes.
-                </p>
+                <div className="rounded-[1.4rem] border border-white/10 bg-slate-950/60 p-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Hoje</p>
+                      <p className="mt-2 text-2xl font-black text-white">{todayPriceLabel}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                        {trialDays > 0 && paymentMethod === 'card' ? 'Após o período de teste' : 'Plano contratado'}
+                      </p>
+                      <p className="mt-2 text-2xl font-black text-white">{postTrialLabel}</p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-sm text-slate-300">
+                    {paymentMethod === 'card'
+                      ? trialDays > 0
+                        ? 'Você não será cobrado hoje.'
+                        : 'Pagamento seguro processado pela Stripe.'
+                      : 'Pix ativa o pagamento instantaneamente via banco.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Método de pagamento</p>
+                </div>
+                <div className="grid gap-3">
+                  {([
+                    {
+                      value: 'card',
+                      title: 'Cartão de crédito',
+                      description: 'Recomendado para assinaturas mensais automáticas.',
+                    },
+                    {
+                      value: 'pix',
+                      title: 'Pix',
+                      description: 'Pagamento instantâneo via banco.',
+                    },
+                  ] as const).map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setPaymentMethod(option.value);
+                        setError(null);
+                        setSuccessMessage(null);
+                      }}
+                      className={cn(
+                        'flex items-start justify-between rounded-[1.4rem] border p-4 text-left transition',
+                        paymentMethod === option.value
+                          ? 'border-emerald-400/30 bg-emerald-500/10'
+                          : 'border-white/10 bg-slate-900/70 hover:border-white/20 hover:bg-slate-900/90'
+                      )}
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-white">{option.title}</p>
+                        <p className="mt-1 text-sm text-slate-400">{option.description}</p>
+                      </div>
+                      <div
+                        className={cn(
+                          'mt-1 flex size-5 items-center justify-center rounded-full border',
+                          paymentMethod === option.value ? 'border-emerald-300 bg-emerald-400/20' : 'border-slate-600'
+                        )}
+                      >
+                        {paymentMethod === option.value ? <div className="size-2 rounded-full bg-emerald-300" /> : null}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500">Assinaturas mensais funcionam melhor com cartão.</p>
               </div>
 
               {isLoading ? (
@@ -919,6 +1272,21 @@ function CheckoutPageContent() {
                     )}
                   </div>
                 </div>
+              ) : paymentMethod === 'pix' ? (
+                <div className="space-y-4">
+                  <PixPaymentPanel
+                    data={pixData}
+                    isLoading={isPixLoading}
+                    error={pixError}
+                    countdownLabel={pixCountdownLabel}
+                    onGenerate={() => {
+                      setPixData(null);
+                      void generatePix();
+                    }}
+                    onCopy={handleCopyPixCode}
+                  />
+                  {copiedPixCode ? <p className="text-center text-xs text-emerald-300">Código Pix copiado.</p> : null}
+                </div>
               ) : checkoutData?.clientSecret && publishableKey ? (
                 <Elements
                   key={checkoutData.clientSecret}
@@ -933,7 +1301,7 @@ function CheckoutPageContent() {
                     intentType={checkoutData.intentType}
                     returnUrl={checkoutReturnUrl}
                     submitLabel={submitLabel}
-                    helperText="Você pode cancelar sua assinatura a qualquer momento."
+                    helperText="Pagamento seguro processado pela Stripe. Seus dados são protegidos por criptografia SSL. Cancele sua assinatura a qualquer momento."
                     onFallbackCheckout={handleLegacyCheckout}
                     onSuccess={() => {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
@@ -1011,6 +1379,33 @@ function CheckoutPageContent() {
                   </div>
                 </div>
               </div>
+
+              <div className="space-y-3 px-1 text-xs text-slate-500">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <LockKeyhole className="size-3.5 text-emerald-300" />
+                  <span>Pagamento seguro processado pela Stripe.</span>
+                </div>
+                <p>Seus dados são protegidos por criptografia SSL.</p>
+                <p>Cancele sua assinatura a qualquer momento.</p>
+              </div>
+
+              <footer className="flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold text-slate-200">Cote Finance AI</p>
+                  <p>By Cote Juros</p>
+                </div>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <Link href="/termos-de-uso" className="transition hover:text-white">
+                    Termos de uso
+                  </Link>
+                  <Link href="/politica-de-privacidade" className="transition hover:text-white">
+                    Política de privacidade
+                  </Link>
+                  <a href="mailto:suporte@cotejuros.com.br" className="transition hover:text-white">
+                    suporte@cotejuros.com.br
+                  </a>
+                </div>
+              </footer>
             </div>
           </section>
         </div>

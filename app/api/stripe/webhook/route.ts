@@ -43,6 +43,16 @@ function planFromPriceId(priceId?: string | null): AppPlan | null {
   return PLAN_BY_PRICE_ID[priceId] ?? null;
 }
 
+function resolvePeriodEndFromInterval(interval?: string | null) {
+  const now = new Date();
+  if (interval === 'ANNUAL') {
+    now.setFullYear(now.getFullYear() + 1);
+    return now;
+  }
+  now.setMonth(now.getMonth() + 1);
+  return now;
+}
+
 async function syncSubscriptionByUserId(params: {
   userId: string;
   plan: AppPlan | null;
@@ -517,6 +527,94 @@ export async function POST(req: Request) {
             workspaceId,
             email: resolvedUser?.email ?? null,
             eventId: invoice.id,
+          });
+        }
+
+        break;
+      }
+
+      case 'payment_intent.succeeded':
+      case 'payment_intent.processing':
+      case 'payment_intent.payment_failed':
+      case 'payment_intent.canceled': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        if (paymentIntent.metadata?.checkoutMode !== 'pix') {
+          break;
+        }
+
+        const customerId = typeof paymentIntent.customer === 'string' ? paymentIntent.customer : null;
+        const userId = paymentIntent.metadata?.userId || null;
+        const workspaceId = paymentIntent.metadata?.workspaceId || null;
+        const plan = normalizePlan(paymentIntent.metadata?.plan);
+        const interval = paymentIntent.metadata?.interval || null;
+        const amount =
+          typeof paymentIntent.amount_received === 'number' && paymentIntent.amount_received > 0
+            ? paymentIntent.amount_received / 100
+            : paymentIntent.amount / 100;
+
+        if (userId && customerId) {
+          await syncCustomerReferenceByUserId({
+            userId,
+            customerId,
+          });
+        }
+
+        if (event.type === 'payment_intent.succeeded') {
+          if (userId) {
+            await syncSubscriptionByUserId({
+              userId,
+              customerId,
+              plan,
+              status: 'ACTIVE',
+              currentPeriodEnd: resolvePeriodEndFromInterval(interval),
+            });
+          }
+
+          if (workspaceId) {
+            await syncSubscriptionByWorkspaceId({
+              workspaceId,
+              userId,
+              customerId,
+              subscriptionId: paymentIntent.id,
+              plan,
+              status: 'ACTIVE',
+              currentPeriodEnd: resolvePeriodEndFromInterval(interval),
+              eventType: 'stripe.pix_succeeded',
+            });
+
+            await logWorkspaceEventSafe({
+              workspaceId,
+              userId,
+              type: 'tracking.purchase_completed',
+              payload: {
+                paymentIntentId: paymentIntent.id,
+                amount,
+                currency: 'BRL',
+                plan: plan || 'FREE',
+                method: 'pix',
+              },
+            });
+          }
+
+          await sendMetaPurchaseServerEvent({
+            value: amount,
+            currency: 'BRL',
+            plan: plan || 'FREE',
+            userId,
+            workspaceId,
+            email: null,
+            eventId: paymentIntent.id,
+          });
+        } else if (workspaceId) {
+          await syncSubscriptionByWorkspaceId({
+            workspaceId,
+            userId,
+            customerId,
+            subscriptionId: paymentIntent.id,
+            plan,
+            status: event.type === 'payment_intent.processing' ? 'PENDING' : 'CANCELED',
+            currentPeriodEnd: null,
+            eventType: `stripe.${event.type}`,
           });
         }
 
