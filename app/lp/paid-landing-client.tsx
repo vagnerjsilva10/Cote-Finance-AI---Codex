@@ -340,9 +340,7 @@ export default function PaidLandingClient() {
               </div>
               <p className="mt-4 text-sm leading-7 text-slate-200 md:text-base">&ldquo;{featuredUser.quote}&rdquo;</p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-100">
-                  <ShieldCheck size={14} className="text-emerald-300" /> Prova social realista e discreta
-                </div>
+
                 <PrimaryCta href="/signup" className="w-full sm:w-auto sm:shrink-0 sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
               </div>
             </div>
@@ -550,6 +548,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
