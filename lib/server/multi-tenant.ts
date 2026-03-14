@@ -3,10 +3,12 @@ import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, assertPrismaAvailable, prisma } from '@/lib/prisma';
 import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
+import { PLAN_LIMITS, type WorkspacePlan } from '@/lib/billing/limits';
 import { getPlanForStoredSubscription, normalizeBillingPlan } from '@/lib/server/billing-status';
 
-export type WorkspacePlan = 'FREE' | 'PRO' | 'PREMIUM';
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
+export { PLAN_LIMITS };
+export type { WorkspacePlan };
 
 export type WorkspaceSummary = {
   id: string;
@@ -20,27 +22,6 @@ export type WorkspaceContext = {
   workspaceId: string;
   role: WorkspaceRole;
   workspaces: WorkspaceSummary[];
-};
-
-export const PLAN_LIMITS: Record<
-  WorkspacePlan,
-  { transactionsPerMonth: number | null; aiInteractionsPerMonth: number | null; reports: 'basic' | 'full' }
-> = {
-  FREE: {
-    transactionsPerMonth: 20,
-    aiInteractionsPerMonth: 20,
-    reports: 'basic',
-  },
-  PRO: {
-    transactionsPerMonth: null,
-    aiInteractionsPerMonth: 500,
-    reports: 'full',
-  },
-  PREMIUM: {
-    transactionsPerMonth: null,
-    aiInteractionsPerMonth: null,
-    reports: 'full',
-  },
 };
 
 export class HttpError extends Error {

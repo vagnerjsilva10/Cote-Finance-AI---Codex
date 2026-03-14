@@ -15,9 +15,9 @@ import {
   SuperadminPageHeader,
   SuperadminSectionCard,
 } from '@/components/superadmin/superadmin-page-primitives';
+import { PLAN_LIMITS } from '@/lib/billing/limits';
 import { formatAdminCurrency, formatAdminNumber } from '@/components/superadmin/superadmin-utils';
 import { BILLING_PLAN_DETAILS, getBillingTrialDays } from '@/lib/billing/plans';
-import { PLAN_LIMITS } from '@/lib/server/multi-tenant';
 
 const PLAN_ORDER = ['FREE', 'PRO', 'PREMIUM'] as const;
 
