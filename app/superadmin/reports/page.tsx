@@ -1,10 +1,5 @@
-import { SuperadminPlaceholderPage } from '@/components/superadmin/superadmin-placeholder-page';
+import { SuperadminReportsPage } from '@/components/superadmin/superadmin-reports-page';
 
-export default function SuperadminReportsPage() {
-  return (
-    <SuperadminPlaceholderPage
-      title="Relatórios"
-      description="Espaço futuro para relatórios operacionais e executivos consolidados da plataforma."
-    />
-  );
+export default function ReportsPage() {
+  return <SuperadminReportsPage />;
 }

@@ -399,3 +399,45 @@ export type SuperadminWhatsappResponse = {
   workspaces: SuperadminWhatsappWorkspaceSummary[];
   recentEvents: SuperadminWhatsappRecentEvent[];
 };
+
+export type SuperadminReportsResponse = {
+  summary: {
+    totalUsers: number;
+    totalWorkspaces: number;
+    payingWorkspaces: number;
+    estimatedMrr: number;
+    newSignupsLast30Days: number;
+    activeUsersLast30Days: number;
+    aiUsageLast30Days: number;
+    aiActiveWorkspacesLast30Days: number;
+    whatsappConnectedWorkspaces: number;
+    totalTransactions: number;
+    transactionsLast30Days: number;
+  };
+  monthlyTrend: Array<{
+    month: string;
+    signups: number;
+    newWorkspaces: number;
+    aiEvents: number;
+    transactions: number;
+  }>;
+  planMix: Array<{
+    plan: string;
+    workspaces: number;
+    estimatedMrr: number;
+  }>;
+  funnel: {
+    totalUsers: number;
+    totalWorkspaces: number;
+    payingWorkspaces: number;
+    aiActiveWorkspacesLast30Days: number;
+    whatsappConnectedWorkspaces: number;
+  };
+  operations: {
+    ai: number;
+    whatsapp: number;
+    billing: number;
+    tracking: number;
+    product: number;
+  };
+};

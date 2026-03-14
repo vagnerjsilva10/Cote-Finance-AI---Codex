@@ -82,7 +82,7 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     href: '/superadmin/reports',
     icon: 'bar-chart-3',
     description: 'Relatórios operacionais e executivos da plataforma.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'Logs / Auditoria',
