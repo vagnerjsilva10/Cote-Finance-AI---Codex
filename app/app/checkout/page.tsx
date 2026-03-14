@@ -1408,13 +1408,15 @@ function CheckoutPageContent() {
               </div>
 
               <div className="space-y-5 border-t border-white/10 pt-5 text-sm text-slate-400">
-                <div className="space-y-2">
-                  <p className="flex items-start gap-2">
-                    <LockKeyhole className="mt-0.5 size-4 text-emerald-300" />
-                    <span>Pagamento seguro processado pela Stripe.</span>
-                  </p>
-                  <p>Seus dados são protegidos por criptografia SSL.</p>
-                  <p>Cancele sua assinatura a qualquer momento.</p>
+                <div className="rounded-[1.3rem] border border-white/10 bg-slate-950/45 p-4">
+                  <div className="space-y-2">
+                    <p className="flex items-start gap-2 text-slate-300">
+                      <LockKeyhole className="mt-0.5 size-4 text-emerald-300" />
+                      <span>Pagamento seguro processado pela Stripe.</span>
+                    </p>
+                    <p>Seus dados são protegidos por criptografia SSL.</p>
+                    <p>Cancele sua assinatura a qualquer momento.</p>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
