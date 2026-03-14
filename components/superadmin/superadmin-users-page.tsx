@@ -2,14 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Loader2, Search, ShieldCheck, Sparkles, Users2 } from 'lucide-react';
+import { ArrowUpRight, Loader2, Search, ShieldCheck, Sparkles, Users2 } from 'lucide-react';
 
 import { fetchSuperadminJson, useDebouncedValue } from '@/components/superadmin/fetch-superadmin-json';
-import {
-  SuperadminMetricChip,
-  SuperadminPageHeader,
-  SuperadminSectionCard,
-} from '@/components/superadmin/superadmin-page-primitives';
 import {
   formatAdminDate,
   formatAdminDateTime,
@@ -30,25 +25,19 @@ export function SuperadminUsersPage() {
 
   React.useEffect(() => {
     let active = true;
-
     const run = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const search = debouncedQuery.trim();
-        const next = await fetchSuperadminJson<SuperadminUsersResponse>(
-          `/api/superadmin/users${search ? `?q=${encodeURIComponent(search)}` : ''}`
-        );
+        const next = await fetchSuperadminJson<SuperadminUsersResponse>(`/api/superadmin/users${search ? `?q=${encodeURIComponent(search)}` : ''}`);
         if (active) setData(next);
       } catch (fetchError) {
-        if (active) {
-          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuários.');
-        }
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuários.');
       } finally {
         if (active) setIsLoading(false);
       }
     };
-
     void run();
     return () => {
       active = false;
@@ -62,203 +51,86 @@ export function SuperadminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <SuperadminPageHeader
-        eyebrow="People Ops"
-        title="Usuários"
-        description="Acompanhe a base de contas, plano atual, acesso administrativo e sinais de atividade em uma leitura mais clara para operação diária."
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <SuperadminMetricChip label="Base total" value={formatAdminNumber(data?.total || 0)} />
-          <SuperadminMetricChip label="Pagantes" value={formatAdminNumber(paidUsers)} tone="success" />
-          <SuperadminMetricChip label="Super admins" value={formatAdminNumber(superadmins)} tone="info" />
-          <SuperadminMetricChip label="Com acesso recente" value={formatAdminNumber(activeRecently)} />
+      <section className="rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Usuários</p>
+          <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Usuários</h1>
+          <p className="max-w-3xl text-sm leading-7 text-slate-300">Acompanhe a base de contas, plano atual, acesso administrativo e sinais de atividade usando a mesma hierarquia do app principal.</p>
         </div>
-      </SuperadminPageHeader>
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} trend="na plataforma" trendValue={formatAdminNumber(data?.total || 0)} icon={Users2} />
+          <StatCard label="Pagantes" value={formatAdminNumber(paidUsers)} trend="em planos pagos" trendValue={formatAdminNumber(paidUsers)} icon={Sparkles} />
+          <StatCard label="Super admins" value={formatAdminNumber(superadmins)} trend="com acesso elevado" trendValue={formatAdminNumber(superadmins)} icon={ShieldCheck} />
+          <StatCard label="Com acesso recente" value={formatAdminNumber(activeRecently)} trend="com atividade" trendValue={formatAdminNumber(activeRecently)} icon={ArrowUpRightIcon} />
+        </div>
+      </section>
 
       {error ? <ErrorState message={error} /> : null}
 
-      <SuperadminSectionCard
-        title="Busca operacional"
-        description="Encontre usuários por nome, e-mail ou identificador e isole rapidamente quem precisa de suporte, ajuste de acesso ou revisão de plano."
-      >
-        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Buscar usuário</span>
-            <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar por nome, e-mail ou ID"
-                className={fieldClassName}
-              />
-            </div>
-          </label>
-          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <QuickInsight
-              icon={<Users2 className="h-4 w-4 text-slate-200" />}
-              label="Leitura rápida"
-              value={`${formatAdminNumber(data?.total || 0)} contas na base`}
-              description="A listagem mantém plano, role e último acesso no mesmo fluxo de leitura."
-            />
-            <QuickInsight
-              icon={<Sparkles className="h-4 w-4 text-emerald-300" />}
-              label="Maior valor"
-              value={`${formatAdminNumber(paidUsers)} usuários em planos pagos`}
-              description="Útil para suporte prioritário e revisão de retenção."
-            />
-            <QuickInsight
-              icon={<ShieldCheck className="h-4 w-4 text-sky-300" />}
-              label="Governança"
-              value={`${formatAdminNumber(superadmins)} perfis críticos`}
-              description="Monitore acessos elevados com mais segurança."
-            />
-          </div>
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <div className="mb-5">
+          <h2 className="text-xl font-black text-white">Busca operacional</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-400">Encontre usuários por nome, e-mail ou identificador e isole rapidamente quem precisa de suporte ou revisão de acesso.</p>
         </div>
-      </SuperadminSectionCard>
+        <label className="block max-w-2xl">
+          <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Buscar usuário</span>
+          <div className="relative mt-2">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, e-mail ou ID" className={fieldClassName} />
+          </div>
+        </label>
+      </section>
 
-      <SuperadminSectionCard
-        title="Base de usuários"
-        description={
-          data
-            ? `${formatAdminNumber(data.total)} usuário(s) encontrados. A tabela prioriza nome, contexto operacional e atalhos para o detalhe.`
-            : 'Carregando usuários.'
-        }
-      >
-        {isLoading ? (
-          <LoadingState label="Carregando usuários..." />
-        ) : !data ? (
-          <ErrorState message={error || 'Falha ao carregar usuários.'} />
-        ) : data.users.length === 0 ? (
-          <EmptyState text="Nenhum usuário encontrado para os filtros atuais." />
-        ) : (
-          <div className="space-y-5">
-            <div className="hidden overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.26),rgba(2,6,23,.14))] xl:block">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-white/[0.03] text-[11px] uppercase tracking-[0.22em] text-slate-500">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">Usuário</th>
-                    <th className="px-6 py-4 font-semibold">Plano</th>
-                    <th className="px-6 py-4 font-semibold">Assinatura</th>
-                    <th className="px-6 py-4 font-semibold">Acesso</th>
-                    <th className="px-6 py-4 font-semibold">Workspaces</th>
-                    <th className="px-6 py-4 font-semibold">Último acesso</th>
-                    <th className="px-6 py-4 font-semibold">Cadastro</th>
-                    <th className="px-6 py-4 font-semibold text-right">Ações</th>
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <div className="mb-5">
+          <h2 className="text-xl font-black text-white">Base de usuários</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-400">{data ? `${formatAdminNumber(data.total)} usuário(s) encontrados.` : 'Carregando usuários.'}</p>
+        </div>
+        {isLoading ? <LoadingState label="Carregando usuários..." /> : !data ? <ErrorState message={error || 'Falha ao carregar usuários.'} /> : data.users.length === 0 ? <EmptyState text="Nenhum usuário encontrado para os filtros atuais." /> : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <tr>
+                  <th className="pb-4 pr-6 font-semibold">Usuário</th>
+                  <th className="pb-4 pr-6 font-semibold">Plano</th>
+                  <th className="pb-4 pr-6 font-semibold">Assinatura</th>
+                  <th className="pb-4 pr-6 font-semibold">Acesso</th>
+                  <th className="pb-4 pr-6 font-semibold">Workspaces</th>
+                  <th className="pb-4 pr-6 font-semibold">Último acesso</th>
+                  <th className="pb-4 pr-6 font-semibold">Cadastro</th>
+                  <th className="pb-4 text-right font-semibold">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {data.users.map((user) => (
+                  <tr key={user.id} className="transition hover:bg-slate-900/40">
+                    <td className="py-5 pr-6 align-top"><div className="font-semibold text-white">{user.name || 'Sem nome'}</div><div className="mt-1 text-xs text-slate-400">{user.email}</div><div className="mt-1 text-xs text-slate-500">{user.id}</div></td>
+                    <td className="py-5 pr-6 align-top"><PlanBadge label={formatPlanLabel(user.currentPlan)} /></td>
+                    <td className="py-5 pr-6 align-top"><StatusBadge status={user.subscriptionStatus} /></td>
+                    <td className="py-5 pr-6 align-top text-slate-300">{formatPlatformRole(user.platformRole)}</td>
+                    <td className="py-5 pr-6 align-top text-slate-300">{formatAdminNumber(user.workspaceCount)}</td>
+                    <td className="py-5 pr-6 align-top text-slate-300">{user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}</td>
+                    <td className="py-5 pr-6 align-top text-slate-300">{formatAdminDate(user.createdAt)}</td>
+                    <td className="py-5 align-top"><div className="flex justify-end"><Link href={`/superadmin/users/${user.id}`} className={secondaryActionClassName}>Ver detalhe</Link></div></td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-white/8">
-                  {data.users.map((user) => (
-                    <tr key={user.id} className="transition hover:bg-white/[0.025]">
-                      <td className="px-6 py-5 align-top">
-                        <div className="min-w-[240px]">
-                          <div className="font-semibold text-white">{user.name || 'Sem nome'}</div>
-                          <div className="mt-1 text-xs text-slate-400">{user.email}</div>
-                          <div className="mt-2 text-[11px] text-slate-500">{user.id}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5 align-top">
-                        <PlanBadge plan={user.currentPlan} />
-                      </td>
-                      <td className="px-6 py-5 align-top">
-                        <StatusBadge status={user.subscriptionStatus} />
-                      </td>
-                      <td className="px-6 py-5 align-top text-sm font-medium text-white">{formatPlatformRole(user.platformRole)}</td>
-                      <td className="px-6 py-5 align-top text-sm text-slate-300">{formatAdminNumber(user.workspaceCount)}</td>
-                      <td className="px-6 py-5 align-top text-sm text-slate-300">
-                        {user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}
-                      </td>
-                      <td className="px-6 py-5 align-top text-sm text-slate-300">{formatAdminDate(user.createdAt)}</td>
-                      <td className="px-6 py-5 align-top">
-                        <div className="flex justify-end">
-                          <Link href={`/superadmin/users/${user.id}`} className={secondaryActionClassName}>
-                            Ver detalhe
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="grid gap-4 xl:hidden">
-              {data.users.map((user) => (
-                <article
-                  key={user.id}
-                  className="rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,.72),rgba(15,23,42,.56))] p-5 shadow-[0_18px_56px_-38px_rgba(2,6,23,.92)]"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-semibold text-white">{user.name || 'Sem nome'}</p>
-                      <p className="mt-1 text-xs text-slate-400">{user.email}</p>
-                    </div>
-                    <StatusBadge status={user.subscriptionStatus} />
-                  </div>
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <InfoPill label="Plano" value={formatPlanLabel(user.currentPlan)} />
-                    <InfoPill label="Acesso" value={formatPlatformRole(user.platformRole)} />
-                    <InfoPill label="Workspaces" value={formatAdminNumber(user.workspaceCount)} />
-                    <InfoPill
-                      label="Último acesso"
-                      value={user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}
-                    />
-                  </div>
-
-                  <div className="mt-5 flex justify-end">
-                    <Link href={`/superadmin/users/${user.id}`} className={secondaryActionClassName}>
-                      Ver detalhe
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </SuperadminSectionCard>
+      </section>
     </div>
   );
 }
 
-function QuickInsight({ icon, label, value, description }: { icon: React.ReactNode; label: string; value: string; description: string }) {
-  return (
-    <div className="rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(2,6,23,.42),rgba(2,6,23,.28))] p-4">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">{icon}{label}</div>
-      <p className="mt-3 text-sm font-semibold text-white">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
-    </div>
-  );
+function StatCard({ label, value, trend, trendValue, icon: Icon, trendType = 'up' }: { label: string; value: string; trend: string; trendValue: string; icon: React.ComponentType<{ size?: number; className?: string }>; trendType?: 'up' | 'down'; }) {
+  return <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-6 transition-colors hover:border-slate-700"><div className="mb-4 flex items-center justify-between"><span className="text-sm font-medium text-slate-400">{label}</span><div className={trendType === 'up' ? 'rounded-lg bg-emerald-500/10 p-2 text-emerald-500' : 'rounded-lg bg-rose-500/10 p-2 text-rose-500'}><Icon size={18} /></div></div><div className="flex flex-col gap-1"><p className="text-2xl font-bold tracking-tight text-white">{value}</p><div className={trendType === 'up' ? 'flex items-center gap-1 text-sm font-semibold text-emerald-500' : 'flex items-center gap-1 text-sm font-semibold text-rose-500'}>{trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowUpRight size={14} className="rotate-90" />}{trendValue} <span className="ml-1 font-normal text-slate-500">{trend}</span></div></div></div>;
 }
-
-function PlanBadge({ plan }: { plan: string }) {
-  return <span className="rounded-full border border-emerald-400/18 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-200">{formatPlanLabel(plan)}</span>;
-}
-
-function StatusBadge({ status }: { status: string | null }) {
-  return <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>;
-}
-
-function InfoPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-white/8 bg-slate-950/45 px-4 py-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
-    </div>
-  );
-}
-
-function LoadingState({ label }: { label: string }) {
-  return <div className="flex min-h-[260px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>;
-}
-
-function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-[1.5rem] border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
-}
-
-function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-slate-950/40 px-4 py-8 text-sm text-slate-400">{text}</div>;
-}
-
-const fieldClassName = 'w-full rounded-[1.2rem] border border-white/10 bg-slate-950/70 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/60 focus:bg-slate-950';
-const secondaryActionClassName = 'inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/18 hover:bg-white/[0.05] hover:text-white';
+function ArrowUpRightIcon(props: { size?: number; className?: string }) { return <ArrowUpRight {...props} />; }
+function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>; }
+function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
+function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>; }
+function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
+function EmptyState({ text }: { text: string }) { return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>; }
+const fieldClassName = 'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+const secondaryActionClassName = 'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
