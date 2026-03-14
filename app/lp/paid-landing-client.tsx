@@ -155,10 +155,26 @@ const plans = [
 ];
 
 const faqs = [
-  { question: 'Preciso conectar conta bancária?', answer: 'Não.' },
-  { question: 'O app usa IA?', answer: 'Sim, para gerar insights e análises financeiras.' },
-  { question: 'Existe plano gratuito?', answer: 'Sim.' },
-  { question: 'Posso cancelar quando quiser?', answer: 'Sim.' },
+  {
+    question: 'Preciso conectar conta bancária?',
+    answer:
+      'Não. Você pode começar registrando suas receitas e despesas manualmente no app e já usar os relatórios, categorias e análises para entender melhor sua rotina financeira.',
+  },
+  {
+    question: 'O app usa IA?',
+    answer:
+      'Sim. O Cote Finance AI usa inteligência artificial para interpretar seus gastos, destacar padrões, gerar insights e ajudar você a enxergar com mais clareza onde pode ajustar sua rotina financeira.',
+  },
+  {
+    question: 'Existe plano gratuito?',
+    answer:
+      'Sim. Você pode criar sua conta no plano Free e começar a organizar suas finanças sem custo. Depois, se quiser mais análises, alertas e recursos avançados, pode evoluir para um plano pago.',
+  },
+  {
+    question: 'Posso cancelar quando quiser?',
+    answer:
+      'Sim. Você pode cancelar quando quiser, sem fidelidade. A ideia é que você teste com tranquilidade e continue apenas se fizer sentido para a sua rotina.',
+  },
 ];
 
 const sectionMotion = {
@@ -639,7 +655,7 @@ export default function PaidLandingClient() {
             {faqs.map((item) => (
               <motion.details key={item.question} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
                 <summary className="cursor-pointer list-none font-semibold text-white">{item.question}</summary>
-                <p className="mt-3 text-sm text-slate-300">{item.answer}</p>
+                <p className="mt-3 text-sm leading-7 text-slate-300">{item.answer}</p>
               </motion.details>
             ))}
           </div>
@@ -658,6 +674,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
