@@ -188,3 +188,39 @@ export type SuperadminTrackingSettingsResponse = {
     purchaseTrackingActive: boolean;
   };
 };
+
+export type SuperadminSubscriptionSummary = {
+  workspaceId: string;
+  workspaceName: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  plan: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  estimatedMrr: number;
+  hasStripeCustomer: boolean;
+  hasStripeSubscription: boolean;
+};
+
+export type SuperadminSubscriptionsResponse = {
+  query: string;
+  filters: {
+    plan: string;
+    status: string;
+  };
+  metrics: {
+    total: number;
+    active: number;
+    pending: number;
+    canceled: number;
+    free: number;
+    paying: number;
+    pro: number;
+    premium: number;
+    estimatedMrr: number;
+  };
+  total: number;
+  subscriptions: SuperadminSubscriptionSummary[];
+};

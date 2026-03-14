@@ -40,7 +40,7 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     href: '/superadmin/subscriptions',
     icon: 'credit-card',
     description: 'Operação de billing, status e ações manuais.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'Recursos / Feature Flags',
@@ -92,4 +92,3 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     implemented: false,
   },
 ];
-
