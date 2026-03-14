@@ -44,7 +44,7 @@ export function SuperadminTrackingSettingsPage() {
         setStatus(response.status);
       } catch (fetchError) {
         if (!mounted) return;
-        setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar configuracoes de tracking.');
+        setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar configurações de tracking.');
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -71,9 +71,9 @@ export function SuperadminTrackingSettingsPage() {
       });
       setSettings(response.settings);
       setStatus(response.status);
-      setNotice('Configuracoes de tracking salvas com sucesso.');
+      setNotice('Configurações de tracking salvas com sucesso.');
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Falha ao salvar configuracoes.');
+      setError(saveError instanceof Error ? saveError.message : 'Falha ao salvar configurações.');
     } finally {
       setIsSaving(false);
     }
@@ -84,7 +84,7 @@ export function SuperadminTrackingSettingsPage() {
       <div>
         <h1 className="text-3xl font-semibold text-white">Tracking e Marketing</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-          Configure Pixel da Meta, toggles do funil e prepare a estrutura para UTMIFY, Stripe e futuras integracoes server-side.
+          Configure Pixel da Meta, toggles do funil e prepare a estrutura para UTMIFY, Stripe e futuras integrações server-side.
         </p>
       </div>
 
@@ -103,7 +103,7 @@ export function SuperadminTrackingSettingsPage() {
 
       <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
         {isLoading ? (
-          <p className="text-sm text-slate-300">Carregando configuracoes...</p>
+          <p className="text-sm text-slate-300">Carregando configurações...</p>
         ) : (
           <div className="space-y-6">
             <div className="grid gap-5 md:grid-cols-2">
@@ -117,7 +117,7 @@ export function SuperadminTrackingSettingsPage() {
 
             <Field label="Meta Conversions API Access Token">
               <input value={settings.conversionsApiAccessToken} onChange={(event) => updateField('conversionsApiAccessToken', event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500" placeholder="EAAG..." />
-              <p className="mt-2 text-xs text-slate-500">Esse token fica apenas no backend. Nao e exposto no frontend.</p>
+              <p className="mt-2 text-xs text-slate-500">Esse token fica apenas no backend. Não é exposto no frontend.</p>
             </Field>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -139,7 +139,7 @@ export function SuperadminTrackingSettingsPage() {
                 disabled={isSaving}
                 className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:opacity-60"
               >
-                {isSaving ? 'Salvando...' : 'Salvar configuracoes'}
+                {isSaving ? 'Salvando...' : 'Salvar configurações'}
               </button>
             </div>
           </div>

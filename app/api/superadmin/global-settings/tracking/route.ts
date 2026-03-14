@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    return NextResponse.json({ error: 'Falha ao carregar as configuracoes de tracking.' }, { status: 500 });
+    return NextResponse.json({ error: 'Falha ao carregar as configurações de tracking.' }, { status: 500 });
   }
 }
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     await requireSuperadminAccess(req);
     const body = (await req.json().catch(() => null)) as TrackingSettings | null;
     if (!body) {
-      return NextResponse.json({ error: 'Payload invalido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Payload inválido.' }, { status: 400 });
     }
 
     const settings = await saveTrackingSettings(sanitizeTrackingSettings(body));
@@ -51,6 +51,6 @@ export async function POST(req: Request) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    return NextResponse.json({ error: 'Falha ao salvar as configuracoes de tracking.' }, { status: 500 });
+    return NextResponse.json({ error: 'Falha ao salvar as configurações de tracking.' }, { status: 500 });
   }
 }

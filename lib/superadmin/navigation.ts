@@ -74,7 +74,7 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     label: 'Tracking / Marketing',
     href: '/superadmin/global-settings',
     icon: 'settings-2',
-    description: 'Pixel da Meta, UTM capture, CAPI e configuracoes de conversao.',
+    description: 'Pixel da Meta, captura de UTM, CAPI e configurações de conversão.',
     implemented: true,
   },
   {
