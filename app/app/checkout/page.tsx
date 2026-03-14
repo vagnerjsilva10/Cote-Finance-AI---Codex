@@ -412,6 +412,12 @@ function PixPaymentPanel(props: {
               {props.data.qrCodeUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={props.data.qrCodeUrl} alt="QR Code Pix" className="h-44 w-44 object-contain" />
+              ) : props.data.hostedInstructionsUrl ? (
+                <iframe
+                  src={props.data.hostedInstructionsUrl}
+                  title="Instruções oficiais do Pix"
+                  className="h-52 w-full rounded-xl border-0"
+                />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-center text-slate-600">
                   <QrCode className="size-10" />
