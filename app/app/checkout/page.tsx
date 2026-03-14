@@ -891,10 +891,15 @@ function CheckoutPageContent() {
     'Seus dados são criptografados',
   ];
   const subscriptionCenterPath = '/app?tab=subscription';
-  const submitLabel = `Começar meu plano ${checkoutPlanName}`;
   const trialDays = plan === 'PRO' ? 3 : 0;
   const todayPriceLabel = paymentMethod === 'card' && trialDays > 0 ? 'R$ 0' : checkoutPriceLabel;
   const postTrialLabel = checkoutPriceLabel;
+  const submitLabel =
+    paymentMethod === 'pix'
+      ? `Ativar ${checkoutPlanName} com Pix`
+      : trialDays > 0
+        ? 'Começar teste grátis'
+        : `Ativar plano ${checkoutPlanName}`;
 
   React.useEffect(() => {
     if (pendingPurchaseValue > 0 && plan) {
@@ -938,8 +943,8 @@ function CheckoutPageContent() {
       }
       trackPixelStandard('InitiateCheckout');
       pushInternalTrackingEvent('checkout_started', { plan, interval, mode: 'pix_checkout' });
-      setPixData(payload);
-    } catch (pixInitError) {
+          setPixData(payload);
+        } catch (pixInitError) {
       setPixError(
         pixInitError instanceof Error ? pixInitError.message : 'Não foi possível gerar o Pix agora. Tente novamente.'
       );
@@ -996,9 +1001,9 @@ function CheckoutPageContent() {
         }
 
         if (isCancelled) return;
-        setPixData(payload);
+          setPixData(payload);
         if (payload.status === 'confirmed') {
-          setSuccessMessage('Pagamento confirmado. O plano do workspace será atualizado em instantes.');
+          setSuccessMessage('Pagamento confirmado. Seu acesso será liberado em instantes.');
         }
       } catch {
         if (!isCancelled) {
@@ -1175,6 +1180,7 @@ function CheckoutPageContent() {
                     {
                       value: 'card',
                       title: 'Cartão de crédito',
+                      badge: 'Mais indicado',
                       description:
                         trialDays > 0
                           ? '3 dias de teste grátis e renovação automática depois.'
@@ -1183,6 +1189,7 @@ function CheckoutPageContent() {
                     {
                       value: 'pix',
                       title: 'Pix',
+                      badge: 'Sem renovação',
                       description: 'Pagamento instantâneo com acesso por 1 ciclo, sem renovação automática.',
                     },
                   ] as const).map((option) => (
@@ -1202,7 +1209,12 @@ function CheckoutPageContent() {
                       )}
                     >
                       <div>
-                        <p className="text-base font-semibold text-white">{option.title}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-base font-semibold text-white">{option.title}</p>
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                            {option.badge}
+                          </span>
+                        </div>
                         <p className="mt-1 text-sm text-slate-400">{option.description}</p>
                       </div>
                       <div
@@ -1318,7 +1330,7 @@ function CheckoutPageContent() {
                     onFallbackCheckout={handleLegacyCheckout}
                     onSuccess={() => {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
-                      setSuccessMessage('Pagamento enviado. O Stripe está finalizando a assinatura deste workspace.');
+                      setSuccessMessage('Pagamento enviado. Seu acesso será liberado assim que a Stripe confirmar a assinatura.');
                     }}
                   />
                 </Elements>
@@ -1329,8 +1341,7 @@ function CheckoutPageContent() {
                     Assinatura pronta
                   </div>
                   <p className="text-base text-slate-100">
-                    A assinatura deste workspace não exige confirmação adicional. O webhook do Stripe vai consolidar o
-                    plano automaticamente.
+                    Sua assinatura já está pronta. Seu acesso será atualizado automaticamente em instantes.
                   </p>
                   <Link
                     href={subscriptionCenterPath}
@@ -1381,10 +1392,13 @@ function CheckoutPageContent() {
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Cobrança</p>
-                    <p className="mt-2 text-lg font-semibold text-white">
-                      {checkoutPriceLabel}
-                    </p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Valor do plano</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-lg font-semibold text-white">{paymentMethod === 'card' && trialDays > 0 ? 'R$ 0 hoje' : checkoutPriceLabel}</p>
+                      {paymentMethod === 'card' && trialDays > 0 ? (
+                        <p className="text-sm text-slate-400">{postTrialLabel} depois</p>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Workspace</p>
@@ -1393,21 +1407,23 @@ function CheckoutPageContent() {
                 </div>
               </div>
 
-              <div className="space-y-3 px-1 text-xs text-slate-500">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <LockKeyhole className="size-3.5 text-emerald-300" />
-                  <span>Pagamento seguro processado pela Stripe.</span>
+              <div className="space-y-3 rounded-[1.3rem] border border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">
+                <div className="flex items-start gap-2">
+                  <LockKeyhole className="mt-0.5 size-4 text-emerald-300" />
+                  <div className="space-y-2">
+                    <p>Pagamento seguro processado pela Stripe.</p>
+                    <p>Seus dados são protegidos por criptografia SSL.</p>
+                  </div>
                 </div>
-                <p>Seus dados são protegidos por criptografia SSL.</p>
-                <p>Cancele sua assinatura a qualquer momento.</p>
+                <p className="text-slate-500">Cancele sua assinatura a qualquer momento.</p>
               </div>
 
-              <footer className="flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+              <footer className="flex flex-col gap-4 border-t border-white/10 pt-5 text-sm text-slate-400 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-1">
                   <p className="font-semibold text-slate-200">Cote Finance AI</p>
                   <p>By Cote Juros</p>
                 </div>
-                <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                   <Link href="/termos-de-uso" className="transition hover:text-white">
                     Termos de uso
                   </Link>
