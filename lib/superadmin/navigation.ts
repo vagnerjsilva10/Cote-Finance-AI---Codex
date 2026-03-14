@@ -33,7 +33,7 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     href: '/superadmin/plans',
     icon: 'badge-dollar-sign',
     description: 'Catálogo comercial, benefícios e política de planos.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'Assinaturas',

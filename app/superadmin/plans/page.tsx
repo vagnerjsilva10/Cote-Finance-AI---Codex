@@ -1,10 +1,5 @@
-import { SuperadminPlaceholderPage } from '@/components/superadmin/superadmin-placeholder-page';
+import { SuperadminPlansPage } from '@/components/superadmin/superadmin-plans-page';
 
-export default function SuperadminPlansPage() {
-  return (
-    <SuperadminPlaceholderPage
-      title="Planos"
-      description="Gestão futura do catálogo comercial, benefícios, posicionamento de preço e oferta por plano."
-    />
-  );
+export default function SuperadminPlansRoutePage() {
+  return <SuperadminPlansPage />;
 }
