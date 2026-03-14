@@ -7,9 +7,9 @@ import { ArrowRight, Check } from 'lucide-react';
 
 export function QuizContainer({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <main className={`min-h-screen bg-slate-950 text-slate-100 ${className}`}>
+    <main className={`min-h-dvh overflow-x-clip bg-slate-950 text-slate-100 ${className}`}>
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,.18),transparent_30%),radial-gradient(circle_at_86%_8%,rgba(59,130,246,.16),transparent_26%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
-      <div className="mx-auto w-full max-w-4xl px-4 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">{children}</div>
+      <div className="mx-auto w-full max-w-4xl px-4 py-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8">{children}</div>
     </main>
   );
 }
@@ -29,9 +29,9 @@ export function ProgressBar({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between text-sm text-slate-300">
-        <span>{label}</span>
-        <div className="text-right">
+      <div className="flex flex-col gap-2 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+        <span className="pr-3">{label}</span>
+        <div className="text-left sm:text-right">
           <span className="block">
             Pergunta {Math.min(current, total)} de {total}
           </span>
@@ -67,16 +67,16 @@ export function QuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -18 }}
       transition={{ duration: 0.35 }}
-      className="rounded-[1.75rem] border border-white/10 bg-slate-900/65 p-5 shadow-[0_24px_80px_-36px_rgba(15,23,42,.8)] sm:rounded-[2rem] sm:p-8"
+      className="rounded-[1.5rem] border border-white/10 bg-slate-900/65 p-4 shadow-[0_24px_80px_-36px_rgba(15,23,42,.8)] sm:rounded-[2rem] sm:p-8"
     >
       {eyebrow ? (
-        <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+        <span className="inline-flex max-w-full rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold leading-5 text-emerald-200">
           {eyebrow}
         </span>
       ) : null}
-      <h1 className="mt-4 text-[1.85rem] font-bold leading-tight text-white sm:text-4xl">{title}</h1>
-      <div className="mt-6">{children}</div>
-      {footer ? <div className="mt-6">{footer}</div> : null}
+      <h1 className="mt-4 text-[1.65rem] font-bold leading-tight text-white sm:text-4xl">{title}</h1>
+      <div className="mt-5 sm:mt-6">{children}</div>
+      {footer ? <div className="mt-5 sm:mt-6">{footer}</div> : null}
     </motion.section>
   );
 }
@@ -99,13 +99,13 @@ export function AnswerButton({
       whileTap={disabled ? undefined : { scale: 0.985 }}
       onClick={onClick}
       disabled={disabled}
-      className={`flex min-h-[68px] w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-[15px] font-medium leading-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 sm:text-base ${
+      className={`flex min-h-[72px] w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-[15px] font-medium leading-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 sm:text-base ${
         selected
           ? 'border-emerald-300/50 bg-emerald-500/10 text-white shadow-[0_16px_36px_-24px_rgba(16,185,129,.7)]'
           : 'border-white/10 bg-slate-950/65 text-slate-200 hover:border-white/20 hover:bg-slate-900'
       } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
     >
-      <span className="pr-3">{label}</span>
+      <span className="pr-3 text-balance">{label}</span>
       <span
         className={`flex h-7 w-7 items-center justify-center rounded-full border ${
           selected ? 'border-emerald-300/50 bg-emerald-500/20 text-emerald-200' : 'border-white/10 text-slate-500'
@@ -136,11 +136,11 @@ export function AnalysisScreen({
     <QuestionCard eyebrow="Diagnóstico em andamento" title={title}>
       <div className="space-y-6">
         {statusLabel ? (
-          <div className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+          <div className="inline-flex max-w-full rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs font-semibold leading-5 text-cyan-100">
             {statusLabel}
           </div>
         ) : null}
-        <p className="text-base leading-7 text-slate-300">{text}</p>
+        <p className="text-sm leading-7 text-slate-300 sm:text-base">{text}</p>
         <div className="grid gap-4 lg:grid-cols-[1fr_.95fr]">
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
             <p className="mb-4 text-sm text-slate-400">Processando seu perfil</p>

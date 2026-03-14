@@ -89,10 +89,13 @@ export default function QuizClient() {
     if (!started) return;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const previousOverflowX = document.body.style.overflowX;
+    document.body.style.overflow = 'auto';
+    document.body.style.overflowX = 'clip';
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.overflowX = previousOverflowX;
     };
   }, [started]);
 
@@ -181,7 +184,7 @@ export default function QuizClient() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -18 }}
               transition={{ duration: 0.35 }}
-              className="space-y-5"
+              className="space-y-4 sm:space-y-5"
             >
               <QuestionCard
                 eyebrow="Leva menos de 1 minuto"
@@ -190,17 +193,17 @@ export default function QuizClient() {
                   <button
                     type="button"
                     onClick={startQuiz}
-                    className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 sm:w-auto"
+                    className="inline-flex min-h-[54px] w-full items-center justify-center rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 sm:w-auto"
                   >
                     Começar diagnóstico
                   </button>
                 }
               >
                 <div className="space-y-4">
-                  <p className="text-lg leading-7 text-slate-300">
+                  <p className="text-base leading-7 text-slate-300 sm:text-lg">
                     Mais de 12.000 pessoas já fizeram esse diagnóstico financeiro.
                   </p>
-                  <div className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+                  <div className="inline-flex max-w-full rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold leading-5 text-cyan-100">
                     8 em cada 10 pessoas descobrem gastos invisíveis ao finalizar este quiz.
                   </div>
 
@@ -210,7 +213,7 @@ export default function QuizClient() {
 
                   <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
                     <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-                      <div className="space-y-3 text-slate-300">
+                      <div className="space-y-3 text-sm leading-6 text-slate-300 sm:text-base">
                         <p>No fim do mês parece que tudo aconteceu rápido demais.</p>
                         <p>Esse quiz cruza padrões comuns de gastos invisíveis e mostra um pré-diagnóstico personalizado.</p>
                         <p className="font-medium text-white">Seu resultado sai em menos de 40 segundos.</p>
@@ -222,7 +225,7 @@ export default function QuizClient() {
                         <Sparkles size={16} />
                         Experiência guiada
                       </div>
-                      <ul className="mt-4 space-y-3 text-sm text-emerald-50">
+                      <ul className="mt-4 space-y-3 text-sm leading-6 text-emerald-50">
                         <li>5 perguntas rápidas</li>
                         <li>Diagnóstico com perfil financeiro</li>
                         <li>Estimativa de dinheiro perdido</li>
@@ -256,7 +259,7 @@ export default function QuizClient() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.32 }}
-              className="space-y-4"
+              className="space-y-4 sm:space-y-5"
             >
               <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-4 sm:p-5">
                 <ProgressBar
