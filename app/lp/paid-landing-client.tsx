@@ -314,26 +314,25 @@ export default function PaidLandingClient() {
         </section>
 
         <motion.section {...sectionMotion} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.62))] p-6 md:p-8">
-          <div className="grid gap-6 lg:grid-cols-[1.08fr_.92fr] lg:items-center">
-            <div className="space-y-4">
+          <div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
+            <div className="space-y-5">
               <p className="text-amber-300">★★★★★</p>
-              <h2 className="text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.</h2>
-              <p className="max-w-2xl text-slate-300">Uma rotina financeira mais clara começa quando você enxerga o que antes passava despercebido.</p>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+              <div className="space-y-3">
+                <h2 className="max-w-2xl text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.</h2>
+                <p className="max-w-2xl text-slate-300">Uma rotina financeira mais clara começa quando você enxerga o que antes passava despercebido.</p>
+              </div>
+              <div className="flex flex-wrap gap-x-6 gap-y-3 border-y border-white/10 py-4 text-sm">
+                <div>
                   <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Usuários</p>
-                  <p className="mt-2 text-2xl font-bold text-white">+1.000</p>
-                  <p className="mt-1 text-sm text-slate-400">já começaram a organizar melhor as finanças</p>
+                  <p className="mt-1 text-lg font-semibold text-white">+1.000</p>
                 </div>
-                <div className="rounded-2xl border border-emerald-300/15 bg-emerald-500/10 p-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Resultado</p>
-                  <p className="mt-2 text-2xl font-bold text-white">Mais controle</p>
-                  <p className="mt-1 text-sm text-emerald-50/80">sobre gastos, categorias e decisões do mês</p>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Resultado</p>
+                  <p className="mt-1 text-lg font-semibold text-white">Mais controle no mês</p>
                 </div>
-                <div className="rounded-2xl border border-cyan-300/15 bg-cyan-500/10 p-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Rotina</p>
-                  <p className="mt-2 text-2xl font-bold text-white">Sem planilhas</p>
-                  <p className="mt-1 text-sm text-cyan-50/80">com análises e alertas mais práticos</p>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Rotina</p>
+                  <p className="mt-1 text-lg font-semibold text-white">Sem planilhas complicadas</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3 pt-1 text-sm text-slate-200">
@@ -342,10 +341,10 @@ export default function PaidLandingClient() {
                 ))}
               </div>
             </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/55 p-5 shadow-[0_24px_64px_-40px_rgba(15,23,42,.95)]">
+            <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/55 p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,.95)]">
               <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Depoimento</p>
               <p className="mt-4 text-lg leading-8 text-slate-100">&ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;</p>
-              <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-white">Mariana R.</p>
                   <p className="text-xs text-slate-400">Usuária do Cote Finance AI</p>
@@ -598,6 +597,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
