@@ -313,44 +313,107 @@ export default function PaidLandingClient() {
           </motion.div>
         </section>
 
-        <motion.section {...sectionMotion} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.62))] p-6 md:p-8">
-          <div className="grid gap-6 xl:grid-cols-[1.12fr_.88fr] xl:items-start">
-            <div className="space-y-5">
-              <p className="text-amber-300">★★★★★</p>
-              <div className="space-y-3">
-                <h2 className="max-w-2xl text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.</h2>
-                <p className="max-w-2xl text-slate-300">Uma rotina financeira mais clara começa quando você enxerga o que antes passava despercebido.</p>
-              </div>
-              <div className="grid gap-4 border-y border-white/10 py-4 sm:grid-cols-3">
-                <div className="space-y-1">
+        <motion.section
+          {...sectionMotion}
+          className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.86),rgba(15,23,42,.62))] p-6 shadow-[0_32px_90px_-60px_rgba(15,23,42,.95)] md:p-8"
+        >
+          <div className="grid gap-6 xl:grid-cols-[1.08fr_.92fr] xl:items-stretch">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35 }}
+                className="space-y-4"
+              >
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200">
+                  <span>★★★★★</span>
+                  <span>Prova social</span>
+                </div>
+                <h2 className="max-w-2xl text-2xl font-bold text-white md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
+                  Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.
+                </h2>
+                <p className="max-w-2xl text-slate-300">
+                  Uma rotina financeira mais clara começa quando você finalmente enxerga o que antes passava despercebido.
+                </p>
+              </motion.div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: 0.04 }}
+                  className="rounded-[1.4rem] border border-white/10 bg-slate-950/60 p-4"
+                >
                   <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Usuários</p>
-                  <p className="text-lg font-semibold text-white">+1.000</p>
-                </div>
-                <div className="space-y-1 sm:border-l sm:border-white/10 sm:pl-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Resultado</p>
-                  <p className="text-lg font-semibold text-white">Mais controle no mês</p>
-                </div>
-                <div className="space-y-1 sm:border-l sm:border-white/10 sm:pl-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Rotina</p>
-                  <p className="text-lg font-semibold text-white">Sem planilhas complicadas</p>
-                </div>
+                  <p className="mt-2 text-2xl font-bold text-white">+1.000</p>
+                  <p className="mt-1 text-sm text-slate-400">já começaram a organizar melhor o dinheiro</p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: 0.1 }}
+                  className="rounded-[1.4rem] border border-emerald-300/18 bg-emerald-500/10 p-4"
+                >
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Resultado</p>
+                  <p className="mt-2 text-2xl font-bold text-white">Mais controle</p>
+                  <p className="mt-1 text-sm text-emerald-50/80">sobre gastos, categorias e decisões do mês</p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: 0.16 }}
+                  className="rounded-[1.4rem] border border-cyan-300/18 bg-cyan-500/10 p-4"
+                >
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Rotina</p>
+                  <p className="mt-2 text-2xl font-bold text-white">Sem planilhas</p>
+                  <p className="mt-1 text-sm text-cyan-50/80">com alertas e leituras muito mais práticas</p>
+                </motion.div>
               </div>
-              <div className="flex flex-wrap gap-3 pt-1 text-sm text-slate-200">
-                {socialBullets.map((item) => (
-                  <span key={item} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5"><Check size={14} className="text-emerald-300" /> {item}</span>
+
+              <div className="flex flex-wrap gap-3 text-sm text-slate-200">
+                {socialBullets.map((item, index) => (
+                  <motion.span
+                    key={item}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: 0.12 + index * 0.05 }}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5"
+                  >
+                    <Check size={14} className="text-emerald-300" /> {item}
+                  </motion.span>
                 ))}
               </div>
             </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/55 p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,.95)]">
-              <p className="text-lg leading-8 text-slate-100">&ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;</p>
-              <div className="mt-6 space-y-4">
+
+            <motion.div
+              initial={{ opacity: 0, x: 18 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="relative overflow-hidden rounded-[1.85rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.78),rgba(2,6,23,.96))] p-6 shadow-[0_28px_72px_-48px_rgba(16,185,129,.35)]"
+            >
+              <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/30 to-transparent" />
+              <div className="absolute -right-12 top-10 h-28 w-28 rounded-full bg-emerald-500/12 blur-3xl" />
+              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Depoimento</p>
+              <p className="mt-5 text-lg leading-8 text-slate-100 md:text-[1.15rem]">
+                &ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;
+              </p>
+              <div className="mt-8 flex items-center gap-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-sm font-bold text-emerald-100">MR</div>
                 <div>
                   <p className="text-sm font-semibold text-white">Mariana R.</p>
                   <p className="text-xs text-slate-400">Usuária do Cote Finance AI</p>
                 </div>
+              </div>
+              <div className="mt-8">
                 <PrimaryCta href="/signup" className="w-full sm:w-auto sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
               </div>
-            </div>
+            </motion.div>
           </div>
         </motion.section>
 
@@ -598,6 +661,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
