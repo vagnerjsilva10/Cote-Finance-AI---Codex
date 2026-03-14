@@ -339,6 +339,13 @@ function EmbeddedPaymentForm(props: {
         {status === 'submitting' ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
         {status === 'submitting' ? 'Confirmando pagamento...' : props.submitLabel}
       </button>
+      <div className="space-y-2 text-center">
+        <p className="text-xs font-medium text-slate-300">Sem compromisso • Cancele quando quiser</p>
+        <p className="flex items-center justify-center gap-2 text-xs text-slate-400">
+          <LockKeyhole className="size-3.5 text-emerald-300" />
+          <span>{props.helperText}</span>
+        </p>
+      </div>
       {!isPaymentElementReady ? (
         <p className="text-center text-xs text-slate-500">Carregando formulário de pagamento seguro...</p>
       ) : null}
@@ -352,7 +359,6 @@ function EmbeddedPaymentForm(props: {
           Abrir checkout legado
         </button>
       ) : null}
-      <p className="text-center text-xs text-slate-400">{props.helperText}</p>
     </form>
   );
 }
