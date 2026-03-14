@@ -47,21 +47,21 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     href: '/superadmin/feature-flags',
     icon: 'toggle-left',
     description: 'Ativação controlada de recursos por ambiente e conta.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'IA',
     href: '/superadmin/ai',
     icon: 'sparkles',
     description: 'Uso, limites, falhas e monitoramento dos fluxos de IA.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'WhatsApp',
     href: '/superadmin/whatsapp',
     icon: 'message-circle-more',
     description: 'Monitoramento de integrações, templates e entregabilidade.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'Conteúdo',
@@ -89,6 +89,10 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     href: '/superadmin/audit-logs',
     icon: 'shield-check',
     description: 'Rastreabilidade administrativa e eventos críticos.',
-    implemented: false,
+    implemented: true,
   },
 ];
+
+
+
+

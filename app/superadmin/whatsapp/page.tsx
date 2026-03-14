@@ -1,10 +1,5 @@
-import { SuperadminPlaceholderPage } from '@/components/superadmin/superadmin-placeholder-page';
+﻿import { SuperadminWhatsappPage } from '@/components/superadmin/superadmin-whatsapp-page';
 
-export default function SuperadminWhatsappPage() {
-  return (
-    <SuperadminPlaceholderPage
-      title="WhatsApp"
-      description="Monitoramento futuro de conexões, templates, entregabilidade e automações do canal de WhatsApp."
-    />
-  );
+export default function SuperadminWhatsappRoutePage() {
+  return <SuperadminWhatsappPage />;
 }

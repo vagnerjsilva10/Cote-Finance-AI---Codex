@@ -224,3 +224,178 @@ export type SuperadminSubscriptionsResponse = {
   total: number;
   subscriptions: SuperadminSubscriptionSummary[];
 };
+
+export type SuperadminFeatureFlagRecord = {
+  key: string;
+  label: string;
+  description: string;
+  scope: string;
+  enabled: boolean;
+};
+
+export type SuperadminFeatureFlagsResponse = {
+  flags: SuperadminFeatureFlagRecord[];
+  summary: {
+    total: number;
+    enabled: number;
+    disabled: number;
+  };
+};
+
+export type SuperadminAuditLogEvent = {
+  id: string;
+  type: string;
+  category: string;
+  createdAt: string | null;
+  workspaceId: string;
+  workspaceName: string;
+  userId: string | null;
+  userEmail: string | null;
+  userName: string | null;
+  payload: unknown;
+};
+
+export type SuperadminAuditLogsResponse = {
+  query: string;
+  filters: {
+    category: string;
+  };
+  summary: {
+    total: number;
+    billing: number;
+    tracking: number;
+    whatsapp: number;
+    ai: number;
+    produto: number;
+    geral: number;
+  };
+  total: number;
+  events: SuperadminAuditLogEvent[];
+};
+
+export type SuperadminAiWorkspaceUsageSummary = {
+  workspaceId: string;
+  workspaceName: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  plan: string;
+  currentMonthUsage: number;
+  chatUsage: number;
+  classifyUsage: number;
+  limit: number | null;
+  usageRate: number | null;
+  nearLimit: boolean;
+  aiSuggestionsEnabled: boolean;
+  lastAiEventAt: string | null;
+};
+
+export type SuperadminAiRecentEvent = {
+  id: string;
+  type: string;
+  typeLabel: string;
+  createdAt: string | null;
+  workspaceId: string;
+  workspaceName: string;
+  userId: string | null;
+  userEmail: string | null;
+  userName: string | null;
+  payload: unknown;
+};
+
+export type SuperadminAiResponse = {
+  query: string;
+  filters: {
+    plan: string;
+  };
+  summary: {
+    totalWorkspaces: number;
+    activeWorkspaces: number;
+    totalInteractionsThisMonth: number;
+    chatInteractionsThisMonth: number;
+    classifyInteractionsThisMonth: number;
+    workspacesNearLimit: number;
+    aiSuggestionsEnabled: number;
+    averageUsagePerActiveWorkspace: number;
+    geminiConfigured: boolean;
+  };
+  quotaReference: Record<
+    string,
+    {
+      aiInteractionsPerMonth: number | null;
+    }
+  >;
+  trend: Array<{
+    date: string;
+    total: number;
+    chat: number;
+    classify: number;
+  }>;
+  total: number;
+  workspaces: SuperadminAiWorkspaceUsageSummary[];
+  recentEvents: SuperadminAiRecentEvent[];
+};
+
+export type SuperadminWhatsappWorkspaceSummary = {
+  workspaceId: string;
+  workspaceName: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  plan: string;
+  hasPlanAccess: boolean;
+  whatsappStatus: string;
+  whatsappPhoneNumber: string | null;
+  whatsappConnectedAt: string | null;
+  configUpdatedAt: string | null;
+  lastEventAt: string | null;
+};
+
+export type SuperadminWhatsappRecentEvent = {
+  id: string;
+  type: string;
+  typeLabel: string;
+  category: string;
+  createdAt: string | null;
+  workspaceId: string;
+  workspaceName: string;
+  userId: string | null;
+  userEmail: string | null;
+  userName: string | null;
+  payload: unknown;
+};
+
+export type SuperadminWhatsappResponse = {
+  query: string;
+  filters: {
+    plan: string;
+    status: string;
+  };
+  summary: {
+    totalWorkspaces: number;
+    eligibleWorkspaces: number;
+    connectedWorkspaces: number;
+    connectingWorkspaces: number;
+    disconnectedWorkspaces: number;
+    configUpdatesLast30Days: number;
+    digestsSentLast30Days: number;
+    previewTestsLast30Days: number;
+  };
+  environment: {
+    apiConfigured: boolean;
+    verifyConfigured: boolean;
+    signatureValidationEnabled: boolean;
+    connectTemplateConfigured: boolean;
+    digestTemplateConfigured: boolean;
+    templateLanguage: string;
+    phoneNumberIdConfigured: boolean;
+  };
+  trend: Array<{
+    date: string;
+    total: number;
+    config: number;
+    delivery: number;
+    connection: number;
+  }>;
+  total: number;
+  workspaces: SuperadminWhatsappWorkspaceSummary[];
+  recentEvents: SuperadminWhatsappRecentEvent[];
+};
