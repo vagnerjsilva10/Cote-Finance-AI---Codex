@@ -786,8 +786,8 @@ const ONBOARDING_OBJECTIVES = [
 ];
 
 const ONBOARDING_USAGE_LEVELS = [
-  'Até 20 lançamentos',
-  '20 a 50 lançamentos',
+  'Até 15 lançamentos',
+  '16 a 50 lançamentos',
   '50 a 100 lançamentos',
   'Mais de 100 lançamentos',
 ];
@@ -1356,6 +1356,17 @@ const sanitizePercentageInput = (rawValue: string) => {
 
 const formatPercentageDisplay = (value: string) => value.replace('.', ',');
 
+const formatPercentValue = (value: number, fractionDigits = 2) =>
+  new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+
+const formatPercent = (value: number, fractionDigits = 2) => `${formatPercentValue(value, fractionDigits)}%`;
+
+const formatSignedPercent = (value: number, fractionDigits = 2) =>
+  `${value > 0 ? '+' : value < 0 ? '-' : ''}${formatPercent(Math.abs(value), fractionDigits)}`;
+
 const PercentageInput = ({
   value,
   onChange,
@@ -1858,7 +1869,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         />
         <StatCard
           label="Taxa de economia"
-          value={`${savingsRate.toFixed(1)}%`}
+          value={formatPercent(savingsRate, 1)}
           trend="(entradas - despesas) / entradas"
           trendValue="mês atual"
           icon={Target}
@@ -3047,7 +3058,7 @@ const DebtsView = ({ debts, onAddDebt, onAddRecurringDebt, onEditDebt, onDeleteD
         </div>
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Progresso</p>
-          <p className="text-2xl font-black text-white">{progress.toFixed(1)}%</p>
+          <p className="text-2xl font-black text-white">{formatPercent(progress, 1)}</p>
         </div>
       </div>
 
@@ -3211,7 +3222,7 @@ const DebtsView = ({ debts, onAddDebt, onAddRecurringDebt, onEditDebt, onDeleteD
                   <td className="px-6 py-4 text-sm text-slate-400">{debt.category}</td>
                   <td className="px-6 py-4 text-sm text-slate-300">{formatCurrency(debt.originalAmount)}</td>
                   <td className="px-6 py-4 text-sm font-bold text-white">{formatCurrency(debt.remainingAmount)}</td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{debt.interestRateMonthly.toFixed(2)}%</td>
+                  <td className="px-6 py-4 text-sm text-slate-300">{formatPercent(debt.interestRateMonthly, 2)}</td>
                   <td className="px-6 py-4 text-sm text-slate-300">Dia {debt.dueDay}</td>
                   <td className="px-6 py-4">
                     <span
@@ -3341,7 +3352,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-slate-300">{formatCurrency(goal.current)} acumulado</span>
                   <span className="text-slate-500">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-emerald-500 font-bold">{progress.toFixed(1)}%</span>
+                  <span className="text-emerald-500 font-bold">{formatPercent(progress, 1)}</span>
                 </div>
 
                 <p className="text-xs text-slate-500">Faltam {formatCurrency(remaining)} para concluir.</p>
@@ -3409,13 +3420,13 @@ const buildPortfolioInsights = ({
   if (topWallet && totalBalance > 0) {
     const share = (topWallet.balance / totalBalance) * 100;
     if (share >= 70) {
-      insights.push(`${topWallet.name} concentra ${share.toFixed(0)}% do seu saldo em contas.`);
+      insights.push(`${topWallet.name} concentra ${formatPercent(share, 0)} do seu saldo em contas.`);
     }
   }
 
   if (totalDebt > 0 && totalAssets > 0) {
     const debtShare = (totalDebt / totalAssets) * 100;
-    insights.push(`Suas dívidas representam ${debtShare.toFixed(0)}% dos seus ativos atuais.`);
+    insights.push(`Suas dívidas representam ${formatPercent(debtShare, 0)} dos seus ativos atuais.`);
   }
 
   if (netWorth < 0) {
@@ -3685,7 +3696,7 @@ const PortfolioView = ({
                         <span className="text-sm font-semibold text-white">{entry.name}</span>
                       </div>
                       <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                        {share.toFixed(1)}%
+                        {formatPercent(share, 1)}
                       </span>
                     </div>
                     <p className="text-base font-bold text-slate-100">{formatCurrency(entry.value)}</p>
@@ -3729,7 +3740,7 @@ const PortfolioView = ({
                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                   <div className="h-full rounded-full bg-emerald-500" style={{ width: `${wallet.share}%` }} />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">{wallet.share.toFixed(1)}% do saldo em contas</p>
+                <p className="mt-2 text-xs text-slate-500">{formatPercent(wallet.share, 1)} do saldo em contas</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -3810,7 +3821,7 @@ const PortfolioView = ({
                   <div className="text-right">
                     <p className="text-sm font-bold text-blue-400">{formatCurrency(investment.value)}</p>
                     <p className="text-[11px] uppercase tracking-widest text-slate-500">
-                      {investment.portfolioShare.toFixed(1)}% do patrimônio
+                      {formatPercent(investment.portfolioShare, 1)} do patrimônio
                     </p>
                     <p
                       className={cn(
@@ -3819,7 +3830,7 @@ const PortfolioView = ({
                       )}
                     >
                       {investment.profit >= 0 ? '+' : ''}
-                      {investment.profitPct.toFixed(2)}%
+                      {formatPercent(investment.profitPct, 2)}
                     </p>
                   </div>
                 </div>
@@ -3874,7 +3885,7 @@ const PortfolioView = ({
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
                   <span>Vence no dia {debt.dueDay}</span>
-                  <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimônio</span>
+                  <span>{formatPercent(Math.max(debt.portfolioShare, 0), 1)} do patrimônio</span>
                 </div>
               </div>
             ))}
@@ -3974,7 +3985,7 @@ const InvestmentsView = ({
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Rentabilidade %</p>
           <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
-            {profitPercentage.toFixed(2)}%
+            {formatPercent(profitPercentage, 2)}
           </p>
         </div>
       </div>
@@ -4023,9 +4034,9 @@ const InvestmentsView = ({
                       {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
                     </td>
                     <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
-                      {itemProfitPct.toFixed(2)}%
+                      {formatPercent(itemProfitPct, 2)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{item.expectedReturnAnnual.toFixed(2)}%</td>
+                    <td className="px-6 py-4 text-sm text-slate-300">{formatPercent(item.expectedReturnAnnual, 2)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -4612,7 +4623,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 >
                   {expenseDeepDive.monthOverMonthVariation === null
                     ? 'Sem base'
-                    : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
+                    : formatSignedPercent(expenseDeepDive.monthOverMonthVariation, 1)}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
                   Comparação entre as despesas do mês atual e do mês anterior.
@@ -4658,7 +4669,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-bold text-white">{item.name}</p>
                           <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
-                            +{item.variation.toFixed(0)}%
+                            +{formatPercent(item.variation, 0)}
                           </span>
                         </div>
                         <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-400">
@@ -4814,7 +4825,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `${Number(value || 0).toFixed(0)}%`}
+                  tickFormatter={(value) => formatPercent(Number(value || 0), 0)}
                 />
                 <Tooltip
                   contentStyle={{
@@ -4822,7 +4833,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     border: '1px solid #1e293b',
                     borderRadius: '12px',
                   }}
-                  formatter={(value) => [`${Number(value || 0).toFixed(2)}%`, 'Taxa de economia']}
+                  formatter={(value) => [formatPercent(Number(value || 0), 2), 'Taxa de economia']}
                 />
                 <Line
                   type="monotone"

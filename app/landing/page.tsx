@@ -134,6 +134,7 @@ const currentPlans: PlanCard[] = [
     microcopy: 'Sem cartão. Ideal para dar o primeiro passo com segurança.',
     features: [
       'Até 15 lançamentos por mês',
+      'Até 15 interações com IA por mês',
       'Dashboard financeiro essencial',
       'Visão inicial de saldo, entradas e saídas',
       'Organização básica para sair do zero',
@@ -256,6 +257,8 @@ const plans: PlanCard[] = [
     microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
     signupHref: '/signup?plan=free',
     features: [
+      'Até 15 lançamentos por mês',
+      'Até 15 interações com IA por mês',
       'Controle básico de receitas e despesas',
       'Dashboard financeiro',
       'Gráficos essenciais',
@@ -1268,36 +1271,6 @@ export default function LandingPage() {
                 <p className="mt-4 text-sm leading-7 text-slate-300">{item.answer}</p>
               </details>
             ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          className="relative space-y-5 py-4 text-center"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-44 bg-[radial-gradient(circle_at_50%_10%,rgba(59,130,246,.18),transparent_62%)]" />
-          <h2 className="text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Sem contrato. Cancele quando quiser.
-          </h2>
-          <p className="mx-auto max-w-3xl text-slate-300">
-            Comece gratuitamente, use no seu ritmo e evolua para um plano pago quando quiser mais recursos.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-300">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
-              <ShieldCheck size={14} className="text-emerald-300" /> Segurança de dados
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
-              <Wallet size={14} className="text-cyan-300" /> Controle total da assinatura
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
-              <CircleDollarSign size={14} className="text-amber-300" /> Sem fidelidade
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5">
-              <MessageCircle size={14} className="text-emerald-300" /> Alertas no WhatsApp
-            </span>
           </div>
         </motion.section>
 
