@@ -225,7 +225,7 @@ export default function PaidLandingClient() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
           <Link href="/lp" className="flex items-center">
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-14 w-auto sm:h-14 lg:h-16" priority />
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-16 w-auto sm:h-16 lg:h-20" priority />
           </Link>
           <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
         </div>
@@ -482,30 +482,32 @@ export default function PaidLandingClient() {
                 <p className="max-w-2xl text-slate-300">Controle manual consome tempo. Quando o sistema interpreta seus gastos por você, fica mais fácil agir com segurança.</p>
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
-                <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/70 p-5">
-                  <div className="mb-5 flex items-center justify-between gap-3">
+                <div className="flex h-full flex-col rounded-[1.75rem] border border-white/10 bg-slate-950/70 p-5">
+                  <div className="mb-5 space-y-3">
+                    <span className="inline-flex w-fit rounded-full border border-rose-300/15 bg-rose-500/10 px-3 py-1 text-[11px] font-medium text-rose-200">Mais esforço</span>
                     <h3 className="text-xl font-semibold text-white">Planilhas</h3>
-                    <span className="rounded-full border border-rose-300/15 bg-rose-500/10 px-3 py-1 text-[11px] font-medium text-rose-200">Mais esforço</span>
                   </div>
-                  <ul className="space-y-4 text-slate-300">
+                  <ul className="space-y-3 text-slate-300">
                     {comparison.left.map((item) => (
-                      <li key={item} className="flex items-start gap-3 rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
-                        <span className="mt-0.5 text-rose-300">✕</span>
-                        <span>{item}</span>
+                      <li key={item} className="flex min-h-14 items-start gap-3 rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-500/12 text-xs text-rose-300">✕</span>
+                        <span className="leading-6">{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-[1.75rem] border border-emerald-300/22 bg-[linear-gradient(180deg,rgba(16,185,129,.14),rgba(15,23,42,.78))] p-5 shadow-[0_22px_52px_-34px_rgba(16,185,129,.36)]">
-                  <div className="mb-5 flex items-center justify-between gap-3">
+                <div className="flex h-full flex-col rounded-[1.75rem] border border-emerald-300/22 bg-[linear-gradient(180deg,rgba(16,185,129,.14),rgba(15,23,42,.78))] p-5 shadow-[0_22px_52px_-34px_rgba(16,185,129,.36)]">
+                  <div className="mb-5 space-y-3">
+                    <span className="inline-flex w-fit rounded-full border border-emerald-300/15 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-100">Mais clareza</span>
                     <h3 className="text-xl font-semibold text-white">Cote Finance AI</h3>
-                    <span className="rounded-full border border-emerald-300/15 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-100">Mais clareza</span>
                   </div>
-                  <ul className="space-y-4 text-emerald-50">
+                  <ul className="space-y-3 text-emerald-50">
                     {comparison.right.map((item) => (
-                      <li key={item} className="flex items-start gap-3 rounded-xl border border-emerald-300/10 bg-white/[0.03] px-3 py-3">
-                        <Check size={16} className="mt-0.5 shrink-0 text-emerald-200" />
-                        <span>{item}</span>
+                      <li key={item} className="flex min-h-14 items-start gap-3 rounded-xl border border-emerald-300/10 bg-white/[0.03] px-3 py-3">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/14 text-emerald-200">
+                          <Check size={12} />
+                        </span>
+                        <span className="leading-6">{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -597,6 +599,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
