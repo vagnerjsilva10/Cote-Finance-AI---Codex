@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/prisma';
+﻿import { Prisma } from '@prisma/client';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { HttpError, requireAuthenticatedUser } from '@/lib/server/multi-tenant';
 
 export type PlatformRole = 'user' | 'admin' | 'superadmin';
@@ -40,22 +41,39 @@ function normalizeOverrideRole(value: unknown): PlatformRole | null {
   return null;
 }
 
-async function readPlatformRoleOverrides() {
-  const setting = await prisma.platformSetting.findUnique({
-    where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
-    select: { value: true },
-  });
-
-  const raw = setting?.value;
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    return {} as Record<string, PlatformRole>;
+function isMissingPlatformSettingError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021' || error.code === 'P2022';
   }
 
-  return Object.entries(raw as Record<string, unknown>).reduce<Record<string, PlatformRole>>((acc, [email, role]) => {
-    const normalizedRole = normalizeOverrideRole(role);
-    if (normalizedRole) acc[email.trim().toLowerCase()] = normalizedRole;
-    return acc;
-  }, {});
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /does not exist|relation .* does not exist|table .* doesn't exist|column .* does not exist/i.test(message);
+}
+
+async function readPlatformRoleOverrides() {
+  try {
+    const setting = await prisma.platformSetting.findUnique({
+      where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
+      select: { value: true },
+    });
+
+    const raw = setting?.value;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return {} as Record<string, PlatformRole>;
+    }
+
+    return Object.entries(raw as Record<string, unknown>).reduce<Record<string, PlatformRole>>((acc, [email, role]) => {
+      const normalizedRole = normalizeOverrideRole(role);
+      if (normalizedRole) acc[email.trim().toLowerCase()] = normalizedRole;
+      return acc;
+    }, {});
+  } catch (error) {
+    if (asPrismaServiceUnavailableError(error) || isMissingPlatformSettingError(error)) {
+      return {} as Record<string, PlatformRole>;
+    }
+
+    throw error;
+  }
 }
 
 export async function resolvePlatformRoleForEmail(email: string | null): Promise<{
