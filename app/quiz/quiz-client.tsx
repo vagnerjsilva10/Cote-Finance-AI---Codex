@@ -32,6 +32,12 @@ const suspenseMessages: Partial<Record<number, string>> = {
   3: 'Seu diagnóstico está quase pronto...',
 };
 
+const psychologicalAlerts: Partial<Record<number, string>> = {
+  1: '⚠ Estamos identificando um padrão comum de gastos invisíveis.',
+  2: '⚠ Muitas pessoas com respostas parecidas perdem dinheiro sem perceber.',
+  3: '⚠ Seu diagnóstico está revelando possíveis vazamentos financeiros.',
+};
+
 export default function QuizClient() {
   const router = useRouter();
   const [started, setStarted] = React.useState(false);
@@ -45,6 +51,7 @@ export default function QuizClient() {
 
   const questionTwoTracked = React.useRef(false);
   const questionFourTracked = React.useRef(false);
+  const completedRef = React.useRef(false);
   const answerTimeoutRef = React.useRef<number | null>(null);
   const analysisTimeoutRef = React.useRef<number | null>(null);
   const analysisIntervalRef = React.useRef<number | null>(null);
@@ -66,6 +73,17 @@ export default function QuizClient() {
       questionFourTracked.current = true;
     }
   }, [isAnalyzing, questionIndex, started]);
+
+  React.useEffect(() => {
+    return () => {
+      if (started && !completedRef.current) {
+        trackQuizEvent('quiz_dropoff_step', {
+          step: Math.min(questionIndex + 1, quizQuestions.length),
+          answersCount: answers.length,
+        });
+      }
+    };
+  }, [answers.length, questionIndex, started]);
 
   React.useEffect(() => {
     if (!started) return;
@@ -93,6 +111,7 @@ export default function QuizClient() {
     setSelectedOptionId(null);
     setFeedback(null);
     setProgressMessage(null);
+    completedRef.current = false;
     trackQuizEvent('quiz_start');
   }, []);
 
@@ -126,6 +145,7 @@ export default function QuizClient() {
           setIsAnalyzing(true);
           setAnalysisIndex(0);
           setProgressMessage('Seu perfil financeiro está sendo identificado');
+          completedRef.current = true;
           trackQuizEvent('quiz_complete', { totalScore: nextAnswers.reduce((sum, answer) => sum + answer.score, 0) });
 
           analysisIntervalRef.current = window.setInterval(() => {
@@ -180,6 +200,9 @@ export default function QuizClient() {
                   <p className="text-lg leading-7 text-slate-300">
                     Mais de 12.000 pessoas já fizeram esse diagnóstico financeiro.
                   </p>
+                  <div className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+                    8 em cada 10 pessoas descobrem gastos invisíveis ao finalizar este quiz.
+                  </div>
 
                   <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
                     <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar" percentageLabel="Diagnóstico 0% concluído" />
@@ -253,6 +276,20 @@ export default function QuizClient() {
                       className="mt-3 text-sm font-medium leading-6 text-cyan-200"
                     >
                       {progressMessage}
+                    </motion.p>
+                  ) : null}
+                </AnimatePresence>
+                <AnimatePresence mode="wait">
+                  {psychologicalAlerts[questionIndex] ? (
+                    <motion.p
+                      key={psychologicalAlerts[questionIndex]}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.22, delay: 0.04 }}
+                      className="mt-2 text-sm font-medium leading-6 text-amber-200"
+                    >
+                      {psychologicalAlerts[questionIndex]}
                     </motion.p>
                   ) : null}
                 </AnimatePresence>

@@ -75,6 +75,12 @@ export default function ResultClient() {
               </div>
 
               <p className="text-base leading-7 text-slate-300">{result.profileDescription}</p>
+              <p className="text-base leading-7 text-slate-300">
+                Pequenas despesas recorrentes podem consumir uma parte relevante da sua renda sem que você perceba.
+              </p>
+              <p className="text-base leading-7 text-slate-200">
+                A boa notícia é que isso pode ser corrigido quando você passa a enxergar seus gastos com clareza.
+              </p>
 
               <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-4 sm:p-5">
                 <p className="text-sm text-slate-400">Com base nas suas respostas:</p>
@@ -140,6 +146,7 @@ export default function ResultClient() {
             É exatamente para isso que criamos o Cote Finance AI.
           </h2>
           <p className="mt-4 text-slate-300">O aplicativo analisa automaticamente suas finanças e mostra:</p>
+          <p className="mt-3 text-sm text-cyan-100">Milhares de usuários já identificaram padrões de desperdício com esse diagnóstico.</p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {[
