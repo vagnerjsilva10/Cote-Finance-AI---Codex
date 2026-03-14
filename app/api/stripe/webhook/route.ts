@@ -10,6 +10,7 @@ import {
   type StoredBillingStatus,
   isEntitledStripeStatus,
 } from '@/lib/server/billing-status';
+import { sendMetaPurchaseServerEvent } from '@/lib/server/tracking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -131,6 +132,62 @@ async function syncCustomerReferenceByUserId(params: { userId: string; customerI
     });
   } catch (error) {
     console.error('Stripe webhook: failed to sync customer reference', params, error);
+  }
+}
+
+
+async function resolveUserByCustomerId(customerId: string | null) {
+  if (!customerId) return null;
+
+  try {
+    const profile = await prisma.profile.findFirst({
+      where: { stripe_customer_id: customerId },
+      select: {
+        user_id: true,
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!profile) return null;
+    return {
+      userId: profile.user_id,
+      email: profile.user?.email ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function resolveWorkspaceIdByBillingReference(params: {
+  customerId?: string | null;
+  subscriptionId?: string | null;
+}) {
+  const whereClauses: Array<{ stripe_subscription_id?: string; stripe_customer_id?: string }> = [];
+  if (params.subscriptionId) {
+    whereClauses.push({ stripe_subscription_id: params.subscriptionId });
+  }
+  if (params.customerId) {
+    whereClauses.push({ stripe_customer_id: params.customerId });
+  }
+  if (whereClauses.length === 0) return null;
+
+  try {
+    const workspaceSubscription = await prisma.workspaceSubscription.findFirst({
+      where: {
+        OR: whereClauses,
+      },
+      select: {
+        workspace_id: true,
+      },
+    });
+
+    return workspaceSubscription?.workspace_id ?? null;
+  } catch {
+    return null;
   }
 }
 
@@ -430,6 +487,39 @@ export async function POST(req: Request) {
           eventType: `stripe.${event.type}`,
         });
 
+        if (event.type === 'invoice.paid') {
+          const resolvedUser = await resolveUserByCustomerId(customerId);
+          const workspaceId = await resolveWorkspaceIdByBillingReference({
+            customerId,
+            subscriptionId,
+          });
+          const invoiceValue = typeof invoice.amount_paid === 'number' ? invoice.amount_paid / 100 : 0;
+
+          if (workspaceId) {
+            await logWorkspaceEventSafe({
+              workspaceId,
+              userId: resolvedUser?.userId ?? null,
+              type: 'tracking.purchase_completed',
+              payload: {
+                invoiceId: invoice.id,
+                amount: invoiceValue,
+                currency: 'BRL',
+                plan: plan || 'FREE',
+              },
+            });
+          }
+
+          await sendMetaPurchaseServerEvent({
+            value: invoiceValue,
+            currency: 'BRL',
+            plan: plan || 'FREE',
+            userId: resolvedUser?.userId ?? null,
+            workspaceId,
+            email: resolvedUser?.email ?? null,
+            eventId: invoice.id,
+          });
+        }
+
         break;
       }
 
@@ -448,4 +538,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
+
+
 

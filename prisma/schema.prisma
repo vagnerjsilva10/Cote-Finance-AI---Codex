@@ -19,6 +19,7 @@ model User {
   workspaces    WorkspaceMember[]
   subscription  SubscriptionEntitlement?
   workspace_events WorkspaceEvent[]
+  marketing_attribution MarketingAttribution[]
 }
 
 model Profile {
@@ -53,6 +54,7 @@ model Workspace {
   subscription  WorkspaceSubscription?
   preference    WorkspacePreference?
   events        WorkspaceEvent[]
+  marketing_attribution MarketingAttribution[]
 }
 
 model Goal {
@@ -231,4 +233,37 @@ model WorkspaceEvent {
   @@index([workspace_id, created_at])
   @@index([user_id, created_at])
   @@index([type, created_at])
+}
+
+model PlatformSetting {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  value      Json
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model MarketingAttribution {
+  id               String     @id @default(uuid())
+  user_id          String?    @unique
+  workspace_id     String?
+  user             User?      @relation(fields: [user_id], references: [id])
+  workspace        Workspace? @relation(fields: [workspace_id], references: [id])
+  landing_path     String?
+  initial_referrer String?
+  utm_source       String?
+  utm_medium       String?
+  utm_campaign     String?
+  utm_content      String?
+  utm_term         String?
+  fbclid           String?
+  xcod             String?
+  raw_params       Json?
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+  last_seen_at     DateTime   @default(now())
+
+  @@index([utm_source, created_at])
+  @@index([utm_campaign, created_at])
+  @@index([workspace_id])
 }

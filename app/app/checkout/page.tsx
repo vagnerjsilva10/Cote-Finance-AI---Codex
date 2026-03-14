@@ -28,6 +28,7 @@ import {
   type BillingPlanCode,
 } from '@/lib/billing/plans';
 import type { Appearance } from '@stripe/stripe-js';
+import { markPendingPurchase, pushInternalTrackingEvent, trackPixelStandard } from '@/lib/tracking/client';
 
 type CheckoutIntentType = 'payment' | 'setup' | 'none';
 type StripeMode = 'live' | 'test' | 'unknown';
@@ -53,6 +54,12 @@ type FormStatus = 'idle' | 'submitting' | 'success';
 
 const stripePromise = getStripeJs();
 const CHECKOUT_INIT_TIMEOUT_MS = 20000;
+
+function resolvePurchaseValue(plan: BillingPlanCode | null, interval: BillingIntervalCode | null) {
+  if (plan === 'PREMIUM') return interval === 'ANNUAL' ? 490 : 49;
+  if (plan === 'PRO') return interval === 'ANNUAL' ? 290 : 29;
+  return 0;
+}
 
 function getPublishableKeyMode(key: string | null): StripeMode {
   if (!key) return 'unknown';
@@ -373,6 +380,7 @@ function CheckoutPageContent() {
     }
     return interval === 'ANNUAL' ? 'Pro Anual' : 'Pro Mensal';
   }, [interval, plan]);
+  const pendingPurchaseValue = resolvePurchaseValue(plan, interval);
 
   const appearance = React.useMemo<Appearance>(
     () => ({
@@ -435,11 +443,16 @@ function CheckoutPageContent() {
         throw new Error(payload.error || 'Não foi possível abrir o checkout legado.');
       }
 
+      if (pendingPurchaseValue > 0 && plan) {
+        markPendingPurchase({ plan, value: pendingPurchaseValue, currency: 'BRL' });
+      }
+      trackPixelStandard('InitiateCheckout');
+      pushInternalTrackingEvent('checkout_started', { plan, interval, mode: 'legacy_checkout' });
       window.location.href = payload.url;
     } catch (legacyError) {
       setError(legacyError instanceof Error ? legacyError.message : 'Falha no checkout legado.');
     }
-  }, [authPlanLabel, interval, plan, workspaceId]);
+  }, [authPlanLabel, interval, pendingPurchaseValue, plan, workspaceId]);
 
   const handleOpenPortal = React.useCallback(async () => {
     try {
@@ -468,13 +481,18 @@ function CheckoutPageContent() {
         throw new Error(payload.error || 'Não foi possível abrir o portal do cliente.');
       }
 
+      if (pendingPurchaseValue > 0 && plan) {
+        markPendingPurchase({ plan, value: pendingPurchaseValue, currency: 'BRL' });
+      }
+      trackPixelStandard('InitiateCheckout');
+      pushInternalTrackingEvent('checkout_started', { plan, interval, mode: 'legacy_checkout' });
       window.location.href = payload.url;
     } catch (portalError) {
       setError(portalError instanceof Error ? portalError.message : 'Falha ao abrir portal.');
     } finally {
       setIsPortalLoading(false);
     }
-  }, [workspaceId]);
+  }, [interval, pendingPurchaseValue, plan, workspaceId]);
 
   React.useEffect(() => {
     if (!plan || !interval) {
@@ -508,9 +526,13 @@ function CheckoutPageContent() {
           clearCachedCheckout(plan, interval, workspaceId);
           setSuccessMessage(
             status === 'processing'
-              ? 'Pagamento recebido e em processamento. Seu workspace será atualizado pelo webhook do Stripe.'
-              : 'Pagamento confirmado. O plano do workspace será atualizado em instantes.'
+              ? 'Pagamento recebido e em processamento. Seu workspace sera atualizado pelo webhook do Stripe.'
+              : 'Pagamento confirmado. O plano do workspace sera atualizado em instantes.'
           );
+          if (pendingPurchaseValue > 0 && plan) {
+            trackPixelStandard('Purchase', { value: pendingPurchaseValue, currency: 'BRL' });
+            pushInternalTrackingEvent('purchase_completed', { plan, interval, value: pendingPurchaseValue, origin: 'checkout_redirect' });
+          }
           window.history.replaceState({}, '', getCheckoutPath({ plan, interval, workspaceId }));
           return;
         }
@@ -606,6 +628,12 @@ function CheckoutPageContent() {
 
         cacheCheckout(typedPayload);
 
+        if (pendingPurchaseValue > 0 && plan) {
+          markPendingPurchase({ plan, value: pendingPurchaseValue, currency: 'BRL' });
+        }
+        trackPixelStandard('InitiateCheckout');
+        pushInternalTrackingEvent('checkout_started', { plan, interval, mode: 'payment_element' });
+
         if (!isCancelled) {
           if (!typedPayload.requiresConfirmation) {
             clearCachedCheckout(plan, interval, typedPayload.workspaceId);
@@ -646,6 +674,7 @@ function CheckoutPageContent() {
     publishableKeyMode,
     setupIntentClientSecret,
     publishableKey,
+    pendingPurchaseValue,
     workspaceId,
   ]);
 
@@ -687,6 +716,7 @@ function CheckoutPageContent() {
           'Suporte prioritário por e-mail',
         ];
   const checkoutSecurityItems = [
+
     'Cobrança recorrente automática',
     'Cancele quando quiser',
     'Pagamento protegido pela Stripe',
@@ -694,6 +724,12 @@ function CheckoutPageContent() {
   ];
   const subscriptionCenterPath = '/app?tab=subscription';
   const submitLabel = `Começar meu plano ${checkoutPlanName}`;
+
+  React.useEffect(() => {
+    if (pendingPurchaseValue > 0 && plan) {
+      markPendingPurchase({ plan, value: pendingPurchaseValue, currency: 'BRL' });
+    }
+  }, [pendingPurchaseValue, plan]);
 
   return (
     <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
@@ -990,5 +1026,9 @@ export default function CheckoutPage() {
     </React.Suspense>
   );
 }
+
+
+
+
 
 

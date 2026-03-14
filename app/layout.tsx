@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { TrackingProvider } from '@/components/tracking/tracking-provider';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeScript } from '@/components/theme/theme-script';
 import './globals.css';
@@ -33,8 +34,12 @@ export default function RootLayout({
         className={`${inter.variable} bg-slate-950 font-sans text-slate-50 antialiased custom-scrollbar`}
         suppressHydrationWarning
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <TrackingProvider />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+

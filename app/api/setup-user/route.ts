@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
-import { getWorkspacePlan, getWorkspacePreference } from '@/lib/server/multi-tenant';
+import { getWorkspacePlan, getWorkspacePreference, logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { asPrismaServiceUnavailableError, assertPrismaAvailable, prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { readAttributionFromCookies, upsertAttributionForUser } from '@/lib/server/tracking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -95,6 +96,23 @@ export async function POST(req: Request) {
     }
 
     const activeWorkspaceId = dbData.workspaceMember.workspace_id;
+    const attributionFromCookie = await readAttributionFromCookies();
+    await upsertAttributionForUser({
+      userId: user.id,
+      workspaceId: activeWorkspaceId,
+      attribution: attributionFromCookie,
+    });
+    await logWorkspaceEventSafe({
+      workspaceId: activeWorkspaceId,
+      userId: user.id,
+      type: 'tracking.signup_completed',
+      payload: {
+        utm_source: attributionFromCookie?.utm_source ?? null,
+        utm_medium: attributionFromCookie?.utm_medium ?? null,
+        utm_campaign: attributionFromCookie?.utm_campaign ?? null,
+      },
+    });
+
     const [plan, onboardingPreference] = await Promise.all([
       getWorkspacePlan(activeWorkspaceId, user.id),
       getWorkspacePreference(activeWorkspaceId, user.id),
@@ -126,3 +144,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to setup user' }, { status: 500 });
   }
 }
+

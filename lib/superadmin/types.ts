@@ -1,4 +1,4 @@
-import type { PlatformAccess } from '@/lib/server/platform-access';
+﻿import type { PlatformAccess } from '@/lib/server/platform-access';
 import type { SuperadminNavigationItem } from '@/lib/superadmin/navigation';
 
 export type SuperadminBootstrapResponse = {
@@ -176,5 +176,15 @@ export type SuperadminWorkspaceDetailResponse = {
       createdAt: string;
       userEmail: string | null;
     }>;
+  };
+};
+
+export type SuperadminTrackingSettingsResponse = {
+  settings: import('@/lib/tracking/types').TrackingSettings;
+  publicSettings: import('@/lib/tracking/types').PublicTrackingSettings;
+  status: {
+    pixelConfigured: boolean;
+    utmCaptureActive: boolean;
+    purchaseTrackingActive: boolean;
   };
 };

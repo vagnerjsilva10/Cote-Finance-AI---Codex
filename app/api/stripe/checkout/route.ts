@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import {
   getStripe,
   STRIPE_SECRET_KEY_MISSING_ERROR,
@@ -13,6 +13,7 @@ import {
 } from '@/lib/server/multi-tenant';
 import { ensureStripeCustomer, resolveStripePlan } from '@/lib/server/stripe-billing';
 import { getBillingTrialDays } from '@/lib/billing/plans';
+import { readAttributionFromCookies, upsertAttributionForUser } from '@/lib/server/tracking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -56,6 +57,12 @@ export async function POST(req: Request) {
     const cancelUrl = new URL('/app?checkout=canceled', baseUrl).toString();
     const workspaceId = context.workspaceId;
     const selectedPlan = resolved.plan;
+    const attribution = await readAttributionFromCookies();
+    await upsertAttributionForUser({
+      userId: user.id,
+      workspaceId,
+      attribution,
+    });
     const trialDays = selectedPlan ? getBillingTrialDays(selectedPlan) : 0;
 
     const session = await stripe.checkout.sessions.create({
@@ -78,6 +85,13 @@ export async function POST(req: Request) {
         workspaceId,
         plan: resolved.plan,
         interval: resolved.interval,
+        utm_source: attribution?.utm_source || '',
+        utm_medium: attribution?.utm_medium || '',
+        utm_campaign: attribution?.utm_campaign || '',
+        utm_content: attribution?.utm_content || '',
+        utm_term: attribution?.utm_term || '',
+        fbclid: attribution?.fbclid || '',
+        xcod: attribution?.xcod || '',
       },
       subscription_data: {
         ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
@@ -87,6 +101,13 @@ export async function POST(req: Request) {
           plan: resolved.plan,
           interval: resolved.interval,
           priceId: resolved.priceId,
+          utm_source: attribution?.utm_source || '',
+          utm_medium: attribution?.utm_medium || '',
+          utm_campaign: attribution?.utm_campaign || '',
+          utm_content: attribution?.utm_content || '',
+          utm_term: attribution?.utm_term || '',
+          fbclid: attribution?.fbclid || '',
+          xcod: attribution?.xcod || '',
         },
       },
     });
@@ -109,6 +130,7 @@ export async function POST(req: Request) {
         plan: selectedPlan || null,
         interval: resolved.interval,
         trialDays,
+        attribution,
       },
     });
 
@@ -140,3 +162,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

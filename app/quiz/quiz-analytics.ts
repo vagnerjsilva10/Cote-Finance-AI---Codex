@@ -1,4 +1,6 @@
-'use client';
+﻿'use client';
+
+import { pushInternalTrackingEvent, trackPixelCustom } from '@/lib/tracking/client';
 
 declare global {
   interface Window {
@@ -17,6 +19,16 @@ export type QuizAnalyticsEvent =
 
 export function trackQuizEvent(event: QuizAnalyticsEvent, payload: Record<string, unknown> = {}) {
   if (typeof window === 'undefined') return;
+
+  if (event === 'quiz_start') {
+    trackPixelCustom('QuizStart');
+  }
+
+  if (event === 'quiz_complete') {
+    trackPixelCustom('QuizComplete');
+  }
+
+  pushInternalTrackingEvent(event, payload);
 
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({

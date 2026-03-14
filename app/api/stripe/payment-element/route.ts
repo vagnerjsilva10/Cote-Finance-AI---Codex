@@ -26,6 +26,7 @@ import {
   type BillingPlanCode,
 } from '@/lib/billing/plans';
 import { mapStripeStatusToStoredStatus } from '@/lib/server/billing-status';
+import { readAttributionFromCookies, upsertAttributionForUser } from '@/lib/server/tracking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -188,6 +189,12 @@ export async function POST(req: Request) {
     );
     const workspace = context.workspaces.find((item) => item.id === context.workspaceId);
     const workspaceName = workspace?.name || 'Workspace atual';
+    const attribution = await readAttributionFromCookies();
+    await upsertAttributionForUser({
+      userId: context.userId,
+      workspaceId: context.workspaceId,
+      attribution,
+    });
     const customerId = await withStripeTimeout(
       ensureStripeCustomer({
         userId: context.userId,
@@ -302,6 +309,13 @@ export async function POST(req: Request) {
           plan: resolved.plan,
           interval: resolved.interval,
           priceId: resolved.priceId,
+          utm_source: attribution?.utm_source || '',
+          utm_medium: attribution?.utm_medium || '',
+          utm_campaign: attribution?.utm_campaign || '',
+          utm_content: attribution?.utm_content || '',
+          utm_term: attribution?.utm_term || '',
+          fbclid: attribution?.fbclid || '',
+          xcod: attribution?.xcod || '',
         },
         expand: ['latest_invoice.payment_intent', 'latest_invoice.confirmation_secret', 'pending_setup_intent'],
       }),
@@ -345,6 +359,7 @@ export async function POST(req: Request) {
         subscriptionId: subscription.id,
         intentType: checkoutState.intentType,
         trialDays: shouldApplyTrial ? getBillingTrialDays(resolved.plan) : 0,
+        attribution,
       },
     });
 
@@ -375,4 +390,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
 

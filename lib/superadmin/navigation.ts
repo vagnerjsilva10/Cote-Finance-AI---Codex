@@ -71,11 +71,11 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     implemented: false,
   },
   {
-    label: 'Configurações Globais',
+    label: 'Tracking / Marketing',
     href: '/superadmin/global-settings',
     icon: 'settings-2',
-    description: 'Parâmetros globais da plataforma e integrações centrais.',
-    implemented: false,
+    description: 'Pixel da Meta, UTM capture, CAPI e configuracoes de conversao.',
+    implemented: true,
   },
   {
     label: 'Relatórios',
@@ -92,3 +92,4 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     implemented: false,
   },
 ];
+
