@@ -799,16 +799,9 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              <div className="flex flex-col items-stretch gap-3 pt-1 sm:items-start">
-                <button
-                  onClick={startFree}
-                  disabled={isBusy}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:w-auto"
-                >
-                  Começar grátis <ArrowRight size={16} />
-                </button>
-                <p className="text-sm leading-6 text-slate-400">Experimente a organização financeira com IA sem complicar sua rotina.</p>
-              </div>
+              <p className="text-sm leading-6 text-slate-400">
+                Experimente a organização financeira com IA sem complicar sua rotina.
+              </p>
             </div>
 
             <motion.div whileHover={{ y: -3, scale: 1.005 }} className="relative mx-auto w-full max-w-3xl px-1 sm:px-0">
