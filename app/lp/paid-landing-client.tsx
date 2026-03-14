@@ -217,6 +217,9 @@ export default function PaidLandingClient() {
   return (
     <main className={`${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`} style={{ fontFamily: 'var(--font-body)' }}>
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(16,185,129,.18),transparent_28%),radial-gradient(circle_at_88%_10%,rgba(59,130,246,.18),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_54%,#0b1120_100%)]" />
+      <div className="border-b border-emerald-300/12 bg-[linear-gradient(90deg,rgba(16,185,129,.12),rgba(15,23,42,.92),rgba(34,211,238,.08))] px-4 py-2 text-center text-[11px] font-medium tracking-[0.08em] text-emerald-100 sm:px-6 sm:text-xs">
+        Comece grátis • Leva menos de 30 segundos
+      </div>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
           <Link href="/lp" className="flex items-center">
@@ -525,6 +528,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
