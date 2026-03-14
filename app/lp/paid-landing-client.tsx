@@ -225,7 +225,7 @@ export default function PaidLandingClient() {
     <main className={`${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`} style={{ fontFamily: 'var(--font-body)' }}>
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(16,185,129,.18),transparent_28%),radial-gradient(circle_at_88%_10%,rgba(59,130,246,.18),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_54%,#0b1120_100%)]" />
       <div className="border-b border-emerald-300/12 bg-[linear-gradient(90deg,rgba(16,185,129,.12),rgba(15,23,42,.92),rgba(34,211,238,.08))] px-4 py-2 text-center text-[11px] font-medium tracking-[0.08em] text-emerald-100 sm:px-6 sm:text-xs">
-        Comece grátis • Leva menos de 30 segundos
+        Clareza financeira com IA • Sem planilhas complicadas
       </div>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
@@ -239,7 +239,7 @@ export default function PaidLandingClient() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-20 pt-6 sm:px-6 sm:gap-20 sm:pb-28 sm:pt-8">
         <section className="grid items-center gap-8 lg:grid-cols-[1.04fr_.96fr] lg:gap-14">
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="space-y-6 text-center lg:space-y-7 lg:text-left">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 shadow-[0_16px_40px_-28px_rgba(16,185,129,.95)]"><Sparkles size={14} /> Leva menos de 30 segundos</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 shadow-[0_16px_40px_-28px_rgba(16,185,129,.95)]"><Sparkles size={14} /> Clareza financeira em poucos minutos</span>
             <h1 className="text-[2.15rem] font-bold leading-[1.04] text-white sm:text-5xl lg:text-[4.2rem]" style={{ fontFamily: 'var(--font-display)' }}>Seu dinheiro está sumindo e você nem sabe por quê</h1>
             <div className="space-y-3 text-[15px] leading-7 text-slate-300 sm:text-lg">
               <p>O Cote Finance AI analisa seus gastos e mostra exatamente para onde seu dinheiro está indo e o que está drenando sua renda.</p>
@@ -255,7 +255,7 @@ export default function PaidLandingClient() {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
               <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
-              <p className="text-sm text-slate-400">Leva menos de 30 segundos</p>
+              <p className="text-sm text-slate-400">Comece grátis e veja seus gastos com mais clareza</p>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.08 }} className="relative mx-auto w-full max-w-xl px-1 sm:px-0">
@@ -542,7 +542,7 @@ export default function PaidLandingClient() {
           <p className="mx-auto mt-4 max-w-2xl text-slate-200">Comece gratuitamente e tenha uma visão clara da sua vida financeira.</p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3">
             <PrimaryCta href="/signup" invert className="w-full sm:w-auto">Criar conta grátis</PrimaryCta>
-            <p className="text-sm text-slate-400">Leva menos de 30 segundos</p>
+            <p className="text-sm text-slate-400">Sem compromisso para começar</p>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300"><ShieldCheck size={14} className="text-emerald-300" /> Seus dados protegidos com criptografia</div>
           </div>
         </motion.section>
@@ -550,6 +550,8 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
+
 
 
 
