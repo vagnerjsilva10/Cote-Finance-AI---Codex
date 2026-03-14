@@ -106,7 +106,7 @@ export function SuperadminUsersPage() {
                   <tr key={user.id} className="transition hover:bg-slate-900/40">
                     <td className="py-5 pr-6 align-top"><div className="font-semibold text-white">{user.name || 'Sem nome'}</div><div className="mt-1 text-xs text-slate-400">{user.email}</div><div className="mt-1 text-xs text-slate-500">{user.id}</div></td>
                     <td className="py-5 pr-6 align-top"><PlanBadge label={formatPlanLabel(user.currentPlan)} /></td>
-                    <td className="py-5 pr-6 align-top"><StatusBadge status={user.subscriptionStatus} /></td>
+                    <td className="py-5 pr-6 align-top"><div className="flex flex-wrap gap-2"><StatusBadge status={user.subscriptionStatus} /><LifecycleBadge status={user.lifecycleStatus} /></div></td>
                     <td className="py-5 pr-6 align-top text-slate-300">{formatPlatformRole(user.platformRole)}</td>
                     <td className="py-5 pr-6 align-top text-slate-300">{formatAdminNumber(user.workspaceCount)}</td>
                     <td className="py-5 pr-6 align-top text-slate-300">{user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}</td>
@@ -129,6 +129,7 @@ function StatCard({ label, value, trend, trendValue, icon: Icon, trendType = 'up
 function ArrowUpRightIcon(props: { size?: number; className?: string }) { return <ArrowUpRight {...props} />; }
 function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>; }
 function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
+function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED' }) { return <span className={status === 'BLOCKED' ? 'rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-200' : status === 'SUSPENDED' ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-200' : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-200'}>{status === 'BLOCKED' ? 'Bloqueado' : status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
 function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>; }
 function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
 function EmptyState({ text }: { text: string }) { return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>; }

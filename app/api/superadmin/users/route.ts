@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess, resolvePlatformRoleForEmail } from '@/lib/server/platform-access';
+import { getUserLifecycleMap } from '@/lib/server/superadmin-governance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,7 +72,7 @@ export async function GET(req: Request) {
       new Set(users.flatMap((user) => user.workspaces.map((membership) => membership.workspace_id)))
     );
 
-    const [workspaceSubscriptions, aiUsageEvents] = await Promise.all([
+    const [workspaceSubscriptions, aiUsageEvents, userLifecycleMap] = await Promise.all([
       prisma.workspaceSubscription.findMany({
         where: {
           workspace_id: {
@@ -98,6 +99,7 @@ export async function GET(req: Request) {
           user_id: true,
         },
       }),
+      getUserLifecycleMap(),
     ]);
 
     const subscriptionByWorkspace = new Map(
@@ -134,6 +136,8 @@ export async function GET(req: Request) {
         workspaceCount: user.workspaces.length,
         currentPlan,
         subscriptionStatus,
+        lifecycleStatus: userLifecycleMap[user.id]?.status || 'ACTIVE',
+        lifecycleReason: userLifecycleMap[user.id]?.reason || null,
         platformRole: platformRole.role,
         platformRoleSource: platformRole.source,
         whatsappConnected: user.workspaces.some((membership) => membership.workspace.whatsapp_status === 'CONNECTED'),

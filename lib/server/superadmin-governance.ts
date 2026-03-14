@@ -8,9 +8,12 @@ import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 
 const PLAN_CATALOG_KEY = 'superadmin.plan-catalog';
 const WORKSPACE_LIFECYCLE_KEY = 'superadmin.workspace-lifecycle';
+const USER_LIFECYCLE_KEY = 'superadmin.user-lifecycle';
+const SUBSCRIPTION_METADATA_KEY = 'superadmin.subscription-metadata';
 
 export type EditablePlanCode = WorkspacePlan;
 export type WorkspaceLifecycleStatus = 'ACTIVE' | 'SUSPENDED';
+export type UserLifecycleStatus = 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
 
 export type EditablePlanConfig = {
   code: EditablePlanCode;
@@ -36,6 +39,19 @@ export type WorkspaceLifecycleEntry = {
   workspaceId: string;
   status: WorkspaceLifecycleStatus;
   reason: string | null;
+  updatedAt: string;
+};
+
+export type UserLifecycleEntry = {
+  userId: string;
+  status: UserLifecycleStatus;
+  reason: string | null;
+  updatedAt: string;
+};
+
+export type SubscriptionAdminMetadata = {
+  workspaceId: string;
+  adminNote: string | null;
   updatedAt: string;
 };
 
@@ -268,5 +284,85 @@ export async function setWorkspaceLifecycleStatus(params: {
     updatedAt: new Date().toISOString(),
   };
   await writePlatformSetting(WORKSPACE_LIFECYCLE_KEY, map as unknown as Prisma.InputJsonValue);
+  return map[params.workspaceId];
+}
+
+export async function getUserLifecycleMap(): Promise<Record<string, UserLifecycleEntry>> {
+  const stored = await readPlatformSetting<Record<string, UserLifecycleEntry>>(USER_LIFECYCLE_KEY, {});
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+
+  return Object.entries(stored).reduce<Record<string, UserLifecycleEntry>>((acc, [userId, entry]) => {
+    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const raw = entry as Record<string, unknown>;
+      acc[userId] = {
+        userId,
+        status:
+          raw.status === 'BLOCKED' ? 'BLOCKED' : raw.status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE',
+        reason: typeof raw.reason === 'string' && raw.reason.trim() ? raw.reason.trim() : null,
+        updatedAt:
+          typeof raw.updatedAt === 'string' && raw.updatedAt.trim() ? raw.updatedAt.trim() : new Date().toISOString(),
+      };
+    }
+    return acc;
+  }, {});
+}
+
+export async function getUserLifecycleStatus(userId: string): Promise<UserLifecycleEntry> {
+  const map = await getUserLifecycleMap();
+  return (
+    map[userId] || {
+      userId,
+      status: 'ACTIVE',
+      reason: null,
+      updatedAt: new Date(0).toISOString(),
+    }
+  );
+}
+
+export async function setUserLifecycleStatus(params: {
+  userId: string;
+  status: UserLifecycleStatus;
+  reason?: string | null;
+}) {
+  const map = await getUserLifecycleMap();
+  map[params.userId] = {
+    userId: params.userId,
+    status: params.status,
+    reason: params.reason?.trim() || null,
+    updatedAt: new Date().toISOString(),
+  };
+  await writePlatformSetting(USER_LIFECYCLE_KEY, map as unknown as Prisma.InputJsonValue);
+  return map[params.userId];
+}
+
+export async function getSubscriptionMetadataMap(): Promise<Record<string, SubscriptionAdminMetadata>> {
+  const stored = await readPlatformSetting<Record<string, SubscriptionAdminMetadata>>(SUBSCRIPTION_METADATA_KEY, {});
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+
+  return Object.entries(stored).reduce<Record<string, SubscriptionAdminMetadata>>((acc, [workspaceId, entry]) => {
+    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const raw = entry as Record<string, unknown>;
+      acc[workspaceId] = {
+        workspaceId,
+        adminNote: typeof raw.adminNote === 'string' && raw.adminNote.trim() ? raw.adminNote.trim() : null,
+        updatedAt:
+          typeof raw.updatedAt === 'string' && raw.updatedAt.trim() ? raw.updatedAt.trim() : new Date().toISOString(),
+      };
+    }
+    return acc;
+  }, {});
+}
+
+export async function setSubscriptionMetadata(params: {
+  workspaceId: string;
+  adminNote?: string | null;
+}) {
+  const map = await getSubscriptionMetadataMap();
+  map[params.workspaceId] = {
+    workspaceId: params.workspaceId,
+    adminNote: params.adminNote?.trim() || null,
+    updatedAt: new Date().toISOString(),
+  };
+  await writePlatformSetting(SUBSCRIPTION_METADATA_KEY, map as unknown as Prisma.InputJsonValue);
   return map[params.workspaceId];
 }

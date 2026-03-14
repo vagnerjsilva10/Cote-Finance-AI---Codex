@@ -34,6 +34,11 @@ const platformRoleOptions = [
   { value: 'admin', label: 'Admin da plataforma' },
   { value: 'superadmin', label: 'Super Admin' },
 ];
+const lifecycleOptions = [
+  { value: 'ACTIVE', label: 'Ativo' },
+  { value: 'SUSPENDED', label: 'Suspenso' },
+  { value: 'BLOCKED', label: 'Bloqueado' },
+];
 
 export function SuperadminUserDetailPage() {
   const params = useParams<{ id: string }>();
@@ -84,7 +89,7 @@ export function SuperadminUserDetailPage() {
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Usuário</p>
             <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">{user.name || 'Sem nome'}</h1>
             <p className="text-sm text-slate-300">{user.email}</p>
-            <div className="flex flex-wrap gap-2"><PlanBadge label={formatPlanLabel(currentPlan)} /><RoleBadge label={formatPlatformRole(user.platformRole)} /><StatusBadge status={subscriptionStatus} /></div>
+            <div className="flex flex-wrap gap-2"><PlanBadge label={formatPlanLabel(currentPlan)} /><RoleBadge label={formatPlatformRole(user.platformRole)} /><StatusBadge status={subscriptionStatus} /><LifecycleBadge status={user.lifecycleStatus} /></div>
           </div>
           <Link href="/superadmin/users" className={secondaryActionClassName}>Voltar para usuários</Link>
         </div>
@@ -108,6 +113,7 @@ export function SuperadminUserDetailPage() {
             <InfoBlock label="ID do usuário" value={user.id} />
             <InfoBlock label="Plano atual" value={formatPlanLabel(currentPlan)} />
             <InfoBlock label="Assinatura" value={formatSubscriptionStatus(subscriptionStatus)} />
+            <InfoBlock label="Status operacional" value={user.lifecycleStatus === 'BLOCKED' ? 'Bloqueado' : user.lifecycleStatus === 'SUSPENDED' ? 'Suspenso' : 'Ativo'} />
             <InfoBlock label="Role da plataforma" value={formatPlatformRole(user.platformRole)} />
             <InfoBlock label="Origem do role" value={formatRoleSource(user.platformRoleSource)} />
             <InfoBlock label="Último acesso" value={user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'} />
@@ -122,7 +128,7 @@ export function SuperadminUserDetailPage() {
             setError(null);
             setActionMessage(null);
             const response = await fetchSuperadminJson<SuperadminUserUpdateResponse>(`/api/superadmin/users/${user.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
-            setData((current) => current ? { ...current, user: { ...current.user, name: response.user.name, profilePlan: response.user.profilePlan, platformRole: response.user.platformRole, platformRoleSource: response.user.platformRoleSource, subscription: response.user.entitlement } } : current);
+            setData((current) => current ? { ...current, user: { ...current.user, name: response.user.name, profilePlan: response.user.profilePlan, lifecycleStatus: response.user.lifecycleStatus, lifecycleReason: response.user.lifecycleReason, platformRole: response.user.platformRole, platformRoleSource: response.user.platformRoleSource, subscription: response.user.entitlement } } : current);
             setActionMessage('Usuário atualizado com sucesso.');
           } catch (submitError) {
             setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar usuário.');
@@ -147,13 +153,15 @@ export function SuperadminUserDetailPage() {
   );
 }
 
-function UserActionsCard({ user, isSaving, onSubmit }: { user: SuperadminUserDetailResponse['user']; isSaving: boolean; onSubmit: (payload: { name: string | null; profilePlan: string; entitlementPlan: string; entitlementStatus: string; currentPeriodEnd: string | null; platformRole: string; }) => Promise<void>; }) {
+function UserActionsCard({ user, isSaving, onSubmit }: { user: SuperadminUserDetailResponse['user']; isSaving: boolean; onSubmit: (payload: { name: string | null; profilePlan: string; entitlementPlan: string; entitlementStatus: string; currentPeriodEnd: string | null; platformRole: string; lifecycleStatus: string; lifecycleReason: string | null; }) => Promise<void>; }) {
   const [name, setName] = React.useState(user.name || '');
   const [profilePlan, setProfilePlan] = React.useState(user.profilePlan || 'FREE');
   const [entitlementPlan, setEntitlementPlan] = React.useState(user.subscription?.plan || user.profilePlan || 'FREE');
   const [entitlementStatus, setEntitlementStatus] = React.useState(user.subscription?.status || 'ACTIVE');
   const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState(user.subscription?.currentPeriodEnd ? user.subscription.currentPeriodEnd.slice(0, 10) : '');
   const [platformRole, setPlatformRole] = React.useState(user.platformRole || 'user');
+  const [lifecycleStatus, setLifecycleStatus] = React.useState(user.lifecycleStatus || 'ACTIVE');
+  const [lifecycleReason, setLifecycleReason] = React.useState(user.lifecycleReason || '');
 
   React.useEffect(() => {
     setName(user.name || '');
@@ -162,17 +170,20 @@ function UserActionsCard({ user, isSaving, onSubmit }: { user: SuperadminUserDet
     setEntitlementStatus(user.subscription?.status || 'ACTIVE');
     setCurrentPeriodEnd(user.subscription?.currentPeriodEnd ? user.subscription.currentPeriodEnd.slice(0, 10) : '');
     setPlatformRole(user.platformRole || 'user');
+    setLifecycleStatus(user.lifecycleStatus || 'ACTIVE');
+    setLifecycleReason(user.lifecycleReason || '');
   }, [user]);
 
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-      <div className="mb-5"><h2 className="text-xl font-black text-white">Ações administrativas</h2><p className="mt-2 text-sm leading-7 text-slate-400">Ajuste nome, plano, entitlement e role da plataforma.</p></div>
+      <div className="mb-5"><h2 className="text-xl font-black text-white">Ações administrativas</h2><p className="mt-2 text-sm leading-7 text-slate-400">Ajuste nome, plano, entitlement, role da plataforma e status operacional do usuário.</p></div>
       <div className="space-y-4">
         <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Nome</span><input value={name} onChange={(event) => setName(event.target.value)} className={fieldClassName} /></label>
         <div className="grid gap-4 sm:grid-cols-2"><SelectField label="Plano do perfil" value={profilePlan} onChange={setProfilePlan} options={planOptions} /><SelectField label="Plano do entitlement" value={entitlementPlan} onChange={setEntitlementPlan} options={planOptions} /></div>
         <div className="grid gap-4 sm:grid-cols-2"><SelectField label="Role da plataforma" value={platformRole} onChange={setPlatformRole} options={platformRoleOptions} /><SelectField label="Status do entitlement" value={entitlementStatus} onChange={setEntitlementStatus} options={statusOptions} /></div>
+        <div className="grid gap-4 sm:grid-cols-2"><SelectField label="Status operacional" value={lifecycleStatus} onChange={(value) => setLifecycleStatus(value as 'ACTIVE' | 'SUSPENDED' | 'BLOCKED')} options={lifecycleOptions} /><label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Motivo operacional</span><input value={lifecycleReason} onChange={(event) => setLifecycleReason(event.target.value)} className={fieldClassName} placeholder="Opcional. Ex: fraude, chargeback, revisão interna." /></label></div>
         <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Período atual</span><input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={fieldClassName} /></label>
-        <div className="flex justify-end"><button type="button" disabled={isSaving} onClick={() => void onSubmit({ name: name.trim() || null, profilePlan, entitlementPlan, entitlementStatus, currentPeriodEnd: currentPeriodEnd || null, platformRole })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button></div>
+        <div className="flex justify-end"><button type="button" disabled={isSaving} onClick={() => void onSubmit({ name: name.trim() || null, profilePlan, entitlementPlan, entitlementStatus, currentPeriodEnd: currentPeriodEnd || null, platformRole, lifecycleStatus, lifecycleReason: lifecycleReason.trim() || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button></div>
       </div>
     </section>
   );
@@ -185,6 +196,7 @@ function formatRoleSource(source: string) { if (source === 'override') return 'O
 function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>; }
 function RoleBadge({ label }: { label: string }) { return <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-200">{label}</span>; }
 function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
+function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED' }) { return <span className={status === 'BLOCKED' ? 'rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-200' : status === 'SUSPENDED' ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200' : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200'}>{status === 'BLOCKED' ? 'Bloqueado' : status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
 function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>; }
 function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
 function EmptyState({ text }: { text: string }) { return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>; }

@@ -5,7 +5,7 @@ import { getSupabaseClient } from '@/lib/supabase';
 import { setupUser } from '@/lib/auth-setup';
 import { PLAN_LIMITS, type WorkspacePlan } from '@/lib/billing/limits';
 import { getPlanForStoredSubscription, normalizeBillingPlan } from '@/lib/server/billing-status';
-import { getWorkspaceLifecycleStatus } from '@/lib/server/superadmin-governance';
+import { getUserLifecycleStatus, getWorkspaceLifecycleStatus } from '@/lib/server/superadmin-governance';
 
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 export { PLAN_LIMITS };
@@ -139,6 +139,14 @@ export async function requireAuthenticatedUser(req: Request) {
 
   if (error || !user?.id) {
     throw new HttpError(401, 'Unauthorized');
+  }
+
+  const lifecycle = await getUserLifecycleStatus(user.id);
+  if (lifecycle.status === 'SUSPENDED') {
+    throw new HttpError(423, lifecycle.reason || 'Usuário suspenso temporariamente pelo administrador.');
+  }
+  if (lifecycle.status === 'BLOCKED') {
+    throw new HttpError(423, lifecycle.reason || 'Usuário bloqueado pelo administrador.');
   }
 
   return {

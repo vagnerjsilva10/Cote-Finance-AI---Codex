@@ -170,7 +170,7 @@ export function SuperadminSubscriptionsPage() {
           setError(null);
           setActionMessage(null);
           const response = await fetchSuperadminJson<SuperadminSubscriptionUpdateResponse>('/api/superadmin/subscriptions', { method: 'PATCH', body: JSON.stringify(payload) });
-          setData((current) => current ? { ...current, subscriptions: current.subscriptions.map((item) => item.workspaceId === response.subscription.workspaceId ? { ...item, plan: response.subscription.plan, status: response.subscription.status, currentPeriodEnd: response.subscription.currentPeriodEnd, estimatedMrr: response.subscription.estimatedMrr } : item) } : current);
+          setData((current) => current ? { ...current, subscriptions: current.subscriptions.map((item) => item.workspaceId === response.subscription.workspaceId ? { ...item, plan: response.subscription.plan, status: response.subscription.status, currentPeriodEnd: response.subscription.currentPeriodEnd, estimatedMrr: response.subscription.estimatedMrr, stripeCustomerId: response.subscription.stripeCustomerId, stripeSubscriptionId: response.subscription.stripeSubscriptionId, adminNote: response.subscription.adminNote, hasStripeCustomer: Boolean(response.subscription.stripeCustomerId), hasStripeSubscription: Boolean(response.subscription.stripeSubscriptionId) } : item) } : current);
           setSelectedSubscription(null);
           setActionMessage('Assinatura atualizada com sucesso.');
         } catch (submitError) {
@@ -183,10 +183,14 @@ export function SuperadminSubscriptionsPage() {
   );
 }
 
-function SubscriptionActionSheet({ subscription, isSaving, onClose, onSubmit }: { subscription: SuperadminSubscriptionSummary; isSaving: boolean; onClose: () => void; onSubmit: (payload: { workspaceId: string; plan: string; status: string; currentPeriodEnd: string | null }) => Promise<void>; }) {
+function SubscriptionActionSheet({ subscription, isSaving, onClose, onSubmit }: { subscription: SuperadminSubscriptionSummary; isSaving: boolean; onClose: () => void; onSubmit: (payload: { workspaceId: string; plan: string; status: string; currentPeriodEnd: string | null; stripeCustomerId: string | null; stripeSubscriptionId: string | null; clearStripeLinks: boolean; adminNote: string | null; }) => Promise<void>; }) {
   const [plan, setPlan] = React.useState(subscription.plan);
   const [status, setStatus] = React.useState(subscription.status);
   const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState(subscription.currentPeriodEnd ? subscription.currentPeriodEnd.slice(0, 10) : '');
+  const [stripeCustomerId, setStripeCustomerId] = React.useState(subscription.stripeCustomerId || '');
+  const [stripeSubscriptionId, setStripeSubscriptionId] = React.useState(subscription.stripeSubscriptionId || '');
+  const [adminNote, setAdminNote] = React.useState(subscription.adminNote || '');
+  const [clearStripeLinks, setClearStripeLinks] = React.useState(false);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 p-4 backdrop-blur-sm xl:items-center">
@@ -195,7 +199,7 @@ function SubscriptionActionSheet({ subscription, isSaving, onClose, onSubmit }: 
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ação administrativa</p>
             <h3 className="mt-2 text-xl font-black text-white">{subscription.workspaceName}</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste plano, status e período atual com o mesmo padrão visual do app.</p>
+            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste plano, status, período, vínculo Stripe e observações administrativas da assinatura.</p>
           </div>
           <button type="button" onClick={onClose} disabled={isSaving} className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-bold text-slate-300 transition hover:text-white">Fechar</button>
         </div>
@@ -204,11 +208,15 @@ function SubscriptionActionSheet({ subscription, isSaving, onClose, onSubmit }: 
           <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span><select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>{PLAN_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
           <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Status</span><select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>{STATUS_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
           <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Período atual</span><input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={filterFieldClassName} /></label>
+          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Customer ID</span><input value={stripeCustomerId} onChange={(event) => setStripeCustomerId(event.target.value)} className={filterFieldClassName} placeholder="cus_..." /></label>
+          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Subscription ID</span><input value={stripeSubscriptionId} onChange={(event) => setStripeSubscriptionId(event.target.value)} className={filterFieldClassName} placeholder="sub_..." /></label>
+          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Observação administrativa</span><textarea value={adminNote} onChange={(event) => setAdminNote(event.target.value)} rows={4} className={filterFieldClassName} placeholder="Ex: upgrade manual aprovado, cobrança conciliada, conta migrada." /></label>
+          <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white sm:col-span-2"><span>Desvincular referências Stripe</span><input type="checkbox" checked={clearStripeLinks} onChange={(event) => setClearStripeLinks(event.target.checked)} className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400" /></label>
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>Cancelar</button>
-          <button type="button" disabled={isSaving} onClick={() => void onSubmit({ workspaceId: subscription.workspaceId, plan, status, currentPeriodEnd: currentPeriodEnd || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button>
+          <button type="button" disabled={isSaving} onClick={() => void onSubmit({ workspaceId: subscription.workspaceId, plan, status, currentPeriodEnd: currentPeriodEnd || null, stripeCustomerId: stripeCustomerId || null, stripeSubscriptionId: stripeSubscriptionId || null, clearStripeLinks, adminNote: adminNote || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button>
         </div>
       </div>
     </div>

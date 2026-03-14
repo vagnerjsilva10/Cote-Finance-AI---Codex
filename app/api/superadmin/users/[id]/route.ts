@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { HttpError, normalizePlan } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess, resolvePlatformRoleForEmail } from '@/lib/server/platform-access';
+import { getUserLifecycleStatus, setUserLifecycleStatus } from '@/lib/server/superadmin-governance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -67,7 +68,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const [aiUsageLast30Days, eventsLast30Days, resolvedRole] = await Promise.all([
+    const [aiUsageLast30Days, eventsLast30Days, resolvedRole, lifecycle] = await Promise.all([
       prisma.workspaceEvent.count({
         where: {
           user_id: user.id,
@@ -86,6 +87,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         },
       }),
       resolvePlatformRoleForEmail(user.email),
+      getUserLifecycleStatus(user.id),
     ]);
 
     return NextResponse.json({
@@ -95,6 +97,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         email: user.email,
         createdAt: toIso(user.created_at),
         updatedAt: toIso(user.updated_at),
+        lifecycleStatus: lifecycle.status,
+        lifecycleReason: lifecycle.reason,
         platformRole: resolvedRole.role,
         platformRoleSource: resolvedRole.source,
         profilePlan: user.profile?.plan || 'FREE',
@@ -147,6 +151,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       entitlementStatus?: string;
       currentPeriodEnd?: string | null;
       platformRole?: string;
+      lifecycleStatus?: string;
+      lifecycleReason?: string | null;
     };
 
     const user = await prisma.user.findUnique({
@@ -154,6 +160,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       include: {
         profile: true,
         subscription: true,
+        workspaces: true,
       },
     });
 
@@ -179,6 +186,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       body.platformRole === 'superadmin' || body.platformRole === 'admin' || body.platformRole === 'user'
         ? body.platformRole
         : null;
+    const normalizedLifecycleStatus =
+      body.lifecycleStatus === 'SUSPENDED' || body.lifecycleStatus === 'BLOCKED' ? body.lifecycleStatus : 'ACTIVE';
 
     const [updatedUser, updatedProfile, updatedSubscription] = await prisma.$transaction([
       prisma.user.update({
@@ -235,6 +244,32 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
     }
 
+    const lifecycle = await setUserLifecycleStatus({
+      userId: id,
+      status: normalizedLifecycleStatus,
+      reason: body.lifecycleReason ?? null,
+    });
+
+    await prisma.workspaceEvent.createMany({
+      data: user.workspaces.map((membership) => ({
+        workspace_id: membership.workspace_id,
+        user_id: user.id,
+        type: 'superadmin.user.updated',
+        payload: {
+          source: 'superadmin',
+          next: {
+            name: updatedUser.name,
+            profilePlan: updatedProfile.plan,
+            entitlementPlan: updatedSubscription.plan,
+            entitlementStatus: updatedSubscription.status,
+            platformRole: normalizedRoleInput,
+            lifecycleStatus: lifecycle.status,
+            lifecycleReason: lifecycle.reason,
+          },
+        },
+      })),
+    }).catch(() => undefined);
+
     const resolvedRole = await resolvePlatformRoleForEmail(updatedUser.email);
 
     return NextResponse.json({
@@ -243,6 +278,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         id: updatedUser.id,
         name: updatedUser.name,
         profilePlan: updatedProfile.plan,
+        lifecycleStatus: lifecycle.status,
+        lifecycleReason: lifecycle.reason,
         platformRole: resolvedRole.role,
         platformRoleSource: resolvedRole.source,
         entitlement: {

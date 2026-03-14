@@ -25,11 +25,23 @@ export type SuperadminOverviewResponse = {
     totalInvestments: number;
     totalDebts: number;
     errorEventsLast30Days: number;
+    suspendedUsers: number;
+    blockedUsers: number;
+    suspendedWorkspaces: number;
+    subscriptionsWithNotes: number;
+    adminActionsLast30Days: number;
   };
   conversion: {
     proRate: number;
     premiumRate: number;
   };
+  alerts: Array<{
+    id: string;
+    tone: 'info' | 'warning' | 'danger';
+    title: string;
+    description: string;
+    href: string | null;
+  }>;
   recentEvents: Array<{
     id: string;
     type: string;
@@ -60,6 +72,8 @@ export type SuperadminUserSummary = {
   workspaceCount: number;
   currentPlan: string;
   subscriptionStatus: string | null;
+  lifecycleStatus: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
+  lifecycleReason: string | null;
   platformRole: string;
   platformRoleSource: 'env' | 'override' | 'default';
   whatsappConnected: boolean;
@@ -79,6 +93,8 @@ export type SuperadminUserDetailResponse = {
     email: string;
     createdAt: string;
     updatedAt: string;
+    lifecycleStatus: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
+    lifecycleReason: string | null;
     platformRole: string;
     platformRoleSource: 'env' | 'override' | 'default';
     profilePlan: string;
@@ -115,6 +131,8 @@ export type SuperadminUserUpdateResponse = {
     id: string;
     name: string | null;
     profilePlan: string;
+    lifecycleStatus: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
+    lifecycleReason: string | null;
     platformRoleSource: 'env' | 'override' | 'default';
     entitlement: {
       plan: string;
@@ -279,6 +297,9 @@ export type SuperadminSubscriptionSummary = {
   estimatedMrr: number;
   hasStripeCustomer: boolean;
   hasStripeSubscription: boolean;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  adminNote: string | null;
 };
 
 export type SuperadminSubscriptionsResponse = {
@@ -310,6 +331,9 @@ export type SuperadminSubscriptionUpdateResponse = {
     status: string;
     currentPeriodEnd: string | null;
     estimatedMrr: number;
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+    adminNote: string | null;
   };
 };
 
@@ -350,6 +374,7 @@ export type SuperadminAuditLogsResponse = {
   };
   summary: {
     total: number;
+    admin: number;
     billing: number;
     tracking: number;
     whatsapp: number;

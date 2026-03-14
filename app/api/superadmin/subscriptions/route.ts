@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { HttpError, normalizePlan } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
+import { getSubscriptionMetadataMap, setSubscriptionMetadata } from '@/lib/server/superadmin-governance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,8 @@ export async function GET(req: Request) {
     const plan = (searchParams.get('plan') || '').trim().toUpperCase();
     const status = (searchParams.get('status') || '').trim().toUpperCase();
 
-    const workspaces = await prisma.workspace.findMany({
+    const [workspaces, subscriptionMetadataMap] = await Promise.all([
+      prisma.workspace.findMany({
       where: {
         ...(query
           ? {
@@ -71,7 +73,9 @@ export async function GET(req: Request) {
           },
         },
       },
-    });
+      }),
+      getSubscriptionMetadataMap(),
+    ]);
 
     const subscriptions = workspaces.map((workspace) => {
       const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
@@ -92,6 +96,9 @@ export async function GET(req: Request) {
         estimatedMrr: getEstimatedMrr(resolvedPlan, resolvedStatus),
         hasStripeCustomer: Boolean(subscription?.stripe_customer_id),
         hasStripeSubscription: Boolean(subscription?.stripe_subscription_id),
+        stripeCustomerId: subscription?.stripe_customer_id || null,
+        stripeSubscriptionId: subscription?.stripe_subscription_id || null,
+        adminNote: subscriptionMetadataMap[workspace.id]?.adminNote || null,
       };
     });
 
@@ -152,6 +159,10 @@ export async function PATCH(req: Request) {
       plan?: string;
       status?: string;
       currentPeriodEnd?: string | null;
+      stripeCustomerId?: string | null;
+      stripeSubscriptionId?: string | null;
+      clearStripeLinks?: boolean;
+      adminNote?: string | null;
     };
 
     const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
@@ -185,13 +196,36 @@ export async function PATCH(req: Request) {
         plan,
         status,
         current_period_end: currentPeriodEnd,
+        stripe_customer_id: body.clearStripeLinks
+          ? null
+          : typeof body.stripeCustomerId === 'string'
+            ? body.stripeCustomerId.trim() || null
+            : undefined,
+        stripe_subscription_id: body.clearStripeLinks
+          ? null
+          : typeof body.stripeSubscriptionId === 'string'
+            ? body.stripeSubscriptionId.trim() || null
+            : undefined,
       },
       create: {
         workspace_id: workspaceId,
         plan,
         status,
         current_period_end: currentPeriodEnd,
+        stripe_customer_id:
+          body.clearStripeLinks || typeof body.stripeCustomerId !== 'string'
+            ? null
+            : body.stripeCustomerId.trim() || null,
+        stripe_subscription_id:
+          body.clearStripeLinks || typeof body.stripeSubscriptionId !== 'string'
+            ? null
+            : body.stripeSubscriptionId.trim() || null,
       },
+    });
+
+    const metadata = await setSubscriptionMetadata({
+      workspaceId,
+      adminNote: body.adminNote ?? null,
     });
 
     await prisma.workspaceEvent.create({
@@ -203,14 +237,19 @@ export async function PATCH(req: Request) {
           previous: workspace.subscription
             ? {
                 plan: workspace.subscription.plan,
-                status: workspace.subscription.status,
-                currentPeriodEnd: toIso(workspace.subscription.current_period_end),
-              }
+              status: workspace.subscription.status,
+              currentPeriodEnd: toIso(workspace.subscription.current_period_end),
+              stripeCustomerId: workspace.subscription.stripe_customer_id,
+              stripeSubscriptionId: workspace.subscription.stripe_subscription_id,
+            }
             : null,
           next: {
             plan: subscription.plan,
             status: subscription.status,
             currentPeriodEnd: toIso(subscription.current_period_end),
+            stripeCustomerId: subscription.stripe_customer_id,
+            stripeSubscriptionId: subscription.stripe_subscription_id,
+            adminNote: metadata.adminNote,
           },
         },
       },
@@ -224,6 +263,9 @@ export async function PATCH(req: Request) {
         status: subscription.status,
         currentPeriodEnd: toIso(subscription.current_period_end),
         estimatedMrr: getEstimatedMrr(subscription.plan, subscription.status),
+        stripeCustomerId: subscription.stripe_customer_id,
+        stripeSubscriptionId: subscription.stripe_subscription_id,
+        adminNote: metadata.adminNote,
       },
     });
   } catch (error) {
