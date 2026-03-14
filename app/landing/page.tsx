@@ -1302,29 +1302,34 @@ export default function LandingPage() {
         </motion.section>
 
         <motion.section
-          className="relative overflow-hidden py-6 text-center"
+          className="relative overflow-hidden py-8 text-center"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
           transition={{ duration: 0.45 }}
         >
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-52 -translate-y-1/2 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,.28),transparent_55%),radial-gradient(circle_at_60%_70%,rgba(56,189,248,.22),transparent_45%)] blur-xl" />
-          <h2 className="mx-auto mb-4 max-w-3xl text-3xl font-bold text-white md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Comece a organizar suas finanças hoje
-          </h2>
-          <p className="mx-auto mb-6 max-w-2xl text-slate-100/90">
-            Crie sua conta grátis em menos de 30 segundos.
-          </p>
-          <button
-            onClick={startFree}
-            disabled={isBusy}
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60"
-          >
-            Começar grátis <ArrowRight size={16} />
-          </button>
-          <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-white/10 bg-slate-900/55 px-4 py-2 text-sm text-slate-300">
-            <ShieldCheck size={14} className="text-emerald-300" />
-            Seus dados são protegidos com criptografia e práticas modernas de segurança.
+          <div className="mx-auto max-w-3xl space-y-4">
+            <h2 className="text-3xl font-bold text-white md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+              Comece a organizar suas finanças hoje
+            </h2>
+            <p className="mx-auto max-w-2xl text-base leading-7 text-slate-100/90 md:text-lg">
+              Crie sua conta gratuita e tenha clareza total do seu dinheiro.
+            </p>
+          </div>
+          <div className="mt-8 flex flex-col items-center">
+            <button
+              onClick={startFree}
+              disabled={isBusy}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60"
+            >
+              Começar grátis <ArrowRight size={16} />
+            </button>
+            <p className="mt-4 text-sm font-medium text-slate-300">Sem compromisso • Cancele quando quiser</p>
+            <div className="mt-3 inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
+              <ShieldCheck size={14} className="text-emerald-300" />
+              Seus dados são protegidos com criptografia.
+            </div>
           </div>
         </motion.section>
       </main>
