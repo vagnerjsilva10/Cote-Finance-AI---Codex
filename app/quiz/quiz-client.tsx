@@ -208,7 +208,7 @@ export default function QuizClient() {
                   </div>
 
                   <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-                    <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar" percentageLabel="Diagnóstico 0% concluído" />
+                    <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar?" percentageLabel="Diagnóstico 0% concluído" />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
