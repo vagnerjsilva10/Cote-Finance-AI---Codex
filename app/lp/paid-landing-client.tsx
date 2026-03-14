@@ -220,7 +220,7 @@ export default function PaidLandingClient() {
     <main className={`${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`} style={{ fontFamily: 'var(--font-body)' }}>
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(16,185,129,.18),transparent_28%),radial-gradient(circle_at_88%_10%,rgba(59,130,246,.18),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_54%,#0b1120_100%)]" />
       <div className="border-b border-emerald-300/12 bg-[linear-gradient(90deg,rgba(16,185,129,.12),rgba(15,23,42,.92),rgba(34,211,238,.08))] px-4 py-2 text-center text-[11px] font-medium tracking-[0.08em] text-emerald-100 sm:px-6 sm:text-xs">
-        Clareza financeira com IA • Sem planilhas complicadas
+        Entenda melhor seus gastos • Sem planilhas complicadas
       </div>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
@@ -234,7 +234,7 @@ export default function PaidLandingClient() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-20 pt-6 sm:px-6 sm:gap-20 sm:pb-28 sm:pt-8">
         <section className="grid items-center gap-8 lg:grid-cols-[1.04fr_.96fr] lg:gap-14">
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="space-y-6 text-center lg:space-y-7 lg:text-left">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 shadow-[0_16px_40px_-28px_rgba(16,185,129,.95)]"><Sparkles size={14} /> Clareza financeira em poucos minutos</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-200 shadow-[0_16px_40px_-28px_rgba(16,185,129,.95)]"><Sparkles size={14} /> Mais controle sobre o seu dinheiro</span>
             <h1 className="text-[2.15rem] font-bold leading-[1.04] text-white sm:text-5xl lg:text-[4.2rem]" style={{ fontFamily: 'var(--font-display)' }}>Seu dinheiro está sumindo e você nem sabe por quê</h1>
             <div className="space-y-3 text-[15px] leading-7 text-slate-300 sm:text-lg">
               <p>O Cote Finance AI analisa seus gastos e mostra exatamente para onde seu dinheiro está indo e o que está drenando sua renda.</p>
@@ -468,7 +468,7 @@ export default function PaidLandingClient() {
             <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
               <div>
                 <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quando você entende seu dinheiro, tudo muda.</h2>
-                <p className="mb-6 text-slate-300">Quando você tem clareza financeira:</p>
+                <p className="mb-6 text-slate-300">Quando você enxerga melhor o seu dinheiro:</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {transformationBullets.map((item) => (
                     <motion.div key={item} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><p className="text-slate-100">✔ {item}</p></motion.div>
@@ -477,7 +477,7 @@ export default function PaidLandingClient() {
               </div>
               <div className="relative mx-auto flex w-full max-w-sm items-end justify-center overflow-hidden rounded-[1.75rem] border border-emerald-300/16 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,.2),rgba(15,23,42,.96))] px-4 pt-6 shadow-[0_28px_72px_-44px_rgba(16,185,129,.5)]">
                 <div className="pointer-events-none absolute inset-x-8 bottom-0 h-24 rounded-full bg-emerald-500/18 blur-3xl" />
-                <img src={featuredPortraitUrl} alt="Profissional representando mais clareza financeira" className="relative z-10 h-[21rem] w-auto object-contain sm:h-[24rem]" loading="lazy" />
+                <img src={featuredPortraitUrl} alt="Profissional representando mais controle sobre o dinheiro" className="relative z-10 h-[21rem] w-auto object-contain sm:h-[24rem]" loading="lazy" />
                 <div className="absolute left-4 top-4 rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-left shadow-[0_18px_44px_-28px_rgba(15,23,42,.95)]">
                   <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-200">Mais clareza</p>
                   <p className="mt-1 text-sm text-slate-100">Veja seus gastos com mais segurança e contexto</p>
@@ -544,6 +544,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
