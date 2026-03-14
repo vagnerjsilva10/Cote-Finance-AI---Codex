@@ -219,9 +219,8 @@ export default function PaidLandingClient() {
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(16,185,129,.18),transparent_28%),radial-gradient(circle_at_88%_10%,rgba(59,130,246,.18),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_54%,#0b1120_100%)]" />
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link href="/lp" className="flex items-center gap-3">
-            <Image src="/brand/cote-favicon.svg" alt="Cote Finance AI" width={40} height={40} className="h-10 w-10" priority />
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={420} height={120} className="hidden h-10 w-auto sm:block" priority />
+          <Link href="/lp" className="flex items-center">
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={520} height={140} className="h-9 w-auto sm:h-11 lg:h-12" priority />
           </Link>
           <PrimaryCta href="/signup">Criar conta grátis</PrimaryCta>
         </div>
@@ -526,6 +525,7 @@ export default function PaidLandingClient() {
     </main>
   );
 }
+
 
 
 
