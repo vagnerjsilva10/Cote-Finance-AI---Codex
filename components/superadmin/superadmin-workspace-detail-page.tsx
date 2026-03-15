@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RotateCcw } from 'lucide-react';
 
 import { fetchSuperadminJson } from '@/components/superadmin/fetch-superadmin-json';
 import {
@@ -109,6 +109,8 @@ export function SuperadminWorkspaceDetailPage() {
               <InfoPill label="Atualizado em" value={formatAdminDateTime(workspace.updatedAt)} />
               <InfoPill label="Transacoes/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
               <InfoPill label="IA/mes" value={workspace.limits.aiInteractionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.aiInteractionsPerMonth)} />
+              <InfoPill label="Uso transacoes no mes" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
+              <InfoPill label="Uso IA no mes" value={formatAdminNumber(workspace.monthlyUsage.aiEffective)} />
               <InfoPill label="Relatorios" value={workspace.limits.reports === 'full' ? 'Completos' : 'Basicos'} />
               <InfoPill label="Criado em" value={formatAdminDateTime(workspace.createdAt)} />
             </div>
@@ -229,13 +231,47 @@ export function SuperadminWorkspaceDetailPage() {
           <WorkspaceActionsCard
             workspace={workspace}
             isSaving={isSaving}
+            onResetTransactions={async () => {
+              try {
+                setIsSaving(true);
+                setError(null);
+                setMessage(null);
+                const response = await fetchSuperadminJson<SuperadminWorkspaceUpdateResponse>(`/api/superadmin/workspaces/${workspace.id}`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({ action: 'reset-transaction-usage', reason: 'Reset manual pelo Super Admin.' }),
+                });
+                setData((current) => current ? { ...current, workspace: { ...current.workspace, monthlyUsage: response.monthlyUsage || current.workspace.monthlyUsage } } : current);
+                setMessage('Uso mensal de transacoes resetado com sucesso.');
+              } catch (submitError) {
+                setError(submitError instanceof Error ? submitError.message : 'Falha ao resetar transacoes do workspace.');
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+            onResetAi={async () => {
+              try {
+                setIsSaving(true);
+                setError(null);
+                setMessage(null);
+                const response = await fetchSuperadminJson<SuperadminWorkspaceUpdateResponse>(`/api/superadmin/workspaces/${workspace.id}`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({ action: 'reset-ai-usage', reason: 'Reset manual pelo Super Admin.' }),
+                });
+                setData((current) => current ? { ...current, workspace: { ...current.workspace, monthlyUsage: response.monthlyUsage || current.workspace.monthlyUsage } } : current);
+                setMessage('Uso mensal de IA resetado com sucesso.');
+              } catch (submitError) {
+                setError(submitError instanceof Error ? submitError.message : 'Falha ao resetar IA do workspace.');
+              } finally {
+                setIsSaving(false);
+              }
+            }}
             onSubmit={async (payload) => {
               try {
                 setIsSaving(true);
                 setError(null);
                 setMessage(null);
                 const response = await fetchSuperadminJson<SuperadminWorkspaceUpdateResponse>(`/api/superadmin/workspaces/${workspace.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
-                setData((current) => current ? { ...current, workspace: { ...current.workspace, name: response.workspace.name, whatsappStatus: response.workspace.whatsappStatus, whatsappPhoneNumber: response.workspace.whatsappPhoneNumber, lifecycleStatus: response.workspace.lifecycleStatus, lifecycleReason: response.workspace.lifecycleReason, owner: response.workspace.ownerUserId ? current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId) ? { userId: response.workspace.ownerUserId, name: current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)?.name || null, email: current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)?.email || null } : current.workspace.owner : current.workspace.owner, preference: response.workspace.preference, members: response.workspace.ownerUserId ? current.workspace.members.map((member) => ({ ...member, role: member.userId === response.workspace.ownerUserId ? 'OWNER' : member.role === 'OWNER' ? 'ADMIN' : member.role })) : current.workspace.members } } : current);
+                setData((current) => current ? { ...current, workspace: { ...current.workspace, name: response.workspace.name, whatsappStatus: response.workspace.whatsappStatus, whatsappPhoneNumber: response.workspace.whatsappPhoneNumber, lifecycleStatus: response.workspace.lifecycleStatus, lifecycleReason: response.workspace.lifecycleReason, owner: response.workspace.ownerUserId ? current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId) ? { userId: response.workspace.ownerUserId, name: current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)?.name || null, email: current.workspace.members.find((member) => member.userId === response.workspace.ownerUserId)?.email || null } : current.workspace.owner : current.workspace.owner, preference: response.workspace.preference, monthlyUsage: response.monthlyUsage ? response.monthlyUsage : current.workspace.monthlyUsage, members: response.workspace.ownerUserId ? current.workspace.members.map((member) => ({ ...member, role: member.userId === response.workspace.ownerUserId ? 'OWNER' : member.role === 'OWNER' ? 'ADMIN' : member.role })) : current.workspace.members } } : current);
                 setMessage('Workspace atualizado com sucesso.');
               } catch (submitError) {
                 setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar workspace.');
@@ -264,7 +300,7 @@ export function SuperadminWorkspaceDetailPage() {
   );
 }
 
-function WorkspaceActionsCard({ workspace, isSaving, onSubmit }: { workspace: SuperadminWorkspaceDetailResponse['workspace']; isSaving: boolean; onSubmit: (payload: { name: string; whatsappStatus: string; whatsappPhoneNumber: string | null; onboardingCompleted: boolean; aiSuggestionsEnabled: boolean; objective: string | null; financialProfile: string | null; lifecycleStatus: 'ACTIVE' | 'SUSPENDED'; lifecycleReason: string | null; ownerUserId: string | null; }) => Promise<void>; }) {
+function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onResetAi, onSubmit }: { workspace: SuperadminWorkspaceDetailResponse['workspace']; isSaving: boolean; onResetTransactions: () => Promise<void>; onResetAi: () => Promise<void>; onSubmit: (payload: { name: string; whatsappStatus: string; whatsappPhoneNumber: string | null; onboardingCompleted: boolean; aiSuggestionsEnabled: boolean; objective: string | null; financialProfile: string | null; lifecycleStatus: 'ACTIVE' | 'SUSPENDED'; lifecycleReason: string | null; ownerUserId: string | null; }) => Promise<void>; }) {
   const [name, setName] = React.useState(workspace.name);
   const [whatsappStatus, setWhatsappStatus] = React.useState(workspace.whatsappStatus || 'DISCONNECTED');
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = React.useState(workspace.whatsappPhoneNumber || '');
@@ -305,6 +341,35 @@ function WorkspaceActionsCard({ workspace, isSaving, onSubmit }: { workspace: Su
       </div>
       <div className="mt-4 flex justify-end">
         <button type="button" disabled={isSaving} onClick={() => void onSubmit({ name, whatsappStatus, whatsappPhoneNumber: whatsappPhoneNumber || null, onboardingCompleted, aiSuggestionsEnabled, objective: objective || null, financialProfile: financialProfile || null, lifecycleStatus, lifecycleReason: lifecycleReason || null, ownerUserId: ownerUserId || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/55 p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-white">Resets administrativos do mes</h3>
+            <p className="mt-1 text-sm text-slate-400">Zere o consumo efetivo de transacoes ou IA sem mexer manualmente no banco.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => void onResetTransactions()}
+              className={secondaryActionClassName}
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+              Resetar transacoes
+            </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => void onResetAi()}
+              className={secondaryActionClassName}
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+              Resetar IA
+            </button>
+          </div>
+        </div>
       </div>
     </CompactSection>
   );

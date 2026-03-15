@@ -11,6 +11,7 @@ const WORKSPACE_LIFECYCLE_KEY = 'superadmin.workspace-lifecycle';
 const USER_LIFECYCLE_KEY = 'superadmin.user-lifecycle';
 const SUBSCRIPTION_METADATA_KEY = 'superadmin.subscription-metadata';
 const AI_USAGE_OVERRIDES_KEY = 'superadmin.ai-usage-overrides';
+const TRANSACTION_USAGE_OVERRIDES_KEY = 'superadmin.transaction-usage-overrides';
 const FEATURE_FLAGS_KEY = 'superadmin.feature-flags';
 
 export type EditablePlanCode = WorkspacePlan;
@@ -64,6 +65,14 @@ export type SubscriptionAdminMetadata = {
 };
 
 export type AiUsageOverrideEntry = {
+  workspaceId: string;
+  monthKey: string;
+  offset: number;
+  reason: string | null;
+  updatedAt: string;
+};
+
+export type TransactionUsageOverrideEntry = {
   workspaceId: string;
   monthKey: string;
   offset: number;
@@ -536,6 +545,58 @@ export async function setAiUsageResetForWorkspace(params: {
     updatedAt: new Date().toISOString(),
   };
   await writePlatformSetting(AI_USAGE_OVERRIDES_KEY, map as unknown as Prisma.InputJsonValue);
+  return map[key];
+}
+
+function getTransactionUsageOverrideStorageKey(workspaceId: string, monthKey: string) {
+  return `${workspaceId}:${monthKey}`;
+}
+
+export async function getTransactionUsageOverrideMap(): Promise<Record<string, TransactionUsageOverrideEntry>> {
+  const stored = await readPlatformSetting<Record<string, TransactionUsageOverrideEntry>>(
+    TRANSACTION_USAGE_OVERRIDES_KEY,
+    {}
+  );
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+
+  return Object.entries(stored).reduce<Record<string, TransactionUsageOverrideEntry>>((acc, [key, entry]) => {
+    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const raw = entry as Record<string, unknown>;
+      acc[key] = {
+        workspaceId: typeof raw.workspaceId === 'string' ? raw.workspaceId : '',
+        monthKey: typeof raw.monthKey === 'string' ? raw.monthKey : '',
+        offset: typeof raw.offset === 'number' && Number.isFinite(raw.offset) ? raw.offset : 0,
+        reason: typeof raw.reason === 'string' && raw.reason.trim() ? raw.reason.trim() : null,
+        updatedAt:
+          typeof raw.updatedAt === 'string' && raw.updatedAt.trim() ? raw.updatedAt.trim() : new Date().toISOString(),
+      };
+    }
+    return acc;
+  }, {});
+}
+
+export async function getTransactionUsageEffectiveOffset(workspaceId: string, monthKey = getMonthKeyFromDate()) {
+  const map = await getTransactionUsageOverrideMap();
+  return map[getTransactionUsageOverrideStorageKey(workspaceId, monthKey)]?.offset || 0;
+}
+
+export async function setTransactionUsageResetForWorkspace(params: {
+  workspaceId: string;
+  actualUsage: number;
+  reason?: string | null;
+  monthKey?: string;
+}) {
+  const monthKey = params.monthKey || getMonthKeyFromDate();
+  const map = await getTransactionUsageOverrideMap();
+  const key = getTransactionUsageOverrideStorageKey(params.workspaceId, monthKey);
+  map[key] = {
+    workspaceId: params.workspaceId,
+    monthKey,
+    offset: -Math.max(0, params.actualUsage),
+    reason: params.reason?.trim() || null,
+    updatedAt: new Date().toISOString(),
+  };
+  await writePlatformSetting(TRANSACTION_USAGE_OVERRIDES_KEY, map as unknown as Prisma.InputJsonValue);
   return map[key];
 }
 

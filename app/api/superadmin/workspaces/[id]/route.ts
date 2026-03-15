@@ -4,7 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { PLAN_LIMITS, normalizePlan, HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 import {
+  getAiUsageEffectiveOffset,
+  getMonthKeyFromDate,
+  getTransactionUsageEffectiveOffset,
   getWorkspaceLifecycleStatus,
+  setAiUsageResetForWorkspace,
+  setTransactionUsageResetForWorkspace,
   setWorkspaceLifecycleStatus,
 } from '@/lib/server/superadmin-governance';
 
@@ -22,12 +27,53 @@ function normalizeWhatsappStatus(value: unknown) {
   return ALLOWED_WHATSAPP_STATUSES.has(normalized) ? normalized : null;
 }
 
+async function getCurrentMonthUsage(workspaceId: string) {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const monthKey = getMonthKeyFromDate(now);
+
+  const [transactionsActual, aiActual, transactionOffset, aiOffset] = await Promise.all([
+    prisma.transaction.count({
+      where: {
+        workspace_id: workspaceId,
+        date: {
+          gte: monthStart,
+          lt: nextMonthStart,
+        },
+      },
+    }),
+    prisma.workspaceEvent.count({
+      where: {
+        workspace_id: workspaceId,
+        type: {
+          in: ['ai.chat.used', 'ai.classify.used'],
+        },
+        created_at: {
+          gte: monthStart,
+          lt: nextMonthStart,
+        },
+      },
+    }),
+    getTransactionUsageEffectiveOffset(workspaceId, monthKey),
+    getAiUsageEffectiveOffset(workspaceId, monthKey),
+  ]);
+
+  return {
+    monthKey,
+    transactionsActual,
+    transactionsEffective: Math.max(0, transactionsActual + transactionOffset),
+    aiActual,
+    aiEffective: Math.max(0, aiActual + aiOffset),
+  };
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireSuperadminAccess(req);
     const { id } = await params;
 
-    const [workspace, lifecycle] = await Promise.all([
+    const [workspace, lifecycle, usage] = await Promise.all([
       prisma.workspace.findUnique({
       where: { id },
       include: {
@@ -70,6 +116,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       },
       }),
       getWorkspaceLifecycleStatus(id),
+      getCurrentMonthUsage(id),
     ]);
 
     if (!workspace) {
@@ -115,6 +162,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           events: workspace._count.events,
         },
         limits: PLAN_LIMITS[plan],
+        monthlyUsage: {
+          transactionsActual: usage.transactionsActual,
+          transactionsEffective: usage.transactionsEffective,
+          transactionResetReason: null,
+          aiActual: usage.aiActual,
+          aiEffective: usage.aiEffective,
+          aiResetReason: null,
+        },
         preference: workspace.preference
           ? {
               onboardingCompleted: workspace.preference.onboarding_completed,
@@ -159,7 +214,132 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       lifecycleStatus?: 'ACTIVE' | 'SUSPENDED';
       lifecycleReason?: string | null;
       ownerUserId?: string | null;
+      reason?: string | null;
     };
+
+    if (body.action === 'reset-transaction-usage') {
+      const workspace = await prisma.workspace.findUnique({
+        where: { id },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!workspace) {
+        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      }
+
+      const usage = await getCurrentMonthUsage(id);
+      const reset = await setTransactionUsageResetForWorkspace({
+        workspaceId: id,
+        actualUsage: usage.transactionsActual,
+        reason: body.reason ?? null,
+        monthKey: usage.monthKey,
+      });
+
+      await prisma.workspaceEvent.create({
+        data: {
+          workspace_id: id,
+          type: 'superadmin.workspace.transaction-usage.reset',
+          payload: {
+            source: 'superadmin',
+            actualUsage: usage.transactionsActual,
+            offset: reset.offset,
+            reason: reset.reason,
+            monthKey: reset.monthKey,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        ok: true,
+        monthlyUsage: {
+          transactionsActual: usage.transactionsActual,
+          transactionsEffective: 0,
+          transactionResetReason: reset.reason,
+          aiActual: usage.aiActual,
+          aiEffective: usage.aiEffective,
+          aiResetReason: null,
+        },
+        workspace: {
+          id,
+          name: '',
+          whatsappStatus: null,
+          whatsappPhoneNumber: null,
+          lifecycleStatus: 'ACTIVE',
+          lifecycleReason: null,
+          ownerUserId: null,
+          preference: {
+            onboardingCompleted: false,
+            aiSuggestionsEnabled: true,
+            objective: null,
+            financialProfile: null,
+          },
+        },
+      });
+    }
+
+    if (body.action === 'reset-ai-usage') {
+      const workspace = await prisma.workspace.findUnique({
+        where: { id },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!workspace) {
+        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      }
+
+      const usage = await getCurrentMonthUsage(id);
+      const reset = await setAiUsageResetForWorkspace({
+        workspaceId: id,
+        actualUsage: usage.aiActual,
+        reason: body.reason ?? null,
+        monthKey: usage.monthKey,
+      });
+
+      await prisma.workspaceEvent.create({
+        data: {
+          workspace_id: id,
+          type: 'superadmin.workspace.ai-usage.reset',
+          payload: {
+            source: 'superadmin',
+            actualUsage: usage.aiActual,
+            offset: reset.offset,
+            reason: reset.reason,
+            monthKey: reset.monthKey,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        ok: true,
+        monthlyUsage: {
+          transactionsActual: usage.transactionsActual,
+          transactionsEffective: usage.transactionsEffective,
+          transactionResetReason: null,
+          aiActual: usage.aiActual,
+          aiEffective: 0,
+          aiResetReason: reset.reason,
+        },
+        workspace: {
+          id,
+          name: '',
+          whatsappStatus: null,
+          whatsappPhoneNumber: null,
+          lifecycleStatus: 'ACTIVE',
+          lifecycleReason: null,
+          ownerUserId: null,
+          preference: {
+            onboardingCompleted: false,
+            aiSuggestionsEnabled: true,
+            objective: null,
+            financialProfile: null,
+          },
+        },
+      });
+    }
 
     if (body.action === 'update-member-role') {
       const memberId = typeof body.memberId === 'string' ? body.memberId.trim() : '';
@@ -228,6 +408,148 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         member: {
           id: memberId,
           role: memberRole,
+        },
+      });
+    }
+
+    if (body.action === 'add-member') {
+      const email = typeof body.ownerUserId === 'string' ? '' : '';
+      const memberEmail = typeof (body as { memberEmail?: string | null }).memberEmail === 'string'
+        ? (body as { memberEmail?: string | null }).memberEmail!.trim().toLowerCase()
+        : '';
+      const memberRole =
+        (body as { memberRole?: string | null }).memberRole === 'ADMIN' || (body as { memberRole?: string | null }).memberRole === 'OWNER'
+          ? ((body as { memberRole?: string | null }).memberRole as 'ADMIN' | 'OWNER')
+          : 'MEMBER';
+
+      if (!memberEmail) {
+        return NextResponse.json({ error: 'Informe um e-mail válido para adicionar o membro.' }, { status: 400 });
+      }
+
+      const [workspaceWithMembers, targetUser] = await Promise.all([
+        prisma.workspace.findUnique({
+          where: { id },
+          include: {
+            members: true,
+          },
+        }),
+        prisma.user.findUnique({
+          where: { email: memberEmail },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        }),
+      ]);
+
+      if (!workspaceWithMembers) {
+        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      }
+
+      if (!targetUser) {
+        return NextResponse.json({ error: 'Usuário não encontrado para este e-mail.' }, { status: 404 });
+      }
+
+      const existingMember = workspaceWithMembers.members.find((member) => member.user_id === targetUser.id);
+      if (existingMember) {
+        return NextResponse.json({ error: 'Este usuário já faz parte do workspace.' }, { status: 409 });
+      }
+
+      const createdMember = await prisma.$transaction(async (tx) => {
+        if (memberRole === 'OWNER') {
+          await tx.workspaceMember.updateMany({
+            where: {
+              workspace_id: id,
+              role: 'OWNER',
+            },
+            data: {
+              role: 'ADMIN',
+            },
+          });
+        }
+
+        return tx.workspaceMember.create({
+          data: {
+            workspace_id: id,
+            user_id: targetUser.id,
+            role: memberRole,
+          },
+        });
+      });
+
+      await prisma.workspaceEvent.create({
+        data: {
+          workspace_id: id,
+          user_id: targetUser.id,
+          type: 'superadmin.workspace.member.added',
+          payload: {
+            source: 'superadmin',
+            memberId: createdMember.id,
+            memberRole,
+            memberEmail,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        ok: true,
+        member: {
+          id: createdMember.id,
+          userId: targetUser.id,
+          name: targetUser.name,
+          email: targetUser.email,
+          role: memberRole,
+        },
+      });
+    }
+
+    if (body.action === 'remove-member') {
+      const memberId = typeof body.memberId === 'string' ? body.memberId.trim() : '';
+      if (!memberId) {
+        return NextResponse.json({ error: 'Membro inválido para remoção.' }, { status: 400 });
+      }
+
+      const workspaceWithMembers = await prisma.workspace.findUnique({
+        where: { id },
+        include: {
+          members: true,
+        },
+      });
+
+      if (!workspaceWithMembers) {
+        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      }
+
+      const targetMember = workspaceWithMembers.members.find((member) => member.id === memberId);
+      if (!targetMember) {
+        return NextResponse.json({ error: 'Membro não encontrado neste workspace.' }, { status: 404 });
+      }
+
+      if (targetMember.role === 'OWNER') {
+        return NextResponse.json({ error: 'Transfira o owner antes de remover este membro.' }, { status: 409 });
+      }
+
+      await prisma.workspaceMember.delete({
+        where: { id: memberId },
+      });
+
+      await prisma.workspaceEvent.create({
+        data: {
+          workspace_id: id,
+          user_id: targetMember.user_id,
+          type: 'superadmin.workspace.member.removed',
+          payload: {
+            source: 'superadmin',
+            memberId,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        ok: true,
+        member: {
+          id: memberId,
         },
       });
     }
@@ -374,8 +696,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       },
     });
 
+    const usage = await getCurrentMonthUsage(id);
+
     return NextResponse.json({
       ok: true,
+      monthlyUsage: {
+        transactionsActual: usage.transactionsActual,
+        transactionsEffective: usage.transactionsEffective,
+        transactionResetReason: null,
+        aiActual: usage.aiActual,
+        aiEffective: usage.aiEffective,
+        aiResetReason: null,
+      },
       workspace: {
         id: updatedWorkspace.id,
         name: updatedWorkspace.name,

@@ -83,10 +83,16 @@ export type SuperadminUserSummary = {
 export type SuperadminUsersResponse = {
   query: string;
   total: number;
+  capabilities: {
+    authAdminConfigured: boolean;
+  };
   users: SuperadminUserSummary[];
 };
 
 export type SuperadminUserDetailResponse = {
+  capabilities: {
+    authAdminConfigured: boolean;
+  };
   user: {
     id: string;
     name: string | null;
@@ -127,9 +133,14 @@ export type SuperadminUserDetailResponse = {
 
 export type SuperadminUserUpdateResponse = {
   ok: boolean;
+  supportLink?: {
+    type: 'magiclink' | 'recovery';
+    url: string;
+  } | null;
   user: {
     id: string;
     name: string | null;
+    email: string;
     profilePlan: string;
     lifecycleStatus: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
     lifecycleReason: string | null;
@@ -140,6 +151,15 @@ export type SuperadminUserUpdateResponse = {
       currentPeriodEnd: string | null;
     };
     platformRole: string;
+  };
+};
+
+export type SuperadminUserCreateResponse = {
+  ok: boolean;
+  createdUser: {
+    id: string;
+    email: string;
+    name: string | null;
   };
 };
 
@@ -205,6 +225,14 @@ export type SuperadminWorkspaceDetailResponse = {
       aiInteractionsPerMonth: number | null;
       reports: 'basic' | 'full';
     };
+    monthlyUsage: {
+      transactionsActual: number;
+      transactionsEffective: number;
+      transactionResetReason: string | null;
+      aiActual: number;
+      aiEffective: number;
+      aiResetReason: string | null;
+    };
     preference: {
       onboardingCompleted: boolean;
       objective: string | null;
@@ -222,6 +250,14 @@ export type SuperadminWorkspaceDetailResponse = {
 
 export type SuperadminWorkspaceUpdateResponse = {
   ok: boolean;
+  monthlyUsage?: {
+    transactionsActual: number;
+    transactionsEffective: number;
+    transactionResetReason: string | null;
+    aiActual: number;
+    aiEffective: number;
+    aiResetReason: string | null;
+  };
   workspace: {
     id: string;
     name: string;

@@ -8,6 +8,7 @@ import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
+import { getTransactionUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -394,8 +395,10 @@ export async function POST(req: Request) {
           },
         },
       });
+      const transactionOffset = await getTransactionUsageEffectiveOffset(context.workspaceId);
+      const effectiveCurrentMonthCount = Math.max(0, currentMonthCount + transactionOffset);
 
-      if (currentMonthCount >= transactionLimit) {
+      if (effectiveCurrentMonthCount >= transactionLimit) {
         return NextResponse.json(
           {
             error: `Transaction limit reached for ${plan}. Upgrade to continue.`,
