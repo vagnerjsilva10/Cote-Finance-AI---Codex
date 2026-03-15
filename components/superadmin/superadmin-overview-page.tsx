@@ -87,15 +87,14 @@ export function SuperadminOverviewPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white">Visao Geral</h1>
+            <h1 className="mt-2 text-3xl font-semibold text-white">Pulso operacional da plataforma</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Acompanhe os indicadores principais da operacao, identifique sinais de churn e monitore uso de IA,
-              WhatsApp e billing em um unico lugar.
+              Acompanhe rapidamente billing, uso de produto, alertas e sinais de saúde sem quebrar o fluxo do app principal.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

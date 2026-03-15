@@ -74,10 +74,10 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
   const currentItem = bootstrap.navigation.find((item) => isNavigationItemActive(pathname, item.href));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white lg:flex">
       {isSidebarOpen ? <button type="button" onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 z-[90] bg-slate-950/80 backdrop-blur-sm lg:hidden" /> : null}
 
-      <aside className={cn('fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-slate-900 bg-slate-950/96 backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0', isSidebarOpen ? 'translate-x-0' : '-translate-x-full', isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64')}>
+      <aside className={cn('fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-slate-900 bg-slate-950/96 backdrop-blur-xl transition-all duration-300 lg:sticky lg:top-0 lg:max-w-none lg:translate-x-0', isSidebarOpen ? 'translate-x-0' : '-translate-x-full', isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64')}>
         <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-4' : 'p-6')}>
           <Image src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo} alt="Cote Finance AI - By Cote Juros" width={isSidebarCollapsed ? 48 : 420} height={isSidebarCollapsed ? 48 : 112} className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-11' : 'w-full max-w-[280px]')} />
           <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <nav className={cn('flex-1 overflow-y-auto py-4 space-y-1', isSidebarCollapsed ? 'px-2' : 'px-4')}>
+        <nav className={cn('custom-scrollbar flex-1 overflow-y-auto py-4 space-y-1', isSidebarCollapsed ? 'px-2' : 'px-4')}>
           {bootstrap.navigation.map((item) => (
             <SidebarItem key={item.href} iconName={item.icon} label={item.label} href={item.href} active={isNavigationItemActive(pathname, item.href)} collapsed={isSidebarCollapsed} />
           ))}
@@ -114,7 +114,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex flex-1 flex-col overflow-hidden">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-30 border-b border-slate-900 bg-slate-950/80 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -130,7 +130,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 lg:px-8 lg:py-6">{children}</div>
+        <div className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4 sm:px-4 lg:px-8 lg:py-6">{children}</div>
       </main>
     </div>
   );
