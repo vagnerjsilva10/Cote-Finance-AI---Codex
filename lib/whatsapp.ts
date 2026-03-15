@@ -32,6 +32,12 @@ export type WhatsAppRequestContext = {
   languageCode?: string | null;
 };
 
+export type WhatsAppConnectionHealth = {
+  displayPhoneNumber: string | null;
+  verifiedName: string | null;
+  qualityRating: string | null;
+};
+
 export class WhatsAppApiError extends Error {
   status: number;
   metaCode?: number;
@@ -236,6 +242,67 @@ async function sendWhatsAppRequest(payload: Record<string, unknown>, context: Wh
   return parsedBody;
 }
 
+export async function verifyWhatsAppConnection(): Promise<WhatsAppConnectionHealth> {
+  const config = getWhatsAppConfig();
+  const endpoint = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}?fields=display_phone_number,verified_name,quality_rating`;
+
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${config.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  const rawBody = await response.text();
+  const parsedBody = rawBody ? safeParseBody(rawBody) : {};
+
+  if (!response.ok) {
+    const parsedError = parseErrorBody(rawBody);
+    const category = categorizeWhatsAppError({
+      status: response.status,
+      parsedError,
+      context: {
+        source: 'text',
+        destination: 'health-check',
+      },
+    });
+
+    console.error('WhatsApp API health-check failure', {
+      status: response.status,
+      endpoint,
+      meta_error: parsedError.rawBody ?? parsedError.message,
+    });
+
+    throw new WhatsAppApiError({
+      message: parsedError.message,
+      status: response.status,
+      destination: 'health-check',
+      phoneNumberId: config.phoneNumberId,
+      endpoint,
+      category,
+      rawBody: parsedError.rawBody,
+    });
+  }
+
+  const data = parsedBody && typeof parsedBody === 'object' ? (parsedBody as Record<string, unknown>) : {};
+
+  return {
+    displayPhoneNumber: typeof data.display_phone_number === 'string' ? data.display_phone_number : null,
+    verifiedName: typeof data.verified_name === 'string' ? data.verified_name : null,
+    qualityRating: typeof data.quality_rating === 'string' ? data.quality_rating : null,
+  };
+}
+
+function safeParseBody(rawBody: string) {
+  try {
+    return JSON.parse(rawBody);
+  } catch {
+    return { raw: rawBody };
+  }
+}
+
 export function normalizeWhatsappPhone(phone: string) {
   const onlyDigits = phone.replace(/\D/g, '');
   if (!onlyDigits) return '';
@@ -254,6 +321,11 @@ export function normalizeWhatsappPhone(phone: string) {
   }
 
   return withoutInternationalPrefix;
+}
+
+export function isValidE164Phone(phone: string) {
+  const normalized = normalizeWhatsappPhone(phone);
+  return /^\d{10,15}$/.test(normalized);
 }
 
 export function getWhatsAppConfig(): WhatsAppConfig {

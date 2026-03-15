@@ -6,12 +6,18 @@ import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 
 export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = 'pt_BR';
 const WHATSAPP_CONFIG_EVENT_TYPE = 'whatsapp.config.updated';
+const WHATSAPP_CONFIG_KEY_PREFIX = 'workspace.whatsapp-config.';
 
 export type WorkspaceWhatsAppConfig = {
   connectTemplateName: string | null;
   digestTemplateName: string | null;
   templateLanguage: string;
   testPhoneNumber: string | null;
+  lastConnectionState: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
+  lastErrorMessage: string | null;
+  lastErrorCategory: string | null;
+  lastValidatedAt: string | null;
+  lastTestSentAt: string | null;
   updatedAt: string | null;
 };
 
@@ -41,6 +47,20 @@ function normalizeTestPhoneNumber(value: unknown) {
   return normalized || null;
 }
 
+function normalizeConnectionState(value: unknown): WorkspaceWhatsAppConfig['lastConnectionState'] {
+  const normalized = cleanValue(value).toLowerCase();
+  if (
+    normalized === 'connected' ||
+    normalized === 'disconnected' ||
+    normalized === 'error' ||
+    normalized === 'testing' ||
+    normalized === 'config_pending'
+  ) {
+    return normalized;
+  }
+  return 'idle';
+}
+
 function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
   const source =
     payload &&
@@ -64,11 +84,35 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
       ? normalizeTemplateLanguage(sourceRecord.templateLanguage)
       : DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
     testPhoneNumber: sourceRecord ? normalizeTestPhoneNumber(sourceRecord.testPhoneNumber) : null,
+    lastConnectionState: sourceRecord ? normalizeConnectionState(sourceRecord.lastConnectionState) : 'idle',
+    lastErrorMessage: sourceRecord ? normalizeTemplateName(sourceRecord.lastErrorMessage) : null,
+    lastErrorCategory: sourceRecord ? normalizeTemplateName(sourceRecord.lastErrorCategory) : null,
+    lastValidatedAt:
+      sourceRecord && typeof sourceRecord.lastValidatedAt === 'string' ? sourceRecord.lastValidatedAt : null,
+    lastTestSentAt:
+      sourceRecord && typeof sourceRecord.lastTestSentAt === 'string' ? sourceRecord.lastTestSentAt : null,
     updatedAt,
   };
 }
 
 export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<WorkspaceWhatsAppConfig> {
+  const settingKey = `${WHATSAPP_CONFIG_KEY_PREFIX}${workspaceId}`;
+  const configSetting = await prisma.platformSetting.findUnique({
+    where: { key: settingKey },
+    select: {
+      value: true,
+      updated_at: true,
+    },
+  });
+
+  if (configSetting) {
+    const parsed = readConfigPayload(configSetting.value);
+    return {
+      ...parsed,
+      updatedAt: parsed.updatedAt ?? configSetting.updated_at.toISOString(),
+    };
+  }
+
   const latestConfigEvent = await prisma.workspaceEvent.findFirst({
     where: {
       workspace_id: workspaceId,
@@ -89,6 +133,11 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
       digestTemplateName: null,
       templateLanguage: DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
       testPhoneNumber: null,
+      lastConnectionState: 'idle',
+      lastErrorMessage: null,
+      lastErrorCategory: null,
+      lastValidatedAt: null,
+      lastTestSentAt: null,
       updatedAt: null,
     };
   }
@@ -107,14 +156,66 @@ export async function saveWorkspaceWhatsAppConfig(params: {
   digestTemplateName?: string | null;
   templateLanguage?: string | null;
   testPhoneNumber?: string | null;
+  lastConnectionState?: WorkspaceWhatsAppConfig['lastConnectionState'];
+  lastErrorMessage?: string | null;
+  lastErrorCategory?: string | null;
+  lastValidatedAt?: string | null;
+  lastTestSentAt?: string | null;
 }) {
+  const currentConfig = await getWorkspaceWhatsAppConfig(params.workspaceId);
   const normalizedConfig: WorkspaceWhatsAppConfig = {
-    connectTemplateName: normalizeTemplateName(params.connectTemplateName),
-    digestTemplateName: normalizeTemplateName(params.digestTemplateName),
-    templateLanguage: normalizeTemplateLanguage(params.templateLanguage),
-    testPhoneNumber: normalizeTestPhoneNumber(params.testPhoneNumber),
+    connectTemplateName:
+      typeof params.connectTemplateName === 'undefined'
+        ? currentConfig.connectTemplateName
+        : normalizeTemplateName(params.connectTemplateName),
+    digestTemplateName:
+      typeof params.digestTemplateName === 'undefined'
+        ? currentConfig.digestTemplateName
+        : normalizeTemplateName(params.digestTemplateName),
+    templateLanguage:
+      typeof params.templateLanguage === 'undefined'
+        ? currentConfig.templateLanguage
+        : normalizeTemplateLanguage(params.templateLanguage),
+    testPhoneNumber:
+      typeof params.testPhoneNumber === 'undefined'
+        ? currentConfig.testPhoneNumber
+        : normalizeTestPhoneNumber(params.testPhoneNumber),
+    lastConnectionState: params.lastConnectionState ?? currentConfig.lastConnectionState,
+    lastErrorMessage:
+      typeof params.lastErrorMessage === 'undefined'
+        ? currentConfig.lastErrorMessage
+        : normalizeTemplateName(params.lastErrorMessage),
+    lastErrorCategory:
+      typeof params.lastErrorCategory === 'undefined'
+        ? currentConfig.lastErrorCategory
+        : normalizeTemplateName(params.lastErrorCategory),
+    lastValidatedAt:
+      typeof params.lastValidatedAt === 'undefined' ? currentConfig.lastValidatedAt : params.lastValidatedAt,
+    lastTestSentAt:
+      typeof params.lastTestSentAt === 'undefined' ? currentConfig.lastTestSentAt : params.lastTestSentAt,
     updatedAt: new Date().toISOString(),
   };
+
+  await prisma.platformSetting.upsert({
+    where: {
+      key: `${WHATSAPP_CONFIG_KEY_PREFIX}${params.workspaceId}`,
+    },
+    update: {
+      value: {
+        version: 2,
+        updatedAt: normalizedConfig.updatedAt,
+        config: normalizedConfig,
+      },
+    },
+    create: {
+      key: `${WHATSAPP_CONFIG_KEY_PREFIX}${params.workspaceId}`,
+      value: {
+        version: 2,
+        updatedAt: normalizedConfig.updatedAt,
+        config: normalizedConfig,
+      },
+    },
+  });
 
   await logWorkspaceEventSafe({
     workspaceId: params.workspaceId,
@@ -128,6 +229,11 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         digestTemplateName: normalizedConfig.digestTemplateName,
         templateLanguage: normalizedConfig.templateLanguage,
         testPhoneNumber: normalizedConfig.testPhoneNumber,
+        lastConnectionState: normalizedConfig.lastConnectionState,
+        lastErrorMessage: normalizedConfig.lastErrorMessage,
+        lastErrorCategory: normalizedConfig.lastErrorCategory,
+        lastValidatedAt: normalizedConfig.lastValidatedAt,
+        lastTestSentAt: normalizedConfig.lastTestSentAt,
       },
     },
   });
@@ -161,6 +267,11 @@ export function resolveWorkspaceWhatsAppConfig(params: {
     digestTemplateName,
     templateLanguage,
     testPhoneNumber,
+    lastConnectionState: params.workspaceConfig.lastConnectionState,
+    lastErrorMessage: params.workspaceConfig.lastErrorMessage,
+    lastErrorCategory: params.workspaceConfig.lastErrorCategory,
+    lastValidatedAt: params.workspaceConfig.lastValidatedAt,
+    lastTestSentAt: params.workspaceConfig.lastTestSentAt,
     updatedAt: params.workspaceConfig.updatedAt,
     connectTemplateNameSource: params.workspaceConfig.connectTemplateName
       ? 'workspace'

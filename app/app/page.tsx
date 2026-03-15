@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -61,7 +61,7 @@ import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 // --- Types ---
 
 type LucideIcon = React.ComponentType<{ size?: number; className?: string }>;
-const DEFAULT_WHATSAPP_NUMBER = '+551199999999';
+const DEFAULT_WHATSAPP_NUMBER = '';
 
 type Tab =
   | 'dashboard'
@@ -204,11 +204,6 @@ type Message = {
 
 type SubscriptionPlan = 'FREE' | 'PRO' | 'PREMIUM';
 type ReportAccessLevel = 'basic' | 'full';
-type WorkspacePlanLimits = {
-  transactionsPerMonth: number | null;
-  aiInteractionsPerMonth: number | null;
-  reports: ReportAccessLevel;
-};
 
 type WorkspaceOption = {
   id: string;
@@ -228,7 +223,6 @@ type WorkspaceDashboardSnapshot = {
   totalBalance: number;
   currentPlan: SubscriptionPlan;
   reportAccessLevel: ReportAccessLevel;
-  currentPlanLimits: WorkspacePlanLimits;
   currentMonthTransactionCount: number;
   aiUsageCount: number;
   transactions: Transaction[];
@@ -345,7 +339,6 @@ type WhatsAppMetaDiagnostic = {
   templateName?: string | null;
   languageCode?: string | null;
   destination?: string | null;
-  phoneNumberId?: string | null;
 };
 
 type WhatsAppDiagnostic = {
@@ -354,7 +347,10 @@ type WhatsAppDiagnostic = {
   idiomaConfigurado: string;
   destinoTeste: string | null;
   numeroConectado: string | null;
-  phoneNumberId: string | null;
+  connectionState?: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
+  lastValidatedAt?: string | null;
+  lastTestSentAt?: string | null;
+  lastErrorMessage?: string | null;
   validationResult: 'OK' | 'ERRO';
   validationIssues: string[];
   configSources?: {
@@ -366,13 +362,10 @@ type WhatsAppDiagnostic = {
   metaResult?: string | WhatsAppMetaDiagnostic | null;
 };
 
+const FREE_TRANSACTION_LIMIT_PER_MONTH = 20;
+const FREE_AI_LIMIT_PER_MONTH = 20;
 const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const AVATAR_OUTPUT_SIZE = 256;
-const DEFAULT_WORKSPACE_PLAN_LIMITS: WorkspacePlanLimits = {
-  transactionsPerMonth: null,
-  aiInteractionsPerMonth: null,
-  reports: 'basic',
-};
 
 // --- Helpers ---
 
@@ -394,6 +387,65 @@ const formatAgendaDate = (date: Date) =>
     day: '2-digit',
     month: 'short',
   });
+
+const getWhatsAppConnectionLabel = (
+  state: WhatsAppDiagnostic['connectionState'],
+  isConnected: boolean,
+  isConnecting: boolean
+) => {
+  if (isConnecting) {
+    return 'Validando conexão';
+  }
+
+  switch (state) {
+    case 'connected':
+      return 'Conectado';
+    case 'testing':
+      return 'Testando';
+    case 'error':
+      return 'Erro de autenticação';
+    case 'disconnected':
+      return 'Desconectado';
+    case 'config_pending':
+      return 'Aguardando configuração';
+    default:
+      return isConnected ? 'Conectado' : 'Aguardando configuração';
+  }
+};
+
+const getWhatsAppConnectionTone = (
+  state: WhatsAppDiagnostic['connectionState'],
+  isConnected: boolean,
+  isConnecting: boolean
+) => {
+  if (isConnecting || state === 'testing') {
+    return 'warning';
+  }
+  if (state === 'error') {
+    return 'error';
+  }
+  if (state === 'connected' || isConnected) {
+    return 'success';
+  }
+  return 'neutral';
+};
+
+const getWhatsAppConnectionDescription = (
+  state: WhatsAppDiagnostic['connectionState'],
+  isConnected: boolean,
+  hasValidationIssues: boolean
+) => {
+  if (state === 'error') {
+    return 'A conexão com a Meta falhou. Revise token, permissões e os dados deste workspace.';
+  }
+  if (state === 'connected' || isConnected) {
+    return 'Configuração pronta para envio. Você já pode disparar um teste com segurança.';
+  }
+  if (hasValidationIssues) {
+    return 'Há ajustes pendentes antes de ativar o envio deste workspace.';
+  }
+  return 'Preencha os dados do workspace, valide a conexão e depois envie um teste.';
+};
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -527,9 +579,6 @@ const formatMoneyInput = (val: number | string) => {
   if (typeof val === 'number') return formatCurrency(val);
   return formatCurrency(parseMoneyInput(val));
 };
-
-const formatPlanQuota = (value: number | null, label: string) =>
-  typeof value === 'number' ? `${value} ${label}` : `${label} ilimitadas`;
 
 const getUserDisplayName = (user: any) => {
   const metadata = user?.user_metadata;
@@ -798,8 +847,8 @@ const ONBOARDING_OBJECTIVES = [
 ];
 
 const ONBOARDING_USAGE_LEVELS = [
-  'Até 15 lançamentos',
-  '16 a 50 lançamentos',
+  'Até 20 lançamentos',
+  '20 a 50 lançamentos',
   '50 a 100 lançamentos',
   'Mais de 100 lançamentos',
 ];
@@ -1305,14 +1354,6 @@ type MoneyInputProps = {
   className?: string;
 };
 
-type PercentageInputProps = {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-};
-
 type UserAvatarProps = {
   user?: any;
   displayName?: string | null;
@@ -1339,68 +1380,6 @@ const MoneyInput = ({
       disabled={disabled}
       className={className}
     />
-  );
-};
-
-const sanitizePercentageInput = (rawValue: string) => {
-  const normalized = rawValue.replace(/\s|%/g, '').replace(',', '.');
-  let result = '';
-  let hasDecimalSeparator = false;
-
-  for (const char of normalized) {
-    if (/\d/.test(char)) {
-      result += char;
-      continue;
-    }
-
-    if (char === '.' && !hasDecimalSeparator) {
-      result += '.';
-      hasDecimalSeparator = true;
-    }
-  }
-
-  if (result.startsWith('.')) {
-    result = `0${result}`;
-  }
-
-  return result;
-};
-
-const formatPercentageDisplay = (value: string) => value.replace('.', ',');
-
-const formatPercentValue = (value: number, fractionDigits = 2) =>
-  new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  }).format(value);
-
-const formatPercent = (value: number, fractionDigits = 2) => `${formatPercentValue(value, fractionDigits)}%`;
-
-const formatSignedPercent = (value: number, fractionDigits = 2) =>
-  `${value > 0 ? '+' : value < 0 ? '-' : ''}${formatPercent(Math.abs(value), fractionDigits)}`;
-
-const PercentageInput = ({
-  value,
-  onChange,
-  placeholder = '0,00',
-  disabled = false,
-  className = '',
-}: PercentageInputProps) => {
-  return (
-    <div className="relative">
-      <input
-        type="text"
-        inputMode="decimal"
-        value={formatPercentageDisplay(value)}
-        onChange={(e) => onChange(sanitizePercentageInput(e.target.value))}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(className, 'pr-10')}
-      />
-      <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm font-semibold text-slate-400">
-        %
-      </span>
-    </div>
   );
 };
 
@@ -1881,7 +1860,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         />
         <StatCard
           label="Taxa de economia"
-          value={formatPercent(savingsRate, 1)}
+          value={`${savingsRate.toFixed(1)}%`}
           trend="(entradas - despesas) / entradas"
           trendValue="mês atual"
           icon={Target}
@@ -2371,6 +2350,16 @@ const IntegrationsView = ({
     whatsAppDiagnostic &&
       (whatsAppDiagnostic.validationIssues.length > 0 || whatsAppDiagnostic.validationResult === 'ERRO')
   );
+  const connectionState = whatsAppDiagnostic?.connectionState;
+  const connectionLabel = getWhatsAppConnectionLabel(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
+  const connectionTone = getWhatsAppConnectionTone(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
+  const connectionDescription = getWhatsAppConnectionDescription(
+    connectionState,
+    isWhatsAppConnected,
+    hasWhatsAppValidationIssues
+  );
+  const canSendWhatsAppTest = Boolean(whatsAppPhoneNumber.trim() && whatsAppTestPhoneNumber.trim()) && !isSendingWhatsAppTest;
+  const canConnectWhatsApp = Boolean(whatsAppPhoneNumber.trim()) && !isConnectingWhatsApp;
 
   const plans = [
     {
@@ -2477,26 +2466,38 @@ const IntegrationsView = ({
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">Integração com WhatsApp</h3>
-              <p className="text-sm text-slate-500">Alertas e resumos automáticos direto no seu celular</p>
+              <p className="text-sm text-slate-500">Alertas e resumos automáticos direto no celular do workspace</p>
             </div>
           </div>
           <div
             className={cn(
               'flex items-center gap-2 self-start rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest lg:self-center',
               hasWhatsAppAccess
-                ? isWhatsAppConnected
+                ? connectionTone === 'success'
                   ? 'bg-emerald-500/10 text-emerald-500'
-                  : 'bg-rose-500/10 text-rose-500'
+                  : connectionTone === 'warning'
+                    ? 'bg-amber-500/10 text-amber-300'
+                    : connectionTone === 'error'
+                      ? 'bg-rose-500/10 text-rose-500'
+                      : 'bg-slate-800 text-slate-400'
                 : 'bg-amber-500/10 text-amber-300'
             )}
           >
             <div
               className={cn(
                 'size-1.5 rounded-full animate-pulse',
-                hasWhatsAppAccess ? (isWhatsAppConnected ? 'bg-emerald-500' : 'bg-rose-500') : 'bg-amber-300'
+                hasWhatsAppAccess
+                  ? connectionTone === 'success'
+                    ? 'bg-emerald-500'
+                    : connectionTone === 'warning'
+                      ? 'bg-amber-300'
+                      : connectionTone === 'error'
+                        ? 'bg-rose-500'
+                        : 'bg-slate-500'
+                  : 'bg-amber-300'
               )}
             />
-            {hasWhatsAppAccess ? (isWhatsAppConnected ? 'Conectado' : 'Desconectado') : 'Disponível no Pro'}
+            {hasWhatsAppAccess ? connectionLabel : 'Disponível no Pro'}
           </div>
         </div>
 
@@ -2584,11 +2585,7 @@ const IntegrationsView = ({
                       Status da configuração
                     </label>
                     <div className="flex min-h-[52px] items-center rounded-xl border border-slate-800 bg-slate-950/60 px-4 text-sm text-slate-300">
-                      {hasWhatsAppValidationIssues
-                        ? 'Há um ajuste pendente antes do envio.'
-                        : isWhatsAppConnected
-                        ? 'Configuração pronta para envio.'
-                        : 'Preencha os números e conecte quando quiser ativar.'}
+                      {connectionDescription}
                     </div>
                   </div>
                 </div>
@@ -2628,10 +2625,10 @@ const IntegrationsView = ({
 
                     <button
                       onClick={onConnectWhatsApp}
-                      disabled={isConnectingWhatsApp || !whatsAppPhoneNumber.trim()}
+                      disabled={!canConnectWhatsApp}
                       className={cn(
                         'flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all shadow-lg',
-                        isConnectingWhatsApp || !whatsAppPhoneNumber.trim()
+                        !canConnectWhatsApp
                           ? 'cursor-not-allowed bg-slate-800 text-slate-500'
                           : 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600'
                       )}
@@ -2641,10 +2638,10 @@ const IntegrationsView = ({
 
                     <button
                       onClick={onSendWhatsAppTest}
-                      disabled={isSendingWhatsAppTest}
+                      disabled={!canSendWhatsAppTest}
                       className={cn(
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
-                        isSendingWhatsAppTest
+                        !canSendWhatsAppTest
                           ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
                           : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
                       )}
@@ -2674,13 +2671,17 @@ const IntegrationsView = ({
                     >
                       {showAdvancedWhatsAppSettings ? 'Ocultar ajustes avançados' : 'Mostrar ajustes avançados'}
                     </button>
-                    {(hasWhatsAppValidationIssues || whatsAppDiagnostic?.metaResult) && (
+                    {(hasWhatsAppValidationIssues ||
+                      whatsAppDiagnostic?.metaResult ||
+                      whatsAppDiagnostic?.lastErrorMessage ||
+                      whatsAppDiagnostic?.lastValidatedAt ||
+                      whatsAppDiagnostic?.lastTestSentAt) && (
                       <button
                         type="button"
                         onClick={() => setShowWhatsAppConnectionDetails((current) => !current)}
                         className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
                       >
-                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da conexão' : 'Ver detalhes da conexão'}
+                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da validação' : 'Ver detalhes da validação'}
                       </button>
                     )}
                   </div>
@@ -2769,14 +2770,16 @@ const IntegrationsView = ({
               <span
                 className={cn(
                   'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
-                  isWhatsAppConnected
+                  connectionTone === 'success'
                     ? 'bg-emerald-500/10 text-emerald-300'
-                    : isConnectingWhatsApp
+                    : connectionTone === 'warning'
                     ? 'bg-amber-500/10 text-amber-300'
+                    : connectionTone === 'error'
+                    ? 'bg-rose-500/10 text-rose-300'
                     : 'bg-slate-800 text-slate-400'
                 )}
               >
-                {isWhatsAppConnected ? 'Ativo' : isConnectingWhatsApp ? 'Conectando' : 'Aguardando conexão'}
+                {connectionLabel}
               </span>
             </div>
 
@@ -2795,7 +2798,7 @@ const IntegrationsView = ({
             {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
               <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70">
                 <div className="border-b border-slate-800 px-4 py-3 text-sm font-bold text-slate-200">
-                  Detalhes da conexão
+                  Detalhes da validação
                 </div>
                 <div className="p-4">
                   <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
@@ -2846,7 +2849,7 @@ const IntegrationsView = ({
 
                   {whatsAppDiagnostic.metaResult && (
                     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs text-slate-400">
-                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da Meta</p>
+                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da validação</p>
                       <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-slate-300">
                         {typeof whatsAppDiagnostic.metaResult === 'string'
                           ? whatsAppDiagnostic.metaResult
@@ -3070,7 +3073,7 @@ const DebtsView = ({ debts, onAddDebt, onAddRecurringDebt, onEditDebt, onDeleteD
         </div>
         <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Progresso</p>
-          <p className="text-2xl font-black text-white">{formatPercent(progress, 1)}</p>
+          <p className="text-2xl font-black text-white">{progress.toFixed(1)}%</p>
         </div>
       </div>
 
@@ -3234,7 +3237,7 @@ const DebtsView = ({ debts, onAddDebt, onAddRecurringDebt, onEditDebt, onDeleteD
                   <td className="px-6 py-4 text-sm text-slate-400">{debt.category}</td>
                   <td className="px-6 py-4 text-sm text-slate-300">{formatCurrency(debt.originalAmount)}</td>
                   <td className="px-6 py-4 text-sm font-bold text-white">{formatCurrency(debt.remainingAmount)}</td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{formatPercent(debt.interestRateMonthly, 2)}</td>
+                  <td className="px-6 py-4 text-sm text-slate-300">{debt.interestRateMonthly.toFixed(2)}%</td>
                   <td className="px-6 py-4 text-sm text-slate-300">Dia {debt.dueDay}</td>
                   <td className="px-6 py-4">
                     <span
@@ -3364,7 +3367,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-slate-300">{formatCurrency(goal.current)} acumulado</span>
                   <span className="text-slate-500">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-emerald-500 font-bold">{formatPercent(progress, 1)}</span>
+                  <span className="text-emerald-500 font-bold">{progress.toFixed(1)}%</span>
                 </div>
 
                 <p className="text-xs text-slate-500">Faltam {formatCurrency(remaining)} para concluir.</p>
@@ -3397,7 +3400,6 @@ type PortfolioViewProps = {
   onAddDebt: () => void;
   onViewWalletHistory: (walletName?: string) => void;
   onAdjustWalletBalance: (walletName?: string) => void;
-  onDeleteWallet: (wallet: WalletAccount) => void;
   onOpenInvestments: () => void;
   onOpenDebts: () => void;
   onOpenReports: () => void;
@@ -3432,13 +3434,13 @@ const buildPortfolioInsights = ({
   if (topWallet && totalBalance > 0) {
     const share = (topWallet.balance / totalBalance) * 100;
     if (share >= 70) {
-      insights.push(`${topWallet.name} concentra ${formatPercent(share, 0)} do seu saldo em contas.`);
+      insights.push(`${topWallet.name} concentra ${share.toFixed(0)}% do seu saldo em contas.`);
     }
   }
 
   if (totalDebt > 0 && totalAssets > 0) {
     const debtShare = (totalDebt / totalAssets) * 100;
-    insights.push(`Suas dívidas representam ${formatPercent(debtShare, 0)} dos seus ativos atuais.`);
+    insights.push(`Suas dívidas representam ${debtShare.toFixed(0)}% dos seus ativos atuais.`);
   }
 
   if (netWorth < 0) {
@@ -3465,13 +3467,11 @@ const PortfolioView = ({
   onAddDebt,
   onViewWalletHistory,
   onAdjustWalletBalance,
-  onDeleteWallet,
   onOpenInvestments,
   onOpenDebts,
   onOpenReports,
   onUpgrade,
 }: PortfolioViewProps) => {
-  void onDeleteWallet;
   const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
   const activeDebts = debts.filter((debt) => debt.status === 'Ativa');
   const totalDebt = activeDebts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
@@ -3708,7 +3708,7 @@ const PortfolioView = ({
                         <span className="text-sm font-semibold text-white">{entry.name}</span>
                       </div>
                       <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                        {formatPercent(share, 1)}
+                        {share.toFixed(1)}%
                       </span>
                     </div>
                     <p className="text-base font-bold text-slate-100">{formatCurrency(entry.value)}</p>
@@ -3752,7 +3752,7 @@ const PortfolioView = ({
                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                   <div className="h-full rounded-full bg-emerald-500" style={{ width: `${wallet.share}%` }} />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">{formatPercent(wallet.share, 1)} do saldo em contas</p>
+                <p className="mt-2 text-xs text-slate-500">{wallet.share.toFixed(1)}% do saldo em contas</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -3833,7 +3833,7 @@ const PortfolioView = ({
                   <div className="text-right">
                     <p className="text-sm font-bold text-blue-400">{formatCurrency(investment.value)}</p>
                     <p className="text-[11px] uppercase tracking-widest text-slate-500">
-                      {formatPercent(investment.portfolioShare, 1)} do patrimônio
+                      {investment.portfolioShare.toFixed(1)}% do patrimônio
                     </p>
                     <p
                       className={cn(
@@ -3842,7 +3842,7 @@ const PortfolioView = ({
                       )}
                     >
                       {investment.profit >= 0 ? '+' : ''}
-                      {formatPercent(investment.profitPct, 2)}
+                      {investment.profitPct.toFixed(2)}%
                     </p>
                   </div>
                 </div>
@@ -3897,7 +3897,7 @@ const PortfolioView = ({
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
                   <span>Vence no dia {debt.dueDay}</span>
-                  <span>{formatPercent(Math.max(debt.portfolioShare, 0), 1)} do patrimônio</span>
+                  <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimônio</span>
                 </div>
               </div>
             ))}
@@ -3997,7 +3997,7 @@ const InvestmentsView = ({
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Rentabilidade %</p>
           <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
-            {formatPercent(profitPercentage, 2)}
+            {profitPercentage.toFixed(2)}%
           </p>
         </div>
       </div>
@@ -4046,9 +4046,9 @@ const InvestmentsView = ({
                       {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
                     </td>
                     <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
-                      {formatPercent(itemProfitPct, 2)}
+                      {itemProfitPct.toFixed(2)}%
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{formatPercent(item.expectedReturnAnnual, 2)}</td>
+                    <td className="px-6 py-4 text-sm text-slate-300">{item.expectedReturnAnnual.toFixed(2)}%</td>
                     <td className="px-6 py-4 text-right">
                       <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -4635,7 +4635,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 >
                   {expenseDeepDive.monthOverMonthVariation === null
                     ? 'Sem base'
-                    : formatSignedPercent(expenseDeepDive.monthOverMonthVariation, 1)}
+                    : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
                   Comparação entre as despesas do mês atual e do mês anterior.
@@ -4681,7 +4681,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-bold text-white">{item.name}</p>
                           <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
-                            +{formatPercent(item.variation, 0)}
+                            +{item.variation.toFixed(0)}%
                           </span>
                         </div>
                         <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-400">
@@ -4837,7 +4837,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => formatPercent(Number(value || 0), 0)}
+                  tickFormatter={(value) => `${Number(value || 0).toFixed(0)}%`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -4845,7 +4845,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     border: '1px solid #1e293b',
                     borderRadius: '12px',
                   }}
-                  formatter={(value) => [formatPercent(Number(value || 0), 2), 'Taxa de economia']}
+                  formatter={(value) => [`${Number(value || 0).toFixed(2)}%`, 'Taxa de economia']}
                 />
                 <Line
                   type="monotone"
@@ -5224,10 +5224,13 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
 
           <div className="space-y-2">
             <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Retorno esperado (% a.a.)</label>
-            <PercentageInput
+            <input
+              type="number"
+              min="0"
+              step="0.01"
               value={formData.expectedReturnAnnual}
-              onChange={(value) => setFormData((prev) => ({ ...prev, expectedReturnAnnual: value }))}
-              placeholder="0,00"
+              onChange={(e) => setFormData((prev) => ({ ...prev, expectedReturnAnnual: e.target.value }))}
+              placeholder="0.00"
               className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
@@ -5371,10 +5374,12 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Juros (% mês)</label>
-              <PercentageInput
+              <input
+                type="number"
+                min="0"
+                step="0.01"
                 value={formData.interestRateMonthly}
-                onChange={(value) => setFormData((prev) => ({ ...prev, interestRateMonthly: value }))}
-                placeholder="0,00"
+                onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
@@ -6788,9 +6793,6 @@ export default function App() {
   const [dashboardInsights, setDashboardInsights] = React.useState<string[]>([]);
   const [currentPlan, setCurrentPlan] = React.useState<SubscriptionPlan>('FREE');
   const [reportAccessLevel, setReportAccessLevel] = React.useState<ReportAccessLevel>('basic');
-  const [currentPlanLimits, setCurrentPlanLimits] = React.useState<WorkspacePlanLimits>(
-    DEFAULT_WORKSPACE_PLAN_LIMITS
-  );
   const [currentMonthTransactionCount, setCurrentMonthTransactionCount] = React.useState(0);
   const [aiUsageCount, setAiUsageCount] = React.useState(0);
   const [isUpgradeLimitModalOpen, setIsUpgradeLimitModalOpen] = React.useState(false);
@@ -6902,18 +6904,6 @@ export default function App() {
       } else {
         setReportAccessLevel(data.plan === 'FREE' ? 'basic' : 'full');
       }
-      setCurrentPlanLimits({
-        transactionsPerMonth:
-          typeof data.limits?.transactionsPerMonth === 'number' ? data.limits.transactionsPerMonth : null,
-        aiInteractionsPerMonth:
-          typeof data.limits?.aiInteractionsPerMonth === 'number' ? data.limits.aiInteractionsPerMonth : null,
-        reports:
-          data.limits?.reports === 'basic' || data.limits?.reports === 'full'
-            ? data.limits.reports
-            : data.plan === 'FREE'
-              ? 'basic'
-              : 'full',
-      });
       if (typeof data.currentMonthTransactionCount === 'number') {
         setCurrentMonthTransactionCount(Math.max(0, data.currentMonthTransactionCount));
       }
@@ -6972,7 +6962,7 @@ export default function App() {
         if (typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number) {
           setWorkspaceWhatsAppPhoneNumber(`+${data.workspace.whatsapp_phone_number}`);
         } else {
-          setWorkspaceWhatsAppPhoneNumber(DEFAULT_WHATSAPP_NUMBER);
+          setWorkspaceWhatsAppPhoneNumber('');
         }
         setWorkspaceWhatsAppConnectTemplateName(
           typeof data.workspace.whatsapp_connect_template_name === 'string'
@@ -6994,6 +6984,56 @@ export default function App() {
             ? `+${data.workspace.whatsapp_test_phone_number}`
             : ''
         );
+        setWhatsAppDiagnostic((current) => ({
+          templateConfigured:
+            typeof data.workspace.whatsapp_digest_template_name === 'string'
+              ? data.workspace.whatsapp_digest_template_name
+              : current?.templateConfigured ?? null,
+          connectTemplateConfigured:
+            typeof data.workspace.whatsapp_connect_template_name === 'string'
+              ? data.workspace.whatsapp_connect_template_name
+              : current?.connectTemplateConfigured ?? null,
+          idiomaConfigurado:
+            typeof data.workspace.whatsapp_template_language === 'string' && data.workspace.whatsapp_template_language
+              ? data.workspace.whatsapp_template_language
+              : current?.idiomaConfigurado ?? 'pt_BR',
+          destinoTeste:
+            typeof data.workspace.whatsapp_test_phone_number === 'string' && data.workspace.whatsapp_test_phone_number
+              ? `+${data.workspace.whatsapp_test_phone_number}`
+              : null,
+          numeroConectado:
+            typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
+              ? `+${data.workspace.whatsapp_phone_number}`
+              : null,
+          connectionState:
+            typeof data.workspace.whatsapp_last_connection_state === 'string'
+              ? (data.workspace.whatsapp_last_connection_state as WhatsAppDiagnostic['connectionState'])
+              : workspaceStatus === 'CONNECTED'
+                ? 'connected'
+                : 'config_pending',
+          lastValidatedAt:
+            typeof data.workspace.whatsapp_last_validated_at === 'string'
+              ? data.workspace.whatsapp_last_validated_at
+              : null,
+          lastTestSentAt:
+            typeof data.workspace.whatsapp_last_test_sent_at === 'string'
+              ? data.workspace.whatsapp_last_test_sent_at
+              : null,
+          lastErrorMessage:
+            typeof data.workspace.whatsapp_last_error_message === 'string'
+              ? data.workspace.whatsapp_last_error_message
+              : null,
+          validationResult:
+            typeof data.workspace.whatsapp_last_error_message === 'string' && data.workspace.whatsapp_last_error_message
+              ? 'ERRO'
+              : 'OK',
+          validationIssues:
+            typeof data.workspace.whatsapp_last_error_message === 'string' && data.workspace.whatsapp_last_error_message
+              ? [data.workspace.whatsapp_last_error_message]
+              : [],
+          configSources: current?.configSources,
+          metaResult: current?.metaResult ?? null,
+        }));
       }
       if (Array.isArray(data.insights)) {
         setDashboardInsights(
@@ -7076,18 +7116,6 @@ export default function App() {
               : data.plan === 'FREE'
                 ? 'basic'
                 : 'full',
-          currentPlanLimits: {
-            transactionsPerMonth:
-              typeof data.limits?.transactionsPerMonth === 'number' ? data.limits.transactionsPerMonth : null,
-            aiInteractionsPerMonth:
-              typeof data.limits?.aiInteractionsPerMonth === 'number' ? data.limits.aiInteractionsPerMonth : null,
-            reports:
-              data.limits?.reports === 'basic' || data.limits?.reports === 'full'
-                ? data.limits.reports
-                : data.plan === 'FREE'
-                  ? 'basic'
-                  : 'full',
-          },
           currentMonthTransactionCount:
             typeof data.currentMonthTransactionCount === 'number' ? Math.max(0, data.currentMonthTransactionCount) : 0,
           aiUsageCount: typeof data.currentMonthAiUsage === 'number' ? Math.max(0, data.currentMonthAiUsage) : 0,
@@ -7155,7 +7183,7 @@ export default function App() {
           workspaceWhatsAppPhoneNumber:
             data.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
               ? `+${data.workspace.whatsapp_phone_number}`
-              : DEFAULT_WHATSAPP_NUMBER,
+              : '',
           workspaceWhatsAppTestPhoneNumber:
             data.workspace &&
             typeof data.workspace.whatsapp_test_phone_number === 'string' &&
@@ -7233,8 +7261,8 @@ export default function App() {
   const [settingsEmail, setSettingsEmail] = React.useState('');
   const [settingsAvatarUrl, setSettingsAvatarUrl] = React.useState('');
   const [isAvatarProcessing, setIsAvatarProcessing] = React.useState(false);
-  const [settingsWhatsApp, setSettingsWhatsApp] = React.useState(DEFAULT_WHATSAPP_NUMBER);
-  const [workspaceWhatsAppPhoneNumber, setWorkspaceWhatsAppPhoneNumber] = React.useState(DEFAULT_WHATSAPP_NUMBER);
+  const [settingsWhatsApp, setSettingsWhatsApp] = React.useState('');
+  const [workspaceWhatsAppPhoneNumber, setWorkspaceWhatsAppPhoneNumber] = React.useState('');
   const [workspaceWhatsAppTestPhoneNumber, setWorkspaceWhatsAppTestPhoneNumber] = React.useState('');
   const [workspaceWhatsAppConnectTemplateName, setWorkspaceWhatsAppConnectTemplateName] = React.useState('');
   const [workspaceWhatsAppDigestTemplateName, setWorkspaceWhatsAppDigestTemplateName] = React.useState('');
@@ -7340,19 +7368,9 @@ export default function App() {
     return `cote-ai-usage-${user.id}-${getCurrentMonthKey()}`;
   }, [user?.id]);
   const isFreePlan = currentPlan === 'FREE';
-  const currentTransactionLimit = currentPlanLimits.transactionsPerMonth;
-  const currentAiLimit = currentPlanLimits.aiInteractionsPerMonth;
-  const currentTransactionLimitLabel =
-    typeof currentTransactionLimit === 'number' ? String(currentTransactionLimit) : 'ilimitadas';
-  const currentAiLimitLabel = typeof currentAiLimit === 'number' ? String(currentAiLimit) : 'ilimitadas';
   const transactionLimitReached =
-    isFreePlan &&
-    typeof currentTransactionLimit === 'number' &&
-    currentMonthTransactionCount >= currentTransactionLimit;
-  const aiLimitReached =
-    isFreePlan &&
-    typeof currentAiLimit === 'number' &&
-    aiUsageCount >= currentAiLimit;
+    isFreePlan && currentMonthTransactionCount >= FREE_TRANSACTION_LIMIT_PER_MONTH;
+  const aiLimitReached = isFreePlan && aiUsageCount >= FREE_AI_LIMIT_PER_MONTH;
   const planLabel = getPlanLabel(currentPlan);
   const editingTransaction = React.useMemo(
     () => transactions.find((tx) => tx.id === editingTransactionId) ?? null,
@@ -7381,7 +7399,6 @@ export default function App() {
     setTotalBalance(snapshot.totalBalance);
     setCurrentPlan(snapshot.currentPlan);
     setReportAccessLevel(snapshot.reportAccessLevel);
-    setCurrentPlanLimits(snapshot.currentPlanLimits ?? DEFAULT_WORKSPACE_PLAN_LIMITS);
     setCurrentMonthTransactionCount(snapshot.currentMonthTransactionCount);
     setAiUsageCount(snapshot.aiUsageCount);
     setTransactions(snapshot.transactions);
@@ -7416,11 +7433,10 @@ export default function App() {
       setTotalBalance(0);
       setCurrentPlan('FREE');
       setReportAccessLevel('basic');
-      setCurrentPlanLimits(DEFAULT_WORKSPACE_PLAN_LIMITS);
       setCurrentMonthTransactionCount(0);
       setAiUsageCount(0);
       setIsWhatsAppConnected(false);
-      setWorkspaceWhatsAppPhoneNumber(DEFAULT_WHATSAPP_NUMBER);
+      setWorkspaceWhatsAppPhoneNumber('');
       setWorkspaceWhatsAppTestPhoneNumber('');
       setWorkspaceWhatsAppConnectTemplateName('');
       setWorkspaceWhatsAppDigestTemplateName('');
@@ -7482,6 +7498,8 @@ React.useEffect(() => {
 
     if (typeof payload.phoneNumber === 'string' && payload.phoneNumber) {
       setWorkspaceWhatsAppPhoneNumber(`+${String(payload.phoneNumber).replace(/^\+/, '')}`);
+    } else if ('phoneNumber' in payload) {
+      setWorkspaceWhatsAppPhoneNumber('');
     }
 
     if (payload.config && typeof payload.config === 'object') {
@@ -7505,6 +7523,15 @@ React.useEffect(() => {
 
     if (payload.diagnostic && typeof payload.diagnostic === 'object') {
       setWhatsAppDiagnostic(payload.diagnostic as WhatsAppDiagnostic);
+    } else if ('status' in payload) {
+      setWhatsAppDiagnostic((current) =>
+        current
+          ? {
+              ...current,
+              connectionState: String(payload.status).toUpperCase() === 'CONNECTED' ? 'connected' : 'disconnected',
+            }
+          : null
+      );
     }
   }, []);
 
@@ -7664,7 +7691,7 @@ React.useEffect(() => {
       });
       const payload = await parseWhatsAppResponse(response);
       applyWhatsAppPayload(payload);
-      setWorkspaceWhatsAppPhoneNumber(DEFAULT_WHATSAPP_NUMBER);
+      setWorkspaceWhatsAppPhoneNumber('');
       setWhatsAppFeedback({
         tone: 'info',
         title: 'WhatsApp desconectado',
@@ -7856,21 +7883,21 @@ React.useEffect(() => {
       });
     }
 
-    if (currentPlan === 'FREE' && typeof currentTransactionLimit === 'number' && currentMonthTransactionCount >= Math.ceil(currentTransactionLimit * 0.8)) {
+    if (currentPlan === 'FREE' && currentMonthTransactionCount >= Math.ceil(FREE_TRANSACTION_LIMIT_PER_MONTH * 0.8)) {
       notifications.push({
         id: 'free-transactions-limit',
         title: 'Você está perto do limite do plano Free',
-        message: `Já foram ${currentMonthTransactionCount}/${currentTransactionLimitLabel} lançamentos neste mês.`,
+        message: `Já foram ${currentMonthTransactionCount}/${FREE_TRANSACTION_LIMIT_PER_MONTH} lançamentos neste mês.`,
         tone: 'warning',
         targetTab: 'subscription',
       });
     }
 
-    if (currentPlan === 'FREE' && typeof currentAiLimit === 'number' && aiUsageCount >= Math.ceil(currentAiLimit * 0.8)) {
+    if (currentPlan === 'FREE' && aiUsageCount >= Math.ceil(FREE_AI_LIMIT_PER_MONTH * 0.8)) {
       notifications.push({
         id: 'free-ai-limit',
         title: 'Seu limite de IA está quase no fim',
-        message: `Você já usou ${aiUsageCount}/${currentAiLimitLabel} interações de IA neste mês.`,
+        message: `Você já usou ${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH} interações de IA neste mês.`,
         tone: 'info',
         targetTab: 'subscription',
       });
@@ -7901,12 +7928,8 @@ React.useEffect(() => {
     return notifications.slice(0, 6);
   }, [
     aiUsageCount,
-    currentAiLimit,
-    currentAiLimitLabel,
     currentMonthTransactionCount,
     currentPlan,
-    currentTransactionLimit,
-    currentTransactionLimitLabel,
     derivedAgendaBills,
     isWhatsAppConnected,
     premiumSmartNotifications,
@@ -8112,7 +8135,7 @@ React.useEffect(() => {
     setSettingsEmail((prev) => prev || user.email || '');
     setSettingsAvatarUrl(getUserAvatarUrl(user) || '');
     setSettingsWhatsApp((prev) =>
-      prev !== DEFAULT_WHATSAPP_NUMBER ? prev : user.user_metadata?.phone || prev
+      prev !== DEFAULT_WHATSAPP_NUMBER ? prev : user.user_metadata?.phone || ''
     );
     setOnboardingWorkspaceName((prev) =>
       prev !== 'Minha Conta' ? prev : user.user_metadata?.company_name || prev
@@ -8253,7 +8276,7 @@ React.useEffect(() => {
 
     const normalizedPhone = settingsWhatsApp.replace(/[^\d+]/g, '');
     const normalizedAvatarUrl = settingsAvatarUrl.trim();
-    setSettingsWhatsApp(normalizedPhone || DEFAULT_WHATSAPP_NUMBER);
+    setSettingsWhatsApp(normalizedPhone || '');
 
     if (!isValidAvatarUrl(normalizedAvatarUrl)) {
       alert('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https válida.');
@@ -8826,8 +8849,7 @@ React.useEffect(() => {
     if (
       isFreePlan &&
       willIncreaseCurrentMonthCount &&
-      typeof currentTransactionLimit === 'number' &&
-      currentMonthTransactionCount >= currentTransactionLimit
+      currentMonthTransactionCount >= FREE_TRANSACTION_LIMIT_PER_MONTH
     ) {
       openUpgradeLimitModal('transactions');
       return false;
@@ -9316,34 +9338,6 @@ React.useEffect(() => {
     }
   };
 
-  const handleDeleteWallet = async (wallet: WalletAccount) => {
-    const confirmed = window.confirm(`Excluir a carteira "${wallet.name}"? Essa acao nao pode ser desfeita.`);
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/wallets?id=${encodeURIComponent(wallet.id)}`, {
-        method: 'DELETE',
-        headers: await getAuthHeaders(true),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const message = typeof payload?.error === 'string' ? payload.error : `Falha ao excluir carteira (HTTP ${response.status}).`;
-        throw new Error(message);
-      }
-
-      setWallets((prev) => prev.filter((item) => item.id !== wallet.id));
-      if (typeof wallet.balance === 'number' && Number.isFinite(wallet.balance)) {
-        setTotalBalance((prev) => prev - wallet.balance);
-      }
-      void fetchDashboardData({ silent: true });
-    } catch (error) {
-      console.error('Delete wallet error:', error);
-      window.alert(error instanceof Error ? error.message : 'Falha ao excluir carteira.');
-    }
-  };
-
   const handleOpenNew = () => {
     setIsQuickCreateOpen((prev) => !prev);
   };
@@ -9423,8 +9417,8 @@ React.useEffect(() => {
               <h3 className="text-lg font-bold text-white mb-2">Limite do plano Free atingido</h3>
               <p className="text-sm text-slate-400 leading-relaxed mb-6">
                 {upgradeLimitReason === 'transactions'
-                  ? `Você chegou ao limite de ${currentTransactionLimitLabel} transações no mês.`
-                  : `Você chegou ao limite de ${currentAiLimitLabel} interações de IA no mês.`}{' '}
+                  ? `Você chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês.`
+                  : `Você chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interações de IA no mês.`}{' '}
                 Faça upgrade para Pro/Premium e continue sem bloqueios.
               </p>
               <div className="flex gap-2">
@@ -10143,9 +10137,9 @@ React.useEffect(() => {
         onSubmit={handleSubmitTransaction}
         onSuggestCategory={handleSuggestTransactionCategory}
         onParseReceipt={handleParseTransactionReceipt}
+        walletOptions={wallets}
         initialData={editingTransaction}
         initialDraft={transactionModalDraft}
-        walletOptions={wallets}
       />
 
       <GoalModal
@@ -10355,7 +10349,7 @@ React.useEffect(() => {
                 </p>
                 <p className="text-xs text-slate-400 mb-4 leading-relaxed">
                   {isFreePlan
-                    ? `Free: até ${currentTransactionLimitLabel} transações/mês e ${currentAiLimitLabel} interações de IA (${aiUsageCount}/${currentAiLimitLabel}).`
+                    ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
                     : currentPlan === 'PREMIUM'
                     ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
                     : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
@@ -11024,7 +11018,6 @@ React.useEffect(() => {
                       description: 'Ajuste de saldo',
                     });
                   }}
-                  onDeleteWallet={handleDeleteWallet}
                   onOpenInvestments={() => setActiveTab('investments')}
                   onOpenDebts={() => setActiveTab('debts')}
                   onOpenReports={() => setActiveTab('reports')}
@@ -11202,8 +11195,8 @@ React.useEffect(() => {
                       </div>
                       {isFreePlan && (
                         <p className="mt-2 text-xs text-slate-400">
-                          {currentMonthTransactionCount}/{currentTransactionLimitLabel} transações no mês - IA{' '}
-                          {aiUsageCount}/{currentAiLimitLabel}
+                          {currentMonthTransactionCount}/{FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês - IA{' '}
+                          {aiUsageCount}/{FREE_AI_LIMIT_PER_MONTH}
                         </p>
                       )}
                     </div>
@@ -11354,7 +11347,7 @@ React.useEffect(() => {
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
               {!hasUserMessages && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Sugestões</p>
+                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Sugestáes</p>
                   <div className="flex flex-wrap gap-2">
                     {ASSISTANT_SUGGESTIONS.map((suggestion) => (
                       <button
@@ -11432,7 +11425,7 @@ React.useEffect(() => {
               {isFreePlan && (
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                    IA Free: {aiUsageCount}/{currentAiLimitLabel}
+                    IA Free: {aiUsageCount}/{FREE_AI_LIMIT_PER_MONTH}
                   </p>
                   {aiLimitReached && (
                     <button
@@ -11466,11 +11459,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
-
-
-
 
 
 

@@ -201,14 +201,7 @@ async function processIncomingMessage(message: IncomingTextMessage) {
   const workspace = await prisma.workspace.findFirst({
     where: {
       whatsapp_status: 'CONNECTED',
-      OR: [
-        { whatsapp_phone_number: sender },
-        {
-          whatsapp_phone_number: {
-            endsWith: sender.slice(-11),
-          },
-        },
-      ],
+      whatsapp_phone_number: sender,
     },
     select: {
       id: true,

@@ -1,5 +1,5 @@
 import { SuperadminWhatsappPage } from '@/components/superadmin/superadmin-whatsapp-page';
 
-export default function SuperadminWhatsappRoutePage() {
+export default function SuperadminWhatsappAdminPage() {
   return <SuperadminWhatsappPage />;
 }
