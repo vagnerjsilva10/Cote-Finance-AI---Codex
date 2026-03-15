@@ -4,16 +4,16 @@ import * as React from 'react';
 import Link from 'next/link';
 import {
   Activity,
+  AlertTriangle,
   Bot,
   CreditCard,
   DollarSign,
   Loader2,
   MessageSquare,
-  TrendingDown,
+  ShieldAlert,
   TrendingUp,
   Users,
   Wallet,
-  ShieldAlert,
 } from 'lucide-react';
 
 import { fetchSuperadminJson } from '@/components/superadmin/fetch-superadmin-json';
@@ -26,11 +26,11 @@ import {
 } from '@/components/superadmin/superadmin-utils';
 import type { SuperadminOverviewResponse } from '@/lib/superadmin/types';
 
-const KPI_CARDS = [
+const PRIMARY_METRICS = [
   { key: 'totalUsers', label: 'Usuarios', icon: Users },
   { key: 'totalWorkspaces', label: 'Workspaces', icon: Wallet },
-  { key: 'activeUsers', label: 'Usuarios ativos', icon: Activity },
-  { key: 'estimatedMrr', label: 'MRR estimado', icon: DollarSign },
+  { key: 'activeUsers', label: 'Ativos 30d', icon: Activity },
+  { key: 'estimatedMrr', label: 'MRR', icon: DollarSign },
 ] as const;
 
 export function SuperadminOverviewPage() {
@@ -46,17 +46,11 @@ export function SuperadminOverviewPage() {
         setIsLoading(true);
         setError(null);
         const next = await fetchSuperadminJson<SuperadminOverviewResponse>('/api/superadmin/overview');
-        if (active) {
-          setData(next);
-        }
+        if (active) setData(next);
       } catch (fetchError) {
-        if (active) {
-          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar a Visao Geral.');
-        }
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar a Visao Geral.');
       } finally {
-        if (active) {
-          setIsLoading(false);
-        }
+        if (active) setIsLoading(false);
       }
     };
 
@@ -68,10 +62,10 @@ export function SuperadminOverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-[360px] items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4 text-slate-200">
           <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
-          Carregando Visao Geral...
+          Carregando visao geral...
         </div>
       </div>
     );
@@ -79,58 +73,56 @@ export function SuperadminOverviewPage() {
 
   if (error || !data) {
     return (
-      <div className="rounded-3xl border border-rose-500/20 bg-slate-900/70 p-8">
-        <h1 className="text-2xl font-semibold text-white">Visao Geral</h1>
-        <p className="mt-4 text-sm leading-7 text-rose-200">{error || 'Falha ao carregar dados.'}</p>
+      <div className="rounded-2xl border border-rose-500/20 bg-slate-900/70 p-6">
+        <h1 className="text-2xl font-bold text-white">Visao geral</h1>
+        <p className="mt-3 text-sm leading-7 text-rose-200">{error || 'Falha ao carregar os dados da plataforma.'}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white">Pulso operacional da plataforma</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Acompanhe rapidamente billing, uso de produto, alertas e sinais de saúde sem quebrar o fluxo do app principal.
-            </p>
+    <div className="space-y-5">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-emerald-300">
+                Super Admin
+              </span>
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-medium text-slate-400">
+                Centro de comando da plataforma
+              </span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Visao operacional em tempo real</h1>
+              <p className="mt-2 text-sm leading-7 text-slate-300">
+                Monitore usuarios, billing, IA, WhatsApp e sinais de risco em uma camada compacta, com acesso direto
+                para as areas de acao do produto.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/superadmin/users"
-              className="inline-flex rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
-            >
-              Ver usuarios
-            </Link>
-            <Link
-              href="/superadmin/workspaces"
-              className="inline-flex rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
-            >
-              Ver workspaces
-            </Link>
+          <div className="flex flex-wrap gap-2">
+            <QuickAction href="/superadmin/users">Abrir usuarios</QuickAction>
+            <QuickAction href="/superadmin/workspaces">Abrir workspaces</QuickAction>
+            <QuickAction href="/superadmin/subscriptions">Operar billing</QuickAction>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {KPI_CARDS.map(({ key, label, icon: Icon }) => {
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {PRIMARY_METRICS.map(({ key, label, icon: Icon }) => {
           const rawValue = data.metrics[key];
-          const value =
-            key === 'estimatedMrr'
-              ? formatAdminCurrency(Number(rawValue))
-              : formatAdminNumber(Number(rawValue));
+          const value = key === 'estimatedMrr' ? formatAdminCurrency(Number(rawValue)) : formatAdminNumber(Number(rawValue));
 
           return (
-            <div key={key} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{label}</p>
-                  <p className="mt-4 text-3xl font-semibold text-white">{value}</p>
+            <div key={key} className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+                  <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
                 </div>
-                <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-                  <Icon className="h-5 w-5 text-emerald-300" />
+                <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
+                  <Icon className="h-4.5 w-4.5 text-emerald-300" />
                 </div>
               </div>
             </div>
@@ -138,155 +130,103 @@ export function SuperadminOverviewPage() {
         })}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-              <CreditCard className="h-5 w-5 text-emerald-300" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">Billing</h2>
-              <p className="text-sm text-slate-400">Conversao, trials e churn.</p>
-            </div>
+      <section className="grid gap-3 xl:grid-cols-12">
+        <div className="space-y-3 xl:col-span-8">
+          <div className="grid gap-3 lg:grid-cols-3">
+            <ControlCard
+              icon={<CreditCard className="h-4.5 w-4.5 text-emerald-300" />}
+              title="Billing"
+              subtitle="Conversao, pagantes e churn"
+              rows={[
+                { label: 'Pagantes', value: formatAdminNumber(data.metrics.payingWorkspaces) },
+                { label: 'Canceladas', value: formatAdminNumber(data.metrics.canceledWorkspaces), tone: data.metrics.canceledWorkspaces > 0 ? 'danger' : 'neutral' },
+                { label: 'Conversao Pro', value: formatAdminPercent(data.conversion.proRate) },
+                { label: 'Conversao Premium', value: formatAdminPercent(data.conversion.premiumRate) },
+              ]}
+            />
+            <ControlCard
+              icon={<Bot className="h-4.5 w-4.5 text-sky-300" />}
+              title="Uso de produto"
+              subtitle="IA, WhatsApp e atividade"
+              rows={[
+                { label: 'Eventos IA 30d', value: formatAdminNumber(data.metrics.aiUsageLast30Days) },
+                { label: 'WhatsApp conectado', value: formatAdminNumber(data.metrics.whatsappConnectedWorkspaces) },
+                { label: 'Transacoes', value: formatAdminNumber(data.metrics.totalTransactions) },
+                { label: 'Carteiras', value: formatAdminNumber(data.metrics.totalWallets) },
+              ]}
+            />
+            <ControlCard
+              icon={<AlertTriangle className="h-4.5 w-4.5 text-amber-300" />}
+              title="Saude da operacao"
+              subtitle="Sinais que exigem atencao"
+              rows={[
+                { label: 'Erros recentes', value: formatAdminNumber(data.metrics.errorEventsLast30Days), tone: data.metrics.errorEventsLast30Days > 0 ? 'danger' : 'neutral' },
+                { label: 'Usuarios suspensos', value: formatAdminNumber(data.metrics.suspendedUsers), tone: data.metrics.suspendedUsers > 0 ? 'danger' : 'neutral' },
+                { label: 'Usuarios bloqueados', value: formatAdminNumber(data.metrics.blockedUsers), tone: data.metrics.blockedUsers > 0 ? 'danger' : 'neutral' },
+                { label: 'Workspaces suspensos', value: formatAdminNumber(data.metrics.suspendedWorkspaces), tone: data.metrics.suspendedWorkspaces > 0 ? 'danger' : 'neutral' },
+              ]}
+            />
           </div>
-          <div className="mt-6 space-y-4 text-sm">
-            <MetricRow
-              label="Trials ativos"
-              value={data.metrics.activeTrials === null ? 'Nao rastreado' : formatAdminNumber(data.metrics.activeTrials)}
-            />
-            <MetricRow label="Workspaces Pro" value={formatAdminNumber(data.metrics.proWorkspaces)} />
-            <MetricRow label="Workspaces Premium" value={formatAdminNumber(data.metrics.premiumWorkspaces)} />
-            <MetricRow
-              label="Cancelamentos"
-              value={formatAdminNumber(data.metrics.canceledWorkspaces)}
-              tone="danger"
-            />
-            <MetricRow
-              label="Conversao Pro"
-              value={formatAdminPercent(data.conversion.proRate)}
-              icon={<TrendingUp className="h-4 w-4 text-emerald-300" />}
-            />
-            <MetricRow
-              label="Conversao Premium"
-              value={formatAdminPercent(data.conversion.premiumRate)}
-              icon={<TrendingUp className="h-4 w-4 text-sky-300" />}
-            />
-          </div>
-        </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-              <Bot className="h-5 w-5 text-sky-300" />
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-white">Eventos recentes</h2>
+                <p className="mt-1 text-sm text-slate-400">Sinais operacionais recentes de toda a plataforma.</p>
+              </div>
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                {data.recentEvents.length} eventos
+              </span>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">Uso do produto</h2>
-              <p className="text-sm text-slate-400">IA, WhatsApp e dados financeiros.</p>
-            </div>
-          </div>
-          <div className="mt-6 space-y-4 text-sm">
-            <MetricRow label="Eventos de IA (30 dias)" value={formatAdminNumber(data.metrics.aiUsageLast30Days)} />
-            <MetricRow
-              label="WhatsApp conectado"
-              value={formatAdminNumber(data.metrics.whatsappConnectedWorkspaces)}
-              icon={<MessageSquare className="h-4 w-4 text-emerald-300" />}
-            />
-            <MetricRow label="Transacoes" value={formatAdminNumber(data.metrics.totalTransactions)} />
-            <MetricRow label="Carteiras" value={formatAdminNumber(data.metrics.totalWallets)} />
-            <MetricRow label="Investimentos" value={formatAdminNumber(data.metrics.totalInvestments)} />
-            <MetricRow label="Dividas" value={formatAdminNumber(data.metrics.totalDebts)} />
-          </div>
-        </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-              <TrendingDown className="h-5 w-5 text-rose-300" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">Saude da operacao</h2>
-              <p className="text-sm text-slate-400">Monitoramento do que merece atencao.</p>
-            </div>
-          </div>
-          <div className="mt-6 space-y-4 text-sm">
-            <MetricRow label="Novos cadastros (30 dias)" value={formatAdminNumber(data.metrics.newSignupsLast30Days)} />
-            <MetricRow label="Usuarios ativos (30 dias)" value={formatAdminNumber(data.metrics.activeUsers)} />
-          <MetricRow
-              label="Erros recentes"
-              value={formatAdminNumber(data.metrics.errorEventsLast30Days)}
-              tone={data.metrics.errorEventsLast30Days > 0 ? 'danger' : 'neutral'}
-            />
-            <MetricRow label="Ações admin (30 dias)" value={formatAdminNumber(data.metrics.adminActionsLast30Days)} />
-            <MetricRow label="Workspaces suspensos" value={formatAdminNumber(data.metrics.suspendedWorkspaces)} tone={data.metrics.suspendedWorkspaces > 0 ? 'danger' : 'neutral'} />
-            <MetricRow label="MRR estimado" value={formatAdminCurrency(data.metrics.estimatedMrr)} />
-            <p className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 leading-7 text-slate-300">
-              Use esta visao como termometro rapido. Para acao operacional, siga para usuarios e workspaces.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-white">Eventos recentes</h2>
-              <p className="text-sm text-slate-400">Sinais operacionais recentes de toda a plataforma.</p>
-            </div>
-            <span className="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
-              {data.recentEvents.length} eventos
-            </span>
-          </div>
-          <div className="mt-6 space-y-3">
-            {data.recentEvents.length === 0 ? (
-              <EmptyState text="Nenhum evento recente encontrado." />
-            ) : (
-              data.recentEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-sm text-slate-300"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="font-semibold text-white">{humanizeEventType(event.type)}</div>
-                    <div className="text-xs text-slate-500">{formatAdminDateTime(event.createdAt)}</div>
+            <div className="mt-4 space-y-2.5">
+              {data.recentEvents.length === 0 ? (
+                <EmptyState text="Nenhum evento recente encontrado." />
+              ) : (
+                data.recentEvents.map((event) => (
+                  <div key={event.id} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="font-semibold text-white">{humanizeEventType(event.type)}</div>
+                      <div className="text-xs text-slate-500">{formatAdminDateTime(event.createdAt)}</div>
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-slate-400">
+                      <span>Workspace: {event.workspaceName || 'Sem workspace'}</span>
+                      <span>Usuario: {event.userEmail || 'Sistema'}</span>
+                    </div>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-400">
-                    <span>Workspace: {event.workspaceName || 'Sem workspace'}</span>
-                    <span>Usuario: {event.userEmail || 'Sistema'}</span>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="space-y-3 xl:col-span-4">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-                <ShieldAlert className="h-5 w-5 text-amber-300" />
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
+                <ShieldAlert className="h-4.5 w-4.5 text-amber-300" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Alertas operacionais</h2>
-                <p className="text-sm text-slate-400">Sinais que pedem ação direta do Super Admin.</p>
+                <h2 className="text-lg font-bold text-white">Alertas operacionais</h2>
+                <p className="text-sm text-slate-400">Fila de acao do Super Admin.</p>
               </div>
             </div>
-            <div className="mt-5 space-y-3">
+            <div className="mt-4 space-y-2.5">
               {data.alerts.length === 0 ? (
-                <EmptyState text="Nenhum alerta operacional relevante no momento." />
+                <EmptyState text="Nenhum alerta relevante no momento." />
               ) : (
                 data.alerts.map((alert) => (
                   <div
                     key={alert.id}
                     className={
                       alert.tone === 'danger'
-                        ? 'rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4'
+                        ? 'rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5'
                         : alert.tone === 'warning'
-                          ? 'rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4'
-                          : 'rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4'
+                          ? 'rounded-xl border border-amber-500/20 bg-amber-500/10 p-3.5'
+                          : 'rounded-xl border border-sky-500/20 bg-sky-500/10 p-3.5'
                     }
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-semibold text-white">{alert.title}</p>
                         <p className="mt-1 text-sm leading-6 text-slate-200">{alert.description}</p>
@@ -303,29 +243,31 @@ export function SuperadminOverviewPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-            <h2 className="text-lg font-semibold text-white">Arquitetura pronta para expansao</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-300">
-              Esta base ja esta preparada para adicionar modulos administrativos mais profundos sem quebrar a
-              experiencia principal do SaaS.
-            </p>
-            <ul className="mt-5 space-y-3 text-sm text-slate-300">
-              <li>Planos e assinaturas</li>
-              <li>Feature flags</li>
-              <li>IA e monitoramento</li>
-              <li>WhatsApp</li>
-              <li>Relatorios operacionais</li>
-              <li>Logs e auditoria</li>
-            </ul>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
+                <TrendingUp className="h-4.5 w-4.5 text-emerald-300" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Governanca ativa</h2>
+                <p className="text-sm text-slate-400">Indicadores de supervisao central.</p>
+              </div>
+            </div>
+            <div className="mt-4 space-y-2.5">
+              <MetricPill label="Acoes admin 30d" value={formatAdminNumber(data.metrics.adminActionsLast30Days)} />
+              <MetricPill label="Assinaturas com nota" value={formatAdminNumber(data.metrics.subscriptionsWithNotes)} />
+              <MetricPill label="Novos cadastros 30d" value={formatAdminNumber(data.metrics.newSignupsLast30Days)} />
+              <MetricPill label="Integracoes WhatsApp" value={formatAdminNumber(data.metrics.whatsappConnectedWorkspaces)} icon={<MessageSquare className="h-3.5 w-3.5 text-emerald-300" />} />
+            </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-            <h2 className="text-lg font-semibold text-white">Limites atuais</h2>
-            <div className="mt-4 space-y-4 text-sm text-slate-300">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+            <h2 className="text-lg font-bold text-white">Limites vigentes</h2>
+            <div className="mt-4 space-y-2.5">
               {Object.entries(data.limitsReference).map(([plan, limits]) => (
-                <div key={plan} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                  <div className="font-semibold text-white">{plan}</div>
-                  <div className="mt-2 text-xs leading-6 text-slate-400">
+                <div key={plan} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                  <div className="text-sm font-semibold text-white">{plan}</div>
+                  <div className="mt-1.5 text-xs leading-6 text-slate-400">
                     {typeof limits.transactionsPerMonth === 'number'
                       ? `${formatAdminNumber(limits.transactionsPerMonth)} transacoes/mes`
                       : 'Transacoes ilimitadas'}
@@ -346,7 +288,47 @@ export function SuperadminOverviewPage() {
   );
 }
 
-function MetricRow({
+function QuickAction({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-emerald-500 hover:text-white"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function ControlCard({
+  icon,
+  title,
+  subtitle,
+  rows,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  rows: Array<{ label: string; value: string; tone?: 'neutral' | 'danger' }>;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">{icon}</div>
+        <div>
+          <h2 className="text-base font-bold text-white">{title}</h2>
+          <p className="text-sm text-slate-400">{subtitle}</p>
+        </div>
+      </div>
+      <div className="mt-4 space-y-2.5">
+        {rows.map((row) => (
+          <MetricPill key={row.label} label={row.label} value={row.value} tone={row.tone} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MetricPill({
   label,
   value,
   tone = 'neutral',
@@ -358,20 +340,16 @@ function MetricRow({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3">
-      <div className="flex items-center gap-2 text-slate-400">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-3">
+      <div className="flex items-center gap-2 text-sm text-slate-400">
         {icon}
         <span>{label}</span>
       </div>
-      <span className={tone === 'danger' ? 'font-semibold text-rose-300' : 'font-semibold text-white'}>{value}</span>
+      <span className={tone === 'danger' ? 'text-sm font-semibold text-rose-300' : 'text-sm font-semibold text-white'}>{value}</span>
     </div>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
-      {text}
-    </div>
-  );
+  return <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-5 text-sm text-slate-400">{text}</div>;
 }
