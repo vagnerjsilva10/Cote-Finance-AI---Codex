@@ -371,6 +371,11 @@ export async function getEditablePlanConfig(code: EditablePlanCode) {
   return plans.find((plan) => plan.code === code) || getDefaultPlanCatalog().find((plan) => plan.code === code)!;
 }
 
+export async function getRuntimePlanLimits(code: EditablePlanCode) {
+  const config = await getEditablePlanConfig(code);
+  return config.limits;
+}
+
 export async function getRuntimeBillingTrialDays(plan: Extract<WorkspacePlan, 'PRO' | 'PREMIUM'>) {
   const config = await getEditablePlanConfig(plan);
   return config.trialDays;

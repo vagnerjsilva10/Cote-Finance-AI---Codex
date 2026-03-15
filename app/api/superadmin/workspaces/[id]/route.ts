@@ -1,11 +1,12 @@
 ﻿import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { PLAN_LIMITS, normalizePlan, HttpError } from '@/lib/server/multi-tenant';
+import { normalizePlan, HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 import {
   getAiUsageEffectiveOffset,
   getMonthKeyFromDate,
+  getRuntimePlanLimits,
   getTransactionUsageEffectiveOffset,
   getWorkspaceLifecycleStatus,
   setAiUsageResetForWorkspace,
@@ -125,6 +126,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
     const plan = normalizePlan(workspace.subscription?.plan);
+    const runtimeLimits = await getRuntimePlanLimits(plan);
 
     return NextResponse.json({
       workspace: {
@@ -161,7 +163,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           investments: workspace._count.investments,
           events: workspace._count.events,
         },
-        limits: PLAN_LIMITS[plan],
+        limits: runtimeLimits,
         monthlyUsage: {
           transactionsActual: usage.transactionsActual,
           transactionsEffective: usage.transactionsEffective,

@@ -3,13 +3,13 @@ import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
-  PLAN_LIMITS,
   getWorkspacePlan,
   getWorkspacePreference,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
 import { getWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
+import { getRuntimePlanLimits } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -293,6 +293,7 @@ export async function GET(req: Request) {
         findWorkspaceDebts(workspaceId),
         getWorkspaceEventSnapshot(workspaceId),
       ]);
+    const runtimeLimits = await getRuntimePlanLimits(plan);
 
     const safeWorkspace =
       workspace ||
@@ -334,7 +335,7 @@ export async function GET(req: Request) {
       debts,
       workspace: workspaceWithConfig,
       plan,
-      limits: PLAN_LIMITS[plan],
+      limits: runtimeLimits,
       currentMonthTransactionCount,
       currentMonthAiUsage: eventSnapshot.currentMonthAiUsage,
       activeWorkspaceId: workspaceId,

@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server';
 import { getGeminiClient, GEMINI_KEY_MISSING_ERROR } from '@/lib/gemini';
 import {
   HttpError,
-  PLAN_LIMITS,
   getWorkspacePlan,
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
-import { getAiUsageEffectiveOffset, resolveFeatureFlagState } from '@/lib/server/superadmin-governance';
+import {
+  getAiUsageEffectiveOffset,
+  getRuntimePlanLimits,
+  resolveFeatureFlagState,
+} from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -76,7 +79,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const aiLimit = PLAN_LIMITS[plan].aiInteractionsPerMonth;
+    const runtimeLimits = await getRuntimePlanLimits(plan);
+    const aiLimit = runtimeLimits.aiInteractionsPerMonth;
 
     if (typeof aiLimit === 'number') {
       const usage = await getCurrentMonthAiUsage(context.workspaceId);

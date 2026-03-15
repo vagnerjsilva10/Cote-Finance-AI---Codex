@@ -3,12 +3,11 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import {
   HttpError,
-  PLAN_LIMITS,
   getWorkspacePlan,
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
-import { getTransactionUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
+import { getRuntimePlanLimits, getTransactionUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -351,7 +350,7 @@ export async function POST(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
     const plan = await getWorkspacePlan(context.workspaceId, context.userId);
-    const planLimits = PLAN_LIMITS[plan];
+    const planLimits = await getRuntimePlanLimits(plan);
 
     const body = (await req.json().catch(() => null)) as CreateTransactionBody | null;
     if (!body) {

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import {
   HttpError,
-  PLAN_LIMITS,
   WorkspacePlan,
   getWorkspacePlan,
   getWorkspacePreference,
@@ -11,6 +10,7 @@ import {
   resolveWorkspaceContext,
   upsertWorkspacePreferenceSafe,
 } from '@/lib/server/multi-tenant';
+import { getRuntimePlanLimits } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,11 +34,12 @@ export async function GET(req: Request) {
         select: { id: true, name: true },
       }),
     ]);
+    const limits = await getRuntimePlanLimits(plan);
 
     return NextResponse.json({
       workspace,
       plan,
-      limits: PLAN_LIMITS[plan],
+      limits,
       onboarding: {
         completed: Boolean(preference.onboarding_completed),
         objective: preference.objective,

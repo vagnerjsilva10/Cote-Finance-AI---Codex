@@ -1,10 +1,11 @@
 ﻿import { NextResponse } from 'next/server';
 
-import { PLAN_LIMITS, type WorkspacePlan } from '@/lib/billing/limits';
+import type { WorkspacePlan } from '@/lib/billing/limits';
 import { prisma } from '@/lib/prisma';
 import { HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 import {
+  getEditablePlanCatalog,
   getAiUsageOverrideMap,
   getMonthKeyFromDate,
   setAiUsageResetForWorkspace,
@@ -113,24 +114,30 @@ export async function GET(req: Request) {
     last14Days.setDate(last14Days.getDate() - 13);
     last14Days.setHours(0, 0, 0, 0);
 
-    const workspaces = await prisma.workspace.findMany({
-      where: whereClauses.length > 0 ? { AND: whereClauses } : {},
-      orderBy: [{ updated_at: 'desc' }],
-      include: {
-        subscription: true,
-        preference: true,
-        members: {
-          include: {
-            user: {
-              select: {
-                email: true,
-                name: true,
+    const [workspaces, planCatalog] = await Promise.all([
+      prisma.workspace.findMany({
+        where: whereClauses.length > 0 ? { AND: whereClauses } : {},
+        orderBy: [{ updated_at: 'desc' }],
+        include: {
+          subscription: true,
+          preference: true,
+          members: {
+            include: {
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+      getEditablePlanCatalog(),
+    ]);
+    const planLimitMap = Object.fromEntries(
+      planCatalog.map((plan) => [plan.code, plan.limits.aiInteractionsPerMonth])
+    ) as Record<WorkspacePlan, number | null>;
 
     const workspaceIds = workspaces.map((workspace) => workspace.id);
 
@@ -150,7 +157,7 @@ export async function GET(req: Request) {
           geminiConfigured: Boolean(process.env.GEMINI_API_KEY?.trim()),
         },
         quotaReference: Object.fromEntries(
-          Object.entries(PLAN_LIMITS).map(([plan, limits]) => [plan, { aiInteractionsPerMonth: limits.aiInteractionsPerMonth }])
+          planCatalog.map((plan) => [plan.code, { aiInteractionsPerMonth: plan.limits.aiInteractionsPerMonth }])
         ),
         trend: buildDailyTrend(14, []),
         total: 0,
@@ -245,7 +252,7 @@ export async function GET(req: Request) {
         const resetOffset = aiOverrides[`${workspace.id}:${currentMonthKey}`]?.offset || 0;
         const resetReason = aiOverrides[`${workspace.id}:${currentMonthKey}`]?.reason || null;
         const effectiveUsage = Math.max(0, currentMonthUsage + resetOffset);
-        const limit = PLAN_LIMITS[resolvedPlan].aiInteractionsPerMonth;
+        const limit = planLimitMap[resolvedPlan] ?? null;
         const usageRate = getUsageRate(effectiveUsage, limit);
 
         return {
@@ -297,7 +304,7 @@ export async function GET(req: Request) {
         geminiConfigured: Boolean(process.env.GEMINI_API_KEY?.trim()),
       },
       quotaReference: Object.fromEntries(
-        Object.entries(PLAN_LIMITS).map(([plan, limits]) => [plan, { aiInteractionsPerMonth: limits.aiInteractionsPerMonth }])
+        planCatalog.map((plan) => [plan.code, { aiInteractionsPerMonth: plan.limits.aiInteractionsPerMonth }])
       ),
       trend: buildDailyTrend(14, trendEvents),
       total: workspaceRows.length,

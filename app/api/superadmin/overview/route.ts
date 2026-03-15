@@ -1,10 +1,10 @@
 ﻿import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { PLAN_LIMITS } from '@/lib/server/multi-tenant';
 import { HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 import {
+  getEditablePlanCatalog,
   getSubscriptionMetadataMap,
   getUserLifecycleMap,
   getWorkspaceLifecycleMap,
@@ -42,6 +42,7 @@ export async function GET(req: Request) {
       workspaceLifecycleMap,
       subscriptionMetadataMap,
       adminActionsLast30Days,
+      planCatalog,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.workspace.count(),
@@ -130,6 +131,7 @@ export async function GET(req: Request) {
           },
         },
       }),
+      getEditablePlanCatalog(),
     ]);
 
     const activeSubscriptions = subscriptions.filter((subscription) => subscription.status === 'ACTIVE');
@@ -223,7 +225,16 @@ export async function GET(req: Request) {
         trialsTracked: false,
         churnTracked: canceledWorkspaces > 0,
       },
-      limitsReference: PLAN_LIMITS,
+      limitsReference: Object.fromEntries(
+        planCatalog.map((plan) => [
+          plan.code,
+          {
+            transactionsPerMonth: plan.limits.transactionsPerMonth,
+            aiInteractionsPerMonth: plan.limits.aiInteractionsPerMonth,
+            reports: plan.limits.reports,
+          },
+        ])
+      ),
     });
   } catch (error) {
     if (error instanceof HttpError) {
