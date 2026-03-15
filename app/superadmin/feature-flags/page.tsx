@@ -1,10 +1,5 @@
-import { SuperadminPlaceholderPage } from '@/components/superadmin/superadmin-placeholder-page';
+import { SuperadminFeatureFlagsPage } from '@/components/superadmin/superadmin-feature-flags-page';
 
-export default function SuperadminFeatureFlagsPage() {
-  return (
-    <SuperadminPlaceholderPage
-      title="Recursos / Feature Flags"
-      description="Camada futura para ativação controlada de recursos por ambiente, plano, usuário ou workspace."
-    />
-  );
+export default function SuperadminFeatureFlagsRoutePage() {
+  return <SuperadminFeatureFlagsPage />;
 }

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { FileText, Loader2, Megaphone, ShieldCheck } from 'lucide-react';

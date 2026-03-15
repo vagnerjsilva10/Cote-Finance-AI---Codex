@@ -5,6 +5,12 @@ import { prisma } from '@/lib/prisma';
 import { HttpError, normalizePlan } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess, resolvePlatformRoleForEmail } from '@/lib/server/platform-access';
 import { getUserLifecycleStatus, setUserLifecycleStatus } from '@/lib/server/superadmin-governance';
+import {
+  getSupabaseAdminClient,
+  getSupabaseAppUrl,
+  isSupabaseAdminConfigured,
+  SUPABASE_ADMIN_CONFIG_MISSING_ERROR,
+} from '@/lib/server/supabase-admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -91,6 +97,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     ]);
 
     return NextResponse.json({
+      capabilities: {
+        authAdminConfigured: isSupabaseAdminConfigured(),
+      },
       user: {
         id: user.id,
         name: user.name,
@@ -146,6 +155,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const body = (await req.json()) as {
       name?: string | null;
+      email?: string | null;
       profilePlan?: string;
       entitlementPlan?: string;
       entitlementStatus?: string;
@@ -153,6 +163,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       platformRole?: string;
       lifecycleStatus?: string;
       lifecycleReason?: string | null;
+      authAction?: 'generate-magic-link' | 'generate-recovery-link' | 'ban-user' | 'unban-user' | 'soft-delete-user';
     };
 
     const user = await prisma.user.findUnique({
@@ -170,9 +181,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const nextName =
       typeof body.name === 'string' ? body.name.trim() || null : body.name === null ? null : user.name;
+    const nextEmail =
+      typeof body.email === 'string' ? body.email.trim().toLowerCase() || user.email : user.email;
     const profilePlan = normalizePlan(body.profilePlan || user.profile?.plan);
     const entitlementPlan = normalizePlan(body.entitlementPlan || user.subscription?.plan);
     const entitlementStatus = normalizeStatus(body.entitlementStatus || user.subscription?.status || 'ACTIVE');
+
     if (!entitlementStatus) {
       return NextResponse.json({ error: 'Status do entitlement inválido.' }, { status: 400 });
     }
@@ -187,13 +201,60 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ? body.platformRole
         : null;
     const normalizedLifecycleStatus =
-      body.lifecycleStatus === 'SUSPENDED' || body.lifecycleStatus === 'BLOCKED' ? body.lifecycleStatus : 'ACTIVE';
+      body.authAction === 'soft-delete-user'
+        ? 'BLOCKED'
+        : body.lifecycleStatus === 'SUSPENDED' || body.lifecycleStatus === 'BLOCKED'
+          ? body.lifecycleStatus
+          : 'ACTIVE';
+    const normalizedLifecycleReason =
+      body.authAction === 'soft-delete-user'
+        ? body.lifecycleReason ?? 'Acesso removido pelo Super Admin.'
+        : body.lifecycleReason ?? null;
+
+    if ((nextEmail !== user.email || body.authAction) && !isSupabaseAdminConfigured()) {
+      return NextResponse.json({ error: SUPABASE_ADMIN_CONFIG_MISSING_ERROR }, { status: 503 });
+    }
+
+    if (isSupabaseAdminConfigured()) {
+      const supabaseAdmin = getSupabaseAdminClient();
+
+      if (body.authAction === 'soft-delete-user') {
+        const deleteResult = await supabaseAdmin.auth.admin.deleteUser(user.id, true);
+
+        if (deleteResult.error) {
+          return NextResponse.json({ error: deleteResult.error.message }, { status: 400 });
+        }
+      } else if (body.authAction === 'ban-user' || body.authAction === 'unban-user') {
+        const authControlResult = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+          ban_duration: body.authAction === 'ban-user' ? '876000h' : 'none',
+        });
+
+        if (authControlResult.error) {
+          return NextResponse.json({ error: authControlResult.error.message }, { status: 400 });
+        }
+      }
+
+      if (body.authAction !== 'soft-delete-user' && (nextEmail !== user.email || nextName !== user.name)) {
+        const updateAuthResult = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+          email: nextEmail !== user.email ? nextEmail : undefined,
+          user_metadata: {
+            name: nextName,
+            full_name: nextName,
+          },
+        });
+
+        if (updateAuthResult.error) {
+          return NextResponse.json({ error: updateAuthResult.error.message }, { status: 400 });
+        }
+      }
+    }
 
     const [updatedUser, updatedProfile, updatedSubscription] = await prisma.$transaction([
       prisma.user.update({
         where: { id },
         data: {
           name: nextName,
+          email: nextEmail,
         },
       }),
       prisma.profile.upsert({
@@ -247,36 +308,75 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const lifecycle = await setUserLifecycleStatus({
       userId: id,
       status: normalizedLifecycleStatus,
-      reason: body.lifecycleReason ?? null,
+      reason: normalizedLifecycleReason,
     });
 
-    await prisma.workspaceEvent.createMany({
-      data: user.workspaces.map((membership) => ({
-        workspace_id: membership.workspace_id,
-        user_id: user.id,
-        type: 'superadmin.user.updated',
-        payload: {
-          source: 'superadmin',
-          next: {
-            name: updatedUser.name,
-            profilePlan: updatedProfile.plan,
-            entitlementPlan: updatedSubscription.plan,
-            entitlementStatus: updatedSubscription.status,
-            platformRole: normalizedRoleInput,
-            lifecycleStatus: lifecycle.status,
-            lifecycleReason: lifecycle.reason,
-          },
+    let supportLink: { type: 'magiclink' | 'recovery'; url: string } | null = null;
+
+    if (
+      (body.authAction === 'generate-magic-link' || body.authAction === 'generate-recovery-link') &&
+      isSupabaseAdminConfigured()
+    ) {
+      const supabaseAdmin = getSupabaseAdminClient();
+      const redirectTo = (() => {
+        const appUrl = getSupabaseAppUrl();
+        return appUrl ? `${appUrl.replace(/\/$/, '')}/auth/callback` : undefined;
+      })();
+
+      const type = body.authAction === 'generate-recovery-link' ? 'recovery' : 'magiclink';
+      const generated = await supabaseAdmin.auth.admin.generateLink({
+        type,
+        email: updatedUser.email,
+        options: {
+          redirectTo,
         },
-      })),
-    }).catch(() => undefined);
+      });
+
+      if (generated.error) {
+        return NextResponse.json({ error: generated.error.message }, { status: 400 });
+      }
+
+      supportLink = generated.data.properties?.action_link
+        ? {
+            type,
+            url: generated.data.properties.action_link,
+          }
+        : null;
+    }
+
+    await prisma.workspaceEvent
+      .createMany({
+        data: user.workspaces.map((membership) => ({
+          workspace_id: membership.workspace_id,
+          user_id: user.id,
+          type: 'superadmin.user.updated',
+          payload: {
+            source: 'superadmin',
+            next: {
+              name: updatedUser.name,
+              email: updatedUser.email,
+              profilePlan: updatedProfile.plan,
+              entitlementPlan: updatedSubscription.plan,
+              entitlementStatus: updatedSubscription.status,
+              platformRole: normalizedRoleInput,
+              lifecycleStatus: lifecycle.status,
+              lifecycleReason: lifecycle.reason,
+              authAction: body.authAction || null,
+            },
+          },
+        })),
+      })
+      .catch(() => undefined);
 
     const resolvedRole = await resolvePlatformRoleForEmail(updatedUser.email);
 
     return NextResponse.json({
       ok: true,
+      supportLink,
       user: {
         id: updatedUser.id,
         name: updatedUser.name,
+        email: updatedUser.email,
         profilePlan: updatedProfile.plan,
         lifecycleStatus: lifecycle.status,
         lifecycleReason: lifecycle.reason,

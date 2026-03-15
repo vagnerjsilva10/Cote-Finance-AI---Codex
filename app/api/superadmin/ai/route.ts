@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import type { WorkspacePlan } from '@/lib/billing/limits';
 import { prisma } from '@/lib/prisma';

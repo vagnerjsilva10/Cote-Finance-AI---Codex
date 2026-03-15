@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 import { readTrackingSettings, sanitizeTrackingSettings, saveTrackingSettings, toPublicTrackingSettings } from '@/lib/server/tracking';

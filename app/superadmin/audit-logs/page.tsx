@@ -1,10 +1,5 @@
-import { SuperadminPlaceholderPage } from '@/components/superadmin/superadmin-placeholder-page';
+import { SuperadminAuditLogsPage } from '@/components/superadmin/superadmin-audit-logs-page';
 
-export default function SuperadminAuditLogsPage() {
-  return (
-    <SuperadminPlaceholderPage
-      title="Logs / Auditoria"
-      description="Base futura para trilha administrativa, ações críticas e histórico de intervenções da plataforma."
-    />
-  );
+export default function SuperadminAuditLogsRoutePage() {
+  return <SuperadminAuditLogsPage />;
 }

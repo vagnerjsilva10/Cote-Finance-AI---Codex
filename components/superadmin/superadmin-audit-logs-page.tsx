@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { Loader2, Search, ShieldCheck } from 'lucide-react';

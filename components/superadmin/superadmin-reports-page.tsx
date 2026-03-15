@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { ArrowUpRight, BarChart3, Loader2, Radar, Users } from 'lucide-react';

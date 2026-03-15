@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { fetchSuperadminJson } from '@/components/superadmin/fetch-superadmin-json';
