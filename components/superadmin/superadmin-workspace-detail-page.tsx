@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -90,7 +90,7 @@ export function SuperadminWorkspaceDetailPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Membros" value={formatAdminNumber(workspace.members.length)} />
-        <StatCard label="Transacoes" value={formatAdminNumber(workspace.resourceCounts.transactions)} />
+        <StatCard label="Transações" value={formatAdminNumber(workspace.resourceCounts.transactions)} />
         <StatCard label="Carteiras" value={formatAdminNumber(workspace.resourceCounts.wallets)} />
         <StatCard label="MRR estimado" value={formatAdminCurrency(estimatedMrr)} />
       </section>
@@ -100,18 +100,18 @@ export function SuperadminWorkspaceDetailPage() {
           <CompactSection title="Contexto do workspace" subtitle="Plano, owner, canal e limites operacionais.">
             <div className="grid gap-2 sm:grid-cols-2">
               <InfoPill label="ID" value={workspace.id} />
-              <InfoPill label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'Nao identificado'} />
+              <InfoPill label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'Não identificado'} />
               <InfoPill label="Plano" value={formatPlanLabel(workspace.plan)} />
               <InfoPill label="Assinatura" value={formatSubscriptionStatus(workspace.subscriptionStatus)} />
               <InfoPill label="Status operacional" value={workspace.lifecycleStatus === 'SUSPENDED' ? 'Suspenso' : 'Ativo'} />
-              <InfoPill label="Periodo atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
-              <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'Nao configurado'} />
+              <InfoPill label="Período atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
+              <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'Não configurado'} />
               <InfoPill label="Atualizado em" value={formatAdminDateTime(workspace.updatedAt)} />
-              <InfoPill label="Transacoes/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
+              <InfoPill label="Transações/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
               <InfoPill label="IA/mes" value={workspace.limits.aiInteractionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.aiInteractionsPerMonth)} />
-              <InfoPill label="Uso transacoes no mes" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
+              <InfoPill label="Uso transações no mes" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
               <InfoPill label="Uso IA no mes" value={formatAdminNumber(workspace.monthlyUsage.aiEffective)} />
-              <InfoPill label="Relatorios" value={workspace.limits.reports === 'full' ? 'Completos' : 'Basicos'} />
+              <InfoPill label="Relatórios" value={workspace.limits.reports === 'full' ? 'Completos' : 'Básicos'} />
               <InfoPill label="Criado em" value={formatAdminDateTime(workspace.createdAt)} />
             </div>
           </CompactSection>
@@ -241,9 +241,9 @@ export function SuperadminWorkspaceDetailPage() {
                   body: JSON.stringify({ action: 'reset-transaction-usage', reason: 'Reset manual pelo Super Admin.' }),
                 });
                 setData((current) => current ? { ...current, workspace: { ...current.workspace, monthlyUsage: response.monthlyUsage || current.workspace.monthlyUsage } } : current);
-                setMessage('Uso mensal de transacoes resetado com sucesso.');
+                setMessage('Uso mensal de transações resetado com sucesso.');
               } catch (submitError) {
-                setError(submitError instanceof Error ? submitError.message : 'Falha ao resetar transacoes do workspace.');
+                setError(submitError instanceof Error ? submitError.message : 'Falha ao resetar transações do workspace.');
               } finally {
                 setIsSaving(false);
               }
@@ -347,7 +347,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-sm font-bold text-white">Resets administrativos do mes</h3>
-            <p className="mt-1 text-sm text-slate-400">Zere o consumo efetivo de transacoes ou IA sem mexer manualmente no banco.</p>
+            <p className="mt-1 text-sm text-slate-400">Zere o consumo efetivo de transações ou IA sem mexer manualmente no banco.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -357,7 +357,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
               className={secondaryActionClassName}
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              Resetar transacoes
+              Resetar transações
             </button>
             <button
               type="button"
@@ -392,3 +392,4 @@ function EmptyState({ text }: { text: string }) { return <div className="rounded
 const fieldClassName = 'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500';
 const secondaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white disabled:opacity-60';
 const primaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { Loader2, Save, Settings2, Sparkles } from 'lucide-react';
@@ -52,6 +52,7 @@ export function SuperadminPlansPage() {
 
   React.useEffect(() => {
     let active = true;
+
     const run = async () => {
       try {
         setIsLoading(true);
@@ -61,11 +62,14 @@ export function SuperadminPlansPage() {
         setData(response);
         setPlans(response.plans.map(toEditablePlan));
       } catch (fetchError) {
-        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar os planos.');
+        if (active) {
+          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar os planos.');
+        }
       } finally {
         if (active) setIsLoading(false);
       }
     };
+
     void run();
     return () => {
       active = false;
@@ -86,16 +90,17 @@ export function SuperadminPlansPage() {
       setIsSaving(true);
       setError(null);
       setSuccess(null);
-      const payload = {
-        defaultPlan,
-        plans: plans.map(fromEditablePlan),
-      };
+
       const response = await fetchSuperadminJson<SuperadminPlansUpdateResponse>('/api/superadmin/plans', {
         method: 'PATCH',
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          defaultPlan,
+          plans: plans.map(fromEditablePlan),
+        }),
       });
+
       setPlans(response.plans.map(toEditablePlan));
-      setSuccess('Catálogo de planos atualizado com sucesso.');
+      setSuccess('Catalogo de planos atualizado com sucesso.');
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Falha ao salvar os planos.');
     } finally {
@@ -104,28 +109,44 @@ export function SuperadminPlansPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
+    <div className="space-y-5">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Planos</p>
-            <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Catálogo de planos</h1>
-            <p className="max-w-3xl text-sm leading-7 text-slate-300">
-              Controle a oferta comercial do produto a partir do Super Admin. O que você altera aqui passa a ser a
-              referência operacional do catálogo administrativo da plataforma.
+            <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">Catalogo de planos</h1>
+            <p className="max-w-3xl text-sm leading-6 text-slate-300">
+              Ajuste preco, trial, visibilidade, limites e beneficios sem sair do backoffice.
             </p>
           </div>
-          <button type="button" onClick={() => void handleSave()} disabled={isSaving || isLoading} className={primaryButtonClassName}>
+          <button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={isSaving || isLoading}
+            className={primaryButtonClassName}
+          >
             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Salvar catálogo
+            Salvar catalogo
           </button>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard label="Planos ativos" value={formatAdminNumber(plans.filter((plan) => plan.active).length)} helper="disponíveis para operação" />
-          <MetricCard label="Visíveis" value={formatAdminNumber(plans.filter((plan) => plan.visible).length)} helper="expostos comercialmente" />
-          <MetricCard label="Plano padrão" value={formatPlanLabel(defaultPlan)} helper="entrada principal da plataforma" />
-          <MetricCard label="Preço Pro" value={formatAdminCurrency(plans.find((plan) => plan.code === 'PRO')?.monthlyPrice || 0)} helper="mensal atual" />
+        <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <MetricCard
+            label="Planos ativos"
+            value={formatAdminNumber(plans.filter((plan) => plan.active).length)}
+            helper="em operação"
+          />
+          <MetricCard
+            label="Visiveis"
+            value={formatAdminNumber(plans.filter((plan) => plan.visible).length)}
+            helper="expostos no produto"
+          />
+          <MetricCard label="Plano padrao" value={formatPlanLabel(defaultPlan)} helper="entrada principal" />
+          <MetricCard
+            label="Preco Pro"
+            value={formatAdminCurrency(plans.find((plan) => plan.code === 'PRO')?.monthlyPrice || 0)}
+            helper="mensal atual"
+          />
         </div>
       </section>
 
@@ -133,32 +154,32 @@ export function SuperadminPlansPage() {
       {error ? <ErrorState message={error} /> : null}
 
       {isLoading ? (
-        <LoadingState label="Carregando catálogo de planos..." />
+        <LoadingState label="Carregando catalogo de planos..." />
       ) : (
-        <div className="grid gap-6 xl:grid-cols-3">
+        <div className="grid gap-4 xl:grid-cols-3">
           {plans
             .slice()
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map((plan) => (
-              <section key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <section key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-black text-white">{plan.name}</h2>
+                      <h2 className="text-lg font-black text-white">{plan.name}</h2>
                       {plan.default ? (
                         <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-200">
                           Padrão
                         </span>
                       ) : null}
                     </div>
-                    <p className="mt-2 text-sm leading-7 text-slate-400">{plan.description}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">{plan.description}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-slate-300">
                     {plan.code === 'FREE' ? <Settings2 className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Nome</span>
                     <input
@@ -182,7 +203,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preço mensal</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preco mensal</span>
                     <input
                       type="number"
                       value={plan.monthlyPrice}
@@ -196,7 +217,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preço anual</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preco anual</span>
                     <input
                       type="number"
                       value={plan.annualPrice}
@@ -210,7 +231,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Trial (dias)</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Trial</span>
                     <input
                       type="number"
                       value={plan.trialDays}
@@ -223,19 +244,19 @@ export function SuperadminPlansPage() {
                       className={fieldClassName}
                     />
                   </label>
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     <ToggleRow
                       label="Plano ativo"
                       checked={plan.active}
                       onChange={(checked) => updatePlan(plan.code, (current) => ({ ...current, active: checked }))}
                     />
                     <ToggleRow
-                      label="Visível no produto"
+                      label="Visivel no produto"
                       checked={plan.visible}
                       onChange={(checked) => updatePlan(plan.code, (current) => ({ ...current, visible: checked }))}
                     />
                     <ToggleRow
-                      label="Plano padrão"
+                      label="Plano padrao"
                       checked={plan.default}
                       onChange={(checked) =>
                         setPlans((current) =>
@@ -249,9 +270,9 @@ export function SuperadminPlansPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Transações/mês</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Transações/mes</span>
                     <input
                       value={plan.limits.transactionsPerMonth ?? ''}
                       onChange={(event) =>
@@ -268,7 +289,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">IA/mês</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">IA/mes</span>
                     <input
                       value={plan.limits.aiInteractionsPerMonth ?? ''}
                       onChange={(event) =>
@@ -305,36 +326,36 @@ export function SuperadminPlansPage() {
                   </label>
                 </div>
 
-                <label className="mt-4 block">
-                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Descrição</span>
+                <label className="mt-3 block">
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Descricao</span>
                   <textarea
                     value={plan.description}
                     onChange={(event) => updatePlan(plan.code, (current) => ({ ...current, description: event.target.value }))}
-                    rows={4}
+                    rows={3}
                     className={textareaClassName}
                   />
                 </label>
 
-                <div className="mt-4 grid gap-4">
+                <div className="mt-3 grid gap-3">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Benefícios</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Beneficios</span>
                     <textarea
                       value={plan.featuresText}
                       onChange={(event) =>
                         updatePlan(plan.code, (current) => ({ ...current, featuresText: event.target.value }))
                       }
-                      rows={6}
+                      rows={5}
                       className={textareaClassName}
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Badges de confiança</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Badges</span>
                     <textarea
                       value={plan.trustBadgesText}
                       onChange={(event) =>
                         updatePlan(plan.code, (current) => ({ ...current, trustBadgesText: event.target.value }))
                       }
-                      rows={4}
+                      rows={3}
                       className={textareaClassName}
                     />
                   </label>
@@ -345,15 +366,12 @@ export function SuperadminPlansPage() {
       )}
 
       {data ? (
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-          <h2 className="text-xl font-black text-white">Leitura rápida do catálogo</h2>
-          <p className="mt-2 text-sm leading-7 text-slate-400">
-            Esta área agora é operacional. Você consegue ajustar preço, trial, benefícios, limites e visibilidade
-            administrativa sem alterar rotas nem mexer manualmente em código.
-          </p>
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <h2 className="text-lg font-black text-white">Leitura rapida do catalogo</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-400">Veja o estado atual da oferta sem abrir cada formulário.</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
             {plans.map((plan) => (
-              <div key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+              <div key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-semibold text-white">{plan.name}</p>
                   <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
@@ -362,17 +380,17 @@ export function SuperadminPlansPage() {
                 </div>
                 <p className="mt-3 text-2xl font-bold tracking-tight text-white">
                   {formatAdminCurrency(plan.monthlyPrice)}
-                  <span className="text-sm font-medium text-slate-500"> / mês</span>
+                  <span className="text-sm font-medium text-slate-500"> / mes</span>
                 </p>
                 <p className="mt-2 text-sm text-slate-400">
                   {plan.limits.transactionsPerMonth === null
                     ? 'Transações ilimitadas'
-                    : `${formatAdminNumber(plan.limits.transactionsPerMonth)} transações/mês`}
+                    : `${formatAdminNumber(plan.limits.transactionsPerMonth)} transações/mes`}
                 </p>
                 <p className="mt-1 text-sm text-slate-400">
                   {plan.limits.aiInteractionsPerMonth === null
                     ? 'IA ilimitada'
-                    : `${formatAdminNumber(plan.limits.aiInteractionsPerMonth)} interações com IA/mês`}
+                    : `${formatAdminNumber(plan.limits.aiInteractionsPerMonth)} interacoes de IA/mes`}
                 </p>
               </div>
             ))}
@@ -385,9 +403,9 @@ export function SuperadminPlansPage() {
 
 function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-      <p className="text-sm font-medium text-slate-400">{label}</p>
-      <p className="mt-3 text-2xl font-bold tracking-tight text-white">{value}</p>
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+      <p className="mt-2 text-xl font-bold tracking-tight text-white">{value}</p>
       <p className="mt-1 text-sm text-slate-500">{helper}</p>
     </div>
   );
@@ -403,7 +421,7 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-sm text-white">
+    <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-sm text-white">
       <span>{label}</span>
       <input
         type="checkbox"
@@ -427,16 +445,25 @@ function LoadingState({ label }: { label: string }) {
 }
 
 function SuccessState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">{message}</div>;
+  return (
+    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">
+      {message}
+    </div>
+  );
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return (
+    <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">
+      {message}
+    </div>
+  );
 }
 
 const fieldClassName =
-  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-500';
+  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500';
 const textareaClassName =
-  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
 const primaryButtonClassName =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-emerald-600 disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-600 disabled:opacity-60';
+

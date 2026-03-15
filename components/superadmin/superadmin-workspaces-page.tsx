@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -71,13 +71,13 @@ export function SuperadminWorkspacesPage() {
                 Workspaces
               </span>
               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
-                Operacao da base
+                Operação da base
               </span>
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Workspaces, owners e estado operacional</h1>
               <p className="mt-2 text-sm leading-7 text-slate-300">
-                Centralize criacao, saude da conta, plano, faturamento estimado e canais conectados sem inflar a pagina.
+                Centralize criação, saúde da conta, plano, faturamento estimado e canais conectados sem inflar a página.
               </p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export function SuperadminWorkspacesPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Operacao de workspaces</h2>
+              <h2 className="text-lg font-bold text-white">Operação de workspaces</h2>
               <p className="mt-1 text-sm text-slate-400">Busque por nome, owner ou identificador para ir direto ao ambiente certo.</p>
             </div>
             <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
@@ -127,11 +127,11 @@ export function SuperadminWorkspacesPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Pulso da base</h2>
-              <p className="text-sm text-slate-400">Resumo rapido do estado dos ambientes.</p>
+              <p className="text-sm text-slate-400">Resumo rápido do estado dos ambientes.</p>
             </div>
           </div>
           <div className="mt-4 space-y-2.5">
-            <MetricPill label="Base visivel" value={formatAdminNumber(workspaces.length)} />
+            <MetricPill label="Base visível" value={formatAdminNumber(workspaces.length)} />
             <MetricPill label="Com owner" value={formatAdminNumber(workspaces.filter((item) => Boolean(item.ownerEmail)).length)} />
             <MetricPill label="Workspaces pagos" value={formatAdminNumber(paidWorkspaces)} />
             <MetricPill label="Suspensos" value={formatAdminNumber(suspended)} tone={suspended > 0 ? 'danger' : 'neutral'} />
@@ -165,8 +165,8 @@ export function SuperadminWorkspacesPage() {
                   <th className="px-3 py-3 font-semibold">Plano</th>
                   <th className="px-3 py-3 font-semibold">Assinatura</th>
                   <th className="px-3 py-3 font-semibold">MRR</th>
-                  <th className="px-3 py-3 font-semibold">Criacao</th>
-                  <th className="px-3 py-3 text-right font-semibold">Acao</th>
+                  <th className="px-3 py-3 font-semibold">Criação</th>
+                  <th className="px-3 py-3 text-right font-semibold">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
@@ -246,9 +246,9 @@ function CreateWorkspaceSheet({
       <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-950/98 p-6 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operacao administrativa</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operação administrativa</p>
             <h3 className="mt-2 text-xl font-black text-white">Criar workspace</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Crie um novo ambiente ja com owner e plano inicial definidos.</p>
+            <p className="mt-2 text-sm leading-7 text-slate-400">Crie um novo ambiente já com owner e plano inicial definidos.</p>
           </div>
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>
             Fechar
@@ -360,3 +360,5 @@ const secondaryActionClassName =
   'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
 const primaryActionClassName =
   'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -45,7 +45,7 @@ export function SuperadminUsersPage() {
         const next = await loadUsers(debouncedQuery);
         if (active) setData(next);
       } catch (fetchError) {
-        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuarios.');
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuários.');
       } finally {
         if (active) setIsLoading(false);
       }
@@ -69,7 +69,7 @@ export function SuperadminUsersPage() {
         method: 'POST',
         body: JSON.stringify(createForm),
       });
-      setMessage(`Usuario ${response.createdUser.email} criado com sucesso.`);
+      setMessage(`Usuário ${response.createdUser.email} criado com sucesso.`);
       setCreateForm({ email: '', name: '', password: '', mode: 'invite' });
       const next = await loadUsers(query);
       setData(next);
@@ -90,16 +90,16 @@ export function SuperadminUsersPage() {
           <div className="max-w-3xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                Usuarios
+                Usuários
               </span>
               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
-                Governanca de acesso
+                Governança de acesso
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base de usuarios e suporte administrativo</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base de usuários e suporte administrativo</h1>
               <p className="mt-2 text-sm leading-7 text-slate-300">
-                Controle ciclo de vida, planos, roles e provisionamento de contas em uma superficie unica e mais compacta.
+                Controle ciclo de vida, planos, roles e provisionamento de contas em uma superfície única e mais compacta.
               </p>
             </div>
           </div>
@@ -117,11 +117,11 @@ export function SuperadminUsersPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Operacao de usuarios</h2>
-              <p className="mt-1 text-sm text-slate-400">Busque por nome, e-mail ou ID para chegar rapido na conta certa.</p>
+              <h2 className="text-lg font-bold text-white">Operação de usuários</h2>
+              <p className="mt-1 text-sm text-slate-400">Busque por nome, e-mail ou ID para chegar rápido na conta certa.</p>
             </div>
             <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-              {formatAdminNumber(users.length)} visiveis
+              {formatAdminNumber(users.length)} visíveis
             </span>
           </div>
           <label className="mt-4 block">
@@ -180,7 +180,7 @@ export function SuperadminUsersPage() {
               value={createForm.password}
               onChange={(event) => setCreateForm((current) => ({ ...current, password: event.target.value }))}
               className={compactFieldClassName}
-              placeholder={createForm.mode === 'password' ? 'Senha inicial' : 'Nao usada em convite'}
+              placeholder={createForm.mode === 'password' ? 'Senha inicial' : 'Não usada em convite'}
               disabled={createForm.mode !== 'password'}
             />
           </div>
@@ -202,17 +202,17 @@ export function SuperadminUsersPage() {
       <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white">Base de usuarios</h2>
+            <h2 className="text-lg font-bold text-white">Base de usuários</h2>
             <p className="mt-1 text-sm text-slate-400">
-              {data ? `${formatAdminNumber(data.total)} usuario(s) encontrados.` : 'Carregando base de usuarios.'}
+              {data ? `${formatAdminNumber(data.total)} usuario(s) encontrados.` : 'Carregando base de usuários.'}
             </p>
           </div>
         </div>
 
         {isLoading ? (
-          <LoadingState label="Carregando usuarios..." />
+          <LoadingState label="Carregando usuários..." />
         ) : !data ? (
-          <ErrorState message={error || 'Falha ao carregar usuarios.'} />
+          <ErrorState message={error || 'Falha ao carregar usuários.'} />
         ) : data.users.length === 0 ? (
           <EmptyState text="Nenhum usuario encontrado para os filtros atuais." />
         ) : (
@@ -220,14 +220,14 @@ export function SuperadminUsersPage() {
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-slate-800 text-[11px] uppercase tracking-[0.22em] text-slate-500">
                 <tr>
-                  <th className="px-3 py-3 font-semibold">Usuario</th>
+                  <th className="px-3 py-3 font-semibold">Usuário</th>
                   <th className="px-3 py-3 font-semibold">Plano</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
                   <th className="px-3 py-3 font-semibold">Role</th>
                   <th className="px-3 py-3 font-semibold">Workspaces</th>
-                  <th className="px-3 py-3 font-semibold">Ultimo acesso</th>
+                  <th className="px-3 py-3 font-semibold">Último acesso</th>
                   <th className="px-3 py-3 font-semibold">Cadastro</th>
-                  <th className="px-3 py-3 text-right font-semibold">Acao</th>
+                  <th className="px-3 py-3 text-right font-semibold">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
@@ -340,3 +340,5 @@ const secondaryActionClassName =
   'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
 const primaryActionClassName =
   'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -27,7 +27,7 @@ import {
 import type { SuperadminOverviewResponse } from '@/lib/superadmin/types';
 
 const PRIMARY_METRICS = [
-  { key: 'totalUsers', label: 'Usuarios', icon: Users },
+  { key: 'totalUsers', label: 'Usuários', icon: Users },
   { key: 'totalWorkspaces', label: 'Workspaces', icon: Wallet },
   { key: 'activeUsers', label: 'Ativos 30d', icon: Activity },
   { key: 'estimatedMrr', label: 'MRR', icon: DollarSign },
@@ -48,7 +48,7 @@ export function SuperadminOverviewPage() {
         const next = await fetchSuperadminJson<SuperadminOverviewResponse>('/api/superadmin/overview');
         if (active) setData(next);
       } catch (fetchError) {
-        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar a Visao Geral.');
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar a Visão Geral.');
       } finally {
         if (active) setIsLoading(false);
       }
@@ -65,7 +65,7 @@ export function SuperadminOverviewPage() {
       <div className="flex min-h-[360px] items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4 text-slate-200">
           <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
-          Carregando visao geral...
+          Carregando visão geral...
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ export function SuperadminOverviewPage() {
   if (error || !data) {
     return (
       <div className="rounded-2xl border border-rose-500/20 bg-slate-900/70 p-6">
-        <h1 className="text-2xl font-bold text-white">Visao geral</h1>
+        <h1 className="text-2xl font-bold text-white">Visão geral</h1>
         <p className="mt-3 text-sm leading-7 text-rose-200">{error || 'Falha ao carregar os dados da plataforma.'}</p>
       </div>
     );
@@ -99,12 +99,12 @@ export function SuperadminOverviewPage() {
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Visao operacional em tempo real</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-300">Usuarios, billing, IA, WhatsApp e risco em uma leitura curta.</p>
+              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Visão operacional em tempo real</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Usuários, billing, IA, WhatsApp e risco em uma leitura curta.</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <QuickAction href="/superadmin/users">Abrir usuarios</QuickAction>
+            <QuickAction href="/superadmin/users">Abrir usuários</QuickAction>
             <QuickAction href="/superadmin/workspaces">Abrir workspaces</QuickAction>
             <QuickAction href="/superadmin/subscriptions">Operar billing</QuickAction>
           </div>
@@ -138,12 +138,12 @@ export function SuperadminOverviewPage() {
             <ControlCard
               icon={<CreditCard className="h-4.5 w-4.5 text-emerald-300" />}
               title="Billing"
-              subtitle="Conversao, pagantes e churn"
+              subtitle="Conversão, pagantes e churn"
               rows={[
                 { label: 'Pagantes', value: formatAdminNumber(data.metrics.payingWorkspaces) },
                 { label: 'Canceladas', value: formatAdminNumber(data.metrics.canceledWorkspaces), tone: data.metrics.canceledWorkspaces > 0 ? 'danger' : 'neutral' },
-                { label: 'Conversao Pro', value: formatAdminPercent(data.conversion.proRate) },
-                { label: 'Conversao Premium', value: formatAdminPercent(data.conversion.premiumRate) },
+                { label: 'Conversão Pro', value: formatAdminPercent(data.conversion.proRate) },
+                { label: 'Conversão Premium', value: formatAdminPercent(data.conversion.premiumRate) },
               ]}
             />
             <ControlCard
@@ -153,18 +153,18 @@ export function SuperadminOverviewPage() {
               rows={[
                 { label: 'Eventos IA 30d', value: formatAdminNumber(data.metrics.aiUsageLast30Days) },
                 { label: 'WhatsApp conectado', value: formatAdminNumber(data.metrics.whatsappConnectedWorkspaces) },
-                { label: 'Transacoes', value: formatAdminNumber(data.metrics.totalTransactions) },
+                { label: 'Transações', value: formatAdminNumber(data.metrics.totalTransactions) },
                 { label: 'Carteiras', value: formatAdminNumber(data.metrics.totalWallets) },
               ]}
             />
             <ControlCard
               icon={<AlertTriangle className="h-4.5 w-4.5 text-amber-300" />}
-              title="Saude da operacao"
-              subtitle="Sinais que exigem atencao"
+              title="Saúde da operação"
+              subtitle="Sinais que exigem atenção"
               rows={[
                 { label: 'Erros recentes', value: formatAdminNumber(data.metrics.errorEventsLast30Days), tone: data.metrics.errorEventsLast30Days > 0 ? 'danger' : 'neutral' },
-                { label: 'Usuarios suspensos', value: formatAdminNumber(data.metrics.suspendedUsers), tone: data.metrics.suspendedUsers > 0 ? 'danger' : 'neutral' },
-                { label: 'Usuarios bloqueados', value: formatAdminNumber(data.metrics.blockedUsers), tone: data.metrics.blockedUsers > 0 ? 'danger' : 'neutral' },
+                { label: 'Usuários suspensos', value: formatAdminNumber(data.metrics.suspendedUsers), tone: data.metrics.suspendedUsers > 0 ? 'danger' : 'neutral' },
+                { label: 'Usuários bloqueados', value: formatAdminNumber(data.metrics.blockedUsers), tone: data.metrics.blockedUsers > 0 ? 'danger' : 'neutral' },
                 { label: 'Workspaces suspensos', value: formatAdminNumber(data.metrics.suspendedWorkspaces), tone: data.metrics.suspendedWorkspaces > 0 ? 'danger' : 'neutral' },
               ]}
             />
@@ -193,7 +193,7 @@ export function SuperadminOverviewPage() {
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-slate-400">
                       <span>Workspace: {event.workspaceName || 'Sem workspace'}</span>
-                      <span>Usuario: {event.userEmail || 'Sistema'}</span>
+                      <span>Usuário: {event.userEmail || 'Sistema'}</span>
                     </div>
                   </div>
                 ))
@@ -210,7 +210,7 @@ export function SuperadminOverviewPage() {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">Alertas operacionais</h2>
-                <p className="text-sm text-slate-400">Fila de acao do Super Admin.</p>
+                <p className="text-sm text-slate-400">Fila de ação do Super Admin.</p>
               </div>
             </div>
             <div className="mt-3 space-y-2.5">
@@ -251,15 +251,15 @@ export function SuperadminOverviewPage() {
                 <TrendingUp className="h-4.5 w-4.5 text-emerald-300" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Governanca ativa</h2>
-                <p className="text-sm text-slate-400">Indicadores de supervisao central.</p>
+                <h2 className="text-lg font-bold text-white">Governança ativa</h2>
+                <p className="text-sm text-slate-400">Indicadores de supervisão central.</p>
               </div>
             </div>
             <div className="mt-3 space-y-2.5">
-              <MetricPill label="Acoes admin 30d" value={formatAdminNumber(data.metrics.adminActionsLast30Days)} />
+              <MetricPill label="Ações admin 30d" value={formatAdminNumber(data.metrics.adminActionsLast30Days)} />
               <MetricPill label="Assinaturas com nota" value={formatAdminNumber(data.metrics.subscriptionsWithNotes)} />
               <MetricPill label="Novos cadastros 30d" value={formatAdminNumber(data.metrics.newSignupsLast30Days)} />
-              <MetricPill label="Integracoes WhatsApp" value={formatAdminNumber(data.metrics.whatsappConnectedWorkspaces)} icon={<MessageSquare className="h-3.5 w-3.5 text-emerald-300" />} />
+              <MetricPill label="Integrações WhatsApp" value={formatAdminNumber(data.metrics.whatsappConnectedWorkspaces)} icon={<MessageSquare className="h-3.5 w-3.5 text-emerald-300" />} />
             </div>
           </div>
 
@@ -271,14 +271,14 @@ export function SuperadminOverviewPage() {
                   <div className="text-sm font-semibold text-white">{plan}</div>
                   <div className="mt-1.5 text-xs leading-6 text-slate-400">
                     {typeof limits.transactionsPerMonth === 'number'
-                      ? `${formatAdminNumber(limits.transactionsPerMonth)} transacoes/mes`
-                      : 'Transacoes ilimitadas'}
-                    {' Â· '}
+                      ? `${formatAdminNumber(limits.transactionsPerMonth)} transações/mes`
+                      : 'Transações ilimitadas'}
+                    {' · '}
                     {typeof limits.aiInteractionsPerMonth === 'number'
                       ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} IA/mes`
                       : 'IA ilimitada'}
-                    {' Â· '}
-                    Relatorios {limits.reports}
+                    {' · '}
+                    Relatórios {limits.reports}
                   </div>
                 </div>
               ))}
@@ -355,4 +355,6 @@ function MetricPill({
 function EmptyState({ text }: { text: string }) {
   return <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-5 text-sm text-slate-400">{text}</div>;
 }
+
+
 

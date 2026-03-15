@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react';
+﻿import { Sparkles } from 'lucide-react';
 
 import {
   SuperadminActionLink,
@@ -63,3 +63,4 @@ export function SuperadminPlaceholderPage({
     </div>
   );
 }
+

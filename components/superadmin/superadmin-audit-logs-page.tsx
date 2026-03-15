@@ -180,3 +180,4 @@ function ErrorState({ message }: { message: string }) {
 function EmptyState() {
   return <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">Nenhum evento encontrado para os filtros atuais.</div>;
 }
+

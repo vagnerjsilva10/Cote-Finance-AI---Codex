@@ -73,11 +73,11 @@ export function SuperadminAiPage() {
   const trendMax = Math.max(...(data?.trend.map((item) => item.total) ?? [0]), 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <SuperadminPageHeader
         eyebrow="IA"
         title="Operação de IA"
-        description="Monitore adoção, volume de chat e classificação automática, proximidade de quota por plano e saúde operacional do Gemini em um único painel administrativo."
+        description="Monitore uso, quota, tendencia e saude operacional da IA em um unico painel."
         actions={<SuperadminActionLink href="/superadmin/feature-flags">Ver feature flags</SuperadminActionLink>}
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -91,8 +91,8 @@ export function SuperadminAiPage() {
       {actionMessage ? <SuccessState message={actionMessage} /> : null}
 
       <SuperadminSectionCard
-        title="Saúde operacional"
-        description="Acompanhe o status da camada de IA, a distribuição entre chat e classificação e a média de uso por workspace ativo."
+        title="Saude operacional"
+        description="Status do provedor, quotas e media de uso."
       >
         <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -119,7 +119,7 @@ export function SuperadminAiPage() {
             />
           </div>
 
-          <div className="rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5">
+          <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Quotas por plano</p>
@@ -128,7 +128,7 @@ export function SuperadminAiPage() {
               <Sparkles className="h-5 w-5 text-emerald-300" />
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {Object.entries(data?.quotaReference || {}).map(([planKey, limits]) => (
                 <div key={planKey} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{formatPlanLabel(planKey)}</p>
@@ -144,8 +144,8 @@ export function SuperadminAiPage() {
       </SuperadminSectionCard>
 
       <SuperadminSectionCard
-        title="Tendência dos últimos 14 dias"
-        description="Barra rápida para observar aceleração ou desaceleração do uso de IA sem sair do Superadmin."
+        title="Tendencia dos ultimos 14 dias"
+        description="Aceleracao e desaceleracao do uso de IA."
       >
         {isLoading ? (
           <LoadingState message="Carregando tendência de IA..." />
@@ -153,7 +153,7 @@ export function SuperadminAiPage() {
           <ErrorState message={error || 'Falha ao carregar tendência de IA.'} />
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="grid h-64 grid-cols-7 gap-3 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-4 sm:grid-cols-14">
+            <div className="grid h-56 grid-cols-7 gap-3 rounded-2xl border border-white/10 bg-slate-950/55 p-4 sm:grid-cols-14">
               {data.trend.map((item) => {
                 const height = Math.max(12, Math.round((item.total / trendMax) * 100));
                 return (
@@ -185,7 +185,7 @@ export function SuperadminAiPage() {
 
       <SuperadminSectionCard
         title="Uso por workspace"
-        description="Filtre por plano, nome ou owner para localizar contas com mais uso, próximas da quota ou com IA desativada nas preferências."
+        description="Busca rapida por plano, owner, quota e preferencia."
       >
         <div className="grid gap-3 lg:grid-cols-[1.1fr_0.45fr]">
           <label className="block">
@@ -529,3 +529,4 @@ function SuccessState({ message }: { message: string }) {
 function EmptyState({ message }: { message: string }) {
   return <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{message}</div>;
 }
+

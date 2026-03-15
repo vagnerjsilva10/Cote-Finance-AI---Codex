@@ -77,11 +77,11 @@ export function SuperadminWhatsappPage() {
   const trendMax = Math.max(...(data?.trend.map((item) => item.total) ?? [0]), 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <SuperadminPageHeader
         eyebrow="Canal"
         title="Operação de WhatsApp"
-        description="Monitore a saúde da integração com Meta Cloud API, a base conectada, a cadência de resumos e a configuração operacional por workspace."
+        description="Monitore integracao, base conectada, entregas e configuracao do canal."
         actions={<SuperadminActionLink href="/superadmin/ai">Ver IA</SuperadminActionLink>}
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -94,7 +94,7 @@ export function SuperadminWhatsappPage() {
 
       <SuperadminSectionCard
         title="Ambiente e credenciais"
-        description="Visão rápida do que está pronto no servidor para operar o canal sem depender de checagens manuais nas variáveis de ambiente."
+        description="O que já está pronto no servidor para operar o canal."
       >
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -104,7 +104,7 @@ export function SuperadminWhatsappPage() {
             <StatusTile label="Idioma" value={environment?.templateLanguage || 'pt_BR'} description="Idioma padrão usado para os templates do canal." />
           </div>
 
-          <div className="rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5">
+          <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Template base</p>
@@ -113,7 +113,7 @@ export function SuperadminWhatsappPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-300" />
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <MiniState title="Conexão" enabled={Boolean(environment?.connectTemplateConfigured)} description="Template usado no vínculo inicial do número." />
               <MiniState title="Resumo diário" enabled={Boolean(environment?.digestTemplateConfigured)} description="Template usado nos resumos e envios automatizados." />
               <MiniState title="Phone Number ID" enabled={Boolean(environment?.phoneNumberIdConfigured)} description="Identificador do canal ativo configurado no ambiente." />
@@ -123,8 +123,8 @@ export function SuperadminWhatsappPage() {
       </SuperadminSectionCard>
 
       <SuperadminSectionCard
-        title="Tendência dos últimos 14 dias"
-        description="Acompanhe configuração, entregas e eventos de conexão para detectar quedas de uso ou picos de operação."
+        title="Tendencia dos ultimos 14 dias"
+        description="Configuração, entregas e conexão do canal."
       >
         {isLoading ? (
           <LoadingState message="Carregando tendência do canal..." />
@@ -132,7 +132,7 @@ export function SuperadminWhatsappPage() {
           <ErrorState message={error || 'Falha ao carregar tendência do canal.'} />
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="grid h-64 grid-cols-7 gap-3 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-4 sm:grid-cols-14">
+            <div className="grid h-56 grid-cols-7 gap-3 rounded-2xl border border-white/10 bg-slate-950/55 p-4 sm:grid-cols-14">
               {data.trend.map((item) => {
                 const height = Math.max(12, Math.round((item.total / trendMax) * 100));
                 return (
@@ -164,7 +164,7 @@ export function SuperadminWhatsappPage() {
 
       <SuperadminSectionCard
         title="Base por workspace"
-        description="Veja rapidamente quem está elegível, conectado ou parado, com plano, owner, telefone e última movimentação do canal."
+        description="Plano, owner, telefone e ultimo movimento do canal."
       >
         <div className="grid gap-3 lg:grid-cols-[1fr_0.45fr_0.45fr]">
           <label className="block">
@@ -404,3 +404,4 @@ function ErrorState({ message }: { message: string }) {
 function EmptyState({ message }: { message: string }) {
   return <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{message}</div>;
 }
+

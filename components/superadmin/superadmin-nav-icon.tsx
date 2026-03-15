@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   BadgeDollarSign,
@@ -34,3 +34,4 @@ export function SuperadminNavIcon({ name, className = 'h-4 w-4' }: { name: strin
   const Icon = ICONS[name as keyof typeof ICONS] || LayoutDashboard;
   return <Icon className={className} />;
 }
+

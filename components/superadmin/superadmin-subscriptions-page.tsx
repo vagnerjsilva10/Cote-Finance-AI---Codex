@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -88,15 +88,15 @@ export function SuperadminSubscriptionsPage() {
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base pagante, pendencias e acao administrativa</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base pagante, pendencias e ação administrativa</h1>
               <p className="mt-2 text-sm leading-7 text-slate-300">
-                Consolide busca, filtro e ajuste manual de billing em uma camada compacta e direta para operacao.
+                Consolide busca, filtro e ajuste manual de billing em uma camada compacta e direta para operação.
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link href="/superadmin/plans" className={secondaryActionClassName}>Planos</Link>
-            <Link href="/superadmin/reports" className={secondaryActionClassName}>Relatorios</Link>
+            <Link href="/superadmin/reports" className={secondaryActionClassName}>Relatórios</Link>
           </div>
         </div>
       </section>
@@ -112,11 +112,11 @@ export function SuperadminSubscriptionsPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Operacao de billing</h2>
+              <h2 className="text-lg font-bold text-white">Operação de billing</h2>
               <p className="mt-1 text-sm text-slate-400">Busque por workspace, owner ou ID e filtre a fila real de trabalho.</p>
             </div>
             <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-              {formatAdminNumber(data?.subscriptions.length || 0)} visiveis
+              {formatAdminNumber(data?.subscriptions.length || 0)} visíveis
             </span>
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_0.4fr_0.4fr]">
@@ -192,10 +192,10 @@ export function SuperadminSubscriptionsPage() {
                   <th className="px-3 py-3 font-semibold">Owner</th>
                   <th className="px-3 py-3 font-semibold">Plano</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
-                  <th className="px-3 py-3 font-semibold">Periodo</th>
+                  <th className="px-3 py-3 font-semibold">Período</th>
                   <th className="px-3 py-3 font-semibold">Stripe</th>
                   <th className="px-3 py-3 font-semibold">MRR</th>
-                  <th className="px-3 py-3 text-right font-semibold">Acao</th>
+                  <th className="px-3 py-3 text-right font-semibold">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
@@ -214,7 +214,7 @@ export function SuperadminSubscriptionsPage() {
                     </td>
                     <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
                     <td className="px-3 py-3.5 align-top text-slate-400">
-                      {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vinculo'}
+                      {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vínculo'}
                     </td>
                     <td className="px-3 py-3.5 align-top font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</td>
                     <td className="px-3 py-3.5 text-right align-top">
@@ -321,9 +321,9 @@ function SubscriptionActionSheet({
       <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-950/98 p-6 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operacao administrativa</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operação administrativa</p>
             <h3 className="mt-2 text-xl font-black text-white">{subscription.workspaceName}</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste billing, vinculo Stripe e observacoes administrativas.</p>
+            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste billing, vínculo Stripe e observações administrativas.</p>
           </div>
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>
             Fechar
@@ -352,7 +352,7 @@ function SubscriptionActionSheet({
             </select>
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Periodo atual</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Período atual</span>
             <input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={compactFieldClassName} />
           </label>
           <label className="block sm:col-span-2">
@@ -364,8 +364,8 @@ function SubscriptionActionSheet({
             <input value={stripeSubscriptionId} onChange={(event) => setStripeSubscriptionId(event.target.value)} className={compactFieldClassName} placeholder="sub_..." />
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Observacao administrativa</span>
-            <textarea value={adminNote} onChange={(event) => setAdminNote(event.target.value)} rows={4} className={compactFieldClassName} placeholder="Ex: cobranca conciliada, upgrade manual, revisao interna." />
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Observação administrativa</span>
+            <textarea value={adminNote} onChange={(event) => setAdminNote(event.target.value)} rows={4} className={compactFieldClassName} placeholder="Ex: cobranca conciliada, upgrade manual, revisão interna." />
           </label>
           <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white sm:col-span-2">
             <span>Desvincular referencias Stripe</span>
@@ -469,3 +469,5 @@ const secondaryActionClassName =
   'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
 const primaryActionClassName =
   'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+
+

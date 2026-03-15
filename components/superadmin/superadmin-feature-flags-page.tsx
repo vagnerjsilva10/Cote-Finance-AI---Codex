@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
@@ -212,11 +212,11 @@ export function SuperadminFeatureFlagsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <SuperadminPageHeader
         eyebrow="Feature Flags"
         title="Governança de rollout"
-        description="Controle recursos por camada global, por plano, por workspace e por usuário. O rollout daqui já impacta os fluxos do app que respeitam essa resolução central."
+        description="Controle rollout global, por plano, workspace e usuario com impacto real no app."
         actions={
           <>
             <SuperadminActionLink href="/superadmin/ai">Ver operação de IA</SuperadminActionLink>
@@ -245,13 +245,10 @@ export function SuperadminFeatureFlagsPage() {
 
       {!isLoading && data ? (
         <>
-          <SuperadminSectionCard
-            title="Camada global por plano"
-            description="Defina se a feature está ativa na plataforma e em quais planos ela pode existir antes de qualquer override local."
-          >
+          <SuperadminSectionCard title="Camada global por plano" description="Ativação global e disponibilidade por plano.">
             <div className="space-y-4">
               {data.flags.map((flag) => (
-                <article key={flag.key} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-5">
+                <article key={flag.key} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-3xl">
                       <div className="flex flex-wrap items-center gap-3">
@@ -269,7 +266,7 @@ export function SuperadminFeatureFlagsPage() {
                           {flag.enabled ? 'Ativo' : 'Desativado'}
                         </span>
                       </div>
-                      <p className="mt-3 text-sm leading-7 text-slate-400">{flag.description}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">{flag.description}</p>
                       <div className="mt-4 flex flex-wrap gap-2">
                         {PLAN_OPTIONS.map((plan) => {
                           const isActive = flag.allowedPlans.includes(plan);
@@ -308,10 +305,10 @@ export function SuperadminFeatureFlagsPage() {
             </div>
           </SuperadminSectionCard>
 
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             <SuperadminSectionCard
               title="Override por workspace"
-              description="Liberte ou bloqueie recursos em contas específicas para suporte, rollout assistido ou contenção operacional."
+              description="Libere ou bloqueie recursos por conta."
             >
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -428,7 +425,7 @@ export function SuperadminFeatureFlagsPage() {
 
             <SuperadminSectionCard
               title="Override por usuário"
-              description="Use para suporte pontual, teste interno, bloqueio assistido ou liberação individual sem afetar o restante da base."
+              description="Suporte e rollout assistido por pessoa."
             >
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -577,3 +574,4 @@ function StateBox({ label }: { label: string }) {
 function ErrorBox({ message }: { message: string }) {
   return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
 }
+
