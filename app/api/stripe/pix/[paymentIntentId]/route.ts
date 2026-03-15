@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { asPrismaServiceUnavailableError } from '@/lib/prisma';
 import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 import {
-  BILLING_PLAN_DETAILS,
-  formatBillingPrice,
   normalizeBillingInterval,
   normalizeBillingPlan,
 } from '@/lib/billing/plans';
 import { getStripe, STRIPE_NOT_CONFIGURED_RESPONSE, STRIPE_SECRET_KEY_MISSING_ERROR } from '@/lib/stripe';
+import { getEditablePlanConfig, getRuntimeBillingPriceLabel } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -57,7 +56,8 @@ export async function GET(req: Request, context: RouteContext) {
       } | null;
     } | null;
     const workspace = workspaceContext.workspaces.find((item) => item.id === workspaceContext.workspaceId);
-    const amount = interval === 'ANNUAL' ? BILLING_PLAN_DETAILS[plan].annualPrice : BILLING_PLAN_DETAILS[plan].monthlyPrice;
+    const planConfig = await getEditablePlanConfig(plan);
+    const amount = interval === 'ANNUAL' ? planConfig.annualPrice : planConfig.monthlyPrice;
 
     return NextResponse.json({
       paymentIntentId: paymentIntent.id,
@@ -68,8 +68,11 @@ export async function GET(req: Request, context: RouteContext) {
       interval,
       workspaceId: workspaceContext.workspaceId,
       workspaceName: workspace?.name || 'Workspace atual',
-      planName: BILLING_PLAN_DETAILS[plan].name,
-      priceLabel: formatBillingPrice(plan, interval),
+      planName: planConfig.name,
+      planDescription: planConfig.description,
+      priceLabel: await getRuntimeBillingPriceLabel(plan, interval),
+      features: planConfig.features,
+      trustBadges: planConfig.trustBadges,
       qrCodeUrl: nextAction?.pix_display_qr_code?.image_url_png || nextAction?.pix_display_qr_code?.image_url_svg || null,
       copyAndPasteCode: nextAction?.pix_display_qr_code?.data || null,
       hostedInstructionsUrl: nextAction?.pix_display_qr_code?.hosted_instructions_url || null,

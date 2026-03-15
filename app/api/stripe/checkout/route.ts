@@ -12,7 +12,7 @@ import {
   upsertWorkspaceSubscriptionSafe,
 } from '@/lib/server/multi-tenant';
 import { ensureStripeCustomer, resolveStripePlan } from '@/lib/server/stripe-billing';
-import { getBillingTrialDays } from '@/lib/billing/plans';
+import { getRuntimeBillingTrialDays } from '@/lib/server/superadmin-governance';
 import { readAttributionFromCookies, upsertAttributionForUser } from '@/lib/server/tracking';
 
 export const dynamic = 'force-dynamic';
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       workspaceId,
       attribution,
     });
-    const trialDays = selectedPlan ? getBillingTrialDays(selectedPlan) : 0;
+    const trialDays = selectedPlan ? await getRuntimeBillingTrialDays(selectedPlan) : 0;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

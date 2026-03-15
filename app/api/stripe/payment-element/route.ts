@@ -18,15 +18,17 @@ import {
   resolveStripePlan,
 } from '@/lib/server/stripe-billing';
 import {
-  BILLING_PLAN_DETAILS,
-  formatBillingPrice,
-  getBillingTrialDays,
   normalizeBillingPlan,
   type BillingIntervalCode,
   type BillingPlanCode,
 } from '@/lib/billing/plans';
 import { mapStripeStatusToStoredStatus } from '@/lib/server/billing-status';
 import { readAttributionFromCookies, upsertAttributionForUser } from '@/lib/server/tracking';
+import {
+  getEditablePlanConfig,
+  getRuntimeBillingPriceLabel,
+  getRuntimeBillingTrialDays,
+} from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -108,7 +110,7 @@ function getExpandedSetupIntent(setupIntent: string | Stripe.SetupIntent | null)
   return setupIntent;
 }
 
-function serializeSubscriptionState(params: {
+async function serializeSubscriptionState(params: {
   subscription: Stripe.Subscription;
   plan: BillingPlanCode;
   interval: BillingIntervalCode;
@@ -117,6 +119,7 @@ function serializeSubscriptionState(params: {
   customerId: string;
   priceId: string;
 }) {
+  const planConfig = await getEditablePlanConfig(params.plan);
   const invoice = getExpandedInvoice(params.subscription.latest_invoice);
   const paymentIntent = getExpandedPaymentIntent(getInvoicePaymentIntent(invoice));
   const setupIntent = getExpandedSetupIntent(params.subscription.pending_setup_intent);
@@ -139,8 +142,12 @@ function serializeSubscriptionState(params: {
     workspaceName: params.workspaceName,
     plan: params.plan,
     interval: params.interval,
-    planName: BILLING_PLAN_DETAILS[params.plan].name,
-    priceLabel: formatBillingPrice(params.plan, params.interval),
+    planName: planConfig.name,
+    planDescription: planConfig.description,
+    priceLabel: await getRuntimeBillingPriceLabel(params.plan, params.interval),
+    trialDays: planConfig.trialDays,
+    features: planConfig.features,
+    trustBadges: planConfig.trustBadges,
     priceId: params.priceId,
     subscriptionStatus: params.subscription.status,
     requiresConfirmation: intentType !== 'none',
@@ -206,7 +213,7 @@ export async function POST(req: Request) {
     const existingWorkspaceSubscription = await readWorkspaceSubscription(context.workspaceId);
     const existingSubscriptionId = existingWorkspaceSubscription?.stripe_subscription_id ?? null;
     const shouldApplyTrial =
-      getBillingTrialDays(resolved.plan) > 0 && !existingWorkspaceSubscription?.stripe_subscription_id;
+      (await getRuntimeBillingTrialDays(resolved.plan)) > 0 && !existingWorkspaceSubscription?.stripe_subscription_id;
 
     if (existingSubscriptionId) {
       try {
@@ -241,7 +248,7 @@ export async function POST(req: Request) {
             existingSubscription.status === 'past_due' ||
             existingSubscription.status === 'unpaid')
         ) {
-          const reusedState = serializeSubscriptionState({
+          const reusedState = await serializeSubscriptionState({
             subscription: existingSubscription,
             plan: resolved.plan,
             interval: resolved.interval,
@@ -302,7 +309,7 @@ export async function POST(req: Request) {
         payment_settings: {
           save_default_payment_method: 'on_subscription',
         },
-        ...(shouldApplyTrial ? { trial_period_days: getBillingTrialDays(resolved.plan) } : {}),
+        ...(shouldApplyTrial ? { trial_period_days: await getRuntimeBillingTrialDays(resolved.plan) } : {}),
         metadata: {
           userId: context.userId,
           workspaceId: context.workspaceId,
@@ -322,7 +329,7 @@ export async function POST(req: Request) {
       'A criação da assinatura no Stripe demorou demais. Tente novamente.'
     );
 
-    const checkoutState = serializeSubscriptionState({
+    const checkoutState = await serializeSubscriptionState({
       subscription,
       plan: resolved.plan,
       interval: resolved.interval,
@@ -358,7 +365,7 @@ export async function POST(req: Request) {
         priceId: resolved.priceId,
         subscriptionId: subscription.id,
         intentType: checkoutState.intentType,
-        trialDays: shouldApplyTrial ? getBillingTrialDays(resolved.plan) : 0,
+        trialDays: shouldApplyTrial ? await getRuntimeBillingTrialDays(resolved.plan) : 0,
         attribution,
       },
     });

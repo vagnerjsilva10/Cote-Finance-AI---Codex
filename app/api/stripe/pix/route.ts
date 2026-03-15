@@ -9,8 +9,6 @@ import {
   upsertWorkspaceSubscriptionSafe,
 } from '@/lib/server/multi-tenant';
 import {
-  BILLING_PLAN_DETAILS,
-  formatBillingPrice,
   normalizeBillingInterval,
   normalizeBillingPlan,
   type BillingIntervalCode,
@@ -18,6 +16,7 @@ import {
 } from '@/lib/billing/plans';
 import { ensureStripeCustomer } from '@/lib/server/stripe-billing';
 import { readAttributionFromCookies, upsertAttributionForUser } from '@/lib/server/tracking';
+import { getEditablePlanConfig, getRuntimeBillingPriceLabel } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -29,8 +28,8 @@ type PixCheckoutBody = {
 
 type PixCheckoutStatus = 'awaiting_payment' | 'processing' | 'confirmed' | 'expired' | 'failed';
 
-function resolvePlanAmount(plan: BillingPlanCode, interval: BillingIntervalCode) {
-  const planDetails = BILLING_PLAN_DETAILS[plan];
+async function resolvePlanAmount(plan: BillingPlanCode, interval: BillingIntervalCode) {
+  const planDetails = await getEditablePlanConfig(plan);
   return interval === 'ANNUAL' ? planDetails.annualPrice : planDetails.monthlyPrice;
 }
 
@@ -61,14 +60,15 @@ function resolvePixStatus(paymentIntent: Stripe.PaymentIntent): PixCheckoutStatu
   return 'awaiting_payment';
 }
 
-function serializePixPaymentIntent(params: {
+async function serializePixPaymentIntent(params: {
   paymentIntent: Stripe.PaymentIntent;
   plan: BillingPlanCode;
   interval: BillingIntervalCode;
   workspaceId: string;
   workspaceName: string;
 }) {
-  const amount = resolvePlanAmount(params.plan, params.interval);
+  const planConfig = await getEditablePlanConfig(params.plan);
+  const amount = await resolvePlanAmount(params.plan, params.interval);
   const pixPayload = getPixPayload(params.paymentIntent);
 
   return {
@@ -80,8 +80,11 @@ function serializePixPaymentIntent(params: {
     interval: params.interval,
     workspaceId: params.workspaceId,
     workspaceName: params.workspaceName,
-    planName: BILLING_PLAN_DETAILS[params.plan].name,
-    priceLabel: formatBillingPrice(params.plan, params.interval),
+    planName: planConfig.name,
+    planDescription: planConfig.description,
+    priceLabel: await getRuntimeBillingPriceLabel(params.plan, params.interval),
+    features: planConfig.features,
+    trustBadges: planConfig.trustBadges,
     qrCodeUrl: pixPayload.qrCodeUrl,
     copyAndPasteCode: pixPayload.copyAndPasteCode,
     hostedInstructionsUrl: pixPayload.hostedInstructionsUrl,
@@ -115,7 +118,8 @@ export async function POST(req: Request) {
       attribution,
     });
 
-    const amount = Math.round(resolvePlanAmount(plan, interval) * 100);
+    const planConfig = await getEditablePlanConfig(plan);
+    const amount = Math.round((await resolvePlanAmount(plan, interval)) * 100);
     const expiresAt = new Date(Date.now() + 1000 * 60 * 30).toISOString();
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
@@ -126,7 +130,7 @@ export async function POST(req: Request) {
       payment_method_data: {
         type: 'pix',
       },
-      description: `${BILLING_PLAN_DETAILS[plan].name} via Pix`,
+      description: `${planConfig.name} via Pix`,
       metadata: {
         checkoutMode: 'pix',
         userId: context.userId,
@@ -168,7 +172,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      serializePixPaymentIntent({
+      await serializePixPaymentIntent({
         paymentIntent,
         plan,
         interval,

@@ -49,7 +49,11 @@ type EmbeddedCheckoutResponse = {
   plan: BillingPlanCode;
   interval: BillingIntervalCode;
   planName: string;
+  planDescription?: string;
   priceLabel: string;
+  trialDays?: number;
+  features?: string[];
+  trustBadges?: string[];
   priceId: string;
   subscriptionStatus: string;
   requiresConfirmation: boolean;
@@ -65,7 +69,10 @@ type PixCheckoutResponse = {
   workspaceId: string;
   workspaceName: string;
   planName: string;
+  planDescription?: string;
   priceLabel: string;
+  features?: string[];
+  trustBadges?: string[];
   qrCodeUrl: string | null;
   copyAndPasteCode: string | null;
   hostedInstructionsUrl: string | null;
@@ -865,11 +872,17 @@ function CheckoutPageContent() {
   const checkoutPriceLabel = checkoutData?.priceLabel || (plan && interval ? formatBillingPrice(plan, interval) : 'R$ 29 / mês');
   const checkoutWorkspaceName = checkoutData?.workspaceName || 'Meu Workspace';
   const checkoutPlanDescription =
-    plan === 'PREMIUM'
+    checkoutData?.planDescription ||
+    pixData?.planDescription ||
+    (plan === 'PREMIUM'
       ? 'Camada avançada de inteligência financeira para quem quer mais previsibilidade e acompanhamento proativo.'
-      : 'Controle financeiro completo com inteligência artificial.';
+      : 'Controle financeiro completo com inteligência artificial.');
   const checkoutBenefits =
-    plan === 'PREMIUM'
+    checkoutData?.features?.length
+      ? checkoutData.features
+      : pixData?.features?.length
+        ? pixData.features
+        : plan === 'PREMIUM'
       ? [
           'Tudo do plano Pro',
           'Insights financeiros mais profundos',
@@ -889,15 +902,19 @@ function CheckoutPageContent() {
           'Resumos e alertas no WhatsApp',
           'Suporte prioritário por e-mail',
         ];
-  const checkoutSecurityItems = [
-
-    'Cobrança recorrente automática',
-    'Cancele quando quiser',
-    'Pagamento protegido pela Stripe',
-    'Seus dados são criptografados',
-  ];
+  const checkoutSecurityItems =
+    checkoutData?.trustBadges?.length
+      ? [...checkoutData.trustBadges, 'Seus dados são criptografados']
+      : pixData?.trustBadges?.length
+        ? [...pixData.trustBadges, 'Seus dados são criptografados']
+        : [
+            'Cobrança recorrente automática',
+            'Cancele quando quiser',
+            'Pagamento protegido pela Stripe',
+            'Seus dados são criptografados',
+          ];
   const subscriptionCenterPath = '/app?tab=subscription';
-  const trialDays = plan === 'PRO' ? 3 : 0;
+  const trialDays = checkoutData?.trialDays ?? (plan === 'PRO' ? 3 : 0);
   const todayPriceLabel = paymentMethod === 'card' && trialDays > 0 ? 'R$ 0' : checkoutPriceLabel;
   const postTrialLabel = checkoutPriceLabel;
   const submitLabel =

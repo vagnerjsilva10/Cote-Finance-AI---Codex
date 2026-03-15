@@ -366,6 +366,25 @@ export async function saveEditablePlanCatalog(plans: EditablePlanConfig[]) {
   return withSingleDefault;
 }
 
+export async function getEditablePlanConfig(code: EditablePlanCode) {
+  const plans = await getEditablePlanCatalog();
+  return plans.find((plan) => plan.code === code) || getDefaultPlanCatalog().find((plan) => plan.code === code)!;
+}
+
+export async function getRuntimeBillingTrialDays(plan: Extract<WorkspacePlan, 'PRO' | 'PREMIUM'>) {
+  const config = await getEditablePlanConfig(plan);
+  return config.trialDays;
+}
+
+export async function getRuntimeBillingPriceLabel(
+  plan: Extract<WorkspacePlan, 'PRO' | 'PREMIUM'>,
+  interval: 'MONTHLY' | 'ANNUAL'
+) {
+  const config = await getEditablePlanConfig(plan);
+  const amount = interval === 'ANNUAL' ? config.annualPrice : config.monthlyPrice;
+  return `R$ ${amount.toLocaleString('pt-BR')}/${interval === 'ANNUAL' ? 'ano' : 'mês'}`;
+}
+
 export async function getWorkspaceLifecycleMap(): Promise<Record<string, WorkspaceLifecycleEntry>> {
   const stored = await readPlatformSetting<Record<string, WorkspaceLifecycleEntry>>(WORKSPACE_LIFECYCLE_KEY, {});
   if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};

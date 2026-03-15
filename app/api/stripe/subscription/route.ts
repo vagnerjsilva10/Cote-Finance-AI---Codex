@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+
 import {
   getStripe,
   STRIPE_NOT_CONFIGURED_RESPONSE,
@@ -13,43 +14,13 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { isMissingOptionalBillingTableError, resolveStripePlan } from '@/lib/server/stripe-billing';
-import { formatBillingPrice } from '@/lib/billing/plans';
 import { isEntitledStripeStatus } from '@/lib/server/billing-status';
+import { getEditablePlanCatalog, getRuntimeBillingPriceLabel } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 type ManageSubscriptionAction = 'cancel' | 'reactivate';
-
-const FREE_PLAN_FEATURES = [
-  'Acompanhamento de saldo e movimentações essenciais',
-  'Dashboard inicial para organizar sua rotina financeira',
-  'Relatórios simples para acompanhar sua evolução',
-];
-
-const PLAN_FEATURES: Record<'FREE' | 'PRO' | 'PREMIUM', string[]> = {
-  FREE: FREE_PLAN_FEATURES,
-  PRO: [
-    'Lançamentos ilimitados',
-    'Relatórios completos e gráficos avançados',
-    'Análises inteligentes com IA',
-    'Insights financeiros automáticos',
-    'Metas financeiras ilimitadas',
-    'Acompanhamento de dívidas',
-    'Controle de investimentos',
-    'Resumos e alertas no WhatsApp',
-    'Suporte prioritário por e-mail',
-  ],
-  PREMIUM: [
-    'Tudo do plano Pro',
-    'IA financeira sem limite mensal',
-    'Insights financeiros avançados',
-    'Previsões de saldo e alertas inteligentes',
-    'Análise profunda de despesas',
-    'Automação financeira no WhatsApp',
-    'Suporte prioritário com acompanhamento acelerado',
-  ],
-};
 
 function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
   const currentPeriodEndRaw = (subscription as Stripe.Subscription & { current_period_end?: number | null })
@@ -59,14 +30,10 @@ function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
 }
 
 function mapPlan(plan: string | null | undefined): 'FREE' | 'PRO' | 'PREMIUM' {
-  const normalized = String(plan || '')
-    .trim()
-    .toUpperCase();
-
+  const normalized = String(plan || '').trim().toUpperCase();
   if (normalized === 'PRO' || normalized === 'PREMIUM') {
     return normalized;
   }
-
   return 'FREE';
 }
 
@@ -88,8 +55,7 @@ function mapStatus(params: {
     return {
       code: 'TRIALING',
       label: 'Em teste gratuito',
-      message:
-        'Você está no período de teste. Aproveite todos os recursos disponíveis até o fim do teste.',
+      message: 'Você está no período de teste. Aproveite todos os recursos disponíveis até o fim do teste.',
     };
   }
 
@@ -102,8 +68,7 @@ function mapStatus(params: {
     return {
       code: 'PENDING',
       label: 'Pagamento pendente',
-      message:
-        'Não conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
+      message: 'Não conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
     };
   }
 
@@ -127,8 +92,7 @@ function mapStatus(params: {
     return {
       code: 'PENDING',
       label: 'Pagamento pendente',
-      message:
-        'Não conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
+      message: 'Não conseguimos confirmar seu pagamento. Atualize sua forma de pagamento para manter seu acesso.',
     };
   }
 
@@ -171,6 +135,7 @@ async function readWorkspaceSubscription(workspaceId: string) {
 
 async function buildSubscriptionResponse(req: Request) {
   const context = await resolveWorkspaceContext(req);
+  const catalog = await getEditablePlanCatalog();
   const workspace = context.workspaces.find((item) => item.id === context.workspaceId);
   const workspaceName = workspace?.name || 'Meu Workspace';
   const storedSubscription = await readWorkspaceSubscription(context.workspaceId);
@@ -214,13 +179,11 @@ async function buildSubscriptionResponse(req: Request) {
     plan === 'FREE'
       ? 'R$ 0 / mês'
       : interval
-        ? formatBillingPrice(plan, interval).replace('/ano', ' / ano').replace('/mês', ' / mês')
+        ? (await getRuntimeBillingPriceLabel(plan, interval)).replace('/ano', ' / ano').replace('/mês', ' / mês')
         : plan === 'PRO'
-          ? 'R$ 29 / mês'
-          : 'R$ 49 / mês';
-  const hasActiveStripeSubscription = Boolean(
-    stripeSubscription && isEntitledStripeStatus(stripeSubscription.status)
-  );
+          ? `R$ ${catalog.find((item) => item.code === 'PRO')?.monthlyPrice.toLocaleString('pt-BR')} / mês`
+          : `R$ ${catalog.find((item) => item.code === 'PREMIUM')?.monthlyPrice.toLocaleString('pt-BR')} / mês`;
+  const hasActiveStripeSubscription = Boolean(stripeSubscription && isEntitledStripeStatus(stripeSubscription.status));
   const recommendedAction =
     status.code === 'PENDING'
       ? 'regularize'
@@ -233,12 +196,13 @@ async function buildSubscriptionResponse(req: Request) {
       : recommendedAction === 'checkout'
         ? 'Assinar plano'
         : 'Alterar plano';
+  const planConfig = catalog.find((item) => item.code === plan);
 
   return {
     workspaceId: context.workspaceId,
     workspaceName,
     plan,
-    planLabel: plan === 'FREE' ? 'Free' : plan === 'PRO' ? 'Pro' : 'Premium',
+    planLabel: planConfig?.name || (plan === 'FREE' ? 'Free' : plan === 'PRO' ? 'Pro' : 'Premium'),
     interval,
     billingLabel,
     status: status.code,
@@ -246,7 +210,7 @@ async function buildSubscriptionResponse(req: Request) {
     statusMessage: status.message,
     nextBillingDate: nextBillingDate ? nextBillingDate.toISOString() : null,
     cancelAtPeriodEnd: Boolean(stripeSubscription?.cancel_at_period_end),
-    features: PLAN_FEATURES[plan],
+    features: planConfig?.features || [],
     stripeConfigured: !stripeConfigMissing,
     hasStripeCustomer: Boolean(storedSubscription?.stripe_customer_id),
     hasStripeSubscription: Boolean(storedSubscription?.stripe_subscription_id),
