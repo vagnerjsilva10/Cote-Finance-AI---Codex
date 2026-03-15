@@ -33,6 +33,11 @@ function normalizePeriodEnd(value: unknown) {
   return Number.isNaN(nextDate.getTime()) ? null : nextDate;
 }
 
+function isMissingPlatformSettingError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /does not exist|relation .* does not exist|table .* doesn't exist|column .* does not exist/i.test(message);
+}
+
 export async function GET(req: Request) {
   try {
     await requireSuperadminAccess(req);
@@ -170,17 +175,6 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Workspace inválido para atualização de assinatura.' }, { status: 400 });
     }
 
-    const plan = normalizePlan(body.plan);
-    const status = normalizeStatus(body.status);
-    if (!status) {
-      return NextResponse.json({ error: 'Status de assinatura inválido.' }, { status: 400 });
-    }
-
-    const currentPeriodEnd = normalizePeriodEnd(body.currentPeriodEnd);
-    if (body.currentPeriodEnd && !currentPeriodEnd) {
-      return NextResponse.json({ error: 'Período atual inválido.' }, { status: 400 });
-    }
-
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       include: { subscription: true },
@@ -188,6 +182,17 @@ export async function PATCH(req: Request) {
 
     if (!workspace) {
       return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+    }
+
+    const plan = normalizePlan(body.plan || workspace.subscription?.plan || 'FREE');
+    const status = normalizeStatus(body.status || workspace.subscription?.status || 'ACTIVE');
+    if (!status) {
+      return NextResponse.json({ error: 'Status de assinatura inválido.' }, { status: 400 });
+    }
+
+    const currentPeriodEnd = normalizePeriodEnd(body.currentPeriodEnd);
+    if (body.currentPeriodEnd && !currentPeriodEnd) {
+      return NextResponse.json({ error: 'Período atual inválido.' }, { status: 400 });
     }
 
     const subscription = await prisma.workspaceSubscription.upsert({
@@ -223,10 +228,17 @@ export async function PATCH(req: Request) {
       },
     });
 
-    const metadata = await setSubscriptionMetadata({
-      workspaceId,
-      adminNote: body.adminNote ?? null,
-    });
+    let metadata = { workspaceId, adminNote: body.adminNote ?? null };
+    try {
+      metadata = await setSubscriptionMetadata({
+        workspaceId,
+        adminNote: body.adminNote ?? null,
+      });
+    } catch (metadataError) {
+      if (!isMissingPlatformSettingError(metadataError)) {
+        throw metadataError;
+      }
+    }
 
     await prisma.workspaceEvent.create({
       data: {
@@ -273,6 +285,9 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    return NextResponse.json({ error: 'Falha ao atualizar assinatura.' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Falha ao atualizar assinatura.' },
+      { status: 500 }
+    );
   }
 }
