@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
+﻿import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { HttpError, normalizePlan } from '@/lib/server/multi-tenant';
+import { getWorkspacePlan, HttpError, normalizePlan } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess, resolvePlatformRoleForEmail } from '@/lib/server/platform-access';
 import { getUserLifecycleStatus, setUserLifecycleStatus } from '@/lib/server/superadmin-governance';
 import {
@@ -75,10 +75,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'UsuÃ¡rio nÃ£o encontrado.' }, { status: 404 });
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const profilePlan = normalizePlan(user.profile?.plan);
+    const userPlan = user.subscription?.status === 'ACTIVE' ? normalizePlan(user.subscription.plan) : profilePlan;
+    const primaryWorkspaceMembership =
+      user.workspaces.find((membership) => membership.role === 'OWNER') ?? user.workspaces[0] ?? null;
+    const workspacePlan = primaryWorkspaceMembership
+      ? normalizePlan(primaryWorkspaceMembership.workspace.subscription?.plan)
+      : null;
+    const effectiveAppPlan = primaryWorkspaceMembership
+      ? await getWorkspacePlan(primaryWorkspaceMembership.workspace.id, user.id)
+      : userPlan;
+
     const [aiUsageLast30Days, eventsLast30Days, resolvedRole, lifecycle] = await Promise.all([
       prisma.workspaceEvent.count({
         where: {
@@ -115,7 +126,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         lifecycleReason: lifecycle.reason,
         platformRole: resolvedRole.role,
         platformRoleSource: resolvedRole.source,
-        profilePlan: user.profile?.plan || 'FREE',
+        profilePlan,
+        userPlan,
+        workspacePlan,
+        effectiveAppPlan,
+        effectiveWorkspaceId: primaryWorkspaceMembership?.workspace.id ?? null,
+        effectiveWorkspaceName: primaryWorkspaceMembership?.workspace.name ?? null,
         lastAccessAt: toIso(user.workspace_events[0]?.created_at ?? null),
         subscription: user.subscription
           ? {
@@ -149,7 +165,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    return NextResponse.json({ error: 'Falha ao carregar o detalhe do usuário.' }, { status: 500 });
+    return NextResponse.json({ error: 'Falha ao carregar o detalhe do usuÃ¡rio.' }, { status: 500 });
   }
 }
 
@@ -176,12 +192,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       include: {
         profile: true,
         subscription: true,
-        workspaces: true,
+        workspaces: {
+          include: {
+            workspace: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'UsuÃ¡rio nÃ£o encontrado.' }, { status: 404 });
     }
 
     const nextName =
@@ -193,12 +217,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const entitlementStatus = normalizeStatus(body.entitlementStatus || user.subscription?.status || 'ACTIVE');
 
     if (!entitlementStatus) {
-      return NextResponse.json({ error: 'Status do entitlement inválido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Status do entitlement invÃ¡lido.' }, { status: 400 });
     }
 
     const currentPeriodEnd = normalizePeriodEnd(body.currentPeriodEnd);
     if (body.currentPeriodEnd && !currentPeriodEnd) {
-      return NextResponse.json({ error: 'Período atual inválido.' }, { status: 400 });
+      return NextResponse.json({ error: 'PerÃ­odo atual invÃ¡lido.' }, { status: 400 });
     }
 
     const normalizedRoleInput =
@@ -287,6 +311,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     ]);
 
     const currentResolvedRole = await resolvePlatformRoleForEmail(user.email);
+    const primaryWorkspaceMembership =
+      user.workspaces.find((membership) => membership.role === 'OWNER') ?? user.workspaces[0] ?? null;
+    const userPlan =
+      updatedSubscription.status === 'ACTIVE' ? normalizePlan(updatedSubscription.plan) : normalizePlan(updatedProfile.plan);
+    const workspacePlan = primaryWorkspaceMembership
+      ? normalizePlan(
+          (
+            await prisma.workspaceSubscription.findUnique({
+              where: { workspace_id: primaryWorkspaceMembership.workspace_id },
+              select: { plan: true },
+            })
+          )?.plan
+        )
+      : null;
+    const effectiveAppPlan = primaryWorkspaceMembership
+      ? await getWorkspacePlan(primaryWorkspaceMembership.workspace_id, updatedUser.id)
+      : userPlan;
     const shouldWriteRoleOverride = Boolean(
       updatedUser.email && normalizedRoleInput && normalizedRoleInput !== currentResolvedRole.role
     );
@@ -401,6 +442,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         name: updatedUser.name,
         email: updatedUser.email,
         profilePlan: updatedProfile.plan,
+        userPlan,
+        workspacePlan,
+        effectiveAppPlan,
+        effectiveWorkspaceId: primaryWorkspaceMembership?.workspace_id ?? null,
+        effectiveWorkspaceName: primaryWorkspaceMembership?.workspace?.name ?? null,
         lifecycleStatus: lifecycle.status,
         lifecycleReason: lifecycle.reason,
         platformRole: resolvedRole.role,
@@ -418,8 +464,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Falha ao atualizar o usuário.' },
+      { error: error instanceof Error ? error.message : 'Falha ao atualizar o usuÃ¡rio.' },
       { status: 500 }
     );
   }
 }
+
+
+
+
+
+

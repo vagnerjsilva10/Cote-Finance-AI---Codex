@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -62,7 +62,7 @@ export function SuperadminWorkspaceDetailPage() {
   if (error || !data) return <ErrorState message={error || 'Workspace indisponivel.'} />;
 
   const { workspace } = data;
-  const estimatedMrr = workspace.plan === 'PREMIUM' ? 49 : workspace.plan === 'PRO' ? 29 : 0;
+  const estimatedMrr = workspace.effectiveAppPlan === 'PREMIUM' ? 49 : workspace.effectiveAppPlan === 'PRO' ? 29 : 0;
 
   return (
     <div className="space-y-5">
@@ -74,7 +74,7 @@ export function SuperadminWorkspaceDetailPage() {
           <div className="max-w-3xl space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">Workspace</span>
-              <PlanBadge label={formatPlanLabel(workspace.plan)} />
+              <PlanBadge label={formatPlanLabel(workspace.effectiveAppPlan)} />
               <StatusBadge status={workspace.subscriptionStatus} />
               <ChannelBadge label={workspace.whatsappStatus || 'DISCONNECTED'} />
               <LifecycleBadge status={workspace.lifecycleStatus} />
@@ -90,7 +90,7 @@ export function SuperadminWorkspaceDetailPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Membros" value={formatAdminNumber(workspace.members.length)} />
-        <StatCard label="Transações" value={formatAdminNumber(workspace.resourceCounts.transactions)} />
+        <StatCard label="TransaÃ§Ãµes" value={formatAdminNumber(workspace.resourceCounts.transactions)} />
         <StatCard label="Carteiras" value={formatAdminNumber(workspace.resourceCounts.wallets)} />
         <StatCard label="MRR estimado" value={formatAdminCurrency(estimatedMrr)} />
       </section>
@@ -100,18 +100,20 @@ export function SuperadminWorkspaceDetailPage() {
           <CompactSection title="Contexto do workspace" subtitle="Plano, owner, canal e limites operacionais.">
             <div className="grid gap-2 sm:grid-cols-2">
               <InfoPill label="ID" value={workspace.id} />
-              <InfoPill label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'Não identificado'} />
-              <InfoPill label="Plano" value={formatPlanLabel(workspace.plan)} />
+              <InfoPill label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'NÃ£o identificado'} />
+              <InfoPill label="Plano do workspace" value={formatPlanLabel(workspace.workspacePlan)} />
+              <InfoPill label="Plano do usuário" value={workspace.ownerUserPlan ? formatPlanLabel(workspace.ownerUserPlan) : 'Sem owner'} />
+              <InfoPill label="Plano efetivo no app" value={formatPlanLabel(workspace.effectiveAppPlan)} />
               <InfoPill label="Assinatura" value={formatSubscriptionStatus(workspace.subscriptionStatus)} />
               <InfoPill label="Status operacional" value={workspace.lifecycleStatus === 'SUSPENDED' ? 'Suspenso' : 'Ativo'} />
-              <InfoPill label="Período atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
-              <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'Não configurado'} />
+              <InfoPill label="PerÃ­odo atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
+              <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'NÃ£o configurado'} />
               <InfoPill label="Atualizado em" value={formatAdminDateTime(workspace.updatedAt)} />
-              <InfoPill label="Transações/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
+              <InfoPill label="TransaÃ§Ãµes/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
               <InfoPill label="IA/mes" value={workspace.limits.aiInteractionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.aiInteractionsPerMonth)} />
-              <InfoPill label="Uso transações no mes" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
+              <InfoPill label="Uso transaÃ§Ãµes no mes" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
               <InfoPill label="Uso IA no mes" value={formatAdminNumber(workspace.monthlyUsage.aiEffective)} />
-              <InfoPill label="Relatórios" value={workspace.limits.reports === 'full' ? 'Completos' : 'Básicos'} />
+              <InfoPill label="RelatÃ³rios" value={workspace.limits.reports === 'full' ? 'Completos' : 'BÃ¡sicos'} />
               <InfoPill label="Criado em" value={formatAdminDateTime(workspace.createdAt)} />
             </div>
           </CompactSection>
@@ -241,9 +243,9 @@ export function SuperadminWorkspaceDetailPage() {
                   body: JSON.stringify({ action: 'reset-transaction-usage', reason: 'Reset manual pelo Super Admin.' }),
                 });
                 setData((current) => current ? { ...current, workspace: { ...current.workspace, monthlyUsage: response.monthlyUsage || current.workspace.monthlyUsage } } : current);
-                setMessage('Uso mensal de transações resetado com sucesso.');
+                setMessage('Uso mensal de transaÃ§Ãµes resetado com sucesso.');
               } catch (submitError) {
-                setError(submitError instanceof Error ? submitError.message : 'Falha ao resetar transações do workspace.');
+                setError(submitError instanceof Error ? submitError.message : 'Falha ao resetar transaÃ§Ãµes do workspace.');
               } finally {
                 setIsSaving(false);
               }
@@ -329,7 +331,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
     <CompactSection title="Ajustes operacionais" subtitle="Owner, canal, status e preferencias de IA.">
       <div className="grid gap-3 sm:grid-cols-2">
         <input value={name} onChange={(event) => setName(event.target.value)} className={fieldClassName} placeholder="Nome do workspace" />
-        <SelectField label="Owner" value={ownerUserId} onChange={setOwnerUserId} options={workspace.members.map((member) => ({ value: member.userId, label: `${member.name || member.email} · ${member.role}` }))} />
+        <SelectField label="Owner" value={ownerUserId} onChange={setOwnerUserId} options={workspace.members.map((member) => ({ value: member.userId, label: `${member.name || member.email} Â· ${member.role}` }))} />
         <SelectField label="Status operacional" value={lifecycleStatus} onChange={(value) => setLifecycleStatus(value as 'ACTIVE' | 'SUSPENDED')} options={lifecycleOptions} />
         <input value={lifecycleReason} onChange={(event) => setLifecycleReason(event.target.value)} placeholder="Motivo operacional" className={fieldClassName} />
         <SelectField label="Status do WhatsApp" value={whatsappStatus} onChange={setWhatsappStatus} options={whatsappStatusOptions} />
@@ -347,7 +349,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-sm font-bold text-white">Resets administrativos do mes</h3>
-            <p className="mt-1 text-sm text-slate-400">Zere o consumo efetivo de transações ou IA sem mexer manualmente no banco.</p>
+            <p className="mt-1 text-sm text-slate-400">Zere o consumo efetivo de transaÃ§Ãµes ou IA sem mexer manualmente no banco.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -357,7 +359,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
               className={secondaryActionClassName}
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              Resetar transações
+              Resetar transaÃ§Ãµes
             </button>
             <button
               type="button"
@@ -392,4 +394,7 @@ function EmptyState({ text }: { text: string }) { return <div className="rounded
 const fieldClassName = 'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500';
 const secondaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white disabled:opacity-60';
 const primaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+
+
+
 

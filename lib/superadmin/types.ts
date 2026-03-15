@@ -104,6 +104,11 @@ export type SuperadminUserDetailResponse = {
     platformRole: string;
     platformRoleSource: 'env' | 'override' | 'default';
     profilePlan: string;
+    userPlan: string;
+    workspacePlan: string | null;
+    effectiveAppPlan: string;
+    effectiveWorkspaceId: string | null;
+    effectiveWorkspaceName: string | null;
     lastAccessAt: string | null;
     subscription: {
       plan: string;
@@ -142,6 +147,11 @@ export type SuperadminUserUpdateResponse = {
     name: string | null;
     email: string;
     profilePlan: string;
+    userPlan: string;
+    workspacePlan: string | null;
+    effectiveAppPlan: string;
+    effectiveWorkspaceId: string | null;
+    effectiveWorkspaceName: string | null;
     lifecycleStatus: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
     lifecycleReason: string | null;
     platformRoleSource: 'env' | 'override' | 'default';
@@ -198,6 +208,9 @@ export type SuperadminWorkspaceDetailResponse = {
     lifecycleStatus: 'ACTIVE' | 'SUSPENDED';
     lifecycleReason: string | null;
     plan: string;
+    workspacePlan: string;
+    ownerUserPlan: string | null;
+    effectiveAppPlan: string;
     subscriptionStatus: string | null;
     currentPeriodEnd: string | null;
     owner: {
@@ -681,3 +694,6 @@ export type SuperadminContentResponse = {
     supportEmail: string;
   };
 };
+
+
+

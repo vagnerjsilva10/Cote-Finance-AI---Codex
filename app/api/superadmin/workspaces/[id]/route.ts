@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { normalizePlan, HttpError } from '@/lib/server/multi-tenant';
+import { getWorkspacePlan, normalizePlan, HttpError } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
 import {
   getAiUsageEffectiveOffset,
@@ -126,12 +126,27 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     ]);
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
     }
 
     const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
     const plan = normalizePlan(workspace.subscription?.plan);
-    const runtimeLimits = await getRuntimePlanLimits(plan);
+    const ownerBilling = owner
+      ? await prisma.user.findUnique({
+          where: { id: owner.user_id },
+          include: {
+            profile: { select: { plan: true } },
+            subscription: { select: { plan: true, status: true } },
+          },
+        })
+      : null;
+    const ownerUserPlan = ownerBilling
+      ? ownerBilling.subscription?.status === 'ACTIVE'
+        ? normalizePlan(ownerBilling.subscription.plan)
+        : normalizePlan(ownerBilling.profile?.plan)
+      : null;
+    const effectiveAppPlan = owner ? await getWorkspacePlan(id, owner.user_id) : plan;
+    const runtimeLimits = await getRuntimePlanLimits(effectiveAppPlan);
 
     return NextResponse.json({
       workspace: {
@@ -144,6 +159,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         lifecycleStatus: lifecycle.status,
         lifecycleReason: lifecycle.reason,
         plan,
+        workspacePlan: plan,
+        ownerUserPlan,
+        effectiveAppPlan,
         subscriptionStatus: workspace.subscription?.status || null,
         currentPeriodEnd: toIso(workspace.subscription?.current_period_end),
         owner: owner
@@ -233,7 +251,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspace) {
-        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
       }
 
       const usage = await getCurrentMonthUsage(id);
@@ -295,7 +313,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspace) {
-        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
       }
 
       const usage = await getCurrentMonthUsage(id);
@@ -356,7 +374,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           : null;
 
       if (!memberId || !memberRole) {
-        return NextResponse.json({ error: 'Membro ou papel inválido para atualização.' }, { status: 400 });
+        return NextResponse.json({ error: 'Membro ou papel invÃ¡lido para atualizaÃ§Ã£o.' }, { status: 400 });
       }
 
       const workspaceWithMembers = await prisma.workspace.findUnique({
@@ -368,12 +386,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspaceWithMembers) {
-        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
       }
 
       const targetMember = workspaceWithMembers.members.find((member) => member.id === memberId);
       if (!targetMember) {
-        return NextResponse.json({ error: 'Membro não encontrado neste workspace.' }, { status: 404 });
+        return NextResponse.json({ error: 'Membro nÃ£o encontrado neste workspace.' }, { status: 404 });
       }
 
       await prisma.$transaction(async (tx) => {
@@ -430,7 +448,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           : 'MEMBER';
 
       if (!memberEmail) {
-        return NextResponse.json({ error: 'Informe um e-mail válido para adicionar o membro.' }, { status: 400 });
+        return NextResponse.json({ error: 'Informe um e-mail vÃ¡lido para adicionar o membro.' }, { status: 400 });
       }
 
       const [workspaceWithMembers, targetUser] = await Promise.all([
@@ -451,16 +469,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ]);
 
       if (!workspaceWithMembers) {
-        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
       }
 
       if (!targetUser) {
-        return NextResponse.json({ error: 'Usuário não encontrado para este e-mail.' }, { status: 404 });
+        return NextResponse.json({ error: 'UsuÃ¡rio nÃ£o encontrado para este e-mail.' }, { status: 404 });
       }
 
       const existingMember = workspaceWithMembers.members.find((member) => member.user_id === targetUser.id);
       if (existingMember) {
-        return NextResponse.json({ error: 'Este usuário já faz parte do workspace.' }, { status: 409 });
+        return NextResponse.json({ error: 'Este usuÃ¡rio jÃ¡ faz parte do workspace.' }, { status: 409 });
       }
 
       const createdMember = await prisma.$transaction(async (tx) => {
@@ -514,7 +532,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.action === 'remove-member') {
       const memberId = typeof body.memberId === 'string' ? body.memberId.trim() : '';
       if (!memberId) {
-        return NextResponse.json({ error: 'Membro inválido para remoção.' }, { status: 400 });
+        return NextResponse.json({ error: 'Membro invÃ¡lido para remoÃ§Ã£o.' }, { status: 400 });
       }
 
       const workspaceWithMembers = await prisma.workspace.findUnique({
@@ -525,12 +543,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspaceWithMembers) {
-        return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
       }
 
       const targetMember = workspaceWithMembers.members.find((member) => member.id === memberId);
       if (!targetMember) {
-        return NextResponse.json({ error: 'Membro não encontrado neste workspace.' }, { status: 404 });
+        return NextResponse.json({ error: 'Membro nÃ£o encontrado neste workspace.' }, { status: 404 });
       }
 
       if (targetMember.role === 'OWNER') {
@@ -570,7 +588,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace não encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
     }
 
     const nextName = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : workspace.name;
@@ -612,7 +630,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       : workspace.members.find((member) => member.role === 'OWNER') || null;
 
     if (requestedOwnerUserId && !ownerMember) {
-      return NextResponse.json({ error: 'O novo owner precisa já fazer parte do workspace.' }, { status: 400 });
+      return NextResponse.json({ error: 'O novo owner precisa jÃ¡ fazer parte do workspace.' }, { status: 400 });
     }
 
     const currentLifecycle = await getWorkspaceLifecycleStatus(id);
@@ -763,3 +781,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Falha ao atualizar workspace.' }, { status: 500 });
   }
 }
+
+
+
