@@ -34,6 +34,11 @@ function normalizePeriodEnd(value: unknown) {
   return Number.isNaN(nextDate.getTime()) ? null : nextDate;
 }
 
+function isMissingPlatformSettingError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /does not exist|relation .* does not exist|table .* doesn't exist|column .* does not exist/i.test(message);
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireSuperadminAccess(req);
@@ -281,35 +286,53 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }),
     ]);
 
-    if (updatedUser.email && normalizedRoleInput) {
-      const normalizedEmail = updatedUser.email.trim().toLowerCase();
-      const currentSetting = await prisma.platformSetting.findUnique({
-        where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
-        select: { value: true },
-      });
-      const currentOverrides =
-        currentSetting?.value && typeof currentSetting.value === 'object' && !Array.isArray(currentSetting.value)
-          ? { ...(currentSetting.value as Record<string, unknown>) }
-          : {};
+    const currentResolvedRole = await resolvePlatformRoleForEmail(user.email);
+    const shouldWriteRoleOverride = Boolean(
+      updatedUser.email && normalizedRoleInput && normalizedRoleInput !== currentResolvedRole.role
+    );
 
-      if (normalizedRoleInput === 'user') {
-        delete currentOverrides[normalizedEmail];
-      } else {
-        currentOverrides[normalizedEmail] = normalizedRoleInput;
+    if (shouldWriteRoleOverride && updatedUser.email && normalizedRoleInput) {
+      try {
+        const normalizedEmail = updatedUser.email.trim().toLowerCase();
+        const currentSetting = await prisma.platformSetting.findUnique({
+          where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
+          select: { value: true },
+        });
+        const currentOverrides =
+          currentSetting?.value && typeof currentSetting.value === 'object' && !Array.isArray(currentSetting.value)
+            ? { ...(currentSetting.value as Record<string, unknown>) }
+            : {};
+
+        if (normalizedRoleInput === 'user') {
+          delete currentOverrides[normalizedEmail];
+        } else {
+          currentOverrides[normalizedEmail] = normalizedRoleInput;
+        }
+
+        await prisma.platformSetting.upsert({
+          where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
+          update: { value: currentOverrides as Prisma.InputJsonValue },
+          create: { key: PLATFORM_ROLE_OVERRIDES_KEY, value: currentOverrides as Prisma.InputJsonValue },
+        });
+      } catch (roleOverrideError) {
+        if (!isMissingPlatformSettingError(roleOverrideError)) {
+          throw roleOverrideError;
+        }
       }
-
-      await prisma.platformSetting.upsert({
-        where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
-        update: { value: currentOverrides as Prisma.InputJsonValue },
-        create: { key: PLATFORM_ROLE_OVERRIDES_KEY, value: currentOverrides as Prisma.InputJsonValue },
-      });
     }
 
-    const lifecycle = await setUserLifecycleStatus({
-      userId: id,
-      status: normalizedLifecycleStatus,
-      reason: normalizedLifecycleReason,
-    });
+    const currentLifecycle = await getUserLifecycleStatus(user.id);
+    const shouldWriteLifecycle =
+      currentLifecycle.status !== normalizedLifecycleStatus ||
+      (currentLifecycle.reason || null) !== (normalizedLifecycleReason || null);
+
+    const lifecycle = shouldWriteLifecycle
+      ? await setUserLifecycleStatus({
+          userId: id,
+          status: normalizedLifecycleStatus,
+          reason: normalizedLifecycleReason,
+        })
+      : currentLifecycle;
 
     let supportLink: { type: 'magiclink' | 'recovery'; url: string } | null = null;
 
@@ -394,6 +417,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    return NextResponse.json({ error: 'Falha ao atualizar o usuário.' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Falha ao atualizar o usuário.' },
+      { status: 500 }
+    );
   }
 }
