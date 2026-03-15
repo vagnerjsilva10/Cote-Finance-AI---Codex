@@ -80,6 +80,11 @@ export function SuperadminOverviewPage() {
     );
   }
 
+  const recentEvents = Array.isArray(data.recentEvents) ? data.recentEvents : [];
+  const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+  const limitsReference =
+    data.limitsReference && typeof data.limitsReference === 'object' ? data.limitsReference : {};
+
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
@@ -172,15 +177,15 @@ export function SuperadminOverviewPage() {
                 <p className="mt-1 text-sm text-slate-400">Sinais operacionais recentes de toda a plataforma.</p>
               </div>
               <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                {data.recentEvents.length} eventos
+                {recentEvents.length} eventos
               </span>
             </div>
 
             <div className="mt-3 space-y-2.5">
-              {data.recentEvents.length === 0 ? (
+              {recentEvents.length === 0 ? (
                 <EmptyState text="Nenhum evento recente encontrado." />
               ) : (
-                data.recentEvents.map((event) => (
+                recentEvents.map((event) => (
                   <div key={event.id} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="font-semibold text-white">{humanizeEventType(event.type)}</div>
@@ -209,10 +214,10 @@ export function SuperadminOverviewPage() {
               </div>
             </div>
             <div className="mt-3 space-y-2.5">
-              {data.alerts.length === 0 ? (
+              {alerts.length === 0 ? (
                 <EmptyState text="Nenhum alerta relevante no momento." />
               ) : (
-                data.alerts.map((alert) => (
+                alerts.map((alert) => (
                   <div
                     key={alert.id}
                     className={
@@ -261,18 +266,18 @@ export function SuperadminOverviewPage() {
           <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
             <h2 className="text-lg font-bold text-white">Limites vigentes</h2>
             <div className="mt-4 space-y-2.5">
-              {Object.entries(data.limitsReference).map(([plan, limits]) => (
+              {Object.entries(limitsReference).map(([plan, limits]) => (
                 <div key={plan} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
                   <div className="text-sm font-semibold text-white">{plan}</div>
                   <div className="mt-1.5 text-xs leading-6 text-slate-400">
                     {typeof limits.transactionsPerMonth === 'number'
                       ? `${formatAdminNumber(limits.transactionsPerMonth)} transacoes/mes`
                       : 'Transacoes ilimitadas'}
-                    {' · '}
+                    {' Â· '}
                     {typeof limits.aiInteractionsPerMonth === 'number'
                       ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} IA/mes`
                       : 'IA ilimitada'}
-                    {' · '}
+                    {' Â· '}
                     Relatorios {limits.reports}
                   </div>
                 </div>
@@ -350,3 +355,4 @@ function MetricPill({
 function EmptyState({ text }: { text: string }) {
   return <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-5 text-sm text-slate-400">{text}</div>;
 }
+
