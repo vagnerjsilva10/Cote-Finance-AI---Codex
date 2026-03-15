@@ -67,11 +67,11 @@ export function SuperadminAuditLogsPage() {
   const summary = data?.summary;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <SuperadminPageHeader
         eyebrow="Auditoria"
         title="Logs / Auditoria"
-        description="Acompanhe o rastro operacional dos eventos mais importantes da plataforma, com foco em billing, tracking, IA, WhatsApp e ações críticas do produto."
+        description="Rastro operacional de billing, tracking, IA, WhatsApp e acoes criticas."
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <SuperadminMetricChip label="Eventos" value={formatAdminNumber(summary?.total || 0)} />
@@ -82,10 +82,7 @@ export function SuperadminAuditLogsPage() {
         </div>
       </SuperadminPageHeader>
 
-      <SuperadminSectionCard
-        title="Filtro operacional"
-        description="Use a busca para encontrar rapidamente um workspace, e-mail, categoria ou tipo de evento específico."
-      >
+      <SuperadminSectionCard title="Filtro operacional" description="Busca rapida por workspace, usuario, categoria ou evento.">
         <div className="grid gap-3 lg:grid-cols-[1.2fr_0.5fr]">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
@@ -117,10 +114,7 @@ export function SuperadminAuditLogsPage() {
         </div>
       </SuperadminSectionCard>
 
-      <SuperadminSectionCard
-        title="Timeline de auditoria"
-        description={data ? `${formatAdminNumber(data.total)} evento(s) encontrados.` : 'Carregando trilha de auditoria.'}
-      >
+      <SuperadminSectionCard title="Timeline de auditoria" description={data ? `${formatAdminNumber(data.total)} evento(s) encontrados.` : 'Carregando trilha de auditoria.'}>
         {isLoading ? (
           <LoadingState />
         ) : error || !data ? (
@@ -130,7 +124,7 @@ export function SuperadminAuditLogsPage() {
         ) : (
           <div className="space-y-3">
             {data.events.map((event) => (
-              <article key={event.id} className="rounded-2xl border border-white/10 bg-slate-950/55 p-5">
+              <article key={event.id} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
@@ -152,7 +146,7 @@ export function SuperadminAuditLogsPage() {
                 </div>
 
                 {event.payload ? (
-                  <details className="mt-4 rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+                  <details className="mt-3 rounded-2xl border border-white/10 bg-slate-900/60 p-4">
                     <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                       Ver payload do evento
                     </summary>

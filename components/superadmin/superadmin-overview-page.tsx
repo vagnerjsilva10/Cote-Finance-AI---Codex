@@ -83,8 +83,8 @@ export function SuperadminOverviewPage() {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl space-y-3">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-emerald-300">
                 Super Admin
@@ -95,10 +95,7 @@ export function SuperadminOverviewPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Visao operacional em tempo real</h1>
-              <p className="mt-2 text-sm leading-7 text-slate-300">
-                Monitore usuarios, billing, IA, WhatsApp e sinais de risco em uma camada compacta, com acesso direto
-                para as areas de acao do produto.
-              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Usuarios, billing, IA, WhatsApp e risco em uma leitura curta.</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -168,7 +165,7 @@ export function SuperadminOverviewPage() {
             />
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold text-white">Eventos recentes</h2>
@@ -179,7 +176,7 @@ export function SuperadminOverviewPage() {
               </span>
             </div>
 
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-3 space-y-2.5">
               {data.recentEvents.length === 0 ? (
                 <EmptyState text="Nenhum evento recente encontrado." />
               ) : (
@@ -201,7 +198,7 @@ export function SuperadminOverviewPage() {
         </div>
 
         <div className="space-y-3 xl:col-span-4">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
                 <ShieldAlert className="h-4.5 w-4.5 text-amber-300" />
@@ -211,7 +208,7 @@ export function SuperadminOverviewPage() {
                 <p className="text-sm text-slate-400">Fila de acao do Super Admin.</p>
               </div>
             </div>
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-3 space-y-2.5">
               {data.alerts.length === 0 ? (
                 <EmptyState text="Nenhum alerta relevante no momento." />
               ) : (
@@ -243,7 +240,7 @@ export function SuperadminOverviewPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
                 <TrendingUp className="h-4.5 w-4.5 text-emerald-300" />
@@ -253,7 +250,7 @@ export function SuperadminOverviewPage() {
                 <p className="text-sm text-slate-400">Indicadores de supervisao central.</p>
               </div>
             </div>
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-3 space-y-2.5">
               <MetricPill label="Acoes admin 30d" value={formatAdminNumber(data.metrics.adminActionsLast30Days)} />
               <MetricPill label="Assinaturas com nota" value={formatAdminNumber(data.metrics.subscriptionsWithNotes)} />
               <MetricPill label="Novos cadastros 30d" value={formatAdminNumber(data.metrics.newSignupsLast30Days)} />
