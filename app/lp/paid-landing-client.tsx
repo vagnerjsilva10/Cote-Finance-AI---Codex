@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import * as React from 'react';
 import type { ReactNode } from 'react';
 import { Manrope, Space_Grotesk } from 'next/font/google';
 import { motion } from 'motion/react';
@@ -17,6 +18,18 @@ import {
 
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
 const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
+
+type PublicPlanCatalogItem = {
+  code: 'FREE' | 'PRO' | 'PREMIUM';
+  name: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  trialDays: number;
+  description: string;
+  features: string[];
+  trustBadges: string[];
+  default: boolean;
+};
 
 const heroBullets = [
   'Análise automática dos seus gastos',
@@ -106,7 +119,7 @@ const testimonials = [
 
 const featuredPortraitUrl = 'https://purepng.com/public/uploads/large/purepng.com-business-manbusinessmanbusinesssalesrevenuegeneratingsuits-1421526857853si53r.png';
 
-const plans = [
+const fallbackPlans = [
   {
     name: 'Free',
     price: 'R$0/mês',
@@ -153,6 +166,40 @@ const plans = [
     ],
   },
 ];
+
+function toPaidLandingPlan(plan: PublicPlanCatalogItem) {
+  if (plan.code === 'FREE') {
+    return {
+      name: 'Free',
+      price: `R$${plan.monthlyPrice}/mês`,
+      href: '/signup',
+      cta: 'Criar conta grátis',
+      badge: 'Entrada',
+      features: plan.features,
+    };
+  }
+
+  if (plan.code === 'PREMIUM') {
+    return {
+      name: 'Premium',
+      price: `R$${plan.monthlyPrice}/mês`,
+      href: '/signup?plan=premium',
+      cta: 'Assinar Premium',
+      badge: 'Completo',
+      features: plan.features,
+    };
+  }
+
+  return {
+    name: 'Pro',
+    price: `R$${plan.monthlyPrice}/mês`,
+    href: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
+    cta: plan.trialDays > 0 ? 'Começar teste grátis' : 'Assinar Pro',
+    badge: 'Mais popular',
+    highlight: true,
+    features: plan.features,
+  };
+}
 
 const faqs = [
   {
@@ -232,6 +279,30 @@ function MotionCard({ children, className = '' }: { children: ReactNode; classNa
 }
 
 export default function PaidLandingClient() {
+  const [plans, setPlans] = React.useState(fallbackPlans);
+
+  React.useEffect(() => {
+    let active = true;
+
+    const run = async () => {
+      try {
+        const response = await fetch('/api/public/plan-catalog', { cache: 'no-store' });
+        const payload = (await response.json().catch(() => null)) as { plans?: PublicPlanCatalogItem[] } | null;
+        if (!response.ok || !payload?.plans?.length) return;
+        if (active) {
+          setPlans(payload.plans.map(toPaidLandingPlan));
+        }
+      } catch {
+        // Mantem fallback para a LP de mídia paga caso o endpoint falhe.
+      }
+    };
+
+    void run();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <main className={`${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`} style={{ fontFamily: 'var(--font-body)' }}>
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(16,185,129,.18),transparent_28%),radial-gradient(circle_at_88%_10%,rgba(59,130,246,.18),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_54%,#0b1120_100%)]" />

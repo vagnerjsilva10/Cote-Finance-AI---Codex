@@ -43,6 +43,18 @@ type PlanCard = {
   accent?: 'subtle' | 'highlight' | 'premium';
 };
 
+type PublicPlanCatalogItem = {
+  code: 'FREE' | 'PRO' | 'PREMIUM';
+  name: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  trialDays: number;
+  description: string;
+  features: string[];
+  trustBadges: string[];
+  default: boolean;
+};
+
 const legacyPlans: PlanCard[] = [
   {
     name: 'Premium',
@@ -250,7 +262,7 @@ const currentFeatures = [
   },
 ];
 
-const plans: PlanCard[] = [
+const fallbackPlans: PlanCard[] = [
   {
     name: 'Free',
     price: 'R$0/mês',
@@ -389,12 +401,82 @@ void currentPlans;
 void currentPricingFaqs;
 void currentFeatures;
 
+function toMarketingPlan(plan: PublicPlanCatalogItem): PlanCard {
+  if (plan.code === 'FREE') {
+    return {
+      name: 'Free',
+      price: `R$${plan.monthlyPrice}/mês`,
+      label: 'Entrada',
+      benefit: plan.description,
+      buttonText: 'Criar conta grátis',
+      microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
+      signupHref: '/signup?plan=free',
+      features: plan.features,
+      accent: 'subtle',
+    };
+  }
+
+  if (plan.code === 'PREMIUM') {
+    return {
+      name: 'Premium',
+      price: `R$${plan.monthlyPrice}/mês`,
+      label: 'Controle total',
+      benefit: plan.description,
+      buttonText: 'Assinar Premium',
+      microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
+      signupHref: '/signup?plan=premium',
+      features: plan.features,
+      accent: 'premium',
+    };
+  }
+
+  return {
+    name: 'Pro',
+    price: `R$${plan.monthlyPrice}/mês`,
+    label: 'Melhor escolha',
+    benefit: plan.description,
+    buttonText: plan.trialDays > 0 ? 'Começar teste grátis' : 'Assinar Pro',
+    microcopy:
+      plan.trialDays > 0
+        ? `Teste grátis por ${plan.trialDays} dias e evolua no seu ritmo.`
+        : 'Crie sua conta e evolua no seu ritmo.',
+    signupHref: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
+    popular: true,
+    proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
+    features: plan.features,
+    accent: 'highlight',
+  };
+}
+
 export default function LandingPage() {
   const brandLogo = '/brand/cote-finance-ai-logo.svg';
   const router = useRouter();
   const [isBusy, setIsBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [heroParallax, setHeroParallax] = React.useState({ x: 0, y: 0 });
+  const [pricingPlans, setPricingPlans] = React.useState<PlanCard[]>(fallbackPlans);
+
+  React.useEffect(() => {
+    let active = true;
+
+    const run = async () => {
+      try {
+        const response = await fetch('/api/public/plan-catalog', { cache: 'no-store' });
+        const payload = (await response.json().catch(() => null)) as { plans?: PublicPlanCatalogItem[] } | null;
+        if (!response.ok || !payload?.plans?.length) return;
+        if (active) {
+          setPricingPlans(payload.plans.map(toMarketingPlan));
+        }
+      } catch {
+        // Mantem fallback comercial caso o endpoint publico falhe.
+      }
+    };
+
+    void run();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const scrollTo = React.useCallback((id: string) => {
     const node = document.getElementById(id);
@@ -1104,7 +1186,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
-            {plans.map((plan) => (
+            {pricingPlans.map((plan) => (
               <div
                 key={plan.name}
                 className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 sm:p-7 ${
