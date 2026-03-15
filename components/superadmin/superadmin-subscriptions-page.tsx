@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowDownRight, ArrowUpRight, CreditCard, Loader2, Search, ShieldCheck, Sparkles } from 'lucide-react';
+import { CreditCard, Loader2, Search, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 
 import { fetchSuperadminJson, useDebouncedValue } from '@/components/superadmin/fetch-superadmin-json';
 import {
@@ -13,7 +13,11 @@ import {
   formatSubscriptionStatus,
   getSubscriptionTone,
 } from '@/components/superadmin/superadmin-utils';
-import type { SuperadminSubscriptionSummary, SuperadminSubscriptionUpdateResponse, SuperadminSubscriptionsResponse } from '@/lib/superadmin/types';
+import type {
+  SuperadminSubscriptionSummary,
+  SuperadminSubscriptionUpdateResponse,
+  SuperadminSubscriptionsResponse,
+} from '@/lib/superadmin/types';
 
 const PLAN_OPTIONS = [
   { value: 'ALL', label: 'Todos os planos' },
@@ -21,6 +25,7 @@ const PLAN_OPTIONS = [
   { value: 'PRO', label: 'Pro' },
   { value: 'PREMIUM', label: 'Premium' },
 ];
+
 const STATUS_OPTIONS = [
   { value: 'ALL', label: 'Todos os status' },
   { value: 'ACTIVE', label: 'Ativas' },
@@ -38,7 +43,7 @@ export function SuperadminSubscriptionsPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedSubscription, setSelectedSubscription] = React.useState<SuperadminSubscriptionSummary | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
-  const [actionMessage, setActionMessage] = React.useState<string | null>(null);
+  const [message, setMessage] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let active = true;
@@ -67,93 +72,159 @@ export function SuperadminSubscriptionsPage() {
   const metrics = data?.metrics;
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Assinaturas</p>
+    <div className="space-y-5">
+      {message ? <FeedbackState message={message} success /> : null}
+      {error ? <ErrorState message={error} /> : null}
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Assinaturas
+              </span>
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+                Billing operacional
+              </span>
+            </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Assinaturas</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                Monitore a base pagante, veja pendências de billing e opere mudanças de plano dentro da mesma linguagem visual do app principal.
+              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base pagante, pendencias e acao administrativa</h1>
+              <p className="mt-2 text-sm leading-7 text-slate-300">
+                Consolide busca, filtro e ajuste manual de billing em uma camada compacta e direta para operacao.
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/superadmin/plans" className={secondaryActionClassName}>Ver planos</Link>
-            <Link href="/superadmin/reports" className={primaryActionClassName}>Relatórios</Link>
+            <Link href="/superadmin/plans" className={secondaryActionClassName}>Planos</Link>
+            <Link href="/superadmin/reports" className={secondaryActionClassName}>Relatorios</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Base total" value={formatAdminNumber(metrics?.total || 0)} icon={<CreditCard className="h-4.5 w-4.5 text-emerald-300" />} />
+        <StatCard label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
+        <StatCard label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} icon={<ShieldCheck className="h-4.5 w-4.5 text-amber-300" />} />
+        <StatCard label="MRR" value={formatAdminCurrency(metrics?.estimatedMrr || 0)} icon={<TrendingUp className="h-4.5 w-4.5 text-emerald-300" />} />
+      </section>
+
+      <section className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-white">Operacao de billing</h2>
+              <p className="mt-1 text-sm text-slate-400">Busque por workspace, owner ou ID e filtre a fila real de trabalho.</p>
+            </div>
+            <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              {formatAdminNumber(data?.subscriptions.length || 0)} visiveis
+            </span>
+          </div>
+          <div className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_0.4fr_0.4fr]">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
+              <div className="relative mt-2">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Workspace, owner ou ID"
+                  className={searchFieldClassName}
+                />
+              </div>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+              <select value={plan} onChange={(event) => setPlan(event.target.value)} className={compactFieldClassName}>
+                {PLAN_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Status</span>
+              <select value={status} onChange={(event) => setStatus(event.target.value)} className={compactFieldClassName}>
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Assinaturas" value={formatAdminNumber(metrics?.total || 0)} trend="na base" trendValue={formatAdminNumber(metrics?.active || 0)} icon={CreditCard} />
-          <StatCard label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} trend="em planos pagos" trendValue={formatAdminNumber(metrics?.paying || 0)} icon={Sparkles} />
-          <StatCard label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} trend="exigem atenção" trendValue={formatAdminNumber(metrics?.pending || 0)} icon={ShieldCheck} trendType="down" />
-          <StatCard label="MRR estimado" value={formatAdminCurrency(metrics?.estimatedMrr || 0)} trend="receita mensal" trendValue={formatAdminNumber(metrics?.paying || 0)} icon={ArrowUpRightIcon} />
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <h2 className="text-lg font-bold text-white">Pulso de receita</h2>
+          <p className="mt-1 text-sm text-slate-400">Leitura rapida do estado da base pagante.</p>
+          <div className="mt-4 space-y-2.5">
+            <MetricPill label="Ativas" value={formatAdminNumber(metrics?.active || 0)} />
+            <MetricPill label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} tone={(metrics?.pending || 0) > 0 ? 'danger' : 'neutral'} />
+            <MetricPill label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} />
+            <MetricPill label="MRR estimado" value={formatAdminCurrency(metrics?.estimatedMrr || 0)} />
+          </div>
         </div>
       </section>
 
-      {actionMessage ? <SuccessState message={actionMessage} /> : null}
-      {error ? <ErrorState message={error} /> : null}
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold text-white">Base de assinaturas</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              {data ? `${formatAdminNumber(data.total)} assinatura(s) encontradas.` : 'Carregando base de assinaturas.'}
+            </p>
+          </div>
+        </div>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-        <div className="mb-5">
-          <h2 className="text-xl font-black text-white">Operação de billing</h2>
-          <p className="mt-2 text-sm leading-7 text-slate-400">Use busca e filtros para chegar rápido nas contas certas e operar mudanças sem sair do padrão visual do produto.</p>
-        </div>
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_.45fr_.45fr]">
-          <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
-            <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por workspace, owner ou ID" className={filterFieldClassName} />
-            </div>
-          </label>
-          <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span><select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>{PLAN_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-          <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Status</span><select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>{STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-        <div className="mb-5">
-          <h2 className="text-xl font-black text-white">Base de assinaturas</h2>
-          <p className="mt-2 text-sm leading-7 text-slate-400">{data ? `${formatAdminNumber(data.total)} assinatura(s) encontradas.` : 'Carregando base de assinaturas.'}</p>
-        </div>
         {isLoading ? (
-          <LoadingState message="Carregando assinaturas..." />
+          <LoadingState label="Carregando assinaturas..." />
         ) : !data ? (
           <ErrorState message={error || 'Falha ao carregar assinaturas.'} />
         ) : data.subscriptions.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <thead className="border-b border-slate-800 text-[11px] uppercase tracking-[0.22em] text-slate-500">
                 <tr>
-                  <th className="pb-4 pr-6 font-semibold">Workspace</th>
-                  <th className="pb-4 pr-6 font-semibold">Owner</th>
-                  <th className="pb-4 pr-6 font-semibold">Plano</th>
-                  <th className="pb-4 pr-6 font-semibold">Status</th>
-                  <th className="pb-4 pr-6 font-semibold">Período</th>
-                  <th className="pb-4 pr-6 font-semibold">Stripe</th>
-                  <th className="pb-4 pr-6 font-semibold">MRR</th>
-                  <th className="pb-4 font-semibold text-right">Ações</th>
+                  <th className="px-3 py-3 font-semibold">Workspace</th>
+                  <th className="px-3 py-3 font-semibold">Owner</th>
+                  <th className="px-3 py-3 font-semibold">Plano</th>
+                  <th className="px-3 py-3 font-semibold">Status</th>
+                  <th className="px-3 py-3 font-semibold">Periodo</th>
+                  <th className="px-3 py-3 font-semibold">Stripe</th>
+                  <th className="px-3 py-3 font-semibold">MRR</th>
+                  <th className="px-3 py-3 text-right font-semibold">Acao</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.subscriptions.map((item) => (
-                  <tr key={item.workspaceId} className="transition hover:bg-slate-900/40">
-                    <td className="py-5 pr-6 align-top"><div className="font-semibold text-white">{item.workspaceName}</div><div className="mt-1 text-xs text-slate-500">{item.workspaceId}</div></td>
-                    <td className="py-5 pr-6 align-top text-slate-300">{item.ownerEmail || 'Sem owner'}</td>
-                    <td className="py-5 pr-6 align-top"><PlanBadge plan={item.plan} /></td>
-                    <td className="py-5 pr-6 align-top"><StatusBadge status={item.status} /></td>
-                    <td className="py-5 pr-6 align-top text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
-                    <td className="py-5 pr-6 align-top text-slate-400">{item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vínculo'}</td>
-                    <td className="py-5 pr-6 align-top font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</td>
-                    <td className="py-5 align-top">
+                  <tr key={item.workspaceId} className="hover:bg-slate-950/30">
+                    <td className="px-3 py-3.5 align-top">
+                      <div className="font-semibold text-white">{item.workspaceName}</div>
+                      <div className="mt-0.5 text-[11px] text-slate-500">{item.workspaceId}</div>
+                    </td>
+                    <td className="px-3 py-3.5 align-top text-slate-300">{item.ownerEmail || 'Sem owner'}</td>
+                    <td className="px-3 py-3.5 align-top">
+                      <PlanBadge plan={item.plan} />
+                    </td>
+                    <td className="px-3 py-3.5 align-top">
+                      <StatusBadge status={item.status} />
+                    </td>
+                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
+                    <td className="px-3 py-3.5 align-top text-slate-400">
+                      {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vinculo'}
+                    </td>
+                    <td className="px-3 py-3.5 align-top font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</td>
+                    <td className="px-3 py-3.5 text-right align-top">
                       <div className="flex justify-end gap-2">
-                        <button type="button" onClick={() => setSelectedSubscription(item)} className={secondaryActionClassName}>Editar</button>
-                        <Link href={`/superadmin/workspaces/${item.workspaceId}`} className={secondaryActionClassName}>Ver workspace</Link>
+                        <button type="button" onClick={() => setSelectedSubscription(item)} className={secondaryActionClassName}>
+                          Editar
+                        </button>
+                        <Link href={`/superadmin/workspaces/${item.workspaceId}`} className={secondaryActionClassName}>
+                          Abrir
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -164,26 +235,79 @@ export function SuperadminSubscriptionsPage() {
         )}
       </section>
 
-      {selectedSubscription ? <SubscriptionActionSheet subscription={selectedSubscription} isSaving={isSaving} onClose={() => { if (!isSaving) setSelectedSubscription(null); }} onSubmit={async (payload) => {
-        try {
-          setIsSaving(true);
-          setError(null);
-          setActionMessage(null);
-          const response = await fetchSuperadminJson<SuperadminSubscriptionUpdateResponse>('/api/superadmin/subscriptions', { method: 'PATCH', body: JSON.stringify(payload) });
-          setData((current) => current ? { ...current, subscriptions: current.subscriptions.map((item) => item.workspaceId === response.subscription.workspaceId ? { ...item, plan: response.subscription.plan, status: response.subscription.status, currentPeriodEnd: response.subscription.currentPeriodEnd, estimatedMrr: response.subscription.estimatedMrr, stripeCustomerId: response.subscription.stripeCustomerId, stripeSubscriptionId: response.subscription.stripeSubscriptionId, adminNote: response.subscription.adminNote, hasStripeCustomer: Boolean(response.subscription.stripeCustomerId), hasStripeSubscription: Boolean(response.subscription.stripeSubscriptionId) } : item) } : current);
-          setSelectedSubscription(null);
-          setActionMessage('Assinatura atualizada com sucesso.');
-        } catch (submitError) {
-          setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar assinatura.');
-        } finally {
-          setIsSaving(false);
-        }
-      }} /> : null}
+      {selectedSubscription ? (
+        <SubscriptionActionSheet
+          subscription={selectedSubscription}
+          isSaving={isSaving}
+          onClose={() => {
+            if (!isSaving) setSelectedSubscription(null);
+          }}
+          onSubmit={async (payload) => {
+            try {
+              setIsSaving(true);
+              setError(null);
+              setMessage(null);
+              const response = await fetchSuperadminJson<SuperadminSubscriptionUpdateResponse>('/api/superadmin/subscriptions', {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+              });
+              setData((current) =>
+                current
+                  ? {
+                      ...current,
+                      subscriptions: current.subscriptions.map((item) =>
+                        item.workspaceId === response.subscription.workspaceId
+                          ? {
+                              ...item,
+                              plan: response.subscription.plan,
+                              status: response.subscription.status,
+                              currentPeriodEnd: response.subscription.currentPeriodEnd,
+                              estimatedMrr: response.subscription.estimatedMrr,
+                              stripeCustomerId: response.subscription.stripeCustomerId,
+                              stripeSubscriptionId: response.subscription.stripeSubscriptionId,
+                              adminNote: response.subscription.adminNote,
+                              hasStripeCustomer: Boolean(response.subscription.stripeCustomerId),
+                              hasStripeSubscription: Boolean(response.subscription.stripeSubscriptionId),
+                            }
+                          : item
+                      ),
+                    }
+                  : current
+              );
+              setSelectedSubscription(null);
+              setMessage('Assinatura atualizada com sucesso.');
+            } catch (submitError) {
+              setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar assinatura.');
+            } finally {
+              setIsSaving(false);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }
 
-function SubscriptionActionSheet({ subscription, isSaving, onClose, onSubmit }: { subscription: SuperadminSubscriptionSummary; isSaving: boolean; onClose: () => void; onSubmit: (payload: { workspaceId: string; plan: string; status: string; currentPeriodEnd: string | null; stripeCustomerId: string | null; stripeSubscriptionId: string | null; clearStripeLinks: boolean; adminNote: string | null; }) => Promise<void>; }) {
+function SubscriptionActionSheet({
+  subscription,
+  isSaving,
+  onClose,
+  onSubmit,
+}: {
+  subscription: SuperadminSubscriptionSummary;
+  isSaving: boolean;
+  onClose: () => void;
+  onSubmit: (payload: {
+    workspaceId: string;
+    plan: string;
+    status: string;
+    currentPeriodEnd: string | null;
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+    clearStripeLinks: boolean;
+    adminNote: string | null;
+  }) => Promise<void>;
+}) {
   const [plan, setPlan] = React.useState(subscription.plan);
   const [status, setStatus] = React.useState(subscription.status);
   const [currentPeriodEnd, setCurrentPeriodEnd] = React.useState(subscription.currentPeriodEnd ? subscription.currentPeriodEnd.slice(0, 10) : '');
@@ -197,57 +321,151 @@ function SubscriptionActionSheet({ subscription, isSaving, onClose, onSubmit }: 
       <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-950/98 p-6 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ação administrativa</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operacao administrativa</p>
             <h3 className="mt-2 text-xl font-black text-white">{subscription.workspaceName}</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste plano, status, período, vínculo Stripe e observações administrativas da assinatura.</p>
+            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste billing, vinculo Stripe e observacoes administrativas.</p>
           </div>
-          <button type="button" onClick={onClose} disabled={isSaving} className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-bold text-slate-300 transition hover:text-white">Fechar</button>
+          <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>
+            Fechar
+          </button>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span><select value={plan} onChange={(event) => setPlan(event.target.value)} className={filterFieldClassName}>{PLAN_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-          <label className="block"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Status</span><select value={status} onChange={(event) => setStatus(event.target.value)} className={filterFieldClassName}>{STATUS_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Período atual</span><input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={filterFieldClassName} /></label>
-          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Customer ID</span><input value={stripeCustomerId} onChange={(event) => setStripeCustomerId(event.target.value)} className={filterFieldClassName} placeholder="cus_..." /></label>
-          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Subscription ID</span><input value={stripeSubscriptionId} onChange={(event) => setStripeSubscriptionId(event.target.value)} className={filterFieldClassName} placeholder="sub_..." /></label>
-          <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Observação administrativa</span><textarea value={adminNote} onChange={(event) => setAdminNote(event.target.value)} rows={4} className={filterFieldClassName} placeholder="Ex: upgrade manual aprovado, cobrança conciliada, conta migrada." /></label>
-          <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white sm:col-span-2"><span>Desvincular referências Stripe</span><input type="checkbox" checked={clearStripeLinks} onChange={(event) => setClearStripeLinks(event.target.checked)} className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400" /></label>
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+            <select value={plan} onChange={(event) => setPlan(event.target.value)} className={compactFieldClassName}>
+              {PLAN_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Status</span>
+            <select value={status} onChange={(event) => setStatus(event.target.value)} className={compactFieldClassName}>
+              {STATUS_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Periodo atual</span>
+            <input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={compactFieldClassName} />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Customer ID</span>
+            <input value={stripeCustomerId} onChange={(event) => setStripeCustomerId(event.target.value)} className={compactFieldClassName} placeholder="cus_..." />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Subscription ID</span>
+            <input value={stripeSubscriptionId} onChange={(event) => setStripeSubscriptionId(event.target.value)} className={compactFieldClassName} placeholder="sub_..." />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Observacao administrativa</span>
+            <textarea value={adminNote} onChange={(event) => setAdminNote(event.target.value)} rows={4} className={compactFieldClassName} placeholder="Ex: cobranca conciliada, upgrade manual, revisao interna." />
+          </label>
+          <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white sm:col-span-2">
+            <span>Desvincular referencias Stripe</span>
+            <input type="checkbox" checked={clearStripeLinks} onChange={(event) => setClearStripeLinks(event.target.checked)} className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400" />
+          </label>
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>Cancelar</button>
-          <button type="button" disabled={isSaving} onClick={() => void onSubmit({ workspaceId: subscription.workspaceId, plan, status, currentPeriodEnd: currentPeriodEnd || null, stripeCustomerId: stripeCustomerId || null, stripeSubscriptionId: stripeSubscriptionId || null, clearStripeLinks, adminNote: adminNote || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button>
+          <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={isSaving}
+            onClick={() =>
+              void onSubmit({
+                workspaceId: subscription.workspaceId,
+                plan,
+                status,
+                currentPeriodEnd: currentPeriodEnd || null,
+                stripeCustomerId: stripeCustomerId || null,
+                stripeSubscriptionId: stripeSubscriptionId || null,
+                clearStripeLinks,
+                adminNote: adminNote || null,
+              })
+            }
+            className={primaryActionClassName}
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Salvar ajustes
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function StatCard({ label, value, trend, trendValue, icon: Icon, trendType = 'up' }: { label: string; value: string; trend: string; trendValue: string; icon: React.ComponentType<{ size?: number; className?: string }>; trendType?: 'up' | 'down'; }) {
+function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-6 transition-colors hover:border-slate-700">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-400">{label}</span>
-        <div className={trendType === 'up' ? 'rounded-lg bg-emerald-500/10 p-2 text-emerald-500' : 'rounded-lg bg-rose-500/10 p-2 text-rose-500'}><Icon size={18} /></div>
-      </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
-        <div className={trendType === 'up' ? 'flex items-center gap-1 text-sm font-semibold text-emerald-500' : 'flex items-center gap-1 text-sm font-semibold text-rose-500'}>
-          {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-          {trendValue} <span className="ml-1 font-normal text-slate-500">{trend}</span>
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+          <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
         </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">{icon}</div>
       </div>
     </div>
   );
 }
 
-function ArrowUpRightIcon(props: { size?: number; className?: string }) { return <ArrowUpRight {...props} />; }
-function PlanBadge({ plan }: { plan: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{formatPlanLabel(plan)}</span>; }
-function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
-function LoadingState({ message }: { message: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{message}</div></div>; }
-function SuccessState({ message }: { message: string }) { return <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">{message}</div>; }
-function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
-function EmptyState() { return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">Nenhuma assinatura encontrada com os filtros atuais.</div>; }
-const filterFieldClassName = 'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-500';
-const secondaryActionClassName = 'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
-const primaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-emerald-600 disabled:opacity-60';
+function MetricPill({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'neutral' | 'danger' }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-3">
+      <span className="text-sm text-slate-400">{label}</span>
+      <span className={tone === 'danger' ? 'text-sm font-semibold text-rose-300' : 'text-sm font-semibold text-white'}>{value}</span>
+    </div>
+  );
+}
+
+function PlanBadge({ plan }: { plan: string }) {
+  return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{formatPlanLabel(plan)}</span>;
+}
+
+function StatusBadge({ status }: { status: string | null }) {
+  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>;
+}
+
+function LoadingState({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-[220px] items-center justify-center">
+      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
+        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function FeedbackState({ message, success }: { message: string; success: boolean }) {
+  return (
+    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100' : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'}`}>
+      {message}
+    </div>
+  );
+}
+
+function ErrorState({ message }: { message: string }) {
+  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+}
+
+function EmptyState() {
+  return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">Nenhuma assinatura encontrada com os filtros atuais.</div>;
+}
+
+const searchFieldClassName =
+  'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+const compactFieldClassName =
+  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-500';
+const secondaryActionClassName =
+  'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
+const primaryActionClassName =
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';

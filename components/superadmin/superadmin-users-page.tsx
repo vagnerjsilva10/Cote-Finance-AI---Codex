@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Loader2, Search, ShieldCheck, Sparkles, Users2 } from 'lucide-react';
+import { Loader2, Search, ShieldCheck, Sparkles, UserPlus2, Users2 } from 'lucide-react';
 
 import { fetchSuperadminJson, useDebouncedValue } from '@/components/superadmin/fetch-superadmin-json';
 import {
@@ -14,7 +14,7 @@ import {
   formatSubscriptionStatus,
   getSubscriptionTone,
 } from '@/components/superadmin/superadmin-utils';
-import type { SuperadminUsersResponse } from '@/lib/superadmin/types';
+import type { SuperadminUserCreateResponse, SuperadminUsersResponse } from '@/lib/superadmin/types';
 
 export function SuperadminUsersPage() {
   const [query, setQuery] = React.useState('');
@@ -22,6 +22,19 @@ export function SuperadminUsersPage() {
   const [data, setData] = React.useState<SuperadminUsersResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isCreating, setIsCreating] = React.useState(false);
+  const [message, setMessage] = React.useState<string | null>(null);
+  const [createForm, setCreateForm] = React.useState({
+    email: '',
+    name: '',
+    password: '',
+    mode: 'invite' as 'invite' | 'password',
+  });
+
+  const loadUsers = React.useCallback(async (searchValue: string) => {
+    const search = searchValue.trim();
+    return fetchSuperadminJson<SuperadminUsersResponse>(`/api/superadmin/users${search ? `?q=${encodeURIComponent(search)}` : ''}`);
+  }, []);
 
   React.useEffect(() => {
     let active = true;
@@ -29,11 +42,10 @@ export function SuperadminUsersPage() {
       try {
         setIsLoading(true);
         setError(null);
-        const search = debouncedQuery.trim();
-        const next = await fetchSuperadminJson<SuperadminUsersResponse>(`/api/superadmin/users${search ? `?q=${encodeURIComponent(search)}` : ''}`);
+        const next = await loadUsers(debouncedQuery);
         if (active) setData(next);
       } catch (fetchError) {
-        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuários.');
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuarios.');
       } finally {
         if (active) setIsLoading(false);
       }
@@ -42,76 +54,208 @@ export function SuperadminUsersPage() {
     return () => {
       active = false;
     };
-  }, [debouncedQuery]);
+  }, [debouncedQuery, loadUsers]);
 
   const users = data?.users ?? [];
   const paidUsers = users.filter((user) => user.currentPlan === 'PRO' || user.currentPlan === 'PREMIUM').length;
   const superadmins = users.filter((user) => user.platformRole === 'superadmin').length;
-  const activeRecently = users.filter((user) => Boolean(user.lastAccessAt)).length;
+  const blockedUsers = users.filter((user) => user.lifecycleStatus === 'BLOCKED').length;
+
+  async function handleCreateUser() {
+    try {
+      setIsCreating(true);
+      setMessage(null);
+      const response = await fetchSuperadminJson<SuperadminUserCreateResponse>('/api/superadmin/users', {
+        method: 'POST',
+        body: JSON.stringify(createForm),
+      });
+      setMessage(`Usuario ${response.createdUser.email} criado com sucesso.`);
+      setCreateForm({ email: '', name: '', password: '', mode: 'invite' });
+      const next = await loadUsers(query);
+      setData(next);
+    } catch (createError) {
+      setMessage(createError instanceof Error ? createError.message : 'Falha ao criar usuario.');
+    } finally {
+      setIsCreating(false);
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
-        <div className="space-y-3">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Usuários</p>
-          <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Usuários</h1>
-          <p className="max-w-3xl text-sm leading-7 text-slate-300">Acompanhe a base de contas, plano atual, acesso administrativo e sinais de atividade usando a mesma hierarquia do app principal.</p>
-        </div>
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} trend="na plataforma" trendValue={formatAdminNumber(data?.total || 0)} icon={Users2} />
-          <StatCard label="Pagantes" value={formatAdminNumber(paidUsers)} trend="em planos pagos" trendValue={formatAdminNumber(paidUsers)} icon={Sparkles} />
-          <StatCard label="Super admins" value={formatAdminNumber(superadmins)} trend="com acesso elevado" trendValue={formatAdminNumber(superadmins)} icon={ShieldCheck} />
-          <StatCard label="Com acesso recente" value={formatAdminNumber(activeRecently)} trend="com atividade" trendValue={formatAdminNumber(activeRecently)} icon={ArrowUpRightIcon} />
-        </div>
-      </section>
-
+    <div className="space-y-5">
       {error ? <ErrorState message={error} /> : null}
+      {message ? <FeedbackState message={message} success={message.includes('sucesso')} /> : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-        <div className="mb-5">
-          <h2 className="text-xl font-black text-white">Busca operacional</h2>
-          <p className="mt-2 text-sm leading-7 text-slate-400">Encontre usuários por nome, e-mail ou identificador e isole rapidamente quem precisa de suporte ou revisão de acesso.</p>
-        </div>
-        <label className="block max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Buscar usuário</span>
-          <div className="relative mt-2">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, e-mail ou ID" className={fieldClassName} />
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Usuarios
+              </span>
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+                Governanca de acesso
+              </span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base de usuarios e suporte administrativo</h1>
+              <p className="mt-2 text-sm leading-7 text-slate-300">
+                Controle ciclo de vida, planos, roles e provisionamento de contas em uma superficie unica e mais compacta.
+              </p>
+            </div>
           </div>
-        </label>
+        </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-        <div className="mb-5">
-          <h2 className="text-xl font-black text-white">Base de usuários</h2>
-          <p className="mt-2 text-sm leading-7 text-slate-400">{data ? `${formatAdminNumber(data.total)} usuário(s) encontrados.` : 'Carregando usuários.'}</p>
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Users2 className="h-4.5 w-4.5 text-emerald-300" />} />
+        <StatCard label="Pagantes" value={formatAdminNumber(paidUsers)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
+        <StatCard label="Super admins" value={formatAdminNumber(superadmins)} icon={<ShieldCheck className="h-4.5 w-4.5 text-amber-300" />} />
+        <StatCard label="Bloqueados" value={formatAdminNumber(blockedUsers)} icon={<ShieldCheck className="h-4.5 w-4.5 text-rose-300" />} />
+      </section>
+
+      <section className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-white">Operacao de usuarios</h2>
+              <p className="mt-1 text-sm text-slate-400">Busque por nome, e-mail ou ID para chegar rapido na conta certa.</p>
+            </div>
+            <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              {formatAdminNumber(users.length)} visiveis
+            </span>
+          </div>
+          <label className="mt-4 block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
+            <div className="relative mt-2">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Nome, e-mail ou ID"
+                className={searchFieldClassName}
+              />
+            </div>
+          </label>
         </div>
-        {isLoading ? <LoadingState label="Carregando usuários..." /> : !data ? <ErrorState message={error || 'Falha ao carregar usuários.'} /> : data.users.length === 0 ? <EmptyState text="Nenhum usuário encontrado para os filtros atuais." /> : (
-          <div className="overflow-x-auto">
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-white">Provisionar usuario</h2>
+              <p className="mt-1 text-sm text-slate-400">Crie acesso real com suporte ao Auth Admin.</p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+                data?.capabilities.authAdminConfigured
+                  ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+                  : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
+              }`}
+            >
+              {data?.capabilities.authAdminConfigured ? 'Ativo' : 'Pendente'}
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <input
+              value={createForm.name}
+              onChange={(event) => setCreateForm((current) => ({ ...current, name: event.target.value }))}
+              className={compactFieldClassName}
+              placeholder="Nome"
+            />
+            <input
+              value={createForm.email}
+              onChange={(event) => setCreateForm((current) => ({ ...current, email: event.target.value }))}
+              className={compactFieldClassName}
+              placeholder="usuario@empresa.com"
+            />
+            <select
+              value={createForm.mode}
+              onChange={(event) => setCreateForm((current) => ({ ...current, mode: event.target.value as 'invite' | 'password' }))}
+              className={compactFieldClassName}
+            >
+              <option value="invite">Convite por e-mail</option>
+              <option value="password">Criar com senha</option>
+            </select>
+            <input
+              value={createForm.password}
+              onChange={(event) => setCreateForm((current) => ({ ...current, password: event.target.value }))}
+              className={compactFieldClassName}
+              placeholder={createForm.mode === 'password' ? 'Senha inicial' : 'Nao usada em convite'}
+              disabled={createForm.mode !== 'password'}
+            />
+          </div>
+
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={handleCreateUser}
+              disabled={isCreating || !data?.capabilities.authAdminConfigured}
+              className={primaryActionClassName}
+            >
+              {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus2 className="h-4 w-4" />}
+              Criar usuario
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold text-white">Base de usuarios</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              {data ? `${formatAdminNumber(data.total)} usuario(s) encontrados.` : 'Carregando base de usuarios.'}
+            </p>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <LoadingState label="Carregando usuarios..." />
+        ) : !data ? (
+          <ErrorState message={error || 'Falha ao carregar usuarios.'} />
+        ) : data.users.length === 0 ? (
+          <EmptyState text="Nenhum usuario encontrado para os filtros atuais." />
+        ) : (
+          <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <thead className="border-b border-slate-800 text-[11px] uppercase tracking-[0.22em] text-slate-500">
                 <tr>
-                  <th className="pb-4 pr-6 font-semibold">Usuário</th>
-                  <th className="pb-4 pr-6 font-semibold">Plano</th>
-                  <th className="pb-4 pr-6 font-semibold">Assinatura</th>
-                  <th className="pb-4 pr-6 font-semibold">Acesso</th>
-                  <th className="pb-4 pr-6 font-semibold">Workspaces</th>
-                  <th className="pb-4 pr-6 font-semibold">Último acesso</th>
-                  <th className="pb-4 pr-6 font-semibold">Cadastro</th>
-                  <th className="pb-4 text-right font-semibold">Ações</th>
+                  <th className="px-3 py-3 font-semibold">Usuario</th>
+                  <th className="px-3 py-3 font-semibold">Plano</th>
+                  <th className="px-3 py-3 font-semibold">Status</th>
+                  <th className="px-3 py-3 font-semibold">Role</th>
+                  <th className="px-3 py-3 font-semibold">Workspaces</th>
+                  <th className="px-3 py-3 font-semibold">Ultimo acesso</th>
+                  <th className="px-3 py-3 font-semibold">Cadastro</th>
+                  <th className="px-3 py-3 text-right font-semibold">Acao</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.users.map((user) => (
-                  <tr key={user.id} className="transition hover:bg-slate-900/40">
-                    <td className="py-5 pr-6 align-top"><div className="font-semibold text-white">{user.name || 'Sem nome'}</div><div className="mt-1 text-xs text-slate-400">{user.email}</div><div className="mt-1 text-xs text-slate-500">{user.id}</div></td>
-                    <td className="py-5 pr-6 align-top"><PlanBadge label={formatPlanLabel(user.currentPlan)} /></td>
-                    <td className="py-5 pr-6 align-top"><div className="flex flex-wrap gap-2"><StatusBadge status={user.subscriptionStatus} /><LifecycleBadge status={user.lifecycleStatus} /></div></td>
-                    <td className="py-5 pr-6 align-top text-slate-300">{formatPlatformRole(user.platformRole)}</td>
-                    <td className="py-5 pr-6 align-top text-slate-300">{formatAdminNumber(user.workspaceCount)}</td>
-                    <td className="py-5 pr-6 align-top text-slate-300">{user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}</td>
-                    <td className="py-5 pr-6 align-top text-slate-300">{formatAdminDate(user.createdAt)}</td>
-                    <td className="py-5 align-top"><div className="flex justify-end"><Link href={`/superadmin/users/${user.id}`} className={secondaryActionClassName}>Ver detalhe</Link></div></td>
+                  <tr key={user.id} className="hover:bg-slate-950/30">
+                    <td className="px-3 py-3.5 align-top">
+                      <div className="font-semibold text-white">{user.name || 'Sem nome'}</div>
+                      <div className="mt-0.5 text-xs text-slate-400">{user.email}</div>
+                      <div className="mt-0.5 text-[11px] text-slate-500">{user.id}</div>
+                    </td>
+                    <td className="px-3 py-3.5 align-top">
+                      <PlanBadge label={formatPlanLabel(user.currentPlan)} />
+                    </td>
+                    <td className="px-3 py-3.5 align-top">
+                      <div className="flex flex-wrap gap-2">
+                        <StatusBadge status={user.subscriptionStatus} />
+                        <LifecycleBadge status={user.lifecycleStatus} />
+                      </div>
+                    </td>
+                    <td className="px-3 py-3.5 align-top text-slate-300">{formatPlatformRole(user.platformRole)}</td>
+                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminNumber(user.workspaceCount)}</td>
+                    <td className="px-3 py-3.5 align-top text-slate-300">{user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}</td>
+                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminDate(user.createdAt)}</td>
+                    <td className="px-3 py-3.5 text-right align-top">
+                      <Link href={`/superadmin/users/${user.id}`} className={secondaryActionClassName}>
+                        Abrir
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -123,15 +267,76 @@ export function SuperadminUsersPage() {
   );
 }
 
-function StatCard({ label, value, trend, trendValue, icon: Icon, trendType = 'up' }: { label: string; value: string; trend: string; trendValue: string; icon: React.ComponentType<{ size?: number; className?: string }>; trendType?: 'up' | 'down'; }) {
-  return <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-6 transition-colors hover:border-slate-700"><div className="mb-4 flex items-center justify-between"><span className="text-sm font-medium text-slate-400">{label}</span><div className={trendType === 'up' ? 'rounded-lg bg-emerald-500/10 p-2 text-emerald-500' : 'rounded-lg bg-rose-500/10 p-2 text-rose-500'}><Icon size={18} /></div></div><div className="flex flex-col gap-1"><p className="text-2xl font-bold tracking-tight text-white">{value}</p><div className={trendType === 'up' ? 'flex items-center gap-1 text-sm font-semibold text-emerald-500' : 'flex items-center gap-1 text-sm font-semibold text-rose-500'}>{trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowUpRight size={14} className="rotate-90" />}{trendValue} <span className="ml-1 font-normal text-slate-500">{trend}</span></div></div></div>;
+function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+          <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+        </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">{icon}</div>
+      </div>
+    </div>
+  );
 }
-function ArrowUpRightIcon(props: { size?: number; className?: string }) { return <ArrowUpRight {...props} />; }
-function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>; }
-function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
-function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED' }) { return <span className={status === 'BLOCKED' ? 'rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-200' : status === 'SUSPENDED' ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-200' : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-200'}>{status === 'BLOCKED' ? 'Bloqueado' : status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
-function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>; }
-function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
-function EmptyState({ text }: { text: string }) { return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>; }
-const fieldClassName = 'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
-const secondaryActionClassName = 'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
+
+function PlanBadge({ label }: { label: string }) {
+  return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>;
+}
+
+function StatusBadge({ status }: { status: string | null }) {
+  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>;
+}
+
+function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED' }) {
+  return (
+    <span
+      className={
+        status === 'BLOCKED'
+          ? 'rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-200'
+          : status === 'SUSPENDED'
+            ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-200'
+            : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-200'
+      }
+    >
+      {status === 'BLOCKED' ? 'Bloqueado' : status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}
+    </span>
+  );
+}
+
+function LoadingState({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-[220px] items-center justify-center">
+      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
+        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ message }: { message: string }) {
+  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+}
+
+function FeedbackState({ message, success }: { message: string; success: boolean }) {
+  return (
+    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100' : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'}`}>
+      {message}
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>;
+}
+
+const searchFieldClassName =
+  'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+const compactFieldClassName =
+  'w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+const secondaryActionClassName =
+  'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
+const primaryActionClassName =
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
