@@ -38,6 +38,12 @@ export function normalizePlan(value: string | null | undefined): WorkspacePlan {
   return normalizeBillingPlan(value);
 }
 
+function getPlanPriority(plan: WorkspacePlan) {
+  if (plan === 'PREMIUM') return 2;
+  if (plan === 'PRO') return 1;
+  return 0;
+}
+
 function readBearerToken(req: Request) {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
@@ -235,6 +241,8 @@ async function readUserFallbackPlan(userId: string): Promise<WorkspacePlan> {
 export async function getWorkspacePlan(workspaceId: string, userId: string): Promise<WorkspacePlan> {
   assertPrismaAvailable();
 
+  const userFallbackPlan = await readUserFallbackPlan(userId);
+
   try {
     const workspaceSubscription = await prisma.workspaceSubscription.findUnique({
       where: { workspace_id: workspaceId },
@@ -242,10 +250,11 @@ export async function getWorkspacePlan(workspaceId: string, userId: string): Pro
     });
 
     if (workspaceSubscription) {
-      return getPlanForStoredSubscription({
+      const workspacePlan = getPlanForStoredSubscription({
         plan: workspaceSubscription.plan,
         status: workspaceSubscription.status as 'ACTIVE' | 'CANCELED' | 'PENDING' | null,
       });
+      return getPlanPriority(userFallbackPlan) > getPlanPriority(workspacePlan) ? userFallbackPlan : workspacePlan;
     }
   } catch (error) {
     if (asPrismaServiceUnavailableError(error)) {
@@ -256,7 +265,7 @@ export async function getWorkspacePlan(workspaceId: string, userId: string): Pro
     }
   }
 
-  return readUserFallbackPlan(userId);
+  return userFallbackPlan;
 }
 
 export async function upsertWorkspaceSubscriptionSafe(params: {

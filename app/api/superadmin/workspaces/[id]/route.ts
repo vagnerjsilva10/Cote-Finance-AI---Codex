@@ -28,6 +28,11 @@ function normalizeWhatsappStatus(value: unknown) {
   return ALLOWED_WHATSAPP_STATUSES.has(normalized) ? normalized : null;
 }
 
+function isMissingPlatformSettingError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /does not exist|relation .* does not exist|table .* doesn't exist|column .* does not exist/i.test(message);
+}
+
 async function getCurrentMonthUsage(workspaceId: string) {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -610,7 +615,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'O novo owner precisa já fazer parte do workspace.' }, { status: 400 });
     }
 
-    const requestedLifecycleStatus = body.lifecycleStatus === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE';
+    const currentLifecycle = await getWorkspaceLifecycleStatus(id);
+    const requestedLifecycleStatus =
+      body.lifecycleStatus === 'SUSPENDED'
+        ? 'SUSPENDED'
+        : body.lifecycleStatus === 'ACTIVE'
+          ? 'ACTIVE'
+          : currentLifecycle.status;
     const [updatedWorkspace, updatedPreference] = await prisma.$transaction(async (tx) => {
       const nextWorkspace = await tx.workspace.update({
         where: { id },
@@ -655,48 +666,66 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return [nextWorkspace, nextPref] as const;
     });
 
-    const lifecycle = await setWorkspaceLifecycleStatus({
-      workspaceId: id,
-      status: requestedLifecycleStatus,
-      reason: body.lifecycleReason ?? null,
-    });
+    const requestedLifecycleReason =
+      typeof body.lifecycleReason === 'string'
+        ? body.lifecycleReason.trim() || null
+        : body.lifecycleReason === null
+          ? null
+          : currentLifecycle.reason;
+    const shouldWriteLifecycle =
+      currentLifecycle.status !== requestedLifecycleStatus ||
+      (currentLifecycle.reason || null) !== (requestedLifecycleReason || null);
 
-    await prisma.workspaceEvent.create({
-      data: {
-        workspace_id: id,
-        type: 'superadmin.workspace.updated',
-        payload: {
-          source: 'superadmin',
-          previous: {
-            name: workspace.name,
-            whatsappStatus: workspace.whatsapp_status,
-            whatsappPhoneNumber: workspace.whatsapp_phone_number,
-            preference: workspace.preference
-              ? {
-                  onboardingCompleted: workspace.preference.onboarding_completed,
-                  aiSuggestionsEnabled: workspace.preference.ai_suggestions_enabled,
-                  objective: workspace.preference.objective,
-                  financialProfile: workspace.preference.financial_profile,
-                }
-              : null,
-          },
-          next: {
-            name: updatedWorkspace.name,
-            whatsappStatus: updatedWorkspace.whatsapp_status,
-            whatsappPhoneNumber: updatedWorkspace.whatsapp_phone_number,
-            lifecycleStatus: lifecycle.status,
-            lifecycleReason: lifecycle.reason,
-            ownerUserId: requestedOwnerUserId,
-            preference: {
-              onboardingCompleted: updatedPreference.onboarding_completed,
-              aiSuggestionsEnabled: updatedPreference.ai_suggestions_enabled,
-              objective: updatedPreference.objective,
-              financialProfile: updatedPreference.financial_profile,
+    const lifecycle = shouldWriteLifecycle
+      ? await setWorkspaceLifecycleStatus({
+          workspaceId: id,
+          status: requestedLifecycleStatus,
+          reason: requestedLifecycleReason,
+        })
+      : currentLifecycle;
+
+    await prisma.workspaceEvent
+      .create({
+        data: {
+          workspace_id: id,
+          type: 'superadmin.workspace.updated',
+          payload: {
+            source: 'superadmin',
+            previous: {
+              name: workspace.name,
+              whatsappStatus: workspace.whatsapp_status,
+              whatsappPhoneNumber: workspace.whatsapp_phone_number,
+              preference: workspace.preference
+                ? {
+                    onboardingCompleted: workspace.preference.onboarding_completed,
+                    aiSuggestionsEnabled: workspace.preference.ai_suggestions_enabled,
+                    objective: workspace.preference.objective,
+                    financialProfile: workspace.preference.financial_profile,
+                  }
+                : null,
+            },
+            next: {
+              name: updatedWorkspace.name,
+              whatsappStatus: updatedWorkspace.whatsapp_status,
+              whatsappPhoneNumber: updatedWorkspace.whatsapp_phone_number,
+              lifecycleStatus: lifecycle.status,
+              lifecycleReason: lifecycle.reason,
+              ownerUserId: requestedOwnerUserId,
+              preference: {
+                onboardingCompleted: updatedPreference.onboarding_completed,
+                aiSuggestionsEnabled: updatedPreference.ai_suggestions_enabled,
+                objective: updatedPreference.objective,
+                financialProfile: updatedPreference.financial_profile,
+              },
             },
           },
         },
-      },
-    });
+      })
+      .catch((eventError) => {
+        if (!isMissingPlatformSettingError(eventError)) {
+          throw eventError;
+        }
+      });
 
     const usage = await getCurrentMonthUsage(id);
 
