@@ -15,7 +15,7 @@ type CreateWalletBody = {
 function parseInitialBalance(value: number | string | undefined) {
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) {
-      throw new HttpError(400, 'Saldo inicial invÃ¡lido.');
+      throw new HttpError(400, 'Saldo inicial inválido.');
     }
     return value;
   }
@@ -32,7 +32,7 @@ function parseInitialBalance(value: number | string | undefined) {
 
     const parsed = Number(normalizedValue.replace(/\./g, '').replace(',', '.'));
     if (!Number.isFinite(parsed)) {
-      throw new HttpError(400, 'Saldo inicial invÃ¡lido.');
+      throw new HttpError(400, 'Saldo inicial inválido.');
     }
     return parsed;
   }
