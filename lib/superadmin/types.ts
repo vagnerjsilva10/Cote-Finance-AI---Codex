@@ -343,6 +343,7 @@ export type SuperadminFeatureFlagRecord = {
   description: string;
   scope: string;
   enabled: boolean;
+  allowedPlans: Array<'FREE' | 'PRO' | 'PREMIUM'>;
 };
 
 export type SuperadminFeatureFlagsResponse = {
@@ -351,6 +352,42 @@ export type SuperadminFeatureFlagsResponse = {
     total: number;
     enabled: number;
     disabled: number;
+    workspaceOverrides: number;
+    userOverrides: number;
+  };
+  workspaceOverrides: Array<{
+    flagKey: string;
+    flagLabel: string;
+    workspaceId: string;
+    workspaceName: string;
+    enabled: boolean;
+    reason: string | null;
+    updatedAt: string;
+  }>;
+  userOverrides: Array<{
+    flagKey: string;
+    flagLabel: string;
+    userId: string;
+    userName: string | null;
+    userEmail: string;
+    enabled: boolean;
+    reason: string | null;
+    updatedAt: string;
+  }>;
+  search: {
+    workspaceQuery: string;
+    userQuery: string;
+    workspaces: Array<{
+      id: string;
+      name: string;
+      plan: 'FREE' | 'PRO' | 'PREMIUM';
+    }>;
+    users: Array<{
+      id: string;
+      name: string | null;
+      email: string;
+      plan: 'FREE' | 'PRO' | 'PREMIUM';
+    }>;
   };
 };
 

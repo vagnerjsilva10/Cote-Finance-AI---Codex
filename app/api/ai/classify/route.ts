@@ -9,7 +9,7 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
-import { getAiUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
+import { getAiUsageEffectiveOffset, resolveFeatureFlagState } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -43,6 +43,25 @@ export async function POST(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
     const plan = await getWorkspacePlan(context.workspaceId, context.userId);
+    const aiFlag = await resolveFeatureFlagState({
+      key: 'advanced_ai_insights',
+      plan,
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+    });
+
+    if (!aiFlag.enabled) {
+      return NextResponse.json(
+        {
+          error: 'A camada de IA está indisponível para esta conta no rollout atual.',
+          code: 'FEATURE_DISABLED',
+          feature: aiFlag.flag.key,
+          source: aiFlag.source,
+        },
+        { status: 403 }
+      );
+    }
+
     const aiLimit = PLAN_LIMITS[plan].aiInteractionsPerMonth;
 
     if (typeof aiLimit === 'number') {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
+import { resolveFeatureFlagState } from '@/lib/server/superadmin-governance';
 import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
 
 export const dynamic = 'force-dynamic';
@@ -40,6 +41,11 @@ export async function GET(req: Request) {
       },
       select: {
         id: true,
+        subscription: {
+          select: {
+            plan: true,
+          },
+        },
       },
       take: 250,
     });
@@ -47,6 +53,21 @@ export async function GET(req: Request) {
     const results = [];
 
     for (const workspace of workspaces) {
+      const flag = await resolveFeatureFlagState({
+        key: 'whatsapp_automation',
+        plan: workspace.subscription?.plan === 'PREMIUM' ? 'PREMIUM' : 'PRO',
+        workspaceId: workspace.id,
+      });
+
+      if (!flag.enabled) {
+        results.push({
+          workspaceId: workspace.id,
+          sent: false,
+          reason: 'feature_disabled',
+        });
+        continue;
+      }
+
       const result = await sendWorkspaceWhatsAppDigest({
         workspaceId: workspace.id,
         source: 'cron',

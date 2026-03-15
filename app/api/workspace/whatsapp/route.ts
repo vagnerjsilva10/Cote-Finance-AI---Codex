@@ -17,6 +17,7 @@ import {
   saveWorkspaceWhatsAppConfig,
 } from '@/lib/server/whatsapp-config';
 import { HttpError, getWorkspacePlan, logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
+import { resolveFeatureFlagState } from '@/lib/server/superadmin-governance';
 import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
 
 export const dynamic = 'force-dynamic';
@@ -126,7 +127,25 @@ export async function POST(req: Request) {
     }
 
     const workspacePlan = await getWorkspacePlan(context.workspaceId, context.userId);
+    const whatsappFlag = await resolveFeatureFlagState({
+      key: 'whatsapp_automation',
+      plan: workspacePlan,
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+    });
     const requiresPaidPlan = action !== 'disconnect';
+
+    if (action !== 'disconnect' && !whatsappFlag.enabled) {
+      return jsonResponse(
+        {
+          error: 'O módulo de WhatsApp está indisponível para esta conta no rollout atual.',
+          currentPlan: workspacePlan,
+          code: 'FEATURE_DISABLED',
+          source: whatsappFlag.source,
+        },
+        403
+      );
+    }
 
     if (requiresPaidPlan && !hasWhatsAppPlanAccess(workspacePlan)) {
       return jsonResponse(

@@ -11,10 +11,17 @@ const WORKSPACE_LIFECYCLE_KEY = 'superadmin.workspace-lifecycle';
 const USER_LIFECYCLE_KEY = 'superadmin.user-lifecycle';
 const SUBSCRIPTION_METADATA_KEY = 'superadmin.subscription-metadata';
 const AI_USAGE_OVERRIDES_KEY = 'superadmin.ai-usage-overrides';
+const FEATURE_FLAGS_KEY = 'superadmin.feature-flags';
 
 export type EditablePlanCode = WorkspacePlan;
 export type WorkspaceLifecycleStatus = 'ACTIVE' | 'SUSPENDED';
 export type UserLifecycleStatus = 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
+export type FeatureFlagCode =
+  | 'advanced_ai_insights'
+  | 'whatsapp_automation'
+  | 'pix_checkout'
+  | 'meta_tracking'
+  | 'beta_superadmin_modules';
 
 export type EditablePlanConfig = {
   code: EditablePlanCode;
@@ -62,6 +69,27 @@ export type AiUsageOverrideEntry = {
   offset: number;
   reason: string | null;
   updatedAt: string;
+};
+
+export type FeatureFlagConfig = {
+  key: FeatureFlagCode;
+  label: string;
+  description: string;
+  scope: string;
+  enabled: boolean;
+  allowedPlans: EditablePlanCode[];
+};
+
+export type FeatureFlagOverrideEntry = {
+  enabled: boolean;
+  reason: string | null;
+  updatedAt: string;
+};
+
+export type FeatureFlagGovernance = {
+  flags: FeatureFlagConfig[];
+  workspaceOverrides: Record<string, Record<string, FeatureFlagOverrideEntry>>;
+  userOverrides: Record<string, Record<string, FeatureFlagOverrideEntry>>;
 };
 
 function isMissingPlatformSettingError(error: unknown) {
@@ -129,6 +157,51 @@ function getDefaultPlanCatalog(): EditablePlanConfig[] {
   ];
 }
 
+function getDefaultFeatureFlags(): FeatureFlagConfig[] {
+  return [
+    {
+      key: 'advanced_ai_insights',
+      label: 'Insights avançados de IA',
+      description: 'Libera leituras mais profundas e explicações financeiras estendidas na experiência do usuário.',
+      scope: 'Produto',
+      enabled: true,
+      allowedPlans: ['PRO', 'PREMIUM'],
+    },
+    {
+      key: 'whatsapp_automation',
+      label: 'Automações no WhatsApp',
+      description: 'Controla recursos de resumo, alerta e automação financeira enviados pelo WhatsApp.',
+      scope: 'Canal',
+      enabled: true,
+      allowedPlans: ['PRO', 'PREMIUM'],
+    },
+    {
+      key: 'pix_checkout',
+      label: 'Checkout com Pix',
+      description: 'Permite exibir e operar o fluxo de Pix no checkout do produto.',
+      scope: 'Billing',
+      enabled: true,
+      allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
+    },
+    {
+      key: 'meta_tracking',
+      label: 'Tracking e marketing',
+      description: 'Ativa a camada de tracking usada para Meta Ads, UTM e eventos de conversão.',
+      scope: 'Marketing',
+      enabled: true,
+      allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
+    },
+    {
+      key: 'beta_superadmin_modules',
+      label: 'Módulos beta do Superadmin',
+      description: 'Usado para liberar novas áreas administrativas antes da conclusão total do módulo.',
+      scope: 'Interno',
+      enabled: false,
+      allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
+    },
+  ];
+}
+
 function sanitizeStringList(value: unknown) {
   if (!Array.isArray(value)) return [] as string[];
   return value
@@ -140,6 +213,16 @@ function sanitizePlanCode(value: unknown): EditablePlanCode {
   return value === 'PRO' || value === 'PREMIUM' ? value : 'FREE';
 }
 
+function sanitizeFeatureFlagCode(value: unknown): FeatureFlagCode {
+  return value === 'advanced_ai_insights' ||
+    value === 'whatsapp_automation' ||
+    value === 'pix_checkout' ||
+    value === 'meta_tracking' ||
+    value === 'beta_superadmin_modules'
+    ? value
+    : 'advanced_ai_insights';
+}
+
 function sanitizeReportMode(value: unknown): 'basic' | 'full' {
   return value === 'full' ? 'full' : 'basic';
 }
@@ -148,6 +231,31 @@ function sanitizeNullableNumber(value: unknown) {
   if (value === null) return null;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   return null;
+}
+
+function sanitizeAllowedPlans(value: unknown, fallback: EditablePlanCode[]) {
+  if (!Array.isArray(value)) return fallback;
+  const plans = value
+    .map((item) => sanitizePlanCode(item))
+    .filter((plan, index, arr) => arr.indexOf(plan) === index);
+  return plans.length > 0 ? plans : fallback;
+}
+
+function normalizeFeatureFlagConfig(value: unknown, fallback: FeatureFlagConfig): FeatureFlagConfig {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return fallback;
+  }
+
+  const raw = value as Record<string, unknown>;
+  return {
+    key: sanitizeFeatureFlagCode(raw.key),
+    label: typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim() : fallback.label,
+    description:
+      typeof raw.description === 'string' && raw.description.trim() ? raw.description.trim() : fallback.description,
+    scope: typeof raw.scope === 'string' && raw.scope.trim() ? raw.scope.trim() : fallback.scope,
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : fallback.enabled,
+    allowedPlans: sanitizeAllowedPlans(raw.allowedPlans, fallback.allowedPlans),
+  };
 }
 
 function normalizePlanConfig(value: unknown, fallback: EditablePlanConfig): EditablePlanConfig {
@@ -429,4 +537,190 @@ export async function setAiUsageResetForWorkspace(params: {
   };
   await writePlatformSetting(AI_USAGE_OVERRIDES_KEY, map as unknown as Prisma.InputJsonValue);
   return map[key];
+}
+
+function normalizeFeatureFlagOverrideMap(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {} as Record<string, Record<string, FeatureFlagOverrideEntry>>;
+
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, Record<string, FeatureFlagOverrideEntry>>>(
+    (acc, [flagKey, rawEntries]) => {
+      const normalizedKey = sanitizeFeatureFlagCode(flagKey);
+      if (!rawEntries || typeof rawEntries !== 'object' || Array.isArray(rawEntries)) return acc;
+
+      acc[normalizedKey] = Object.entries(rawEntries as Record<string, unknown>).reduce<Record<string, FeatureFlagOverrideEntry>>(
+        (entryAcc, [entityId, rawEntry]) => {
+          if (!rawEntry || typeof rawEntry !== 'object' || Array.isArray(rawEntry)) return entryAcc;
+          const record = rawEntry as Record<string, unknown>;
+          entryAcc[entityId] = {
+            enabled: typeof record.enabled === 'boolean' ? record.enabled : true,
+            reason: typeof record.reason === 'string' && record.reason.trim() ? record.reason.trim() : null,
+            updatedAt:
+              typeof record.updatedAt === 'string' && record.updatedAt.trim()
+                ? record.updatedAt.trim()
+                : new Date().toISOString(),
+          };
+          return entryAcc;
+        },
+        {}
+      );
+
+      return acc;
+    },
+    {}
+  );
+}
+
+export async function getFeatureFlagGovernance(): Promise<FeatureFlagGovernance> {
+  const defaults = getDefaultFeatureFlags();
+  const stored = await readPlatformSetting<unknown>(FEATURE_FLAGS_KEY, null);
+
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) {
+    return {
+      flags: defaults,
+      workspaceOverrides: {},
+      userOverrides: {},
+    };
+  }
+
+  const raw = stored as Record<string, unknown>;
+  const storedFlags = Array.isArray(raw.flags) ? raw.flags : [];
+  const byKey = new Map(defaults.map((flag) => [flag.key, flag]));
+  const flags = defaults.map((fallback) => {
+    const saved = storedFlags.find(
+      (item) => item && typeof item === 'object' && (item as Record<string, unknown>).key === fallback.key
+    );
+    return normalizeFeatureFlagConfig(saved, byKey.get(fallback.key) || fallback);
+  });
+
+  return {
+    flags,
+    workspaceOverrides: normalizeFeatureFlagOverrideMap(raw.workspaceOverrides),
+    userOverrides: normalizeFeatureFlagOverrideMap(raw.userOverrides),
+  };
+}
+
+export async function saveFeatureFlagGovernance(config: FeatureFlagGovernance) {
+  const defaults = getDefaultFeatureFlags();
+  const byKey = new Map(defaults.map((flag) => [flag.key, flag]));
+  const flags = defaults.map((fallback) => {
+    const incoming = config.flags.find((item) => item.key === fallback.key);
+    return normalizeFeatureFlagConfig(incoming, byKey.get(fallback.key) || fallback);
+  });
+
+  const payload = {
+    flags,
+    workspaceOverrides: config.workspaceOverrides,
+    userOverrides: config.userOverrides,
+  } as unknown as Prisma.InputJsonValue;
+
+  await writePlatformSetting(FEATURE_FLAGS_KEY, payload);
+  return {
+    flags,
+    workspaceOverrides: config.workspaceOverrides,
+    userOverrides: config.userOverrides,
+  };
+}
+
+export async function setFeatureFlagWorkspaceOverride(params: {
+  flagKey: FeatureFlagCode;
+  workspaceId: string;
+  enabled: boolean;
+  reason?: string | null;
+}) {
+  const governance = await getFeatureFlagGovernance();
+  const current = governance.workspaceOverrides[params.flagKey] || {};
+  governance.workspaceOverrides[params.flagKey] = {
+    ...current,
+    [params.workspaceId]: {
+      enabled: params.enabled,
+      reason: params.reason?.trim() || null,
+      updatedAt: new Date().toISOString(),
+    },
+  };
+  return saveFeatureFlagGovernance(governance);
+}
+
+export async function removeFeatureFlagWorkspaceOverride(params: { flagKey: FeatureFlagCode; workspaceId: string }) {
+  const governance = await getFeatureFlagGovernance();
+  const current = { ...(governance.workspaceOverrides[params.flagKey] || {}) };
+  delete current[params.workspaceId];
+  governance.workspaceOverrides[params.flagKey] = current;
+  return saveFeatureFlagGovernance(governance);
+}
+
+export async function setFeatureFlagUserOverride(params: {
+  flagKey: FeatureFlagCode;
+  userId: string;
+  enabled: boolean;
+  reason?: string | null;
+}) {
+  const governance = await getFeatureFlagGovernance();
+  const current = governance.userOverrides[params.flagKey] || {};
+  governance.userOverrides[params.flagKey] = {
+    ...current,
+    [params.userId]: {
+      enabled: params.enabled,
+      reason: params.reason?.trim() || null,
+      updatedAt: new Date().toISOString(),
+    },
+  };
+  return saveFeatureFlagGovernance(governance);
+}
+
+export async function removeFeatureFlagUserOverride(params: { flagKey: FeatureFlagCode; userId: string }) {
+  const governance = await getFeatureFlagGovernance();
+  const current = { ...(governance.userOverrides[params.flagKey] || {}) };
+  delete current[params.userId];
+  governance.userOverrides[params.flagKey] = current;
+  return saveFeatureFlagGovernance(governance);
+}
+
+export async function resolveFeatureFlagState(params: {
+  key: FeatureFlagCode;
+  plan?: EditablePlanCode;
+  workspaceId?: string | null;
+  userId?: string | null;
+}) {
+  const governance = await getFeatureFlagGovernance();
+  const flag = governance.flags.find((item) => item.key === params.key) || getDefaultFeatureFlags()[0];
+
+  if (params.userId) {
+    const userOverride = governance.userOverrides[params.key]?.[params.userId];
+    if (userOverride) {
+      return {
+        enabled: userOverride.enabled,
+        source: 'user' as const,
+        reason: userOverride.reason,
+        flag,
+      };
+    }
+  }
+
+  if (params.workspaceId) {
+    const workspaceOverride = governance.workspaceOverrides[params.key]?.[params.workspaceId];
+    if (workspaceOverride) {
+      return {
+        enabled: workspaceOverride.enabled,
+        source: 'workspace' as const,
+        reason: workspaceOverride.reason,
+        flag,
+      };
+    }
+  }
+
+  if (params.plan && !flag.allowedPlans.includes(params.plan)) {
+    return {
+      enabled: false,
+      source: 'plan' as const,
+      reason: null,
+      flag,
+    };
+  }
+
+  return {
+    enabled: flag.enabled,
+    source: 'global' as const,
+    reason: null,
+    flag,
+  };
 }
