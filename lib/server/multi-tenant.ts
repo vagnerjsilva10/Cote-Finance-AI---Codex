@@ -149,10 +149,10 @@ export async function requireAuthenticatedUser(req: Request) {
 
   const lifecycle = await getUserLifecycleStatus(user.id);
   if (lifecycle.status === 'SUSPENDED') {
-    throw new HttpError(423, lifecycle.reason || 'Usuário suspenso temporariamente pelo administrador.');
+    throw new HttpError(423, lifecycle.reason || 'UsuÃƒÂ¡rio suspenso temporariamente pelo administrador.');
   }
   if (lifecycle.status === 'BLOCKED') {
-    throw new HttpError(423, lifecycle.reason || 'Usuário bloqueado pelo administrador.');
+    throw new HttpError(423, lifecycle.reason || 'UsuÃƒÂ¡rio bloqueado pelo administrador.');
   }
 
   return {
@@ -180,10 +180,15 @@ export async function resolveWorkspaceContext(req: Request): Promise<WorkspaceCo
   }
 
   const workspaceHint = readWorkspaceHint(req);
-  const membership =
-    (workspaceHint
-      ? memberships.find((item) => item.workspace_id === workspaceHint)
-      : null) || memberships[0];
+  const hintedMembership = workspaceHint
+    ? memberships.find((item) => item.workspace_id === workspaceHint)
+    : null;
+
+  if (workspaceHint && !hintedMembership) {
+    throw new HttpError(403, 'Workspace access denied');
+  }
+
+  const membership = hintedMembership || memberships[0];
 
   if (!membership) {
     throw new HttpError(403, 'Workspace access denied');

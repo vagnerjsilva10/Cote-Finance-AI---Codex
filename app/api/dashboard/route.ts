@@ -384,6 +384,7 @@ export async function GET(req: Request) {
       goals,
       investments,
       debts,
+      recurringDebts,
       workspace: workspaceWithConfig,
       plan,
       limits: PLAN_LIMITS[plan],

@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import {
   computeNextRecurringDebtDueDate,
@@ -36,6 +37,14 @@ export type RecurringDebtRecord = {
   source: 'recurring_debt' | 'legacy_debt';
   legacy_debt_id?: string | null;
 };
+function isMissingRecurringDebtTableError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021' || error.code === 'P2022';
+  }
+
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /RecurringDebt|relation .*RecurringDebt.* does not exist|table .*RecurringDebt.* doesn't exist/i.test(message);
+}
 
 export async function findWorkspaceConventionalDebts(workspaceId: string) {
   const debts = await prisma.debt.findMany({
@@ -62,8 +71,23 @@ export async function findWorkspaceConventionalDebts(workspaceId: string) {
 }
 
 export async function findWorkspaceRecurringDebts(workspaceId: string) {
-  const [recurringDebts, legacyRecurringDebts] = await Promise.all([
-    prisma.recurringDebt.findMany({
+  let recurringDebts: Array<{
+    id: string;
+    creditor: string;
+    amount: unknown;
+    category: string;
+    frequency: string;
+    interval: number;
+    start_date: Date;
+    end_date: Date | null;
+    due_day: number | null;
+    next_due_date: Date;
+    status: string;
+    notes: string | null;
+  }> = [];
+
+  try {
+    recurringDebts = await prisma.recurringDebt.findMany({
       where: { workspace_id: workspaceId },
       orderBy: [{ status: 'asc' }, { next_due_date: 'asc' }],
       select: {
@@ -80,21 +104,26 @@ export async function findWorkspaceRecurringDebts(workspaceId: string) {
         status: true,
         notes: true,
       },
-    }),
-    prisma.debt.findMany({
-      where: { workspace_id: workspaceId },
-      orderBy: { created_at: 'desc' },
-      select: {
-        id: true,
-        creditor: true,
-        original_amount: true,
-        remaining_amount: true,
-        due_day: true,
-        category: true,
-        status: true,
-      },
-    }),
-  ]);
+    });
+  } catch (error) {
+    if (!isMissingRecurringDebtTableError(error)) {
+      throw error;
+    }
+  }
+
+  const legacyRecurringDebts = await prisma.debt.findMany({
+    where: { workspace_id: workspaceId },
+    orderBy: { created_at: 'desc' },
+    select: {
+      id: true,
+      creditor: true,
+      original_amount: true,
+      remaining_amount: true,
+      due_day: true,
+      category: true,
+      status: true,
+    },
+  });
 
   const legacyItems = legacyRecurringDebts
     .filter((debt) => isRecurringDebtCategory(String(debt.category || '')))
