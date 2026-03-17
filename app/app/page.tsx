@@ -7272,11 +7272,11 @@ export default function App() {
     } catch (error) {
       console.error('Fetch error:', error);
       if (!silent) {
-        setTransactions([]);
-        setGoals([]);
-        setInvestments([]);
-        setDebts([]);
-        setDashboardInsights(['Não foi possível carregar os insights no momento.']);
+        setDashboardInsights((current) =>
+          current.length > 0
+            ? current
+            : ['Não foi possível atualizar os dados agora. Exibindo o último estado conhecido.']
+        );
       }
     } finally {
       if (!silent) {
@@ -11521,3 +11521,4 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+

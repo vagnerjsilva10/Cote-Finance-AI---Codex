@@ -322,31 +322,24 @@ export async function GET(req: Request) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    const [
-      wallets,
-      transactions,
-      goals,
-      workspace,
-      workspaceWhatsAppConfig,
-      plan,
-      preference,
-      currentMonthTransactionCount,
-      investments,
-      debts,
-      eventSnapshot,
-    ] = await Promise.all([
-      findWorkspaceWallets(workspaceId),
-      findWorkspaceTransactions(workspaceId),
-      findWorkspaceGoals(workspaceId),
-      findWorkspaceSnapshot(workspaceId),
-      getWorkspaceWhatsAppConfig(workspaceId),
+    const workspace = await findWorkspaceSnapshot(workspaceId);
+    const workspaceWhatsAppConfig = await getWorkspaceWhatsAppConfig(workspaceId);
+
+    const [plan, preference] = await Promise.all([
       getWorkspacePlan(workspaceId, context.userId),
       getWorkspacePreference(workspaceId, context.userId),
+    ]);
+
+    const [wallets, currentMonthTransactionCount, eventSnapshot] = await Promise.all([
+      findWorkspaceWallets(workspaceId),
       countWorkspaceTransactions(workspaceId, monthStart, nextMonthStart),
-      findWorkspaceInvestments(workspaceId),
-      findWorkspaceDebts(workspaceId),
       getWorkspaceEventSnapshot(workspaceId),
     ]);
+
+    const transactions = await findWorkspaceTransactions(workspaceId);
+    const goals = await findWorkspaceGoals(workspaceId);
+    const investments = await findWorkspaceInvestments(workspaceId);
+    const debts = await findWorkspaceDebts(workspaceId);
 
     const safeWorkspace =
       workspace ||

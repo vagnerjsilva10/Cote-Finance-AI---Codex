@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -77,6 +77,10 @@ export async function GET(req: Request) {
     if (isMissingTableError(error)) {
       return NextResponse.json([]);
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Debts GET Error:', error);
     return NextResponse.json({ error: error?.message || 'Failed to fetch debts' }, { status: 500 });
   }
@@ -144,6 +148,10 @@ export async function POST(req: Request) {
     if (isMissingTableError(error)) {
       return buildMissingTableResponse();
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Debts POST Error:', error);
     return NextResponse.json({ error: error?.message || 'Failed to create debt' }, { status: 500 });
   }
@@ -208,6 +216,10 @@ export async function PATCH(req: Request) {
     if (isMissingTableError(error)) {
       return buildMissingTableResponse();
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Debts PATCH Error:', error);
     return NextResponse.json({ error: error?.message || 'Failed to update debt' }, { status: 500 });
   }
@@ -254,7 +266,13 @@ export async function DELETE(req: Request) {
     if (isMissingTableError(error)) {
       return buildMissingTableResponse();
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Debts DELETE Error:', error);
     return NextResponse.json({ error: error?.message || 'Failed to delete debt' }, { status: 500 });
   }
 }
+
+

@@ -1,6 +1,6 @@
-Ôªøimport { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -57,7 +57,7 @@ const buildMissingTableResponse = () =>
   NextResponse.json(
     {
       error:
-        'Tabela de investimentos indispon√≠vel. Execute `npx prisma db push` para aplicar o schema atual.',
+        'Tabela de investimentos indisponÌvel. Execute `npx prisma db push` para aplicar o schema atual.',
     },
     { status: 503 }
   );
@@ -76,6 +76,10 @@ export async function GET(req: Request) {
     }
     if (isMissingTableError(error)) {
       return NextResponse.json([]);
+    }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
     }
     console.error('Investments GET Error:', error);
     return NextResponse.json(
@@ -105,7 +109,7 @@ export async function POST(req: Request) {
     }
     if (!wallet) {
       return NextResponse.json(
-        { error: 'Selecione uma carteira v√°lida para vincular o investimento.' },
+        { error: 'Selecione uma carteira v·lida para vincular o investimento.' },
         { status: 400 }
       );
     }
@@ -145,6 +149,10 @@ export async function POST(req: Request) {
     if (isMissingTableError(error)) {
       return buildMissingTableResponse();
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Investments POST Error:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to create investment' },
@@ -182,7 +190,7 @@ export async function PATCH(req: Request) {
 
     if (body.walletId && !wallet) {
       return NextResponse.json(
-        { error: 'Selecione uma carteira v√°lida para vincular o investimento.' },
+        { error: 'Selecione uma carteira v·lida para vincular o investimento.' },
         { status: 400 }
       );
     }
@@ -216,6 +224,10 @@ export async function PATCH(req: Request) {
     }
     if (isMissingTableError(error)) {
       return buildMissingTableResponse();
+    }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
     }
     console.error('Investments PATCH Error:', error);
     return NextResponse.json(
@@ -266,6 +278,10 @@ export async function DELETE(req: Request) {
     if (isMissingTableError(error)) {
       return buildMissingTableResponse();
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Investments DELETE Error:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to delete investment' },
@@ -273,4 +289,6 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+
 

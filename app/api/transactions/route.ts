@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
   getWorkspacePlan,
@@ -338,6 +338,10 @@ export async function GET(req: Request) {
     if (isSchemaMismatchError(error)) {
       return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Transactions GET Error:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to fetch transactions' },
@@ -492,6 +496,10 @@ export async function POST(req: Request) {
     }
     if (isSchemaMismatchError(error)) {
       return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
+    }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
     }
     console.error('Transactions POST Error:', error);
     return NextResponse.json(
@@ -665,6 +673,10 @@ export async function PATCH(req: Request) {
     if (isSchemaMismatchError(error)) {
       return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Transactions PATCH Error:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to update transaction' },
@@ -733,6 +745,10 @@ export async function DELETE(req: Request) {
     if (isSchemaMismatchError(error)) {
       return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
     }
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
     console.error('Transactions DELETE Error:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to delete transaction' },
@@ -740,3 +756,6 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+
+
