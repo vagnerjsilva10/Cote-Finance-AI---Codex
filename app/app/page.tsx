@@ -89,7 +89,7 @@ type Tab =
 type TransactionFlowType = 'Receita' | 'Despesa' | 'Transferência';
 type PaymentMethodLabel =
   | 'PIX'
-  | 'Cart?o'
+  | 'Cartão'
   | 'Dinheiro'
   | 'Transferência bancária'
   | 'Boleto'
@@ -507,10 +507,10 @@ const getWhatsAppConnectionDescription = (
   hasValidationIssues: boolean
 ) => {
   if (state === 'error') {
-    return 'A conexão com a Meta falhou. Revise token, permiss?es e os dados deste workspace.';
+    return 'A conexão com a Meta falhou. Revise token, permissões e os dados deste workspace.';
   }
   if (state === 'connected' || isConnected) {
-    return 'Configuração pronta para envio. Você j? pode disparar um teste com segurança.';
+    return 'Configuração pronta para envio. Você já pode disparar um teste com segurança.';
   }
   if (hasValidationIssues) {
     return 'Há ajustes pendentes antes de ativar o envio deste workspace.';
@@ -580,7 +580,7 @@ const buildPremiumSmartAlerts = ({
     const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
     alerts.push({
       id: 'premium-expense-spike',
-      title: 'Alerta inteligente: gasto acima do padr?o',
+      title: 'Alerta inteligente: gasto acima do padrão',
       message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
       tone: 'warning',
       targetTab: 'reports',
@@ -723,7 +723,7 @@ const optimizeAvatarFile = (file: File) =>
 
         const context = canvas.getContext('2d');
         if (!context) {
-          throw new Error('Não foi poss?vel processar a imagem.');
+          throw new Error('Não foi possível processar a imagem.');
         }
 
         const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
@@ -754,7 +754,7 @@ const optimizeAvatarFile = (file: File) =>
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('Não foi poss?vel ler a imagem selecionada.'));
+      reject(new Error('Não foi possível ler a imagem selecionada.'));
     };
 
     image.src = objectUrl;
@@ -774,7 +774,7 @@ const TRANSACTION_FLOW_TYPES: TransactionFlowType[] = [
 
 const PAYMENT_METHODS: PaymentMethodLabel[] = [
   'PIX',
-  'Cart?o',
+  'Cartão',
   'Dinheiro',
   'Transferência bancária',
   'Boleto',
@@ -870,8 +870,8 @@ const ASSISTANT_SUGGESTIONS = [
   'Onde eu mais gasto',
   'Qual meu saldo este mês',
   'Me dê dicas para economizar',
-  'Quais s?o meus maiores gastos',
-  'Como est?o meus investimentos',
+  'Quais são meus maiores gastos',
+  'Como estão meus investimentos',
   'Quais dívidas devo priorizar',
 ];
 
@@ -945,7 +945,7 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CART?O') return 'Cart?o';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CART?O') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
@@ -961,7 +961,7 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
 
 const mapPaymentMethodToBackend = (method: PaymentMethodLabel) => {
   if (method === 'PIX') return 'PIX';
-  if (method === 'Cart?o') return 'CARD';
+  if (method === 'Cartão') return 'CARD';
   if (method === 'Dinheiro') return 'CASH';
   if (method === 'Transferência bancária') return 'BANK_TRANSFER';
   if (method === 'Boleto') return 'BOLETO';
@@ -994,7 +994,7 @@ const getTransactionAmountSignal = (baseType: 'income' | 'expense' | 'transfer')
 
 const getPaymentMethodIconLabel = (method: PaymentMethodLabel) => {
   if (method === 'PIX') return 'PIX';
-  if (method === 'Cart?o') return 'CARD';
+  if (method === 'Cartão') return 'CARD';
   if (method === 'Dinheiro') return 'CASH';
   if (method === 'Transferência bancária') return 'TED';
   if (method === 'Boleto') return 'BOL';
@@ -1047,11 +1047,11 @@ const getWorkspaceEventLabel = (eventType: string) => {
 
 const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
   const messages: Record<string, string> = {
-    'transaction.created': 'Uma nova movimentação foi registrada e j? apareceu no seu painel.',
+    'transaction.created': 'Uma nova movimentação foi registrada e já apareceu no seu painel.',
     'transaction.updated': 'Uma movimentação foi atualizada com os dados mais recentes.',
     'transaction.deleted': 'Uma movimentação foi removida do histórico deste workspace.',
     'workspace.created': 'Seu espaço financeiro foi criado e está pronto para uso.',
-    'onboarding.completed': 'Sua configuração inicial foi conclu?da com sucesso.',
+    'onboarding.completed': 'Sua configuração inicial foi concluída com sucesso.',
     'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
     'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
     'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
@@ -1060,7 +1060,7 @@ const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
     'stripe.customer.subscription.updated': 'Houve uma atualização recente na sua assinatura.',
     'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada neste workspace.',
     'stripe.invoice.paid': 'Recebemos a confirmação do pagamento da sua assinatura.',
-    'stripe.invoice.payment_failed': 'A Última tentativa de cobran?a não foi conclu?da.',
+    'stripe.invoice.payment_failed': 'A Última tentativa de cobrança não foi concluída.',
     'ai.chat.used': 'Uma análise com IA foi gerada para este workspace.',
     'ai.classify.used': 'Uma classificação automática foi aplicada em uma movimentação.',
   };
@@ -1366,7 +1366,7 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
             <h2 className="text-xl font-bold text-white mb-2">Erro na interface</h2>
             <p className="text-sm text-slate-400 mb-5">
-              Ocorreu uma falha inesperada de renderização. Recarregue a p?gina para continuar.
+              Ocorreu uma falha inesperada de renderização. Recarregue a página para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -1660,7 +1660,7 @@ const SubscriptionView = ({
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
-                  Tudo o que importa para este workspace fica vis?vel aqui. Quando uma ação exigir a Stripe,
+                  Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
                   abrimos apenas a etapa necessária.
                 </p>
               </div>
@@ -1678,7 +1678,7 @@ const SubscriptionView = ({
                 <div className="flex items-start gap-3">
                   <CreditCard size={18} className="mt-0.5 text-emerald-300" />
                   <div>
-                    <p className="text-sm font-semibold text-white">Gest?o sem sair do app</p>
+                    <p className="text-sm font-semibold text-white">Gestão sem sair do app</p>
                     <p className="mt-1 text-sm text-slate-300">
                       Status, plano e próximas cobranças aparecem dentro do SaaS. Portal externo só quando preciso.
                     </p>
@@ -1860,7 +1860,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-white">Vis?o Geral</h3>
+          <h3 className="text-xl font-bold text-white">Visão Geral</h3>
           <p className="text-sm text-slate-400 capitalize">Resumo de {monthLabel}</p>
         </div>
         <button
@@ -2636,7 +2636,7 @@ const IntegrationsView = ({
 
                 {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
                   <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                    <p className="text-sm font-bold text-amber-200">Revisão necess?ria</p>
+                    <p className="text-sm font-bold text-amber-200">Revisão necessária</p>
                     <ul className="mt-2 space-y-2 text-sm text-amber-100/90">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
                         <li key={issue}>{issue}</li>
@@ -3465,7 +3465,7 @@ const buildPortfolioInsights = ({
   }
 
   if (totalAssets > 0 && totalInvested === 0) {
-    insights.push('Seu patrimônio ainda est? concentrado em caixa. Registrar investimentos pode melhorar sua diversificação.');
+    insights.push('Seu patrimônio ainda está concentrado em caixa. Registrar investimentos pode melhorar sua diversificação.');
   }
 
   if (topWallet && totalBalance > 0) {
@@ -3730,7 +3730,7 @@ const PortfolioView = ({
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-800 text-sm text-slate-500">
-                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecer? aqui.
+                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecerá aqui.
                 </div>
               )}
             </div>
@@ -3764,7 +3764,7 @@ const PortfolioView = ({
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="text-lg font-bold text-white">Onde está meu dinheiro</h4>
-              <p className="text-sm text-slate-500">Veja as principais carteiras, participação no saldo total e ações r?pidas.</p>
+              <p className="text-sm text-slate-500">Veja as principais carteiras, participação no saldo total e ações rápidas.</p>
             </div>
             {walletAllocation.length > 4 && (
               <button
@@ -3951,7 +3951,7 @@ const PortfolioView = ({
           <h4 className="text-lg font-bold text-white">Insights da IA</h4>
           <p className="text-sm text-slate-500">
             {hasPortfolioAiInsights
-              ? 'Mensagens r?pidas para ajudar você a entender a composi??o da sua carteira.'
+              ? 'Mensagens rápidas para ajudar você a entender a composi??o da sua carteira.'
               : 'Descubra para onde seu dinheiro está indo com os Insights automáticos da IA.'}
           </p>
         </div>
@@ -3978,7 +3978,7 @@ const PortfolioView = ({
                 </div>
                 <p className="text-sm leading-relaxed text-slate-200">
                   Receba análises automáticas da sua vida financeira com inteligência artificial e veja rapidamente onde seu
-                  patrimônio est? concentrado, quais pontos exigem atenção e quais oportunidades merecem prioridade.
+                  patrimônio está concentrado, quais pontos exigem atenção e quais oportunidades merecem prioridade.
                 </p>
               </div>
               <button
@@ -4412,10 +4412,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao gerar insights.');
       }
-      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi poss?vel gerar insights no momento.');
+      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi possível gerar insights no momento.');
     } catch (error) {
       console.error('AI Insight error:', error);
-      setAiInsight('Não foi poss?vel gerar insights no momento.');
+      setAiInsight('Não foi possível gerar insights no momento.');
     } finally {
       setIsGeneratingInsight(false);
     }
@@ -4428,7 +4428,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div>
             <h3 className="text-xl font-bold text-white">Relatórios</h3>
             <p className="text-sm text-slate-400">
-              Vis?o básica da sua movimentação financeira atual.
+              Visão básica da sua movimentação financeira atual.
             </p>
           </div>
           {currentPlan === 'FREE' && (
@@ -4756,7 +4756,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                         </div>
                         <p className="mt-2 text-sm text-slate-300">{formatCurrency(item.total)}</p>
                         <p className="mt-2 text-xs text-slate-500">
-                          Vale revisar frequ?ncia, assinatura recorrente ou padr?o de consumo nesta categoria.
+                          Vale revisar frequ?ncia, assinatura recorrente ou padrão de consumo nesta categoria.
                         </p>
                       </div>
                     ))
@@ -5946,7 +5946,7 @@ const TransactionModal = ({
         }));
         setReceiptStatus('Dados detectados automaticamente. Revise antes de salvar.');
       } else {
-        setReceiptStatus('Não foi poss?vel extrair dados do comprovante.');
+        setReceiptStatus('Não foi possível extrair dados do comprovante.');
       }
     } catch {
       setReceiptStatus('Falha ao processar comprovante.');
@@ -6261,7 +6261,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       target: 'sidebar-logo',
     },
     {
-      title: 'Vis?o Geral do Painel',
+      title: 'Visão Geral do Painel',
       description: 'Aqui você acompanha seu saldo consolidado, entradas e saídas em tempo real.',
       target: 'dashboard-stats',
     },
@@ -6430,7 +6430,7 @@ const LoginView = ({
 
       setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
-      setError(err?.message || 'Não foi poss?vel reenviar o e-mail de confirmação.');
+      setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
     } finally {
       setLoading(false);
     }
@@ -6483,7 +6483,7 @@ const LoginView = ({
     const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
 
     if (!accessToken || !resolvedUser) {
-      throw new Error('Não foi poss?vel validar o c?digo. Solicite um novo e tente novamente.');
+      throw new Error('Não foi possível validar o c?digo. Solicite um novo e tente novamente.');
     }
 
     await runSetupForToken(accessToken);
@@ -6557,7 +6557,7 @@ const LoginView = ({
         return;
       }
 
-      throw new Error('Não foi poss?vel iniciar sess?o. Tente novamente.');
+      throw new Error('Não foi possível iniciar sess?o. Tente novamente.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -6861,7 +6861,7 @@ const LoginView = ({
                   try {
                     await requestEmailCode(otpRequestedEmail);
                   } catch (err: any) {
-                    setError(err?.message || 'Não foi poss?vel reenviar o c?digo.');
+                    setError(err?.message || 'Não foi possível reenviar o c?digo.');
                   } finally {
                     setLoading(false);
                   }
@@ -7575,7 +7575,7 @@ export default function App() {
         setDashboardInsights((current) =>
           current.length > 0
             ? current
-            : ['Não foi poss?vel atualizar os dados agora. Exibindo o Último estado conhecido.']
+            : ['Não foi possível atualizar os dados agora. Exibindo o Último estado conhecido.']
         );
       }
     } finally {
@@ -7961,7 +7961,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi poss?vel salvar a configuração do WhatsApp.';
+          : 'Não foi possível salvar a configuração do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -7990,17 +7990,17 @@ React.useEffect(() => {
       applyWhatsAppPayload(payload);
       setWhatsAppFeedback({
         tone: payload?.success ? 'success' : 'info',
-        title: payload?.success ? 'Validação conclu?da' : 'Revisão necess?ria',
+        title: payload?.success ? 'Validação concluída' : 'Revisão necessária',
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A validação do WhatsApp foi conclu?da.',
+            : 'A validação do WhatsApp foi concluída.',
       });
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi poss?vel validar a configuração do WhatsApp.';
+          : 'Não foi possível validar a configuração do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8039,7 +8039,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi poss?vel conectar o WhatsApp.';
+          : 'Não foi possível conectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8077,7 +8077,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi poss?vel desconectar o WhatsApp.';
+          : 'Não foi possível desconectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8115,7 +8115,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi poss?vel enviar o teste do WhatsApp.';
+          : 'Não foi possível enviar o teste do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -9604,7 +9604,7 @@ React.useEffect(() => {
     const resolvedCategory =
       typeof category === 'string' && category.trim().length > 0
         ? category
-        : RECURRING_DEBT_PRESETS[0]?.category ?? '?gua';
+        : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft({
       creditor: resolvedCategory,
@@ -10584,7 +10584,7 @@ React.useEffect(() => {
                     <ul className="space-y-2 text-sm text-emerald-100">
                       <li>• insights financeiros completos</li>
                       <li>? previs?es de saldo</li>
-                      <li>? alertas de gastos fora do padr?o</li>
+                      <li>? alertas de gastos fora do padrão</li>
                       <li>• resumos e lembretes no WhatsApp</li>
                       <li>? relat?rios avan?ados</li>
                     </ul>
