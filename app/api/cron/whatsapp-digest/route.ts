@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { resolveFeatureFlagState } from '@/lib/server/superadmin-governance';
 import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
+import { sendWorkspaceWhatsAppAlerts } from '@/lib/server/whatsapp-alerts';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -41,11 +41,6 @@ export async function GET(req: Request) {
       },
       select: {
         id: true,
-        subscription: {
-          select: {
-            plan: true,
-          },
-        },
       },
       take: 250,
     });
@@ -53,36 +48,30 @@ export async function GET(req: Request) {
     const results = [];
 
     for (const workspace of workspaces) {
-      const flag = await resolveFeatureFlagState({
-        key: 'whatsapp_automation',
-        plan: workspace.subscription?.plan === 'PREMIUM' ? 'PREMIUM' : 'PRO',
-        workspaceId: workspace.id,
-      });
-
-      if (!flag.enabled) {
-        results.push({
-          workspaceId: workspace.id,
-          sent: false,
-          reason: 'feature_disabled',
-        });
-        continue;
-      }
-
-      const result = await sendWorkspaceWhatsAppDigest({
+      const digestResult = await sendWorkspaceWhatsAppDigest({
         workspaceId: workspace.id,
         source: 'cron',
       });
-      results.push(result);
+      const alertResult = await sendWorkspaceWhatsAppAlerts({
+        workspaceId: workspace.id,
+      });
+
+      results.push({
+        workspaceId: workspace.id,
+        digest: digestResult,
+        alerts: alertResult,
+      });
     }
 
-    const sent = results.filter((item) => item.sent).length;
-    const skipped = results.length - sent;
+    const digestsSent = results.filter((item) => item.digest.sent).length;
+    const alertsSent = results.filter((item) => item.alerts.sent).length;
 
     return NextResponse.json({
       success: true,
       scanned: results.length,
-      sent,
-      skipped,
+      digestsSent,
+      alertsSent,
+      totalDeliveries: digestsSent + alertsSent,
       results,
     });
   } catch (error: any) {

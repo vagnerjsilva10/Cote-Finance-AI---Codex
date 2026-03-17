@@ -4,7 +4,11 @@ import { prisma } from '@/lib/prisma';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { ResolvedWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
-import { sendWhatsAppTemplateMessage, sendWhatsAppTextMessage } from '@/lib/whatsapp';
+import {
+  sendWhatsAppTemplateMessage,
+  sendWhatsAppTextMessage,
+  WhatsAppApiError,
+} from '@/lib/whatsapp';
 
 const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
 const UPCOMING_WINDOW_DAYS = 30;
@@ -14,6 +18,11 @@ type DigestAgendaItem = {
   date: Date;
   amount: number;
   type: 'debt' | 'goal';
+};
+
+type ExpenseCategorySnapshot = {
+  name: string;
+  amount: number;
 };
 
 export type WhatsAppDigestResult =
@@ -134,19 +143,32 @@ function buildUpcomingAgendaItems(params: {
 
 function buildDigestMessage(params: {
   workspaceName: string;
+  periodLabel: string;
   totalBalance: number;
   monthIncome: number;
   monthExpenses: number;
+  monthNet: number;
+  transactionsCount: number;
+  topExpenseCategory: ExpenseCategorySnapshot | null;
   insights: string[];
   upcomingItems: DigestAgendaItem[];
 }) {
   const lines: string[] = [
     `Cote Finance AI | Resumo de ${params.workspaceName}`,
     '',
+    `Período: ${params.periodLabel}`,
     `Saldo atual: ${formatCurrency(params.totalBalance)}`,
     `Entradas do mês: ${formatCurrency(params.monthIncome)}`,
     `Saídas do mês: ${formatCurrency(params.monthExpenses)}`,
+    `Resultado do mês: ${formatCurrency(params.monthNet)}`,
+    `Movimentações registradas: ${params.transactionsCount}`,
   ];
+
+  if (params.topExpenseCategory) {
+    lines.push(
+      `Categoria com maior peso: ${params.topExpenseCategory.name} (${formatCurrency(params.topExpenseCategory.amount)})`
+    );
+  }
 
   if (params.upcomingItems.length > 0) {
     lines.push('', 'Próximos compromissos:');
@@ -168,21 +190,42 @@ function buildDigestMessage(params: {
 }
 
 function buildDigestHighlights(params: {
+  monthNet: number;
+  topExpenseCategory: ExpenseCategorySnapshot | null;
   upcomingItems: DigestAgendaItem[];
   insights: string[];
 }) {
   const parts: string[] = [];
+
+  parts.push(
+    params.monthNet >= 0
+      ? `Resultado positivo de ${formatCurrency(params.monthNet)}`
+      : `Resultado negativo de ${formatCurrency(Math.abs(params.monthNet))}`
+  );
+
+  if (params.topExpenseCategory) {
+    parts.push(`Categoria líder: ${params.topExpenseCategory.name}`);
+  }
 
   for (const item of params.upcomingItems.slice(0, 2)) {
     const prefix = item.type === 'debt' ? 'Conta' : 'Meta';
     parts.push(`${prefix}: ${item.label} em ${formatDateLabel(item.date)}`);
   }
 
-  for (const insight of params.insights.slice(0, Math.max(0, 3 - parts.length))) {
+  for (const insight of params.insights.slice(0, Math.max(0, 4 - parts.length))) {
     parts.push(insight);
   }
 
   return parts.join(' | ').slice(0, 1024);
+}
+
+function shouldFallbackToText(error: unknown) {
+  if (!(error instanceof WhatsAppApiError)) return false;
+
+  if (error.category === 'template') return true;
+  if (/template/i.test(error.message)) return true;
+
+  return [131058, 132001, 132007, 132012].includes(error.metaCode ?? -1);
 }
 
 export async function sendWorkspaceWhatsAppDigest(params: {
@@ -305,6 +348,22 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       return type.includes('EXPENSE') || type === 'PIX_OUT';
     })
     .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
+  const monthNet = monthIncome - monthExpenses;
+  const periodLabel = now.toLocaleDateString('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: SAO_PAULO_TIMEZONE,
+  });
+  const transactionsCount = workspace.transactions.length;
+  const categoryExpenseMap = new Map<string, number>();
+  for (const tx of workspace.transactions) {
+    const type = String(tx.type || '').toUpperCase();
+    if (!(type.includes('EXPENSE') || type === 'PIX_OUT')) continue;
+    const categoryName = tx.category?.name || 'Outros';
+    categoryExpenseMap.set(categoryName, (categoryExpenseMap.get(categoryName) || 0) + Number(tx.amount || 0));
+  }
+  const topExpenseCategory = [...categoryExpenseMap.entries()]
+    .sort((a, b) => b[1] - a[1])[0];
   const insights = buildFinancialInsights(workspace.transactions as any, totalBalance, now);
   const upcomingItems = buildUpcomingAgendaItems({
     debts: workspace.debts,
@@ -323,9 +382,15 @@ export async function sendWorkspaceWhatsAppDigest(params: {
 
   const preview = buildDigestMessage({
     workspaceName: workspace.name,
+    periodLabel,
     totalBalance,
     monthIncome,
     monthExpenses,
+    monthNet,
+    transactionsCount,
+    topExpenseCategory: topExpenseCategory
+      ? { name: topExpenseCategory[0], amount: topExpenseCategory[1] }
+      : null,
     insights,
     upcomingItems,
   });
@@ -335,19 +400,38 @@ export async function sendWorkspaceWhatsAppDigest(params: {
   let deliveryMode: 'template' | 'text' = 'text';
 
   if (digestTemplateName) {
-    await sendWhatsAppTemplateMessage({
-      to: destinationPhone,
-      name: digestTemplateName,
-      languageCode: params.resolvedConfig?.templateLanguage,
-      bodyParameters: [
-        workspace.name,
-        formatCurrency(totalBalance),
-        formatCurrency(monthIncome),
-        formatCurrency(monthExpenses),
-        buildDigestHighlights({ upcomingItems, insights }) || 'Abra o painel para acompanhar tudo com mais detalhes.',
-      ],
-    });
-    deliveryMode = 'template';
+    try {
+      await sendWhatsAppTemplateMessage({
+        to: destinationPhone,
+        name: digestTemplateName,
+        languageCode: params.resolvedConfig?.templateLanguage,
+        bodyParameters: [
+          workspace.name,
+          formatCurrency(totalBalance),
+          formatCurrency(monthIncome),
+          formatCurrency(monthExpenses),
+          buildDigestHighlights({
+            monthNet,
+            topExpenseCategory: topExpenseCategory
+              ? { name: topExpenseCategory[0], amount: topExpenseCategory[1] }
+              : null,
+            upcomingItems,
+            insights,
+          }) || 'Abra o painel para acompanhar tudo com mais detalhes.',
+        ],
+      });
+      deliveryMode = 'template';
+    } catch (error) {
+      if (!shouldFallbackToText(error)) {
+        throw error;
+      }
+
+      await sendWhatsAppTextMessage({
+        to: destinationPhone,
+        text: preview,
+      });
+      deliveryMode = 'text';
+    }
   } else {
     await sendWhatsAppTextMessage({
       to: destinationPhone,

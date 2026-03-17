@@ -18,6 +18,14 @@ export type WorkspaceWhatsAppConfig = {
   lastErrorCategory: string | null;
   lastValidatedAt: string | null;
   lastTestSentAt: string | null;
+  pendingConfirmation: {
+    action: 'undo_last_transaction' | 'remove_recent_transaction';
+    transactionId: string;
+    description: string;
+    amount: number;
+    requestedAt: string;
+    expiresAt: string;
+  } | null;
   updatedAt: string | null;
 };
 
@@ -61,6 +69,44 @@ function normalizeConnectionState(value: unknown): WorkspaceWhatsAppConfig['last
   return 'idle';
 }
 
+function normalizePendingConfirmation(
+  value: unknown
+): WorkspaceWhatsAppConfig['pendingConfirmation'] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  const action = cleanValue(source.action);
+  const transactionId = cleanValue(source.transactionId);
+  const description = cleanValue(source.description);
+  const requestedAt = cleanValue(source.requestedAt);
+  const expiresAt = cleanValue(source.expiresAt);
+  const amount =
+    typeof source.amount === 'number'
+      ? source.amount
+      : typeof source.amount === 'string'
+        ? Number(source.amount)
+        : NaN;
+
+  if (
+    (action !== 'undo_last_transaction' && action !== 'remove_recent_transaction') ||
+    !transactionId ||
+    !description ||
+    !requestedAt ||
+    !expiresAt ||
+    !Number.isFinite(amount)
+  ) {
+    return null;
+  }
+
+  return {
+    action,
+    transactionId,
+    description,
+    amount,
+    requestedAt,
+    expiresAt,
+  };
+}
+
 function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
   const source =
     payload &&
@@ -91,6 +137,7 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
       sourceRecord && typeof sourceRecord.lastValidatedAt === 'string' ? sourceRecord.lastValidatedAt : null,
     lastTestSentAt:
       sourceRecord && typeof sourceRecord.lastTestSentAt === 'string' ? sourceRecord.lastTestSentAt : null,
+    pendingConfirmation: sourceRecord ? normalizePendingConfirmation(sourceRecord.pendingConfirmation) : null,
     updatedAt,
   };
 }
@@ -138,6 +185,7 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
       lastErrorCategory: null,
       lastValidatedAt: null,
       lastTestSentAt: null,
+      pendingConfirmation: null,
       updatedAt: null,
     };
   }
@@ -161,6 +209,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
   lastErrorCategory?: string | null;
   lastValidatedAt?: string | null;
   lastTestSentAt?: string | null;
+  pendingConfirmation?: WorkspaceWhatsAppConfig['pendingConfirmation'] | null;
 }) {
   const currentConfig = await getWorkspaceWhatsAppConfig(params.workspaceId);
   const normalizedConfig: WorkspaceWhatsAppConfig = {
@@ -193,6 +242,10 @@ export async function saveWorkspaceWhatsAppConfig(params: {
       typeof params.lastValidatedAt === 'undefined' ? currentConfig.lastValidatedAt : params.lastValidatedAt,
     lastTestSentAt:
       typeof params.lastTestSentAt === 'undefined' ? currentConfig.lastTestSentAt : params.lastTestSentAt,
+    pendingConfirmation:
+      typeof params.pendingConfirmation === 'undefined'
+        ? currentConfig.pendingConfirmation
+        : params.pendingConfirmation,
     updatedAt: new Date().toISOString(),
   };
 
@@ -234,6 +287,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         lastErrorCategory: normalizedConfig.lastErrorCategory,
         lastValidatedAt: normalizedConfig.lastValidatedAt,
         lastTestSentAt: normalizedConfig.lastTestSentAt,
+        pendingConfirmation: normalizedConfig.pendingConfirmation,
       },
     },
   });
@@ -272,6 +326,7 @@ export function resolveWorkspaceWhatsAppConfig(params: {
     lastErrorCategory: params.workspaceConfig.lastErrorCategory,
     lastValidatedAt: params.workspaceConfig.lastValidatedAt,
     lastTestSentAt: params.workspaceConfig.lastTestSentAt,
+    pendingConfirmation: params.workspaceConfig.pendingConfirmation,
     updatedAt: params.workspaceConfig.updatedAt,
     connectTemplateNameSource: params.workspaceConfig.connectTemplateName
       ? 'workspace'

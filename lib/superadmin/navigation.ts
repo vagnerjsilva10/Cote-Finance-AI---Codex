@@ -68,7 +68,7 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     href: '/superadmin/content',
     icon: 'file-text',
     description: 'Gestão futura de pricing, FAQs, CTAs e textos estratégicos.',
-    implemented: false,
+    implemented: true,
   },
   {
     label: 'Tracking / Marketing',

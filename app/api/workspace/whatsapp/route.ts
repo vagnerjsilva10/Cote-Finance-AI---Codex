@@ -75,6 +75,15 @@ function classifyHttpStatus(error: unknown) {
   return error.status || 500;
 }
 
+function shouldFallbackToText(error: unknown) {
+  if (!(error instanceof WhatsAppApiError)) return false;
+
+  if (error.category === 'template') return true;
+  if (/template/i.test(error.message)) return true;
+
+  return [131058, 132001, 132007, 132012].includes(error.metaCode ?? -1);
+}
+
 function buildValidationSummary(params: {
   connectTemplateName: string | null;
   digestTemplateName: string | null;
@@ -431,12 +440,23 @@ export async function POST(req: Request) {
 
       try {
         if (resolvedConfig.connectTemplateName) {
-          await sendWhatsAppTemplateMessage({
-            to: normalizedPhone,
-            name: resolvedConfig.connectTemplateName,
-            languageCode: resolvedConfig.templateLanguage,
-            bodyParameters: [activeWorkspaceName],
-          });
+          try {
+            await sendWhatsAppTemplateMessage({
+              to: normalizedPhone,
+              name: resolvedConfig.connectTemplateName,
+              languageCode: resolvedConfig.templateLanguage,
+              bodyParameters: [activeWorkspaceName],
+            });
+          } catch (error) {
+            if (!shouldFallbackToText(error)) {
+              throw error;
+            }
+
+            await sendWhatsAppTextMessage({
+              to: normalizedPhone,
+              text: `Atualização da conta: este número foi vinculado à sua conta do Cote Finance AI no workspace ${activeWorkspaceName}.`,
+            });
+          }
         } else {
           await sendWhatsAppTextMessage({
             to: normalizedPhone,
@@ -486,7 +506,7 @@ export async function POST(req: Request) {
             lastValidatedAt: updatedConfig.lastValidatedAt,
             lastErrorMessage: null,
             metaResult: resolvedConfig.connectTemplateName
-              ? 'Template de conexão enviado com sucesso.'
+              ? 'Conexão validada com sucesso. Se o template falhar, o sistema envia fallback em texto.'
               : 'Mensagem de texto de conexão enviada com sucesso.',
           },
         });

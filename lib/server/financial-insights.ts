@@ -45,8 +45,8 @@ export function buildFinancialInsights(
     if (Math.abs(delta) >= 10) {
       insights.push(
         delta > 0
-          ? `Seus gastos aumentaram ${delta.toFixed(1)}% em rela\u00e7\u00e3o ao m\u00eas anterior.`
-          : `Seus gastos ca\u00edram ${Math.abs(delta).toFixed(1)}% em rela\u00e7\u00e3o ao m\u00eas anterior.`
+          ? `Seus gastos aumentaram ${delta.toFixed(1)}% em relação ao mês anterior.`
+          : `Seus gastos caíram ${Math.abs(delta).toFixed(1)}% em relação ao mês anterior.`
       );
     }
   }
@@ -56,8 +56,8 @@ export function buildFinancialInsights(
     if (Math.abs(delta) >= 10) {
       insights.push(
         delta > 0
-          ? `Sua receita cresceu ${delta.toFixed(1)}% em rela\u00e7\u00e3o ao m\u00eas anterior.`
-          : `Sua receita reduziu ${Math.abs(delta).toFixed(1)}% em rela\u00e7\u00e3o ao m\u00eas anterior.`
+          ? `Sua receita cresceu ${delta.toFixed(1)}% em relação ao mês anterior.`
+          : `Sua receita reduziu ${Math.abs(delta).toFixed(1)}% em relação ao mês anterior.`
       );
     }
   }
@@ -72,7 +72,7 @@ export function buildFinancialInsights(
   const topCategory = [...categoryExpenseMap.entries()].sort((a, b) => b[1] - a[1])[0];
   if (topCategory) {
     insights.push(
-      `Maior gasto do m\u00eas: ${topCategory[0]} (${topCategory[1].toLocaleString('pt-BR', {
+      `Maior gasto do mês: ${topCategory[0]} (${topCategory[1].toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       })}).`
@@ -91,7 +91,7 @@ export function buildFinancialInsights(
 
   if (insights.length === 0) {
     insights.push(
-      'Continue registrando suas transa\u00e7\u00f5es para receber insights autom\u00e1ticos mais precisos.'
+      'Continue registrando suas transações para receber insights automáticos mais precisos.'
     );
   }
 
