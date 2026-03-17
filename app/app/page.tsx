@@ -510,7 +510,7 @@ const getWhatsAppConnectionDescription = (
     return 'A conexão com a Meta falhou. Revise token, permissões e os dados deste workspace.';
   }
   if (state === 'connected' || isConnected) {
-    return 'Configuração pronta para envio. Você já pode disparar um teste com segurança.';
+    return 'Configuração pronta para envio. Você já pode disparar um teste com seguran�a.';
   }
   if (hasValidationIssues) {
     return 'Há ajustes pendentes antes de ativar o envio deste workspace.';
@@ -580,8 +580,8 @@ const buildPremiumSmartAlerts = ({
     const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
     alerts.push({
       id: 'premium-expense-spike',
-      title: 'Alerta inteligente: gasto acima do padrão',
-      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
+      title: 'Alerta inteligente: gasto acima do padr�o',
+      message: `Suas despesas subiram ${variation}% em rela��o ao mês anterior. Vale revisar onde o caixa acelerou.`,
       tone: 'warning',
       targetTab: 'reports',
     });
@@ -723,7 +723,7 @@ const optimizeAvatarFile = (file: File) =>
 
         const context = canvas.getContext('2d');
         if (!context) {
-          throw new Error('Não foi possível processar a imagem.');
+          throw new Error('Não foi poss�vel processar a imagem.');
         }
 
         const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
@@ -754,7 +754,7 @@ const optimizeAvatarFile = (file: File) =>
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('Não foi possível ler a imagem selecionada.'));
+      reject(new Error('Não foi poss�vel ler a imagem selecionada.'));
     };
 
     image.src = objectUrl;
@@ -783,15 +783,15 @@ const PAYMENT_METHODS: PaymentMethodLabel[] = [
 ];
 
 const TRANSACTION_CATEGORIES = [
-  'Alimentação',
+  'Alimenta��o',
   'Transporte',
   'Saúde',
-  'Educação',
+  'Educa��o',
   'Lazer',
   'Moradia',
   'Salário',
   'Freelance',
-  'Comissão',
+  'Comiss�o',
   'Reembolso',
   'Vendas',
   'Marketing',
@@ -804,7 +804,7 @@ const TRANSACTION_CATEGORIES = [
 const REVENUE_TRANSACTION_CATEGORIES: readonly string[] = [
   'Salário',
   'Freelance',
-  'Comissão',
+  'Comiss�o',
   'Reembolso',
   'Vendas',
   'Investimentos',
@@ -812,10 +812,10 @@ const REVENUE_TRANSACTION_CATEGORIES: readonly string[] = [
   'Outros',
 ] as const;
 const EXPENSE_TRANSACTION_CATEGORIES: readonly string[] = [
-  'Alimentação',
+  'Alimenta��o',
   'Transporte',
   'Saúde',
-  'Educação',
+  'Educa��o',
   'Lazer',
   'Moradia',
   'Marketing',
@@ -847,7 +847,7 @@ const GOAL_CATEGORIES = [
   'Casa',
   'Carro',
   'Investimentos',
-  'Educação',
+  'Educa��o',
   'Aposentadoria',
   'Outros',
 ];
@@ -870,8 +870,8 @@ const ASSISTANT_SUGGESTIONS = [
   'Onde eu mais gasto',
   'Qual meu saldo este mês',
   'Me dê dicas para economizar',
-  'Quais são meus maiores gastos',
-  'Como estão meus investimentos',
+  'Quais s�o meus maiores gastos',
+  'Como estáo meus investimentos',
   'Quais dívidas devo priorizar',
 ];
 
@@ -894,7 +894,7 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
   description: '',
   amount: '',
   flowType: 'Despesa',
-  category: 'Alimentação',
+  category: 'Alimenta��o',
   paymentMethod: 'PIX',
   wallet: DEFAULT_TRANSACTION_WALLET,
   destinationWallet: '',
@@ -945,7 +945,7 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃO') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CART�O') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
@@ -977,7 +977,7 @@ const getDefaultPaymentMethodForFlow = (flowType: TransactionFlowType): PaymentM
 const getDefaultCategoryForFlow = (flowType: TransactionFlowType) => {
   if (flowType === 'Receita') return 'Salário';
   if (flowType === 'Transferência') return 'Outros';
-  return 'Alimentação';
+  return 'Alimenta��o';
 };
 
 const getAvailableCategoriesForFlow = (flowType: TransactionFlowType): string[] => {
@@ -1039,7 +1039,7 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'stripe.invoice.paid': 'Pagamento confirmado',
     'stripe.invoice.payment_failed': 'Falha na cobrança',
     'ai.chat.used': 'Assistente IA utilizado',
-    'ai.classify.used': 'Classificação automática usada',
+    'ai.classify.used': 'Classifica��o autom�tica usada',
   };
 
   return labels[eventType] || eventType.replace(/\./g, ' • ');
@@ -1047,25 +1047,25 @@ const getWorkspaceEventLabel = (eventType: string) => {
 
 const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
   const messages: Record<string, string> = {
-    'transaction.created': 'Uma nova movimentação foi registrada e já apareceu no seu painel.',
-    'transaction.updated': 'Uma movimentação foi atualizada com os dados mais recentes.',
-    'transaction.deleted': 'Uma movimentação foi removida do histórico deste workspace.',
+    'transaction.created': 'Uma nova movimenta��o foi registrada e já apareceu no seu painel.',
+    'transaction.updated': 'Uma movimenta��o foi atualizada com os dados mais recentes.',
+    'transaction.deleted': 'Uma movimenta��o foi removida do hist�rico deste workspace.',
     'workspace.created': 'Seu espaço financeiro foi criado e está pronto para uso.',
-    'onboarding.completed': 'Sua configuração inicial foi concluída com sucesso.',
+    'onboarding.completed': 'Sua configuração inicial foi conclu�da com sucesso.',
     'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
     'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
-    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
+    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirma��o.',
     'stripe.portal.created': 'A área de gerenciamento da assinatura foi aberta.',
     'stripe.customer.subscription.created': 'Sua assinatura foi criada e está sendo preparada para uso.',
-    'stripe.customer.subscription.updated': 'Houve uma atualização recente na sua assinatura.',
+    'stripe.customer.subscription.updated': 'Houve uma atualiza��o recente na sua assinatura.',
     'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada neste workspace.',
-    'stripe.invoice.paid': 'Recebemos a confirmação do pagamento da sua assinatura.',
-    'stripe.invoice.payment_failed': 'A última tentativa de cobrança não foi concluída.',
+    'stripe.invoice.paid': 'Recebemos a confirma��o do pagamento da sua assinatura.',
+    'stripe.invoice.payment_failed': 'A última tentativa de cobran�a não foi conclu�da.',
     'ai.chat.used': 'Uma análise com IA foi gerada para este workspace.',
-    'ai.classify.used': 'Uma classificação automática foi aplicada em uma movimentação.',
+    'ai.classify.used': 'Uma classifica��o autom�tica foi aplicada em uma movimenta��o.',
   };
 
-  return messages[event.type] || 'Uma atualização recente foi registrada neste workspace.';
+  return messages[event.type] || 'Uma atualiza��o recente foi registrada neste workspace.';
 };
 
 const getNotificationStorageKey = (userId: string, workspaceId: string) =>
@@ -1146,15 +1146,15 @@ const mapAiCategoryToCategory = (rawCategory: string) => {
     return normalizedMap.get(normalized) as string;
   }
 
-  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'Alimentação';
+  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'Alimenta��o';
   if (normalized.includes('transp')) return 'Transporte';
   if (normalized.includes('saud')) return 'Saúde';
-  if (normalized.includes('educ')) return 'Educação';
+  if (normalized.includes('educ')) return 'Educa��o';
   if (normalized.includes('lazer')) return 'Lazer';
   if (normalized.includes('morad') || normalized.includes('aluguel')) return 'Moradia';
   if (normalized.includes('salario')) return 'Salário';
   if (normalized.includes('freela')) return 'Freelance';
-  if (normalized.includes('comiss')) return 'Comissão';
+  if (normalized.includes('comiss')) return 'Comiss�o';
   if (normalized.includes('reemb')) return 'Reembolso';
   if (normalized.includes('vend')) return 'Vendas';
   if (normalized.includes('ads') || normalized.includes('marketing') || normalized.includes('trafego')) return 'Marketing';
@@ -1366,7 +1366,7 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
             <h2 className="text-xl font-bold text-white mb-2">Erro na interface</h2>
             <p className="text-sm text-slate-400 mb-5">
-              Ocorreu uma falha inesperada de renderização. Recarregue a página para continuar.
+              Ocorreu uma falha inesperada de renderiza��o. Recarregue a página para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -1660,7 +1660,7 @@ const SubscriptionView = ({
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
-                  Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
+                  Tudo o que importa para este workspace fica vis�vel aqui. Quando uma a��o exigir a Stripe,
                   abrimos apenas a etapa necessária.
                 </p>
               </div>
@@ -1678,7 +1678,7 @@ const SubscriptionView = ({
                 <div className="flex items-start gap-3">
                   <CreditCard size={18} className="mt-0.5 text-emerald-300" />
                   <div>
-                    <p className="text-sm font-semibold text-white">Gestão sem sair do app</p>
+                    <p className="text-sm font-semibold text-white">Gestáo sem sair do app</p>
                     <p className="mt-1 text-sm text-slate-300">
                       Status, plano e próximas cobranças aparecem dentro do SaaS. Portal externo só quando preciso.
                     </p>
@@ -2382,7 +2382,7 @@ const IntegrationsView = ({
   const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annually'>('monthly');
   const [showAdvancedWhatsAppSettings, setShowAdvancedWhatsAppSettings] = React.useState(false);
   const [showWhatsAppConnectionDetails, setShowWhatsAppConnectionDetails] = React.useState(false);
-  const hasWhatsAppAccess = currentPlan !== 'FREE';
+  const hasWhatsAppAccess = currentPlan === 'PRO' || currentPlan === 'PREMIUM';
   const hasWhatsAppValidationIssues = Boolean(
     whatsAppDiagnostic &&
       (whatsAppDiagnostic.validationIssues.length > 0 || whatsAppDiagnostic.validationResult === 'ERRO')
@@ -2441,6 +2441,7 @@ const IntegrationsView = ({
       className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
       id="whatsapp-integration"
     >
+      {!hasWhatsAppAccess ? (
       <div className="flex flex-col items-center space-y-6">
         <div className="flex items-center rounded-xl border border-slate-800 bg-slate-900 p-1">
           <button
@@ -2494,6 +2495,8 @@ const IntegrationsView = ({
           ))}
         </div>
       </div>
+
+      ) : null}
 
       <div className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -2571,8 +2574,7 @@ const IntegrationsView = ({
             ) : (
               <>
                 <p className="leading-relaxed text-slate-400">
-                  Receba resumos financeiros e alertas importantes no WhatsApp deste workspace sem depender de e-mail ou
-                  planilhas paralelas.
+                  Configure o WhatsApp deste workspace para receber resumos, alertas e confirmações em um canal rápido e confiável.
                 </p>
 
                 <div className="space-y-4">
@@ -2636,7 +2638,7 @@ const IntegrationsView = ({
 
                 {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
                   <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                    <p className="text-sm font-bold text-amber-200">Revisão necessária</p>
+                    <p className="text-sm font-bold text-amber-200">Revis�o necess�ria</p>
                     <ul className="mt-2 space-y-2 text-sm text-amber-100/90">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
                         <li key={issue}>{issue}</li>
@@ -2718,7 +2720,7 @@ const IntegrationsView = ({
                         onClick={() => setShowWhatsAppConnectionDetails((current) => !current)}
                         className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
                       >
-                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da validação' : 'Ver detalhes da validação'}
+                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da valida��o' : 'Ver detalhes da valida��o'}
                       </button>
                     )}
                   </div>
@@ -2828,14 +2830,14 @@ const IntegrationsView = ({
                 Resumo diário com saldo, entradas, saídas, próximos vencimentos e insights práticos para agir mais rápido.
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
-                Exemplo: <span className="font-semibold text-white">Maior gasto do mês</span>, contas próximas do vencimento e um resumo do que merece atenção no caixa.
+                Exemplo: <span className="font-semibold text-white">Maior gasto do mês</span>, contas pr�ximas do vencimento e um resumo do que merece atenção no caixa.
               </div>
             </div>
 
             {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
               <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70">
                 <div className="border-b border-slate-800 px-4 py-3 text-sm font-bold text-slate-200">
-                  Detalhes da validação
+                  Detalhes da valida��o
                 </div>
                 <div className="p-4">
                   <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
@@ -2886,7 +2888,7 @@ const IntegrationsView = ({
 
                   {whatsAppDiagnostic.metaResult && (
                     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs text-slate-400">
-                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da validação</p>
+                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da valida��o</p>
                       <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-slate-300">
                         {typeof whatsAppDiagnostic.metaResult === 'string'
                           ? whatsAppDiagnostic.metaResult
@@ -3223,7 +3225,7 @@ const DebtsView = ({
               <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Dívidas</p>
               <h4 className="mt-2 text-2xl font-black text-white">Obrigações com começo, meio e fim</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-                Use para empréstimos, acordos, cartão atrasado e qualquer compromisso com valor total definido.
+                Use para empr�stimos, acordos, cart�o atrasado e qualquer compromisso com valor total definido.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -3340,7 +3342,7 @@ const DebtsView = ({
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próxima cobrança</p>
                 <p className="mt-2 text-base font-black text-emerald-400">
-                  {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previsão'}
+                  {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previs�o'}
                 </p>
               </div>
             </div>
@@ -3453,7 +3455,7 @@ const DebtsView = ({
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
           <button
             type="button"
-            aria-label="Fechar escolha de tipo de d?vida"
+            aria-label="Fechar escolha de tipo de dívida"
             onClick={() => setIsCreateChooserOpen(false)}
             className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
           />
@@ -3658,7 +3660,7 @@ const buildPortfolioInsights = ({
   }
 
   if (totalAssets > 0 && totalInvested === 0) {
-    insights.push('Seu patrimônio ainda está concentrado em caixa. Registrar investimentos pode melhorar sua diversificação.');
+    insights.push('Seu patrimônio ainda está concentrado em caixa. Registrar investimentos pode melhorar sua diversifica��o.');
   }
 
   if (topWallet && totalBalance > 0) {
@@ -3887,7 +3889,7 @@ const PortfolioView = ({
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h4 className="text-lg font-bold text-white">Distribui??o do patrimônio</h4>
+              <h4 className="text-lg font-bold text-white">Distribuição do patrimônio</h4>
               <p className="text-sm text-slate-500">Entenda rapidamente quanto do seu patrimônio está em contas, investimentos e dívidas.</p>
             </div>
           </div>
@@ -3923,7 +3925,7 @@ const PortfolioView = ({
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-800 text-sm text-slate-500">
-                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecerá aqui.
+                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecer� aqui.
                 </div>
               )}
             </div>
@@ -3957,7 +3959,7 @@ const PortfolioView = ({
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="text-lg font-bold text-white">Onde está meu dinheiro</h4>
-              <p className="text-sm text-slate-500">Veja as principais carteiras, participação no saldo total e ações rápidas.</p>
+              <p className="text-sm text-slate-500">Veja as principais carteiras, participa��o no saldo total e a��es r�pidas.</p>
             </div>
             {walletAllocation.length > 4 && (
               <button
@@ -4042,7 +4044,7 @@ const PortfolioView = ({
               <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
                 <p className="text-sm font-semibold text-white">Você ainda não registrou investimentos.</p>
                 <p className="mt-2 text-sm text-slate-500">
-                  Adicione seus principais ativos para ver a participação deles no patrimônio total.
+                  Adicione seus principais ativos para ver a participa��o deles no patrimônio total.
                 </p>
                 <button
                   type="button"
@@ -4144,7 +4146,7 @@ const PortfolioView = ({
           <h4 className="text-lg font-bold text-white">Insights da IA</h4>
           <p className="text-sm text-slate-500">
             {hasPortfolioAiInsights
-              ? 'Mensagens rápidas para ajudar você a entender a composi??o da sua carteira.'
+              ? 'Mensagens rápidas para ajudar você a entender a composição da sua carteira.'
               : 'Descubra para onde seu dinheiro está indo com os Insights automáticos da IA.'}
           </p>
         </div>
@@ -4605,10 +4607,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao gerar insights.');
       }
-      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi possível gerar insights no momento.');
+      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi poss�vel gerar insights no momento.');
     } catch (error) {
       console.error('AI Insight error:', error);
-      setAiInsight('Não foi possível gerar insights no momento.');
+      setAiInsight('Não foi poss�vel gerar insights no momento.');
     } finally {
       setIsGeneratingInsight(false);
     }
@@ -4621,7 +4623,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div>
             <h3 className="text-xl font-bold text-white">Relatórios</h3>
             <p className="text-sm text-slate-400">
-              Visão básica da sua movimentação financeira atual.
+              Visão b�sica da sua movimenta��o financeira atual.
             </p>
           </div>
           {currentPlan === 'FREE' && (
@@ -4678,7 +4680,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               {[
                 'Gráficos comparativos completos',
                 'Insights automáticos com IA',
-                'Exportação em PDF e CSV',
+                'Exporta��o em PDF e CSV',
                 'Comparativos avançados de receita, despesa e economia',
               ].map((feature) => (
                 <div
@@ -4743,9 +4745,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
-                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previsão de saldo</h4>
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previs�o de saldo</h4>
                 <p className="text-sm text-slate-400 mt-2">
-                  Projeção baseada no ritmo médio das suas movimentações dos últimos 60 dias.
+                  Proje��o baseada no ritmo m�dio das suas movimenta��es dos �ltimos 60 dias.
                 </p>
               </div>
               <div
@@ -4836,7 +4838,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-widest">Análises profundas de despesas</h4>
                 <p className="mt-2 max-w-3xl text-sm text-slate-400">
-                  Veja quais categorias mais cresceram, onde estão os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
+                  Veja quais categorias mais cresceram, onde estáo os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
                 </p>
               </div>
               <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
@@ -4851,12 +4853,12 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="mt-2 text-xs text-slate-400">
                   {expenseDeepDive.previousMonthTotal > 0
                     ? `Mês anterior: ${formatCurrency(expenseDeepDive.previousMonthTotal)}`
-                    : 'Sem comparação válida com o mês anterior.'}
+                    : 'Sem compara��o v�lida com o mês anterior.'}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Variação mensal</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Varia��o mensal</p>
                 <p
                   className={cn(
                     'text-2xl font-black',
@@ -4872,7 +4874,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
-                  Comparação entre as despesas do mês atual e do mês anterior.
+                  Compara��o entre as despesas do mês atual e do mês anterior.
                 </p>
               </div>
 
@@ -4907,7 +4909,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <div className="space-y-3">
                   {expenseDeepDive.growingCategories.length === 0 ? (
                     <p className="text-sm text-slate-400">
-                      Nenhuma categoria apresentou crescimento relevante em relação ao mês anterior.
+                      Nenhuma categoria apresentou crescimento relevante em rela��o ao mês anterior.
                     </p>
                   ) : (
                     expenseDeepDive.growingCategories.map((item) => (
@@ -4949,7 +4951,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                         </div>
                         <p className="mt-2 text-sm text-slate-300">{formatCurrency(item.total)}</p>
                         <p className="mt-2 text-xs text-slate-500">
-                          Vale revisar frequência, assinatura recorrente ou padrão de consumo nesta categoria.
+                          Vale revisar frequ�ncia, assinatura recorrente ou padr�o de consumo nesta categoria.
                         </p>
                       </div>
                     ))
@@ -6139,7 +6141,7 @@ const TransactionModal = ({
         }));
         setReceiptStatus('Dados detectados automaticamente. Revise antes de salvar.');
       } else {
-        setReceiptStatus('Não foi possível extrair dados do comprovante.');
+        setReceiptStatus('Não foi poss�vel extrair dados do comprovante.');
       }
     } catch {
       setReceiptStatus('Falha ao processar comprovante.');
@@ -6257,7 +6259,7 @@ const TransactionModal = ({
           {(isLoadingSuggestion || suggestedCategory) && (
             <div className="rounded-xl border border-slate-800 bg-slate-800/40 p-3 text-xs text-slate-300">
               {isLoadingSuggestion ? (
-                <span>Buscando sugestão de categoria...</span>
+                <span>Buscando sugestáo de categoria...</span>
               ) : suggestedCategory ? (
                 <div className="flex items-center justify-between gap-2">
                   <span>
@@ -6268,7 +6270,7 @@ const TransactionModal = ({
                     onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
                     className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors"
                   >
-                    Usar sugestão
+                    Usar sugestáo
                   </button>
                 </div>
               ) : null}
@@ -6432,7 +6434,7 @@ const TransactionModal = ({
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar altera��es' : 'Criar transação'}
           </button>
         </div>
       </motion.div>
@@ -6621,9 +6623,9 @@ const LoginView = ({
 
       if (resendError) throw resendError;
 
-      setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
+      setNotice('Enviamos um novo e-mail de confirma��o. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
-      setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
+      setError(err?.message || 'Não foi poss�vel reenviar o e-mail de confirma��o.');
     } finally {
       setLoading(false);
     }
@@ -6676,7 +6678,7 @@ const LoginView = ({
     const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
 
     if (!accessToken || !resolvedUser) {
-      throw new Error('Não foi possível validar o código. Solicite um novo e tente novamente.');
+      throw new Error('Não foi poss�vel validar o c�digo. Solicite um novo e tente novamente.');
     }
 
     await runSetupForToken(accessToken);
@@ -6743,14 +6745,14 @@ const LoginView = ({
       if (!isLogin) {
         setPendingConfirmationEmail(normalizedEmail);
         setNotice(
-          'Conta criada com sucesso. Enviamos um e-mail de confirmação para continuar seu acesso.'
+          'Conta criada com sucesso. Enviamos um e-mail de confirma��o para continuar seu acesso.'
         );
         setIsLogin(true);
         setPassword('');
         return;
       }
 
-      throw new Error('Não foi possível iniciar sessão. Tente novamente.');
+      throw new Error('Não foi poss�vel iniciar sessão. Tente novamente.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -7038,7 +7040,7 @@ const LoginView = ({
               disabled={loading}
               className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
             >
-              Não recebeu o e-mail? Reenviar confirmação
+              Não recebeu o e-mail? Reenviar confirma��o
             </button>
           ) : null}
 
@@ -7054,7 +7056,7 @@ const LoginView = ({
                   try {
                     await requestEmailCode(otpRequestedEmail);
                   } catch (err: any) {
-                    setError(err?.message || 'Não foi possível reenviar o código.');
+                    setError(err?.message || 'Não foi poss�vel reenviar o c�digo.');
                   } finally {
                     setLoading(false);
                   }
@@ -7341,7 +7343,7 @@ export default function App() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Sessão expirada. Faça login novamente.');
+        throw new Error('Sessão expirada. Fa�a login novamente.');
       }
 
       const headers: Record<string, string> = {
@@ -7768,7 +7770,7 @@ export default function App() {
         setDashboardInsights((current) =>
           current.length > 0
             ? current
-            : ['Não foi possível atualizar os dados agora. Exibindo o último estado conhecido.']
+            : ['Não foi poss�vel atualizar os dados agora. Exibindo o �ltimo estado conhecido.']
         );
       }
     } finally {
@@ -8155,7 +8157,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi possível salvar a configuração do WhatsApp.';
+          : 'Não foi poss�vel salvar a configuração do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8184,23 +8186,23 @@ React.useEffect(() => {
       applyWhatsAppPayload(payload);
       setWhatsAppFeedback({
         tone: payload?.success ? 'success' : 'info',
-        title: payload?.success ? 'Validação concluída' : 'Revisão necessária',
+        title: payload?.success ? 'Valida��o conclu�da' : 'Revis�o necess�ria',
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A validação do WhatsApp foi concluída.',
+            : 'A valida��o do WhatsApp foi conclu�da.',
       });
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi possível validar a configuração do WhatsApp.';
+          : 'Não foi poss�vel validar a configuração do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
       setWhatsAppFeedback({
         tone: 'error',
-        title: 'Falha na validação',
+        title: 'Falha na valida��o',
         message,
       });
     }
@@ -8233,7 +8235,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi possível conectar o WhatsApp.';
+          : 'Não foi poss�vel conectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8271,7 +8273,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi possível desconectar o WhatsApp.';
+          : 'Não foi poss�vel desconectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8309,7 +8311,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'Não foi possível enviar o teste do WhatsApp.';
+          : 'Não foi poss�vel enviar o teste do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -9000,6 +9002,11 @@ React.useEffect(() => {
           ? 'Despesa'
           : onboardingFirstRecord.flowType,
       destinationWallet: '',
+      description:
+        onboardingFirstRecord.description.trim() ||
+        (onboardingFirstRecord.flowType === 'Receita'
+          ? 'Primeiro registro de entrada'
+          : 'Primeiro registro de despesa'),
     };
 
     if (!payload.amount || parseMoneyInput(payload.amount) <= 0) {
@@ -9468,7 +9475,7 @@ React.useEffect(() => {
     const resolvedCategory = await resolveTransactionCategory(tx);
     const absoluteAmount = parseMoneyInput(tx.amount);
     if (!absoluteAmount || absoluteAmount <= 0) {
-      alert('Valor inválido para transação.');
+      alert('Valor inv�lido para transação.');
       return false;
     }
     if (flowType === 'Transferência') {
@@ -10647,7 +10654,7 @@ React.useEffect(() => {
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li>saldo atual</li>
                       <li>despesas por categoria</li>
-                      <li>evolução dos gastos</li>
+                      <li>evolu��o dos gastos</li>
                       <li>análises completas disponíveis no Pro</li>
                     </ul>
                   </div>
@@ -10678,7 +10685,7 @@ React.useEffect(() => {
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
                     Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
-                    {String(onboardingPrimaryInsight.category || 'alimentação').toLowerCase()}. Se reduzir esse gasto em
+                    {String(onboardingPrimaryInsight.category || 'alimenta��o').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
                     {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mês.
                   </div>
@@ -10786,7 +10793,7 @@ React.useEffect(() => {
                     <ul className="space-y-2 text-sm text-emerald-100">
                       <li>• insights financeiros completos</li>
                       <li>• previsões de saldo</li>
-                      <li>• alertas de gastos fora do padrão</li>
+                      <li>� alertas de gastos fora do padr�o</li>
                       <li>• resumos e lembretes no WhatsApp</li>
                       <li>• relatórios avançados</li>
                     </ul>
@@ -10797,7 +10804,7 @@ React.useEffect(() => {
                       checked={onboardingAiSuggestionsEnabled}
                       onChange={(event) => setOnboardingAiSuggestionsEnabled(event.target.checked)}
                     />
-                    Ativar sugestáes de IA para este workspace
+                    Ativar sugestões de IA para este workspace
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
@@ -11260,7 +11267,7 @@ React.useEffect(() => {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {([
-                        { value: 'Alimentação', label: 'Alimentação' },
+                        { value: 'Alimenta��o', label: 'Alimenta��o' },
                         { value: 'Transporte', label: 'Transporte' },
                         { value: 'Moradia', label: 'Moradia' },
                         { value: 'Saúde', label: 'Saúde' },
@@ -11390,7 +11397,7 @@ React.useEffect(() => {
 
                         {visibleNotifications.length === 0 ? (
                           <div className="px-4 py-5">
-                            <p className="text-sm text-slate-300">Nenhuma atualização pendente no momento.</p>
+                            <p className="text-sm text-slate-300">Nenhuma atualiza��o pendente no momento.</p>
                             <p className="mt-1 text-xs text-slate-500">
                               Quando surgir algo importante sobre sua conta, assinatura ou agenda, isso aparece aqui.
                             </p>
@@ -11447,7 +11454,7 @@ React.useEffect(() => {
                                         type="button"
                                         onClick={() => deleteNotification(notification.id)}
                                         className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
-                                        aria-label="Apagar notificação"
+                                        aria-label="Apagar notifica��o"
                                       >
                                         <Trash2 size={14} />
                                       </button>
@@ -11498,7 +11505,7 @@ React.useEffect(() => {
                                       type="button"
                                       onClick={() => deleteNotification(notification.id)}
                                       className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
-                                      aria-label="Apagar notificação"
+                                      aria-label="Apagar notifica��o"
                                     >
                                       <Trash2 size={14} />
                                     </button>
@@ -11864,7 +11871,7 @@ React.useEffect(() => {
                           </button>
                         </div>
                         <p className="text-xs text-slate-500">
-                          Se não houver foto, o sistema mostra automaticamente as iniciais do usuário.
+                          Se não houver foto, o sistema mostra automaticamente as iniciais do usu�rio.
                         </p>
                       </div>
                     </div>
