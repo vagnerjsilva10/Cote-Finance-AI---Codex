@@ -47,18 +47,18 @@ export function SuperadminWhatsappPage() {
         });
         setFeedback(
           action === 'diagnose'
-            ? 'DiagnÃƒÂ³stico concluÃƒÂ­do com sucesso.'
+            ? 'Diagnóstico concluído com sucesso.'
             : action === 'send_test'
               ? 'Teste enviado com sucesso.'
               : action === 'send_alerts'
                 ? 'Alertas enviados com sucesso.'
                 : action === 'reset'
-                  ? 'ConfiguraÃƒÂ§ÃƒÂ£o resetada com sucesso.'
-                  : 'IntegraÃƒÂ§ÃƒÂ£o desconectada com sucesso.'
+                  ? 'Configura??o resetada com sucesso.'
+                  : 'Integra??o desconectada com sucesso.'
         );
         await load();
       } catch (actionError) {
-        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a aÃƒÂ§ÃƒÂ£o administrativa.');
+        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a a??o administrativa.');
       } finally {
         setIsSaving(null);
       }
@@ -74,7 +74,7 @@ export function SuperadminWhatsappPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
             <h1 className="mt-2 text-3xl font-semibold text-white">WhatsApp</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Audite integraÃƒÂ§ÃƒÂµes por workspace, identifique falhas de autenticaÃƒÂ§ÃƒÂ£o e acompanhe uso, alertas e aÃƒÂ§ÃƒÂµes do canal.
+              Audite integra??es por workspace, identifique falhas de autentica??o e acompanhe uso, alertas e a??es do canal.
             </p>
           </div>
           <div className="w-full max-w-md">
@@ -84,7 +84,7 @@ export function SuperadminWhatsappPage() {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar workspace, owner ou nÃƒÂºmero"
+                placeholder="Buscar workspace, owner ou número"
                 className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
               />
             </div>
@@ -112,7 +112,7 @@ export function SuperadminWhatsappPage() {
 
       <section className="grid gap-3 md:grid-cols-4">
         <MetricCard label="Mensagens 30d" value={String(data?.summary.messagesLast30Days ?? 0)} />
-        <MetricCard label="TransaÃƒÂ§ÃƒÂµes 30d" value={String(data?.summary.transactionsViaWhatsappLast30Days ?? 0)} />
+        <MetricCard label="Transações 30d" value={String(data?.summary.transactionsViaWhatsappLast30Days ?? 0)} />
         <MetricCard label="IA via WhatsApp" value={String(data?.summary.aiViaWhatsappLast30Days ?? 0)} />
         <MetricCard label="Alertas 30d" value={String(data?.summary.alertsSentLast30Days ?? 0)} />
       </section>
@@ -121,7 +121,7 @@ export function SuperadminWhatsappPage() {
         <MetricCard
           label="IA por intents fixas"
           value={String(data?.summary.aiViaWhatsappDeterministicLast30Days ?? 0)}
-          helper="Consultas resolvidas pelo fluxo determinÃƒÂ­stico do canal."
+          helper="Consultas resolvidas pelo fluxo determinístico do canal."
         />
         <MetricCard
           label="IA via Gemini"
@@ -132,14 +132,14 @@ export function SuperadminWhatsappPage() {
 
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="LanÃƒÂ§amentos editados"
+          label="Lançamentos editados"
           value={String(data?.summary.transactionsEditedViaWhatsappLast30Days ?? 0)}
-          helper="CorreÃƒÂ§ÃƒÂµes recentes feitas direto no canal."
+          helper="Correções recentes feitas direto no canal."
         />
         <MetricCard
-          label="LanÃƒÂ§amentos removidos"
+          label="Lançamentos removidos"
           value={String(data?.summary.transactionsRemovedViaWhatsappLast30Days ?? 0)}
-          helper="ExclusÃƒÂµes e desfazimentos recentes."
+          helper="Exclusões e desfazimentos recentes."
         />
         <MetricCard
           label="Alertas de meta atrasada"
@@ -147,9 +147,9 @@ export function SuperadminWhatsappPage() {
           helper="Metas vencidas que ainda exigem valor adicional."
         />
         <MetricCard
-          label="Alertas de recorrÃƒÂªncia pesada"
+          label="Alertas de recorrência pesada"
           value={String(data?.summary.recurringHeavyAlertsLast30Days ?? 0)}
-          helper="PressÃƒÂ£o de contas recorrentes sobre o mÃƒÂªs."
+          helper="Press?o de contas recorrentes sobre o m?s."
         />
       </section>
 
@@ -194,24 +194,24 @@ export function SuperadminWhatsappPage() {
                         <p className="text-sm text-slate-400">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
                       </div>
                       <div className="grid gap-2 text-sm text-slate-300 md:grid-cols-2 xl:grid-cols-4">
-                        <Info label="NÃƒÂºmero do workspace" value={workspace.phoneNumber || 'NÃƒÂ£o configurado'} />
-                        <Info label="NÃƒÂºmero de teste" value={workspace.testPhoneNumber || 'NÃƒÂ£o configurado'} />
-                        <Info label="ÃƒÅ¡ltima validaÃƒÂ§ÃƒÂ£o" value={formatAdminDateTime(workspace.lastValidatedAt)} />
-                        <Info label="ÃƒÅ¡ltimo teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
+                        <Info label="N?mero do workspace" value={workspace.phoneNumber || 'N?o configurado'} />
+                        <Info label="N?mero de teste" value={workspace.testPhoneNumber || 'N?o configurado'} />
+                        <Info label="?ltima valida??o" value={formatAdminDateTime(workspace.lastValidatedAt)} />
+                        <Info label="Último teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
                       </div>
                       {!workspace.readiness.ready ? (
                         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                          <p className="font-semibold text-amber-50">Checklist de prontidÃƒÂ£o</p>
+                          <p className="font-semibold text-amber-50">Checklist de prontid?o</p>
                           <ul className="mt-2 space-y-1 text-sm">
                             {workspace.readiness.issues.map((issue) => (
-                              <li key={issue}>Ã¢â‚¬Â¢ {issue}</li>
+                              <li key={issue}>• {issue}</li>
                             ))}
                           </ul>
                         </div>
                       ) : null}
                       {workspace.lastErrorMessage ? (
                         <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                          <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conexÃƒÂ£o'}</p>
+                          <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conex?o'}</p>
                           <p className="mt-1">{workspace.lastErrorMessage}</p>
                         </div>
                       ) : null}
@@ -286,12 +286,12 @@ export function SuperadminWhatsappPage() {
                     <p className="text-sm font-semibold text-white">{event.workspaceName}</p>
                     <p className="mt-1 text-sm text-slate-400">
                       {event.type}
-                      {event.type === 'ai.chat.used' && event.aiMode ? ` Ã¢â‚¬Â¢ modo ${event.aiMode}` : ''}
+                      {event.type === 'ai.chat.used' && event.aiMode ? ` • modo ${event.aiMode}` : ''}
                     </p>
                   </div>
                   <div className="text-sm text-slate-400">
                     <p>{formatAdminDateTime(event.createdAt)}</p>
-                    <p>{event.userEmail || 'Sem usuÃƒÂ¡rio vinculado'}</p>
+                    <p>{event.userEmail || 'Sem usuário vinculado'}</p>
                   </div>
                 </div>
               </div>
@@ -348,7 +348,7 @@ function StateBadge({ state }: { state: SuperadminWhatsappResponse['workspaces']
             ? 'Config pendente'
             : state === 'disconnected'
               ? 'Desconectado'
-              : 'Sem diagnÃƒÂ³stico';
+              : 'Sem diagnóstico';
   const className =
     state === 'connected'
       ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'

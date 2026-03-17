@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     const dueDay = parseInteger(body.dueDay);
     const category = (body.category || '').trim() || 'Outros';
     if (isRecurringDebtCategory(category)) {
-      return NextResponse.json({ error: 'Use a Ã¡rea de recorrÃªncias para contas mensais e demais dÃ­vidas recorrentes.' }, { status: 400 });
+      return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
     }
     const status = normalizeDebtStatus(body.status);
 
@@ -182,7 +182,7 @@ export async function PATCH(req: Request) {
     const dueDay = parseInteger(body.dueDay);
     const category = body.category?.trim();
     if (category && isRecurringDebtCategory(category)) {
-      return NextResponse.json({ error: 'Use a Ã¡rea de recorrÃªncias para contas mensais e demais dÃ­vidas recorrentes.' }, { status: 400 });
+      return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
     }
     const status = body.status ? normalizeDebtStatus(body.status) : undefined;
 

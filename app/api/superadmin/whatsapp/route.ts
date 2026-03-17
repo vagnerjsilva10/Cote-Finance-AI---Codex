@@ -29,19 +29,19 @@ function buildWorkspaceReadiness(params: {
   const issues: string[] = [];
 
   if (!params.phoneNumber) {
-    issues.push('NÃƒÆ’Ã‚Âºmero do workspace nÃƒÆ’Ã‚Â£o configurado.');
+    issues.push('Número do workspace não configurado.');
   } else if (!isValidE164Phone(params.phoneNumber)) {
-    issues.push('NÃƒÆ’Ã‚Âºmero do workspace fora do formato E.164.');
+    issues.push('Número do workspace fora do formato E.164.');
   }
 
   if (!params.testPhoneNumber) {
-    issues.push('NÃƒÆ’Ã‚Âºmero de teste nÃƒÆ’Ã‚Â£o configurado.');
+    issues.push('Número de teste não configurado.');
   } else if (!isValidE164Phone(params.testPhoneNumber)) {
-    issues.push('NÃƒÆ’Ã‚Âºmero de teste fora do formato E.164.');
+    issues.push('Número de teste fora do formato E.164.');
   }
 
   if (!params.connectTemplateName) {
-    issues.push('Template de conexÃƒÆ’Ã‚Â£o ausente.');
+    issues.push('Template de conexão ausente.');
   }
 
   if (!params.digestTemplateName) {
@@ -49,7 +49,7 @@ function buildWorkspaceReadiness(params: {
   }
 
   if (!params.templateLanguage) {
-    issues.push('Idioma do template nÃƒÆ’Ã‚Â£o configurado.');
+    issues.push('Idioma do template não configurado.');
   }
 
   return {
@@ -455,7 +455,7 @@ export async function PATCH(req: Request) {
 
     const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
     if (!workspaceId) {
-      return json({ error: 'Workspace invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' }, 400);
+      return json({ error: 'Workspace inválido.' }, 400);
     }
 
     const workspace = await prisma.workspace.findUnique({
@@ -468,7 +468,7 @@ export async function PATCH(req: Request) {
     });
 
     if (!workspace) {
-      return json({ error: 'Workspace nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o encontrado.' }, 404);
+      return json({ error: 'Workspace não encontrado.' }, 404);
     }
 
     if (body.action === 'save_config') {
@@ -480,11 +480,11 @@ export async function PATCH(req: Request) {
         typeof body.testPhoneNumber === 'string' && body.testPhoneNumber.trim() ? body.testPhoneNumber.trim() : null;
 
       if (nextPhone && !isValidE164Phone(nextPhone)) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero principal invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido. Use o formato E.164.' }, 400);
+        return json({ error: 'Número principal inválido. Use o formato E.164.' }, 400);
       }
 
       if (nextTestPhone && !isValidE164Phone(nextTestPhone)) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero de teste invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido. Use o formato E.164.' }, 400);
+        return json({ error: 'Número de teste inválido. Use o formato E.164.' }, 400);
       }
 
       const normalizedPhone = nextPhone ? nextPhone.replace(/\D/g, '') : null;
@@ -614,7 +614,7 @@ export async function PATCH(req: Request) {
       });
 
       if (!result.sent) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­vel enviar o teste do WhatsApp para este workspace.' }, 409);
+        return json({ error: 'Não foi possível enviar o teste do WhatsApp para este workspace.' }, 409);
       }
 
       const updatedConfig = await saveWorkspaceWhatsAppConfig({
@@ -651,7 +651,7 @@ export async function PATCH(req: Request) {
       });
 
       if (!result.sent) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o hÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ alertas elegÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis para enviar neste workspace agora.' }, 409);
+        return json({ error: 'Não há alertas elegíveis para enviar neste workspace agora.' }, 409);
       }
 
       await logWorkspaceEventSafe({
@@ -671,7 +671,7 @@ export async function PATCH(req: Request) {
       });
     }
 
-    return json({ error: 'AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o administrativa invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lida.' }, 400);
+    return json({ error: 'Ação administrativa inválida.' }, 400);
   } catch (error) {
     if (error instanceof HttpError) {
       return json({ error: error.message }, error.status);

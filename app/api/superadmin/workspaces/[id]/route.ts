@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
 import { getWorkspacePlan, normalizePlan, HttpError } from '@/lib/server/multi-tenant';
@@ -126,7 +126,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     ]);
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
     }
 
     const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
@@ -251,7 +251,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspace) {
-        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
       }
 
       const usage = await getCurrentMonthUsage(id);
@@ -313,7 +313,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspace) {
-        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
       }
 
       const usage = await getCurrentMonthUsage(id);
@@ -374,7 +374,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           : null;
 
       if (!memberId || !memberRole) {
-        return NextResponse.json({ error: 'Membro ou papel invÃ¡lido para atualizaÃ§Ã£o.' }, { status: 400 });
+        return NextResponse.json({ error: 'Membro ou papel inv?lido para atualiza??o.' }, { status: 400 });
       }
 
       const workspaceWithMembers = await prisma.workspace.findUnique({
@@ -386,12 +386,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspaceWithMembers) {
-        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
       }
 
       const targetMember = workspaceWithMembers.members.find((member) => member.id === memberId);
       if (!targetMember) {
-        return NextResponse.json({ error: 'Membro nÃ£o encontrado neste workspace.' }, { status: 404 });
+        return NextResponse.json({ error: 'Membro n?o encontrado neste workspace.' }, { status: 404 });
       }
 
       await prisma.$transaction(async (tx) => {
@@ -448,7 +448,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           : 'MEMBER';
 
       if (!memberEmail) {
-        return NextResponse.json({ error: 'Informe um e-mail vÃ¡lido para adicionar o membro.' }, { status: 400 });
+        return NextResponse.json({ error: 'Informe um e-mail válido para adicionar o membro.' }, { status: 400 });
       }
 
       const [workspaceWithMembers, targetUser] = await Promise.all([
@@ -469,16 +469,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ]);
 
       if (!workspaceWithMembers) {
-        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
       }
 
       if (!targetUser) {
-        return NextResponse.json({ error: 'UsuÃ¡rio nÃ£o encontrado para este e-mail.' }, { status: 404 });
+        return NextResponse.json({ error: 'Usu?rio n?o encontrado para este e-mail.' }, { status: 404 });
       }
 
       const existingMember = workspaceWithMembers.members.find((member) => member.user_id === targetUser.id);
       if (existingMember) {
-        return NextResponse.json({ error: 'Este usuÃ¡rio jÃ¡ faz parte do workspace.' }, { status: 409 });
+        return NextResponse.json({ error: 'Este usuário já faz parte do workspace.' }, { status: 409 });
       }
 
       const createdMember = await prisma.$transaction(async (tx) => {
@@ -532,7 +532,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.action === 'remove-member') {
       const memberId = typeof body.memberId === 'string' ? body.memberId.trim() : '';
       if (!memberId) {
-        return NextResponse.json({ error: 'Membro invÃ¡lido para remoÃ§Ã£o.' }, { status: 400 });
+        return NextResponse.json({ error: 'Membro inv?lido para remo??o.' }, { status: 400 });
       }
 
       const workspaceWithMembers = await prisma.workspace.findUnique({
@@ -543,12 +543,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
 
       if (!workspaceWithMembers) {
-        return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+        return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
       }
 
       const targetMember = workspaceWithMembers.members.find((member) => member.id === memberId);
       if (!targetMember) {
-        return NextResponse.json({ error: 'Membro nÃ£o encontrado neste workspace.' }, { status: 404 });
+        return NextResponse.json({ error: 'Membro n?o encontrado neste workspace.' }, { status: 404 });
       }
 
       if (targetMember.role === 'OWNER') {
@@ -588,7 +588,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
 
     if (!workspace) {
-      return NextResponse.json({ error: 'Workspace nÃ£o encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Workspace n?o encontrado.' }, { status: 404 });
     }
 
     const nextName = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : workspace.name;
@@ -630,7 +630,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       : workspace.members.find((member) => member.role === 'OWNER') || null;
 
     if (requestedOwnerUserId && !ownerMember) {
-      return NextResponse.json({ error: 'O novo owner precisa jÃ¡ fazer parte do workspace.' }, { status: 400 });
+      return NextResponse.json({ error: 'O novo owner precisa já fazer parte do workspace.' }, { status: 400 });
     }
 
     const currentLifecycle = await getWorkspaceLifecycleStatus(id);

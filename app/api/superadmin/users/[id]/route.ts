@@ -1,4 +1,4 @@
-﻿import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
@@ -75,7 +75,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'UsuÃ¡rio nÃ£o encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usu?rio n?o encontrado.' }, { status: 404 });
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -165,7 +165,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    return NextResponse.json({ error: 'Falha ao carregar o detalhe do usuÃ¡rio.' }, { status: 500 });
+    return NextResponse.json({ error: 'Falha ao carregar o detalhe do usuário.' }, { status: 500 });
   }
 }
 
@@ -205,7 +205,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'UsuÃ¡rio nÃ£o encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usu?rio n?o encontrado.' }, { status: 404 });
     }
 
     const nextName =
@@ -217,12 +217,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const entitlementStatus = normalizeStatus(body.entitlementStatus || user.subscription?.status || 'ACTIVE');
 
     if (!entitlementStatus) {
-      return NextResponse.json({ error: 'Status do entitlement invÃ¡lido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Status do entitlement inválido.' }, { status: 400 });
     }
 
     const currentPeriodEnd = normalizePeriodEnd(body.currentPeriodEnd);
     if (body.currentPeriodEnd && !currentPeriodEnd) {
-      return NextResponse.json({ error: 'PerÃ­odo atual invÃ¡lido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Período atual inválido.' }, { status: 400 });
     }
 
     const normalizedRoleInput =
@@ -464,7 +464,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Falha ao atualizar o usuÃ¡rio.' },
+      { error: error instanceof Error ? error.message : 'Falha ao atualizar o usuário.' },
       { status: 500 }
     );
   }

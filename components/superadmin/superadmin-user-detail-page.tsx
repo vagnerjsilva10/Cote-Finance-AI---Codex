@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ import type { SuperadminUserDetailResponse, SuperadminUserUpdateResponse } from 
 
 const planOptions = [{ value: 'FREE', label: 'Free' }, { value: 'PRO', label: 'Pro' }, { value: 'PREMIUM', label: 'Premium' }];
 const statusOptions = [{ value: 'ACTIVE', label: 'Ativo' }, { value: 'PENDING', label: 'Pendente' }, { value: 'CANCELED', label: 'Cancelado' }];
-const platformRoleOptions = [{ value: 'user', label: 'UsuÃ¡rio padrao' }, { value: 'admin', label: 'Admin da plataforma' }, { value: 'superadmin', label: 'Super Admin' }];
+const platformRoleOptions = [{ value: 'user', label: 'Usuário padrao' }, { value: 'admin', label: 'Admin da plataforma' }, { value: 'superadmin', label: 'Super Admin' }];
 const lifecycleOptions = [{ value: 'ACTIVE', label: 'Ativo' }, { value: 'SUSPENDED', label: 'Suspenso' }, { value: 'BLOCKED', label: 'Bloqueado' }];
 
 type UserAuthAction = 'generate-magic-link' | 'generate-recovery-link' | 'ban-user' | 'unban-user' | 'soft-delete-user';
@@ -71,7 +71,7 @@ export function SuperadminUserDetailPage() {
   }, [userId]);
 
   if (isLoading) return <LoadingState label="Carregando usuario..." />;
-  if (error || !data) return <ErrorState message={error || 'UsuÃ¡rio nÃ£o encontrado.'} />;
+  if (error || !data) return <ErrorState message={error || 'Usu?rio n?o encontrado.'} />;
 
   const { user } = data;
   const userPlan = user.userPlan || user.subscription?.plan || user.profilePlan || 'FREE';
@@ -89,7 +89,7 @@ export function SuperadminUserDetailPage() {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">UsuÃ¡rio</span>
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">Usuário</span>
               <PlanBadge label={formatPlanLabel(effectiveAppPlan)} />
               <RoleBadge label={formatPlatformRole(user.platformRole)} />
               <StatusBadge status={subscriptionStatus} />
@@ -100,14 +100,14 @@ export function SuperadminUserDetailPage() {
               <p className="mt-1 text-sm text-slate-300">{user.email}</p>
             </div>
           </div>
-          <Link href="/superadmin/users" className={secondaryActionClassName}>Voltar para usuÃ¡rios</Link>
+          <Link href="/superadmin/users" className={secondaryActionClassName}>Voltar para usuários</Link>
         </div>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Workspaces" value={formatAdminNumber(user.workspaces.length)} />
         <StatCard label="Uso IA 30d" value={formatAdminNumber(user.usage.aiUsageLast30Days)} />
-        <StatCard label="Ãšltimo acesso" value={user.lastAccessAt ? formatAdminDate(user.lastAccessAt) : 'Sem registro'} />
+        <StatCard label="Último acesso" value={user.lastAccessAt ? formatAdminDate(user.lastAccessAt) : 'Sem registro'} />
         <StatCard label="MRR estimado" value={formatAdminCurrency(estimatedMrr)} />
       </section>
 
@@ -116,7 +116,7 @@ export function SuperadminUserDetailPage() {
           <CompactSection title="Identidade e contexto" subtitle="Dados essenciais e estado operacional.">
             <div className="grid gap-2 sm:grid-cols-2">
               <InfoPill label="ID" value={user.id} />
-              <InfoPill label="Plano do usuÃ¡rio" value={formatPlanLabel(userPlan)} />
+              <InfoPill label="Plano do usuário" value={formatPlanLabel(userPlan)} />
               <InfoPill label="Plano do workspace" value={workspacePlan ? formatPlanLabel(workspacePlan) : 'Sem workspace'} />
               <InfoPill label="Plano efetivo no app" value={formatPlanLabel(effectiveAppPlan)} />
               <InfoPill label="Assinatura" value={formatSubscriptionStatus(subscriptionStatus)} />
@@ -131,12 +131,12 @@ export function SuperadminUserDetailPage() {
 
           <CompactSection title="Workspaces vinculados" subtitle="Ambientes associados ao usuario.">
             <div className="space-y-2.5">
-              {user.workspaces.length === 0 ? <EmptyState text="Este usuario ainda nÃ£o participa de nenhum workspace." /> : user.workspaces.map((workspace) => (
+              {user.workspaces.length === 0 ? <EmptyState text="Este usuario ainda n?o participa de nenhum workspace." /> : user.workspaces.map((workspace) => (
                 <Link key={workspace.id} href={`/superadmin/workspaces/${workspace.id}`} className="block rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 transition hover:border-emerald-500/30">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="font-semibold text-white">{workspace.name}</div>
-                      <div className="mt-0.5 text-xs text-slate-400">{workspace.role} Â· {formatPlanLabel(workspace.plan)}</div>
+                      <div className="mt-0.5 text-xs text-slate-400">{workspace.role} · {formatPlanLabel(workspace.plan)}</div>
                     </div>
                     <StatusBadge status={workspace.subscriptionStatus} />
                   </div>
@@ -228,7 +228,7 @@ function UserActionsCard({ user, authAdminConfigured, isSaving, onSubmit }: { us
   const basePayload: UserUpdatePayload = { name: name.trim() || null, email: email.trim(), profilePlan, entitlementPlan, entitlementStatus, currentPeriodEnd: currentPeriodEnd || null, platformRole, lifecycleStatus, lifecycleReason: lifecycleReason.trim() || null };
 
   return (
-    <CompactSection title="AÃ§Ãµes administrativas" subtitle="Identidade, plano, role e suporte de autenticaÃ§Ã£o.">
+    <CompactSection title="A??es administrativas" subtitle="Identidade, plano, role e suporte de autentica??o.">
       <div className="grid gap-3 sm:grid-cols-2">
         <input value={name} onChange={(event) => setName(event.target.value)} className={fieldClassName} placeholder="Nome" />
         <input value={email} onChange={(event) => setEmail(event.target.value)} className={fieldClassName} placeholder="E-mail" />
@@ -239,7 +239,7 @@ function UserActionsCard({ user, authAdminConfigured, isSaving, onSubmit }: { us
         <SelectField label="Status operacional" value={lifecycleStatus} onChange={(value) => setLifecycleStatus(value as 'ACTIVE' | 'SUSPENDED' | 'BLOCKED')} options={lifecycleOptions} />
         <input value={lifecycleReason} onChange={(event) => setLifecycleReason(event.target.value)} className={fieldClassName} placeholder="Motivo operacional" />
         <div className="sm:col-span-2">
-          <label className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">PerÃ­odo atual</label>
+          <label className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Período atual</label>
           <input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={fieldClassName} />
         </div>
       </div>
@@ -252,13 +252,13 @@ function UserActionsCard({ user, authAdminConfigured, isSaving, onSubmit }: { us
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-white">Suporte de acesso</h3>
-            <p className="mt-1 text-sm text-slate-400">Links assistidos, bloqueio, reativaÃ§Ã£o e remoÃ§Ã£o de acesso.</p>
+            <p className="mt-1 text-sm text-slate-400">Links assistidos, bloqueio, reativa??o e remo??o de acesso.</p>
           </div>
           <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${authAdminConfigured ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'}`}>{authAdminConfigured ? 'Ativo' : 'Pendente'}</span>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <ActionButton disabled={isSaving || !authAdminConfigured} onClick={() => void onSubmit({ ...basePayload, authAction: 'generate-magic-link' })}><KeyRound className="h-4 w-4" />Magic link</ActionButton>
-          <ActionButton disabled={isSaving || !authAdminConfigured} onClick={() => void onSubmit({ ...basePayload, authAction: 'generate-recovery-link' })}><ArrowUpRight className="h-4 w-4" />RecuperaÃ§Ã£o</ActionButton>
+          <ActionButton disabled={isSaving || !authAdminConfigured} onClick={() => void onSubmit({ ...basePayload, authAction: 'generate-recovery-link' })}><ArrowUpRight className="h-4 w-4" />Recupera??o</ActionButton>
           <ActionButton danger="warning" disabled={isSaving || !authAdminConfigured} onClick={() => void onSubmit({ ...basePayload, authAction: 'ban-user', lifecycleStatus: 'BLOCKED' })}>Bloquear</ActionButton>
           <ActionButton disabled={isSaving || !authAdminConfigured} onClick={() => void onSubmit({ ...basePayload, authAction: 'unban-user', lifecycleStatus: 'ACTIVE' })}>Reativar</ActionButton>
           <ActionButton danger="danger" disabled={isSaving || !authAdminConfigured} onClick={() => void onSubmit({ ...basePayload, authAction: 'soft-delete-user', lifecycleStatus: 'BLOCKED' })}>Remover acesso</ActionButton>
@@ -276,8 +276,8 @@ function SelectField({ label, value, onChange, options }: { label: string; value
 }
 function InfoPill({ label, value }: { label: string; value: string }) { return <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3"><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p><p className="mt-1.5 text-sm font-semibold text-white">{value}</p></div>; }
 function StatCard({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3.5"><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p><p className="mt-2 text-xl font-bold tracking-tight text-white">{value}</p></div>; }
-function formatRoleSource(source: string) { if (source === 'override') return 'Override do Super Admin'; if (source === 'env') return 'ConfiguraÃ§Ã£o de ambiente'; return 'PadrÃ£o da plataforma'; }
-function getActionSuccessMessage(action?: UserAuthAction) { if (action === 'generate-magic-link') return 'Magic link gerado com sucesso.'; if (action === 'generate-recovery-link') return 'Link de recuperaÃ§Ã£o gerado com sucesso.'; if (action === 'ban-user') return 'Acesso de autenticaÃ§Ã£o bloqueado com sucesso.'; if (action === 'unban-user') return 'Acesso de autenticaÃ§Ã£o reativado com sucesso.'; if (action === 'soft-delete-user') return 'Acesso de autenticaÃ§Ã£o removido com sucesso.'; return 'UsuÃ¡rio atualizado com sucesso.'; }
+function formatRoleSource(source: string) { if (source === 'override') return 'Override do Super Admin'; if (source === 'env') return 'Configura??o de ambiente'; return 'Padr?o da plataforma'; }
+function getActionSuccessMessage(action?: UserAuthAction) { if (action === 'generate-magic-link') return 'Magic link gerado com sucesso.'; if (action === 'generate-recovery-link') return 'Link de recupera??o gerado com sucesso.'; if (action === 'ban-user') return 'Acesso de autentica??o bloqueado com sucesso.'; if (action === 'unban-user') return 'Acesso de autentica??o reativado com sucesso.'; if (action === 'soft-delete-user') return 'Acesso de autentica??o removido com sucesso.'; return 'Usu?rio atualizado com sucesso.'; }
 function ActionButton({ children, onClick, disabled, danger }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; danger?: 'warning' | 'danger'; }) {
   const className = danger === 'danger' ? 'inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm font-bold text-rose-100 transition-all hover:bg-rose-500/20 disabled:opacity-60' : danger === 'warning' ? 'inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm font-bold text-amber-100 transition-all hover:bg-amber-500/20 disabled:opacity-60' : secondaryActionClassName;
   return <button type="button" disabled={disabled} onClick={onClick} className={className}>{children}</button>;
