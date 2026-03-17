@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Cote Finance AI">
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#F8FBFF" stroke="rgba(15,23,42,0.10)" stroke-width="1.5"/>
+  <path d="M14 41L24 33L33 36L47 22" stroke="#4C8DFF" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="14" cy="41" r="2.6" fill="#4C8DFF"/>
+  <circle cx="24" cy="33" r="2.6" fill="#4C8DFF" opacity="0.94"/>
+  <circle cx="33" cy="36" r="2.6" fill="#4C8DFF" opacity="0.94"/>
+  <circle cx="47" cy="22" r="3.2" fill="#4C8DFF"/>
+  <path d="M41 22H47V28" stroke="#4C8DFF" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

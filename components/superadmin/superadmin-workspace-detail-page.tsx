@@ -337,7 +337,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
         <SelectField label="Status do WhatsApp" value={whatsappStatus} onChange={setWhatsappStatus} options={whatsappStatusOptions} />
         <input value={whatsappPhoneNumber} onChange={(event) => setWhatsappPhoneNumber(event.target.value)} placeholder="+55 11 99999-9999" className={fieldClassName} />
         <ToggleCard label="Onboarding concluido" checked={onboardingCompleted} onChange={setOnboardingCompleted} />
-        <ToggleCard label="Sugestoes de IA ativas" checked={aiSuggestionsEnabled} onChange={setAiSuggestionsEnabled} />
+        <ToggleCard label="Sugest?es de IA ativas" checked={aiSuggestionsEnabled} onChange={setAiSuggestionsEnabled} />
         <input value={objective} onChange={(event) => setObjective(event.target.value)} placeholder="Objetivo" className={fieldClassName} />
         <input value={financialProfile} onChange={(event) => setFinancialProfile(event.target.value)} placeholder="Perfil financeiro" className={fieldClassName} />
       </div>

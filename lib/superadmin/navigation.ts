@@ -1,4 +1,4 @@
-export type SuperadminNavigationItem = {
+﻿export type SuperadminNavigationItem = {
   label: string;
   href: string;
   icon: string;
@@ -92,7 +92,3 @@ export const SUPERADMIN_NAVIGATION: SuperadminNavigationItem[] = [
     implemented: true,
   },
 ];
-
-
-
-

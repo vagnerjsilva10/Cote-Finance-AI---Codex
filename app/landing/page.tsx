@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -515,12 +515,12 @@ export default function LandingPage() {
 
   return (
     <div
-      className={`theme-landing-shell ${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip bg-slate-950 text-slate-100`}
+      className={`theme-landing-shell marketing-dark-shell ${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip`}
       style={{ fontFamily: 'var(--font-body)' }}
     >
-      <div className="theme-landing-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_10%_10%,rgba(16,185,129,.18),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(59,130,246,.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_52%,#0b1120_100%)]" />
+      <div className="theme-landing-backdrop marketing-dark-backdrop pointer-events-none fixed inset-0 -z-10" />
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
+      <header className="marketing-dark-header sticky top-0 z-40">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:gap-6 lg:py-4">
           <Link href="/" className="flex min-w-0 items-center">
             <Image
@@ -541,20 +541,20 @@ export default function LandingPage() {
             />
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm text-slate-300 lg:flex">
-            <button type="button" onClick={() => scrollTo('produto')} className="transition-colors hover:text-white">
+          <nav className="hidden items-center gap-6 text-sm text-[var(--text-secondary)] lg:flex">
+            <button type="button" onClick={() => scrollTo('produto')} className="transition-colors hover:text-[var(--text-primary)]">
               Produto
             </button>
-            <button type="button" onClick={() => scrollTo('como-funciona')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('como-funciona')} className="transition-colors hover:text-[var(--text-primary)]">
               Como funciona
             </button>
-            <button type="button" onClick={() => scrollTo('funcionalidades')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('funcionalidades')} className="transition-colors hover:text-[var(--text-primary)]">
               Funcionalidades
             </button>
-            <Link href="/blog" className="transition-colors hover:text-white">
+            <Link href="/blog" className="transition-colors hover:text-[var(--text-primary)]">
               Blog
             </Link>
-            <button type="button" onClick={() => scrollTo('planos')} className="transition-colors hover:text-white">
+            <button type="button" onClick={() => scrollTo('planos')} className="transition-colors hover:text-[var(--text-primary)]">
               Preços
             </button>
           </nav>
@@ -562,14 +562,14 @@ export default function LandingPage() {
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               onClick={() => router.push('/app?auth=login')}
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 sm:min-w-[112px] sm:px-4 sm:text-sm"
+              className="button-secondary px-3 py-2 text-xs font-semibold sm:min-w-[112px] sm:px-4 sm:text-sm"
             >
               Entrar
             </button>
             <button
               onClick={startFree}
               disabled={isBusy}
-              className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:min-w-[152px] sm:px-4 sm:text-sm"
+              className="button-primary px-3 py-2 text-xs font-semibold disabled:opacity-60 sm:min-w-[152px] sm:px-4 sm:text-sm"
             >
               Começar grátis
             </button>
@@ -589,13 +589,13 @@ export default function LandingPage() {
             transition={{ duration: 0.55 }}
             className="space-y-5 text-center lg:space-y-6 lg:text-left"
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+            <span className="marketing-badge px-3 py-1 text-xs font-semibold">
               <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
             </span>
-            <h1 className="text-[2rem] font-bold leading-tight text-white sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1 className="text-[2rem] font-bold leading-tight text-[var(--text-primary)] sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
               Descubra para onde seu dinheiro está indo
             </h1>
-            <p className="max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-relaxed">
+            <p className="max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg sm:leading-relaxed">
               Organize seus gastos, entenda seus hábitos financeiros e tome decisões melhores com ajuda da IA.
               Tudo sem planilhas complicadas.
             </p>
@@ -603,18 +603,18 @@ export default function LandingPage() {
               <button
                 onClick={startFree}
                 disabled={isBusy}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60 sm:w-auto"
+                className="button-primary inline-flex w-full items-center justify-center gap-2 px-6 py-3 text-sm font-semibold disabled:opacity-60 sm:w-auto"
               >
               Começar grátis <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => scrollTo('como-funciona')}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 sm:w-auto"
+                className="button-secondary w-full px-6 py-3 text-sm font-semibold sm:w-auto"
               >
                 Ver como funciona
               </button>
             </div>
-            {error && <div className="rounded-xl border border-rose-400/25 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
+            {error && <div className="rounded-xl border border-[var(--danger-soft)] bg-[var(--danger-soft)] p-3 text-sm text-[var(--danger-text)]">{error}</div>}
           </motion.div>
 
           <motion.div
@@ -668,10 +668,10 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-slate-300">
+                <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-[var(--text-secondary)]">
                   Insight IA: gasto em alimentação subiu 14%.
                 </div>
-                <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-slate-300">
+                <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-[var(--text-secondary)]">
                   Meta mensal: 82% concluída.
                 </div>
               </div>
@@ -702,10 +702,10 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-rose-300/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100">
               <TrendingDown size={14} /> Problemas comuns no controle financeiro
             </span>
-            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               O problema não é só ganhar dinheiro. É não saber para onde ele vai.
             </h2>
-            <p className="text-slate-300">
+            <p className="text-[var(--text-secondary)]">
               Pequenos gastos passam despercebidos, o saldo some no fim do mês e fica difícil saber o que ajustar.
             </p>
             <ul className="space-y-2 text-slate-200">
@@ -719,7 +719,7 @@ export default function LandingPage() {
                 <TrendingDown size={16} className="text-rose-300" /> Compras impulsivas
               </li>
             </ul>
-            <p className="text-slate-300">
+            <p className="text-[var(--text-secondary)]">
               O Cote Finance AI mostra com clareza onde seu dinheiro está indo e o que merece atenção.
             </p>
           </div>
@@ -780,7 +780,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
               <Sparkles size={14} /> Clareza financeira com inteligência artificial
             </span>
-            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Clareza financeira muda tudo
             </h2>
             <p className="text-emerald-100">
@@ -813,7 +813,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <h2
-            className="text-center text-3xl font-bold text-white md:text-4xl"
+            className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Tudo o que você precisa para organizar sua vida financeira
@@ -851,10 +851,10 @@ export default function LandingPage() {
                 <Sparkles size={14} /> Demonstração do produto
               </span>
               <div className="space-y-4">
-                <h3 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+                <h3 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
                   Tenha visão completa da sua vida financeira
                 </h3>
-                <p className="max-w-lg text-base leading-7 text-slate-300">
+                <p className="max-w-lg text-base leading-7 text-[var(--text-secondary)]">
                   Veja receitas, despesas, saldo e oportunidades de ajuste em uma única visão.
                 </p>
               </div>
@@ -1015,7 +1015,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <h2
-            className="text-center text-3xl font-bold text-white md:text-4xl"
+            className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Tudo o que você precisa para organizar sua vida financeira
@@ -1028,8 +1028,8 @@ export default function LandingPage() {
                 className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center"
               >
                 <feature.icon size={18} className="mx-auto mb-3 text-emerald-300" />
-                <h3 className="mb-2 text-lg font-semibold text-white">{feature.title}</h3>
-                <p className="text-sm text-slate-300">{feature.text}</p>
+                <h3 className="mb-2 text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
+                <p className="text-sm text-[var(--text-secondary)]">{feature.text}</p>
               </motion.div>
             ))}
           </div>
@@ -1045,10 +1045,10 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute inset-x-0 top-10 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(16,185,129,.15),transparent_54%)]" />
 
           <div className="space-y-5">
-            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Quando você entende seu dinheiro, tudo muda
             </h2>
-            <p className="text-slate-300">Quando você tem clareza financeira, você pode:</p>
+            <p className="text-[var(--text-secondary)]">Quando você tem clareza financeira, você pode:</p>
             <ul className="space-y-2 text-slate-200">
               <li className="flex items-center justify-start gap-2">
                 <TrendingUp size={16} className="text-emerald-300" /> Parar de perder dinheiro sem perceber
@@ -1097,10 +1097,10 @@ export default function LandingPage() {
           viewport={{ once: true, margin: '-120px' }}
           transition={{ duration: 0.45 }}
         >
-          <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+          <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             Milhares de pessoas já começaram a organizar melhor a vida financeira
           </h2>
-          <p className="mb-6 text-slate-300">
+          <p className="mb-6 text-[var(--text-secondary)]">
             Cada vez mais usuários usam o Cote Finance AI para:
           </p>
           <ul className="mb-6 space-y-2 text-slate-200">
@@ -1116,16 +1116,16 @@ export default function LandingPage() {
           </ul>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-              <p className="text-2xl font-bold text-white">+12.000</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">usuários ativos</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">+12.000</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">usuários ativos</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-              <p className="text-2xl font-bold text-white">R$320 milhões</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">analisados em movimentações</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">R$320 milhões</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">analisados em movimentações</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-              <p className="text-2xl font-bold text-white">94%</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">afirmam ter mais controle financeiro</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">94%</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">afirmam ter mais controle financeiro</p>
             </div>
           </div>
         </motion.section>
@@ -1141,10 +1141,10 @@ export default function LandingPage() {
             <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100">
               Histórias de quem usa
             </span>
-            <h2 className="text-[1.85rem] font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Histórias de quem ganhou mais clareza
             </h2>
-            <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
               Depoimentos de pessoas que passaram a entender melhor o próprio dinheiro no dia a dia.
             </p>
           </div>
@@ -1157,7 +1157,7 @@ export default function LandingPage() {
               >
                 <p className="text-base leading-7 text-slate-100">&ldquo;{testimonial.quote}&rdquo;</p>
                 <div className="mt-5 border-t border-white/10 pt-4">
-                  <p className="text-sm font-semibold text-white">{testimonial.author}</p>
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">{testimonial.author}</p>
                   <p className="text-sm text-slate-400">{testimonial.location}</p>
                 </div>
               </div>
@@ -1177,10 +1177,10 @@ export default function LandingPage() {
             <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
               Planos para cada fase da sua organização
             </span>
-            <h2 className="text-center text-3xl font-bold text-white md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Escolha o plano ideal para assumir o controle do seu dinheiro
             </h2>
-            <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
               Escolha o plano que faz mais sentido para o seu momento e evolua com mais clareza e controle.
             </p>
           </div>
@@ -1207,7 +1207,7 @@ export default function LandingPage() {
                   }`}
                 />
                 {plan.popular && (
-                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
                     Mais popular
                   </span>
                 )}
@@ -1220,20 +1220,20 @@ export default function LandingPage() {
                           ? 'border border-emerald-300/30 bg-emerald-400/10 text-emerald-100'
                           : plan.accent === 'premium'
                             ? 'border border-cyan-300/25 bg-cyan-400/10 text-cyan-100'
-                            : 'border border-white/10 bg-white/5 text-slate-300'
+                            : 'border border-white/10 bg-white/5 text-[var(--text-secondary)]'
                       }`}
                     >
                       {plan.label}
                     </span>
-                    <h3 className="text-2xl font-bold text-white md:text-[2rem]" style={{ fontFamily: 'var(--font-display)' }}>
+                    <h3 className="text-2xl font-bold text-[var(--text-primary)] md:text-[2rem]" style={{ fontFamily: 'var(--font-display)' }}>
                       Plano {plan.name}
                     </h3>
                     <p className="text-sm leading-6 text-slate-200">{plan.benefit}</p>
                   </div>
 
                   <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                    <p className="text-3xl font-semibold text-white md:text-4xl">{plan.price}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">{plan.microcopy}</p>
+                    <p className="text-3xl font-semibold text-[var(--text-primary)] md:text-4xl">{plan.price}</p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{plan.microcopy}</p>
                   </div>
                 </div>
 
@@ -1253,7 +1253,7 @@ export default function LandingPage() {
                   disabled={isBusy}
                   className={`mt-auto w-full rounded-xl px-4 py-3.5 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.accent === 'highlight'
-                      ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                      ? 'bg-emerald-500 text-[var(--text-primary)] hover:bg-emerald-600'
                       : plan.accent === 'premium'
                         ? 'bg-cyan-100 text-slate-950 hover:bg-white'
                         : 'bg-slate-100 text-slate-900 hover:bg-white'
@@ -1270,8 +1270,8 @@ export default function LandingPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             {pricingFaqs.map((item) => (
               <details key={item.question} className="rounded-3xl border border-white/10 bg-slate-900/55 p-6">
-                <summary className="cursor-pointer list-none text-base font-semibold text-white">{item.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-slate-300">{item.answer}</p>
+                <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)]">{item.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
               </details>
             ))}
           </div>
@@ -1290,12 +1290,12 @@ export default function LandingPage() {
               Planos para cada fase da sua organização
             </span>
             <h2
-              className="text-center text-3xl font-bold text-white md:text-4xl"
+              className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               Estas são as melhores opções para organizar sua vida financeira
             </h2>
-            <p className="mx-auto max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
               Escolha o plano que faz mais sentido para o seu momento e transforme o resultado do quiz em uma rotina
               financeira mais clara, prática e consistente.
             </p>
@@ -1312,18 +1312,18 @@ export default function LandingPage() {
                 }`}
               >
                 {plan.popular && (
-                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
                     Mais popular
                   </span>
                 )}
                 <div className="space-y-4">
                   <p className="max-w-[18rem] text-sm leading-6 text-slate-200">{plan.benefit}</p>
                   <div>
-                    <h3 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+                    <h3 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
                       Plano {plan.name}
                     </h3>
-                    <p className="mt-1 text-3xl font-semibold text-white">{plan.price}</p>
-                    <p className="mt-2 text-sm text-slate-300">{plan.microcopy}</p>
+                    <p className="mt-1 text-3xl font-semibold text-[var(--text-primary)]">{plan.price}</p>
+                    <p className="mt-2 text-sm text-[var(--text-secondary)]">{plan.microcopy}</p>
                   </div>
                 </div>
 
@@ -1341,7 +1341,7 @@ export default function LandingPage() {
                   disabled={isBusy}
                   className={`mt-auto w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.popular
-                      ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                      ? 'bg-emerald-500 text-[var(--text-primary)] hover:bg-emerald-600'
                       : 'bg-slate-100 text-slate-900 hover:bg-white'
                   }`}
                 >
@@ -1356,8 +1356,8 @@ export default function LandingPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             {legacyPricingFaqs.map((item) => (
               <details key={item.question} className="rounded-3xl border border-white/10 bg-slate-900/55 p-6">
-                <summary className="cursor-pointer list-none text-base font-semibold text-white">{item.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-slate-300">{item.answer}</p>
+                <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)]">{item.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
               </details>
             ))}
           </div>
@@ -1372,7 +1372,7 @@ export default function LandingPage() {
         >
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-52 -translate-y-1/2 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,.28),transparent_55%),radial-gradient(circle_at_60%_70%,rgba(56,189,248,.22),transparent_45%)] blur-xl" />
           <div className="mx-auto max-w-3xl space-y-4">
-            <h2 className="text-3xl font-bold text-white md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
               Comece a organizar suas finanças hoje
             </h2>
             <p className="mx-auto max-w-2xl text-base leading-7 text-slate-100/90 md:text-lg">
@@ -1387,7 +1387,7 @@ export default function LandingPage() {
             >
               Começar grátis <ArrowRight size={16} />
             </button>
-            <p className="mt-4 text-sm font-medium text-slate-300">Comece gratuitamente. Cancele quando quiser.</p>
+            <p className="mt-4 text-sm font-medium text-[var(--text-secondary)]">Comece gratuitamente. Cancele quando quiser.</p>
             <div className="mt-3 inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
               <ShieldCheck size={14} className="text-emerald-300" />
               Dados protegidos e conexões seguras.
@@ -1400,22 +1400,22 @@ export default function LandingPage() {
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center text-xs text-slate-500 sm:flex-row sm:px-6 sm:text-left">
           <p>© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
-            <Link href="/blog" className="hover:text-slate-300">
+            <Link href="/blog" className="hover:text-[var(--text-secondary)]">
               Blog
             </Link>
-            <Link href="/central-de-ajuda" className="hover:text-slate-300">
+            <Link href="/central-de-ajuda" className="hover:text-[var(--text-secondary)]">
               Ajuda
             </Link>
-            <Link href="/termos-de-uso" className="hover:text-slate-300">
+            <Link href="/termos-de-uso" className="hover:text-[var(--text-secondary)]">
               Termos
             </Link>
-            <Link href="/politica-de-privacidade" className="hover:text-slate-300">
+            <Link href="/politica-de-privacidade" className="hover:text-[var(--text-secondary)]">
               Privacidade
             </Link>
-            <Link href="/app" className="hover:text-slate-300">
+            <Link href="/app" className="hover:text-[var(--text-secondary)]">
               App
             </Link>
-            <button onClick={() => navigateToSignup('/signup')} className="hover:text-slate-300">
+            <button onClick={() => navigateToSignup('/signup')} className="hover:text-[var(--text-secondary)]">
               Cadastro
             </button>
           </div>

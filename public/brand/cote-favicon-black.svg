@@ -1,6 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
-  <path d="M14 41L25 33L34 36L48 21" stroke="#0f172a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="48" cy="21" r="3.2" fill="#10b981"/>
-  <path d="M42 21H48V27" stroke="#10b981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Cote Finance AI">
+  <defs>
+    <linearGradient id="favBlueLight" x1="13" y1="47" x2="46" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4C8DFF"/>
+      <stop offset="1" stop-color="#78AEFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#FFFFFF" stroke="rgba(15,23,42,0.10)" stroke-width="1.5"/>
+  <path d="M14 41L24 33L33 36L47 22" stroke="url(#favBlueLight)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="14" cy="41" r="2.6" fill="#4C8DFF"/>
+  <circle cx="24" cy="33" r="2.6" fill="#4C8DFF" opacity="0.94"/>
+  <circle cx="33" cy="36" r="2.6" fill="#5D99FF" opacity="0.94"/>
+  <circle cx="47" cy="22" r="3.2" fill="#78AEFF"/>
+  <path d="M41 22H47V28" stroke="#78AEFF" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

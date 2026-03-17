@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { BlogCard } from '@/components/blog/blog-card';
@@ -44,20 +44,20 @@ export const metadata: Metadata = {
 export default function BlogIndexPage() {
   return (
     <BlogShell>
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8">
+      <section className="public-light-panel p-6 sm:p-8">
         <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
           <div className="max-w-4xl space-y-5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.16)] bg-[rgba(76,141,255,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--primary-active)]">
               <BookOpen size={14} /> Blog Cote Finance AI
             </span>
             <div className="space-y-4">
-              <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">
+              <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-[var(--text-primary)] sm:text-5xl">
                 Controle melhor seu dinheiro com conhecimento prático
               </h1>
-              <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+              <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
                 Aprenda a organizar suas finanças, entender seus gastos e tomar decisões financeiras mais inteligentes.
               </p>
-              <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+              <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
                 O blog do Cote Finance AI reúne guias práticos, educação financeira e estratégias reais para ajudar você a
                 ter mais clareza sobre seu dinheiro.
               </p>
@@ -65,46 +65,46 @@ export default function BlogIndexPage() {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+                className="inline-flex items-center gap-2 button-light-primary px-5 py-3 text-sm font-semibold"
               >
                 Começar grátis <ArrowRight size={16} />
               </Link>
               <Link
                 href="/app"
-                className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
+                className="button-light-secondary px-5 py-3 text-sm font-semibold"
               >
                 Ver o produto
               </Link>
             </div>
-            <p className="text-sm font-medium text-slate-500">Leva menos de 1 minuto para começar.</p>
+            <p className="text-sm font-medium public-light-subtle">Leva menos de 1 minuto para começar.</p>
           </div>
 
-          <aside className="rounded-[1.75rem] border border-slate-200 bg-[#f7f8f3] p-5 shadow-sm">
-            <div className="rounded-[1.4rem] border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">No blog você encontra</p>
+          <aside className="public-light-card bg-[rgba(255,255,255,0.72)] p-5">
+            <div className="public-light-card p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--primary-active)]">No blog você encontra</p>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Guias</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">Controle de gastos</p>
+                <div className="rounded-2xl border border-[rgba(15,23,42,0.06)] bg-[rgba(76,141,255,0.05)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] public-light-subtle">Guias</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">Controle de gastos</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Educação</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">Planejamento financeiro</p>
+                <div className="rounded-2xl border border-[rgba(15,23,42,0.06)] bg-[rgba(76,141,255,0.05)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] public-light-subtle">Educação</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">Planejamento financeiro</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Prática</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">Exemplos do dia a dia</p>
+                <div className="rounded-2xl border border-[rgba(15,23,42,0.06)] bg-[rgba(76,141,255,0.05)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] public-light-subtle">Prática</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">Exemplos do dia a dia</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-[#f7f8f3] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Ação</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">Passos para aplicar hoje</p>
+                <div className="rounded-2xl border border-[rgba(15,23,42,0.06)] bg-[rgba(76,141,255,0.05)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] public-light-subtle">Ação</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">Passos para aplicar hoje</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-white px-5 py-4">
-              <p className="text-sm font-semibold text-slate-950">Leitura pensada para ser útil</p>
-              <p className="mt-2 text-sm leading-7 text-slate-600">
+            <div className="mt-4 public-light-card px-5 py-4">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Leitura pensada para ser útil</p>
+              <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                 Menos teoria vazia e mais orientação prática para ajudar você a entender o que fazer com o seu dinheiro.
               </p>
             </div>
@@ -112,28 +112,28 @@ export default function BlogIndexPage() {
         </div>
       </section>
 
-      <section className="mt-8 rounded-[1.25rem] border border-slate-200 bg-[#f7f8f3] px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm">
+      <section className="mt-8 public-light-card px-5 py-4 text-sm font-semibold text-[var(--text-secondary)]">
         +12.000 pessoas já usam o Cote Finance AI para organizar suas finanças.
       </section>
 
       <section className="mt-10 grid gap-4 lg:grid-cols-3">
-        <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black tracking-tight text-slate-950">Organize suas finanças com mais clareza</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
+        <article className="public-light-card p-5">
+          <h2 className="text-lg font-black tracking-tight text-[var(--text-primary)]">Organize suas finanças com mais clareza</h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
             Guias simples que mostram como controlar gastos, planejar seu dinheiro e melhorar sua vida financeira.
           </p>
         </article>
 
-        <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black tracking-tight text-slate-950">Entenda para onde seu dinheiro está indo</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
+        <article className="public-light-card p-5">
+          <h2 className="text-lg font-black tracking-tight text-[var(--text-primary)]">Entenda para onde seu dinheiro está indo</h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
             Aprenda a identificar hábitos financeiros, reduzir desperdícios e tomar decisões melhores com seu dinheiro.
           </p>
         </article>
 
-        <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black tracking-tight text-slate-950">Transforme conhecimento em ação</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
+        <article className="public-light-card p-5">
+          <h2 className="text-lg font-black tracking-tight text-[var(--text-primary)]">Transforme conhecimento em ação</h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
             Use o que você aprende no blog junto com o Cote Finance AI para acompanhar gastos, definir metas e melhorar
             sua saúde financeira.
           </p>
@@ -143,8 +143,8 @@ export default function BlogIndexPage() {
       <section className="mt-14">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Artigos em destaque</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Comece pelos artigos mais importantes</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--primary-active)]">Artigos em destaque</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">Comece pelos artigos mais importantes</h2>
           </div>
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
@@ -157,10 +157,10 @@ export default function BlogIndexPage() {
       <section className="mt-14">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Todos os artigos</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Todos os artigos</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] public-light-subtle">Todos os artigos</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">Todos os artigos</h2>
           </div>
-          <p className="max-w-2xl text-sm leading-7 text-slate-500">
+          <p className="max-w-2xl text-sm leading-7 public-light-subtle">
             Explore todos os artigos do blog para organizar sua vida financeira, entender melhor seus gastos e tomar
             decisões melhores no dia a dia.
           </p>

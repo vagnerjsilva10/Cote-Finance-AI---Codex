@@ -13,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Cote Finance AI | Seu Assistente Financeiro Inteligente',
-  description: 'Organize, analise, preveja e oriente automaticamente suas finanças com o Cote Finance AI.',
+  description: 'Organize, analise, preveja e acompanhe suas finanças com clareza no Cote Finance AI.',
   icons: {
     icon: [{ url: '/brand/cote-favicon.svg', type: 'image/svg+xml' }],
     shortcut: ['/brand/cote-favicon.svg'],
@@ -31,10 +31,7 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <ThemeScript />
       </head>
-      <body
-        className={`${inter.variable} bg-slate-950 font-sans text-slate-50 antialiased custom-scrollbar`}
-        suppressHydrationWarning
-      >
+      <body className={`${inter.variable} font-sans antialiased custom-scrollbar`} suppressHydrationWarning>
         <ThemeProvider>
           <React.Suspense fallback={null}>
             <TrackingProvider />

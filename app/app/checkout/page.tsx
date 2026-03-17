@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -220,7 +220,7 @@ function getPixStatusLabel(status: PixCheckoutStatus) {
 }
 
 function getPixStatusTone(status: PixCheckoutStatus) {
-  if (status === 'confirmed') return 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100';
+  if (status === 'confirmed') return 'border-[rgba(76,141,255,0.18)] bg-[rgba(76,141,255,0.10)] text-[var(--text-primary)]';
   if (status === 'processing') return 'border-sky-400/20 bg-sky-500/10 text-sky-100';
   if (status === 'expired' || status === 'failed') return 'border-rose-400/20 bg-rose-500/10 text-rose-100';
   return 'border-amber-400/20 bg-amber-500/10 text-amber-100';
@@ -341,7 +341,7 @@ function EmbeddedPaymentForm(props: {
       <button
         type="submit"
         disabled={!stripe || !elements || status === 'submitting' || !isPaymentElementReady}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-bold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+        className="button-primary inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === 'submitting' ? <Loader2 className="size-4 animate-spin" /> : <LockKeyhole className="size-4" />}
         {status === 'submitting' ? 'Confirmando pagamento...' : props.submitLabel}
@@ -349,7 +349,7 @@ function EmbeddedPaymentForm(props: {
       <div className="space-y-2 text-center">
         <p className="text-xs font-medium text-slate-300">Sem compromisso • Cancele quando quiser</p>
         <div className="mx-auto flex max-w-md items-start justify-center gap-2 text-left text-xs text-slate-400">
-          <LockKeyhole className="mt-0.5 size-3.5 shrink-0 text-emerald-300" />
+          <LockKeyhole className="mt-0.5 size-3.5 shrink-0 text-[var(--primary)]" />
           <p className="leading-5">{props.helperText}</p>
         </div>
       </div>
@@ -361,7 +361,7 @@ function EmbeddedPaymentForm(props: {
         <button
           type="button"
           onClick={props.onFallbackCheckout}
-          className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+          className="button-secondary inline-flex w-full items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold"
         >
           Abrir checkout legado
         </button>
@@ -389,7 +389,7 @@ function PixPaymentPanel(props: {
         <button
           type="button"
           onClick={props.onGenerate}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+          className="button-secondary inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold"
         >
           <RefreshCcw className="size-3.5" />
           Gerar novo Pix
@@ -398,7 +398,7 @@ function PixPaymentPanel(props: {
 
       {props.isLoading ? (
         <div className="flex min-h-[260px] flex-col items-center justify-center rounded-[1.4rem] border border-white/10 bg-slate-900/70 px-6 text-center">
-          <Loader2 className="mb-3 size-7 animate-spin text-emerald-300" />
+          <Loader2 className="mb-3 size-7 animate-spin text-[var(--primary)]" />
           <p className="text-sm font-semibold text-white">Gerando seu QR Code Pix...</p>
         </div>
       ) : props.error ? (
@@ -457,7 +457,7 @@ function PixPaymentPanel(props: {
                   type="button"
                   onClick={props.onCopy}
                   disabled={!props.data.copyAndPasteCode}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="button-light-primary inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Copy className="size-4" />
                   Copiar código Pix
@@ -485,11 +485,11 @@ function CheckoutLoadingShell() {
   const brandLogo = '/brand/cote-finance-ai-logo.svg';
 
   return (
-    <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
-      <div className="theme-checkout-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(16,185,129,.16),transparent_32%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,.12),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_45%,#0b1120_100%)]" />
+    <div className="theme-checkout-shell marketing-dark-shell min-h-screen text-[var(--text-primary)]">
+      <div className="theme-checkout-backdrop marketing-dark-backdrop pointer-events-none fixed inset-0 -z-10" />
       <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 lg:px-10">
         <div className="mb-8 flex items-center justify-between gap-4">
-          <Link href="/app" className="inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-white">
+          <Link href="/app" className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]">
             <ArrowLeft className="size-4" />
             Voltar ao painel
           </Link>
@@ -509,7 +509,7 @@ function CheckoutLoadingShell() {
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="rounded-[2rem] border border-white/10 bg-slate-900/65 p-7 backdrop-blur-xl">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.18)] bg-[rgba(76,141,255,0.10)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                 <Sparkles className="size-3.5" />
                 Cote Finance AI
               </div>
@@ -520,9 +520,9 @@ function CheckoutLoadingShell() {
               </div>
             </div>
           </section>
-          <section className="rounded-[2rem] border border-white/10 bg-slate-900/72 p-7 backdrop-blur-xl">
+          <section className="marketing-panel p-7">
             <div className="flex min-h-[360px] flex-col items-center justify-center rounded-[1.6rem] border border-white/10 bg-slate-950/60 px-6 text-center">
-              <Loader2 className="mb-4 size-8 animate-spin text-emerald-300" />
+              <Loader2 className="mb-4 size-8 animate-spin text-[var(--primary)]" />
               <p className="text-lg font-semibold text-white">Preparando checkout seguro...</p>
             </div>
           </section>
@@ -1051,12 +1051,12 @@ function CheckoutPageContent() {
   }, [pixData?.copyAndPasteCode]);
 
   return (
-    <div className="theme-checkout-shell min-h-screen bg-slate-950 text-slate-100">
-      <div className="theme-checkout-backdrop pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(16,185,129,.16),transparent_32%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,.12),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_45%,#0b1120_100%)]" />
+    <div className="theme-checkout-shell marketing-dark-shell min-h-screen text-[var(--text-primary)]">
+      <div className="theme-checkout-backdrop marketing-dark-backdrop pointer-events-none fixed inset-0 -z-10" />
 
       <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 lg:px-10">
         <div className="mb-8 flex items-center justify-between gap-4">
-          <Link href="/app" className="inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-white">
+          <Link href="/app" className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]">
             <ArrowLeft className="size-4" />
             Voltar ao painel
           </Link>
@@ -1076,10 +1076,10 @@ function CheckoutPageContent() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/65 p-7 shadow-[0_32px_120px_-52px_rgba(16,185,129,0.45)] backdrop-blur-xl">
-            <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(16,185,129,.18),transparent_58%)]" />
+          <section className="relative overflow-hidden rounded-[2rem] marketing-panel p-7">
+            <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(76,141,255,.18),transparent_58%)]" />
             <div className="relative space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.18)] bg-[rgba(76,141,255,0.10)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                 <Sparkles className="size-3.5" />
                 Cote Finance AI
               </div>
@@ -1093,18 +1093,18 @@ function CheckoutPageContent() {
                 </p>
               </div>
 
-              <div className="grid gap-4 rounded-[1.6rem] border border-white/10 bg-slate-950/55 p-5 md:grid-cols-2">
+              <div className="grid gap-4 rounded-[1.6rem] border border-[var(--border)] bg-[var(--surface)]/85 p-5 md:grid-cols-2">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Plano selecionado</p>
                   <h2 className="mt-3 text-4xl font-black tracking-tight text-white">
                     {checkoutPlanName}
                   </h2>
                   <p className="mt-2 text-sm text-slate-300">{checkoutPlanDescription}</p>
-                  <p className="mt-4 text-2xl font-black tracking-tight text-emerald-200">{checkoutPriceLabel}</p>
+                  <p className="mt-4 text-2xl font-black tracking-tight text-[var(--primary)]">{checkoutPriceLabel}</p>
                 </div>
 
-                <div className="rounded-2xl border border-emerald-400/15 bg-emerald-500/8 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">Workspace selecionado</p>
+                <div className="rounded-2xl border border-[rgba(76,141,255,0.16)] bg-[rgba(76,141,255,0.08)] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">Workspace selecionado</p>
                   <p className="mt-3 text-xl font-semibold text-white">
                     {checkoutWorkspaceName}
                   </p>
@@ -1116,19 +1116,19 @@ function CheckoutPageContent() {
 
               {summaryPlan ? (
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-5">
+                  <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface)]/85 p-5">
                     <p className="text-sm font-semibold text-white">O que você desbloqueia com o {checkoutPlanName}</p>
                     <ul className="mt-4 space-y-3">
                       {checkoutBenefits.map((feature) => (
                         <li key={feature} className="flex items-start gap-3 text-sm text-slate-300">
-                          <CheckCircle2 className="mt-0.5 size-4 text-emerald-300" />
+                          <CheckCircle2 className="mt-0.5 size-4 text-[var(--primary)]" />
                           <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-5">
+                  <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface)]/85 p-5">
                     <p className="text-sm font-semibold text-white">Pagamento seguro</p>
                     <div className="mt-4 grid gap-3">
                       {checkoutSecurityItems.map((item) => (
@@ -1143,15 +1143,15 @@ function CheckoutPageContent() {
                     </div>
                     <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-400">
                       <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
-                        <ShieldCheck className="size-3.5 text-emerald-300" />
+                        <ShieldCheck className="size-3.5 text-[var(--primary)]" />
                         PCI DSS
                       </span>
                       <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
-                        <LockKeyhole className="size-3.5 text-emerald-300" />
+                        <LockKeyhole className="size-3.5 text-[var(--primary)]" />
                         Dados protegidos
                       </span>
                       <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
-                        <CreditCard className="size-3.5 text-emerald-300" />
+                        <CreditCard className="size-3.5 text-[var(--primary)]" />
                         Faturamento recorrente
                       </span>
                     </div>
@@ -1161,7 +1161,7 @@ function CheckoutPageContent() {
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-white/10 bg-slate-900/72 p-7 backdrop-blur-xl">
+          <section className="marketing-panel p-7">
             <div className="space-y-6">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Pagamento</p>
@@ -1169,7 +1169,7 @@ function CheckoutPageContent() {
                 <p className="max-w-lg text-sm leading-6 text-slate-400">
                   Ative seu plano em poucos segundos. Pagamento seguro processado pela Stripe.
                 </p>
-                <div className="rounded-[1.4rem] border border-white/10 bg-slate-950/60 p-4">
+                <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--surface)]/88 p-4">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Hoje</p>
@@ -1227,7 +1227,7 @@ function CheckoutPageContent() {
                       className={cn(
                         'flex items-start justify-between rounded-[1.4rem] border p-4 text-left transition',
                         paymentMethod === option.value
-                          ? 'border-emerald-400/30 bg-emerald-500/10'
+                          ? 'border-emerald-400/30 bg-[rgba(76,141,255,0.10)]'
                           : 'border-white/10 bg-slate-900/70 hover:border-white/20 hover:bg-slate-900/90'
                       )}
                     >
@@ -1243,10 +1243,10 @@ function CheckoutPageContent() {
                       <div
                         className={cn(
                           'mt-1 flex size-5 items-center justify-center rounded-full border',
-                          paymentMethod === option.value ? 'border-emerald-300 bg-emerald-400/20' : 'border-slate-600'
+                          paymentMethod === option.value ? 'border-[var(--primary)] bg-[rgba(76,141,255,0.18)]' : 'border-[rgba(255,255,255,0.16)]'
                         )}
                       >
-                        {paymentMethod === option.value ? <div className="size-2 rounded-full bg-emerald-300" /> : null}
+                        {paymentMethod === option.value ? <div className="size-2 rounded-full bg-[var(--primary)]" /> : null}
                       </div>
                     </button>
                   ))}
@@ -1258,7 +1258,7 @@ function CheckoutPageContent() {
 
               {isLoading ? (
                 <div className="flex min-h-[360px] flex-col items-center justify-center rounded-[1.6rem] border border-white/10 bg-slate-950/60 px-6 text-center">
-                  <Loader2 className="mb-4 size-8 animate-spin text-emerald-300" />
+                  <Loader2 className="mb-4 size-8 animate-spin text-[var(--primary)]" />
                   <p className="text-lg font-semibold text-white">Preparando checkout seguro...</p>
                   <p className="mt-2 max-w-sm text-sm text-slate-400">
                     Estamos validando o workspace, cliente Stripe e a assinatura recorrente antes de renderizar o Payment
@@ -1266,8 +1266,8 @@ function CheckoutPageContent() {
                   </p>
                 </div>
               ) : successMessage ? (
-                <div className="space-y-5 rounded-[1.6rem] border border-emerald-400/20 bg-emerald-500/10 p-6">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
+                <div className="space-y-5 rounded-[1.6rem] border border-[rgba(76,141,255,0.18)] bg-[rgba(76,141,255,0.10)] p-6 shadow-[var(--shadow-glow-soft)]">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.24)] bg-[rgba(76,141,255,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                     <CheckCircle2 className="size-3.5" />
                     Pagamento confirmado
                   </div>
@@ -1275,7 +1275,7 @@ function CheckoutPageContent() {
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href={subscriptionCenterPath}
-                      className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-400"
+                      className="button-primary inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold"
                     >
                       Abrir minha assinatura
                     </Link>
@@ -1283,7 +1283,7 @@ function CheckoutPageContent() {
                       type="button"
                       onClick={handleOpenPortal}
                       disabled={isPortalLoading}
-                      className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 disabled:opacity-60"
+                      className="button-secondary inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold disabled:opacity-60"
                     >
                       {isPortalLoading ? 'Abrindo portal...' : 'Atualizar forma de pagamento'}
                     </button>
@@ -1296,7 +1296,7 @@ function CheckoutPageContent() {
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href={subscriptionCenterPath}
-                      className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+                      className="button-secondary inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold"
                     >
                       Abrir minha assinatura
                     </Link>
@@ -1305,7 +1305,7 @@ function CheckoutPageContent() {
                         type="button"
                         onClick={handleOpenPortal}
                         disabled={isPortalLoading}
-                        className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:opacity-60"
+                        className="inline-flex items-center justify-center rounded-2xl button-light-secondary px-5 py-3 text-sm font-semibold disabled:opacity-60"
                       >
                         {isPortalLoading ? 'Abrindo portal...' : 'Abrir portal de cobrança'}
                       </button>
@@ -1313,7 +1313,7 @@ function CheckoutPageContent() {
                       <button
                         type="button"
                         onClick={handleLegacyCheckout}
-                        className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100"
+                        className="inline-flex items-center justify-center rounded-2xl button-light-secondary px-5 py-3 text-sm font-semibold"
                       >
                         Abrir checkout legado
                       </button>
@@ -1333,7 +1333,7 @@ function CheckoutPageContent() {
                     }}
                     onCopy={handleCopyPixCode}
                   />
-                  {copiedPixCode ? <p className="text-center text-xs text-emerald-300">Código Pix copiado.</p> : null}
+                  {copiedPixCode ? <p className="text-center text-xs text-[var(--primary)]">Código Pix copiado.</p> : null}
                 </div>
               ) : checkoutData?.clientSecret && publishableKey ? (
                 <Elements
@@ -1358,8 +1358,8 @@ function CheckoutPageContent() {
                   />
                 </Elements>
               ) : checkoutData && !checkoutData.requiresConfirmation ? (
-                <div className="space-y-5 rounded-[1.6rem] border border-emerald-400/20 bg-emerald-500/10 p-6">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
+                <div className="space-y-5 rounded-[1.6rem] border border-[rgba(76,141,255,0.18)] bg-[rgba(76,141,255,0.10)] p-6 shadow-[var(--shadow-glow-soft)]">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.24)] bg-[rgba(76,141,255,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                     <CheckCircle2 className="size-3.5" />
                     Assinatura pronta
                   </div>
@@ -1368,7 +1368,7 @@ function CheckoutPageContent() {
                   </p>
                   <Link
                     href={subscriptionCenterPath}
-                    className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-400"
+                    className="button-primary inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold"
                   >
                     Abrir minha assinatura
                   </Link>
@@ -1382,13 +1382,13 @@ function CheckoutPageContent() {
                     <button
                       type="button"
                       onClick={handleLegacyCheckout}
-                      className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100"
+                      className="inline-flex items-center justify-center rounded-2xl button-light-secondary px-5 py-3 text-sm font-semibold"
                     >
                       Abrir checkout legado
                     </button>
                     <Link
                       href={subscriptionCenterPath}
-                      className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+                      className="button-secondary inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold"
                     >
                       Abrir minha assinatura
                     </Link>
@@ -1434,15 +1434,15 @@ function CheckoutPageContent() {
                 <div className="rounded-[1.3rem] border border-white/10 bg-slate-950/45 p-4">
                   <div className="grid gap-3">
                     <div className="flex items-start gap-2 text-slate-300">
-                      <LockKeyhole className="mt-0.5 size-4 text-emerald-300" />
+                      <LockKeyhole className="mt-0.5 size-4 text-[var(--primary)]" />
                       <span>Pagamento seguro processado pela Stripe.</span>
                     </div>
                     <div className="flex items-start gap-2 border-t border-white/10 pt-3">
-                      <ShieldCheck className="mt-0.5 size-4 text-emerald-300" />
+                      <ShieldCheck className="mt-0.5 size-4 text-[var(--primary)]" />
                       <span>Seus dados são protegidos por criptografia SSL.</span>
                     </div>
                     <div className="flex items-start gap-2 border-t border-white/10 pt-3">
-                      <BadgeCheck className="mt-0.5 size-4 text-emerald-300" />
+                      <BadgeCheck className="mt-0.5 size-4 text-[var(--primary)]" />
                       <span>Cancele sua assinatura a qualquer momento.</span>
                     </div>
                   </div>
@@ -1454,13 +1454,13 @@ function CheckoutPageContent() {
                 </div>
 
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                  <Link href="/termos-de-uso" className="transition hover:text-white">
+                  <Link href="/termos-de-uso" className="transition hover:text-[var(--text-primary)]">
                     Termos de uso
                   </Link>
-                  <Link href="/politica-de-privacidade" className="transition hover:text-white">
+                  <Link href="/politica-de-privacidade" className="transition hover:text-[var(--text-primary)]">
                     Política de privacidade
                   </Link>
-                  <a href="mailto:suporte@cotejuros.com.br" className="transition hover:text-white">
+                  <a href="mailto:suporte@cotejuros.com.br" className="transition hover:text-[var(--text-primary)]">
                     suporte@cotejuros.com.br
                   </a>
                 </div>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -128,24 +128,24 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center">
+    <main className="marketing-dark-shell flex min-h-screen items-center justify-center p-6">
+      <div className="marketing-panel w-full max-w-md p-6 text-center">
         {error ? (
           <>
             <h1 className="text-lg font-bold text-white mb-2">Falha na autenticação</h1>
             <p className="text-sm text-rose-400 mb-4">{error}</p>
             <button
               onClick={() => router.replace('/app?auth=login')}
-              className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+              className="button-primary px-4 py-2 text-sm font-semibold"
             >
               Voltar para login
             </button>
           </>
         ) : (
           <>
-            <div className="mx-auto size-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <div className="mx-auto size-10 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin mb-4" />
             <h1 className="text-lg font-bold text-white mb-2">Concluindo autenticação</h1>
-            <p className="text-sm text-slate-400">Aguarde enquanto preparamos seu ambiente.</p>
+            <p className="text-sm text-[var(--text-secondary)]">Aguarde enquanto preparamos seu ambiente.</p>
           </>
         )}
       </div>

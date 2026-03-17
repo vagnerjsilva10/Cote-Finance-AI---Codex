@@ -1,18 +1,26 @@
-<svg width="900" height="240" viewBox="0 0 900 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(46,44)">
-    <path d="M8 94L42 72L72 82L118 36" stroke="#111111" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="8" cy="94" r="5.5" fill="#111111"/>
-    <circle cx="42" cy="72" r="5.5" fill="#111111"/>
-    <circle cx="72" cy="82" r="5.5" fill="#111111"/>
-    <circle cx="108" cy="46" r="7" fill="#111111"/>
-    <path d="M94 46H108V60" stroke="#111111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="920" height="240" viewBox="0 0 920 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Cote Finance AI</title>
+  <desc id="desc">Logo premium do Cote Finance AI com ícone de crescimento financeiro e tipografia refinada.</desc>
+  <defs>
+    <linearGradient id="coteBlueLight" x1="28" y1="102" x2="112" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4C8DFF"/>
+      <stop offset="1" stop-color="#78AEFF"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(42 42)">
+    <rect x="0.75" y="0.75" width="132.5" height="132.5" rx="30" fill="#FFFFFF" stroke="rgba(15,23,42,0.10)" stroke-width="1.5"/>
+    <path d="M26 92L48 75L67 80L103 44" stroke="url(#coteBlueLight)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="26" cy="92" r="4.8" fill="#4C8DFF"/>
+    <circle cx="48" cy="75" r="4.8" fill="#4C8DFF" opacity="0.94"/>
+    <circle cx="67" cy="80" r="4.8" fill="#5D99FF" opacity="0.94"/>
+    <circle cx="103" cy="44" r="6.1" fill="#78AEFF"/>
+    <path d="M90 44H103V57" stroke="#78AEFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-
-  <g transform="translate(210,78)">
-    <text x="0" y="38" fill="#111111" font-family="Space Grotesk, Manrope, Inter, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="0.3">
+  <g transform="translate(214 74)">
+    <text x="0" y="40" fill="#0F172A" font-family="Inter, Plus Jakarta Sans, Manrope, Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="-0.05em">
       Cote Finance AI
     </text>
-    <text x="2" y="84" fill="#3f3f46" font-family="Manrope, Inter, Arial, sans-serif" font-size="30" font-weight="500" letter-spacing="0.4">
+    <text x="2" y="78" fill="#64748B" font-family="Inter, Plus Jakarta Sans, Manrope, Arial, sans-serif" font-size="22" font-weight="500" letter-spacing="0.015em">
       By Cote Juros
     </text>
   </g>
