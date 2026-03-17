@@ -391,7 +391,7 @@ type WhatsAppDiagnostic = {
   metaResult?: string | WhatsAppMetaDiagnostic | null;
 };
 
-const FREE_TRANSACTION_LIMIT_PER_MONTH = 20;
+const FREE_TRANSACTION_LIMIT_PER_MONTH = 15;
 const FREE_AI_LIMIT_PER_MONTH = 20;
 const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const AVATAR_OUTPUT_SIZE = 256;
@@ -937,7 +937,7 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃƒÆ’O') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃO') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
@@ -10476,26 +10476,27 @@ React.useEffect(() => {
                 ? 'Minha assinatura'
                 : 'Configurações'}
               </h2>
-            {workspaces.length > 0 && (
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
                   Conta
                 </span>
-                <select
-                  value={activeWorkspaceId || ''}
-                  onChange={(event) => {
-                    const nextWorkspaceId = event.target.value;
-                    if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
-                    setActiveWorkspaceId(nextWorkspaceId);
-                  }}
-                  className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-                >
-                  {workspaces.map((workspace) => (
-                    <option key={workspace.id} value={workspace.id}>
-                      {workspace.name}
-                    </option>
-                  ))}
-                </select>
+                {workspaces.length > 0 && (
+                  <select
+                    value={activeWorkspaceId || ''}
+                    onChange={(event) => {
+                      const nextWorkspaceId = event.target.value;
+                      if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
+                      setActiveWorkspaceId(nextWorkspaceId);
+                    }}
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    {workspaces.map((workspace) => (
+                      <option key={workspace.id} value={workspace.id}>
+                        {workspace.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
                   className="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:border-emerald-500 transition-colors"
@@ -10503,7 +10504,6 @@ React.useEffect(() => {
                   + Conta
                 </button>
               </div>
-            )}
           </div>
 
             <div className="flex flex-shrink-0 items-center gap-2 lg:gap-4">
@@ -10954,7 +10954,6 @@ React.useEffect(() => {
         </div>
         </header>
 
-        {workspaces.length > 0 && (
           <div className="border-b border-slate-900/80 bg-slate-950/60 px-3 py-3 md:hidden">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3">
@@ -10966,24 +10965,25 @@ React.useEffect(() => {
                   + Conta
                 </button>
               </div>
-              <select
-                value={activeWorkspaceId || ''}
-                onChange={(event) => {
-                  const nextWorkspaceId = event.target.value;
-                  if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
-                  setActiveWorkspaceId(nextWorkspaceId);
-                }}
-                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
-              >
-                {workspaces.map((workspace) => (
-                  <option key={workspace.id} value={workspace.id}>
-                    {workspace.name}
-                  </option>
-                ))}
-              </select>
+              {workspaces.length > 0 && (
+                <select
+                  value={activeWorkspaceId || ''}
+                  onChange={(event) => {
+                    const nextWorkspaceId = event.target.value;
+                    if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
+                    setActiveWorkspaceId(nextWorkspaceId);
+                  }}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                >
+                  {workspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
-        )}
 
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8 custom-scrollbar">
           <AnimatePresence mode="wait">
