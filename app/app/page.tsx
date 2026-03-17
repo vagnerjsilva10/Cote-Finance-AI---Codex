@@ -3137,8 +3137,8 @@ const DebtsView = ({
               <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300/80">Dívidas</p>
               <h3 className="mt-2 text-3xl font-black tracking-tight text-white">Dívidas</h3>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-                Separe o que ? dívida única do que se repete todo mês. Assim você entende melhor o que precisa
-                resolver agora e o que já faz parte da sua rotina financeira.
+                Separe dívidas pontuais de contas recorrentes para ter mais clareza financeira.
+
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -3174,12 +3174,6 @@ const DebtsView = ({
             >
               <Plus size={16} /> Nova dívida
             </button>
-            <button
-              onClick={() => openRecurringDebtFlow()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/80 px-5 py-3 text-sm font-black text-white transition-colors hover:border-slate-500 sm:w-auto"
-            >
-              <Plus size={16} /> Nova recorrência
-            </button>
           </div>
         </div>
       </section>
@@ -3207,7 +3201,7 @@ const DebtsView = ({
               : 'text-slate-400 hover:text-white'
           )}
         >
-          Dívidas únicas
+          Dívidas
         </button>
         <button
           type="button"
@@ -3219,14 +3213,14 @@ const DebtsView = ({
               : 'text-slate-400 hover:text-white'
           )}
         >
-          Recorrentes
+          Contas fixas
         </button>
       </div>
       {activeDebtTab === 'single' ? (
         <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Dívidas únicas</p>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Dívidas</p>
               <h4 className="mt-2 text-2xl font-black text-white">Obrigações com começo, meio e fim</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
                 Use para empréstimos, acordos, cartão atrasado e qualquer compromisso com valor total definido.
@@ -3264,7 +3258,7 @@ const DebtsView = ({
               </div>
               <h5 className="text-xl font-black text-white">Você ainda não cadastrou nenhuma dívida.</h5>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">
-                Adicione uma dívida para começar a ter controle completo do seu dinheiro.
+                Adicione uma dívida para começar a ter controle completo do seu dinheiro. Sem cadastrar suas dívidas, você não consegue ver para onde seu dinheiro está indo.
               </p>
               <button
                 onClick={openSingleDebtFlow}
@@ -3328,7 +3322,7 @@ const DebtsView = ({
         <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Recorrentes</p>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Contas fixas</p>
               <h4 className="mt-2 text-2xl font-black text-white">Contas que se repetem automaticamente</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
                 Use para mensalidades, aluguel, assinaturas e qualquer compromisso fixo com frequência definida.
@@ -3361,7 +3355,7 @@ const DebtsView = ({
                 onClick={() => openRecurringDebtFlow()}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-xs font-black text-white transition-colors hover:border-slate-500"
               >
-                <Plus size={14} /> Nova recorrência manual
+                <Plus size={14} /> Nova conta fixa
               </button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -3390,7 +3384,7 @@ const DebtsView = ({
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
                 <Calendar size={26} />
               </div>
-              <h5 className="text-xl font-black text-white">Você ainda não cadastrou recorrências.</h5>
+              <h5 className="text-xl font-black text-white">Você ainda não cadastrou contas fixas.</h5>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">
                 Cadastre contas fixas para enxergar seu compromisso mensal e saber o que vence primeiro.
               </p>
@@ -3398,7 +3392,7 @@ const DebtsView = ({
                 onClick={() => openRecurringDebtFlow()}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
               >
-                <Plus size={16} /> Adicionar primeira recorrência
+                <Plus size={16} /> Adicionar primeira conta fixa
               </button>
             </div>
           ) : (
@@ -3455,74 +3449,62 @@ const DebtsView = ({
           )}
         </section>
       )}
-      <AnimatePresence>
-        {isCreateChooserOpen && (
-          <motion.div
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <button
-              type="button"
-              aria-label="Fechar escolha de tipo de dívida"
-              onClick={() => setIsCreateChooserOpen(false)}
-              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ y: 16, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 16, opacity: 0, scale: 0.98 }}
-              className="relative z-10 w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
-            >
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Nova dívida</p>
-                  <h4 className="mt-2 text-2xl font-black text-white">O que você deseja criar?</h4>
-                  <p className="mt-2 text-sm leading-7 text-slate-400">
-                    Escolha o tipo certo para manter sua organização clara desde o primeiro cadastro.
-                  </p>
+      {isCreateChooserOpen ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Fechar escolha de tipo de d?vida"
+            onClick={() => setIsCreateChooserOpen(false)}
+            className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
+          />
+          <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Nova dívida</p>
+                <h4 className="mt-2 text-2xl font-black text-white">Como essa dívida funciona?</h4>
+                <p className="mt-2 text-sm leading-7 text-slate-400">
+                  Escolha o tipo para organizar melhor suas finanças.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateChooserOpen(false)}
+                className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+              >
+                Fechar
+              </button>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <button
+                type="button"
+                onClick={openSingleDebtFlow}
+                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
+              >
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                  <Wallet size={22} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCreateChooserOpen(false)}
-                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
-                >
-                  Fechar
-                </button>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={openSingleDebtFlow}
-                  className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
-                >
-                  <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-                    <Wallet size={22} />
-                  </div>
-                  <h5 className="mt-5 text-xl font-black text-white">Dívida única</h5>
-                  <p className="mt-2 text-sm leading-7 text-slate-400">
-                    Para empréstimos, acordos, cartão atrasado ou qualquer obrigação com valor total definido.
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openRecurringDebtFlow()}
-                  className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
-                >
-                  <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-                    <Calendar size={22} />
-                  </div>
-                  <h5 className="mt-5 text-xl font-black text-white">Conta recorrente</h5>
-                  <p className="mt-2 text-sm leading-7 text-slate-400">
-                    Para mensalidades, aluguel, assinaturas e compromissos que se repetem automaticamente.
-                  </p>
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <h5 className="mt-5 text-xl font-black text-white">Dívida única</h5>
+                <p className="mt-2 text-sm leading-7 text-slate-400">
+                  Tem valor total definido e termina quando for quitada.
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => openRecurringDebtFlow()}
+                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
+              >
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                  <Calendar size={22} />
+                </div>
+                <h5 className="mt-5 text-xl font-black text-white">Conta recorrente</h5>
+                <p className="mt-2 text-sm leading-7 text-slate-400">
+                  Se repete automaticamente todo mês.
+                </p>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };type GoalsViewProps = {
