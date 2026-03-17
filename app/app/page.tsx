@@ -510,11 +510,7 @@ const getWhatsAppConnectionDescription = (
     return 'A conexÃƒÆ’Ã‚Â£o com a Meta falhou. Revise token, permissÃƒÆ’Ã‚Âµes e os dados deste workspace.';
   }
   if (state === 'connected' || isConnected) {
-<<<<<<< HEAD
-    return 'Configuração pronta para envio. Você já pode disparar um teste com seguran?a..';
-=======
     return 'ConfiguraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o pronta para envio. VocÃƒÆ’Ã‚Âª jÃƒÆ’Ã‚Â¡ pode disparar um teste com seguran?aa.';
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
   }
   if (hasValidationIssues) {
     return 'HÃƒÆ’Ã‚Â¡ ajustes pendentes antes de ativar o envio deste workspace.';
@@ -1480,18 +1476,18 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
     onClick={onClick}
     title={collapsed ? label : undefined}
     className={cn(
-      'sidebar-item-premium flex w-full items-center gap-3 px-3 py-2.5 text-left group',
+      'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-200 group',
       collapsed && 'justify-center px-2',
       active
-        ? 'sidebar-item-premium-active font-medium text-[var(--text-primary)]'
-        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+        ? 'bg-emerald-500/10 text-emerald-500 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
     )}
   >
     <Icon
       size={20}
-      className={cn(active ? 'text-[var(--primary)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]')}
+      className={cn(active ? 'text-emerald-500' : 'text-slate-500 group-hover:text-slate-300')}
     />
-    {!collapsed && <span className="text-sm font-medium">{label}</span>}
+    {!collapsed && <span className="text-sm">{label}</span>}
   </button>
 );
 
@@ -1512,12 +1508,12 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="stat-card-premium group relative overflow-hidden rounded-2xl p-6">
+  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl hover:border-slate-700 transition-colors group relative overflow-hidden">
     <div className="flex items-center justify-between mb-4">
-      <span className="label-premium text-[var(--text-secondary)]">{label}</span>
+      <span className="text-slate-400 text-sm font-medium">{label}</span>
       <div
         className={cn(
-          'badge-premium min-w-[42px] justify-center rounded-lg p-2',
+          'p-2 rounded-lg',
           trendType === 'up'
             ? 'bg-emerald-500/10 text-emerald-500'
             : 'bg-rose-500/10 text-rose-500'
@@ -1527,7 +1523,7 @@ const StatCard = ({
       </div>
     </div>
     <div className="flex flex-col gap-1">
-      <p className="value-financial-premium">{value}</p>
+      <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
       <div
         className={cn(
           'text-sm font-semibold flex items-center gap-1',
@@ -1535,7 +1531,7 @@ const StatCard = ({
         )}
       >
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-        {trendValue} <span className="ml-1 font-normal text-[var(--text-muted)]">{trend}</span>
+        {trendValue} <span className="text-slate-500 font-normal ml-1">{trend}</span>
       </div>
     </div>
     <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
@@ -1869,7 +1865,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
         <button
           onClick={onAddTransaction}
-          className="button-primary px-4 py-2 text-sm font-semibold"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
           <Plus size={16} /> Nova TransaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o
         </button>
@@ -1910,22 +1906,17 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card-premium lg:col-span-2 rounded-2xl p-6">
+        <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <div className="mb-6">
-<<<<<<< HEAD
-            <h3 className="card-title-premium">Receitas vs Despesas</h3>
-            <p className="text-sm text-slate-400">Últimos 6 meses</p>
-=======
             <h3 className="text-lg font-bold text-white">Receitas vs Despesas</h3>
             <p className="text-sm text-slate-400">ÃƒÆ’Ã…Â¡ltimos 6 meses</p>
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
           </div>
 
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="name" stroke="rgba(167,179,194,0.72)" fontSize={12} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis
                   stroke="#64748b"
                   fontSize={12}
@@ -1935,8 +1926,8 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#101923',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #1e293b',
                     borderRadius: '12px',
                   }}
                   formatter={(value, name) => [
@@ -1948,7 +1939,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="income"
                   name="income"
-                  stroke="var(--success)"
+                  stroke="#10b981"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -1957,7 +1948,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="expense"
                   name="expense"
-                  stroke="#F05B6E"
+                  stroke="#f43f5e"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -1967,15 +1958,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           </div>
         </div>
 
-<<<<<<< HEAD
-        <div className="card-premium theme-report-card rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6">Insights do mês</h3>
-=======
         <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <h3 className="text-lg font-bold text-white mb-6">Insights do mÃƒÆ’Ã‚Âªs</h3>
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
           <div className="space-y-4">
-            <div className="card-premium rounded-xl p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                 Maior gasto do mÃƒÆ’Ã‚Âªs
               </p>
@@ -1986,7 +1972,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               </p>
             </div>
 
-            <div className="card-premium rounded-xl p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                 Resumo do mÃƒÆ’Ã‚Âªs
               </p>
@@ -2034,7 +2020,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
       </div>
 
-      <div className="theme-table-surface table-premium rounded-2xl overflow-hidden">
+      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <h3 className="text-lg font-bold text-white">ÃƒÆ’Ã…Â¡ltimas transaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
@@ -2179,7 +2165,7 @@ const TransactionsView = ({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as 'Todos' | TransactionFlowType)}
-            className="input-premium w-full py-2 px-4 text-sm"
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
           >
             <option value="Todos">Todos os tipos</option>
             {TRANSACTION_FLOW_TYPES.map((flowType) => (
@@ -3146,7 +3132,7 @@ const DebtsView = ({
   };
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <section className="card-premium rounded-3xl p-6 lg:p-7">
+      <section className="rounded-3xl border border-slate-800 bg-slate-900/55 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)] lg:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             <div>
@@ -3158,7 +3144,7 @@ const DebtsView = ({
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
                 <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining + recurringMonthlyTotal)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -3167,14 +3153,14 @@ const DebtsView = ({
                     : 'Sem recorrÃƒÆ’Ã‚Âªncias ativas no momento'}
                 </p>
               </div>
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
                 <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   {paidDebts > 0 ? `${paidDebts} dÃƒÆ’Ã‚Â­vida(s) jÃƒÆ’Ã‚Â¡ quitadas` : 'Ainda nÃƒÆ’Ã‚Â£o hÃƒÆ’Ã‚Â¡ dÃƒÆ’Ã‚Â­vidas quitadas'}
                 </p>
               </div>
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Itens cadastrados</p>
                 <p className="mt-2 text-2xl font-black text-white">{totalRegisteredItems}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -3186,7 +3172,7 @@ const DebtsView = ({
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row xl:flex-col">
             <button
               onClick={() => setIsCreateChooserOpen(true)}
-              className="button-primary inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-sm font-semibold sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600 sm:w-auto"
             >
               <Plus size={16} /> Nova dÃƒÆ’Ã‚Â­vida
             </button>
@@ -3206,15 +3192,15 @@ const DebtsView = ({
           ) : null}
         </div>
       ) : null}
-      <div className="tab-list-premium inline-flex w-full p-1 sm:w-auto">
+      <div className="inline-flex w-full rounded-2xl border border-slate-800 bg-slate-900/55 p-1 sm:w-auto">
         <button
           type="button"
           onClick={() => setActiveDebtTab('single')}
           className={cn(
-            'tab-premium flex-1 px-4 py-3 text-sm font-semibold sm:flex-none',
+            'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'single'
-              ? 'tab-premium-active'
-              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.18)]'
+              : 'text-slate-400 hover:text-white'
           )}
         >
           DÃƒÆ’Ã‚Â­vidas
@@ -3223,17 +3209,17 @@ const DebtsView = ({
           type="button"
           onClick={() => setActiveDebtTab('recurring')}
           className={cn(
-            'tab-premium flex-1 px-4 py-3 text-sm font-semibold sm:flex-none',
+            'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'recurring'
-              ? 'tab-premium-active'
-              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.18)]'
+              : 'text-slate-400 hover:text-white'
           )}
         >
           Contas fixas
         </button>
       </div>
       {activeDebtTab === 'single' ? (
-        <section className="card-premium space-y-5 rounded-3xl p-6">
+        <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">DÃƒÆ’Ã‚Â­vidas</p>
@@ -3243,15 +3229,15 @@ const DebtsView = ({
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
                 <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining)}</p>
               </div>
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
                 <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
               </div>
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Progresso</p>
                   {overdueDebts.length > 0 ? (
@@ -3268,7 +3254,7 @@ const DebtsView = ({
             </div>
           </div>
           {debts.length === 0 ? (
-            <div className="empty-state-premium rounded-3xl p-10 text-center">
+            <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
                 <Wallet size={26} />
               </div>
@@ -3278,7 +3264,7 @@ const DebtsView = ({
               </p>
               <button
                 onClick={openSingleDebtFlow}
-                className="button-primary mt-5 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
               >
                 <Plus size={16} /> Adicionar primeira dÃƒÆ’Ã‚Â­vida
               </button>
@@ -3320,10 +3306,10 @@ const DebtsView = ({
                         </div>
                       </div>
                       <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                        <button onClick={() => onEditDebt(debt.id)} className="button-secondary inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold">
+                        <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
                           <Pencil size={12} /> Editar
                         </button>
-                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-3 py-2 text-xs font-semibold text-[var(--danger-text)] transition-colors hover:bg-[rgba(239,68,68,0.18)]">
+                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20">
                           <Trash2 size={12} /> Excluir
                         </button>
                       </div>
@@ -3335,7 +3321,7 @@ const DebtsView = ({
           )}
         </section>
       ) : (
-        <section className="card-premium space-y-5 rounded-3xl p-6">
+        <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Contas fixas</p>
@@ -3345,25 +3331,16 @@ const DebtsView = ({
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="card-premium rounded-2xl p-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Compromisso mensal</p>
                 <p className="mt-2 text-2xl font-black text-white">{formatCurrency(recurringMonthlyTotal)}</p>
               </div>
-<<<<<<< HEAD
-              <div className="card-premium rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Recorrências ativas</p>
-                <p className="mt-2 text-2xl font-black text-white">{activeRecurringDebts.length}</p>
-              </div>
-              <div className="card-premium rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próxima cobrança</p>
-=======
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">RecorrÃƒÆ’Ã‚Âªncias ativas</p>
                 <p className="mt-2 text-2xl font-black text-white">{activeRecurringDebts.length}</p>
               </div>
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">PrÃƒÆ’Ã‚Â³xima cobranÃƒÆ’Ã‚Â§a</p>
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
                 <p className="mt-2 text-base font-black text-emerald-400">
                   {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previs?o'}
                 </p>
@@ -3373,13 +3350,8 @@ const DebtsView = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-<<<<<<< HEAD
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Atalhos rápidos</p>
-                <p className="mt-1 text-sm text-slate-400">Escolha uma conta recorrente comum e acelere seu cadastro.</p>
-=======
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Atalhos rÃƒÆ’Ã‚Â¡pidos</p>
                 <p className="mt-1 text-sm text-slate-400">Escolha uma conta fixa comum e acelere seu cadastro.</p>
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
               </div>
               <button
                 onClick={() => openRecurringDebtFlow()}
@@ -3410,7 +3382,7 @@ const DebtsView = ({
             </div>
           </div>
           {recurringDebts.length === 0 ? (
-            <div className="empty-state-premium rounded-3xl p-10 text-center">
+            <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
                 <Calendar size={26} />
               </div>
@@ -3420,7 +3392,7 @@ const DebtsView = ({
               </p>
               <button
                 onClick={() => openRecurringDebtFlow()}
-                className="button-primary mt-5 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
               >
                 <Plus size={16} /> Adicionar primeira conta fixa
               </button>
@@ -3465,10 +3437,10 @@ const DebtsView = ({
                       ) : null}
                     </div>
                     <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                      <button onClick={() => onEditRecurringDebt(debt.id)} className="button-secondary inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold">
+                      <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
                         <Pencil size={12} /> Editar
                       </button>
-                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-3 py-2 text-xs font-semibold text-[var(--danger-text)] transition-colors hover:bg-[rgba(239,68,68,0.18)]">
+                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20">
                         <Trash2 size={12} /> Excluir
                       </button>
                     </div>
@@ -3485,7 +3457,7 @@ const DebtsView = ({
             type="button"
             aria-label="Fechar escolha de tipo de dÃƒÆ’Ã‚Â­vida"
             onClick={() => setIsCreateChooserOpen(false)}
-            className="theme-modal-backdrop absolute inset-0 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
           />
           <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
@@ -3943,7 +3915,7 @@ const PortfolioView = ({
                     <Tooltip
                       formatter={(value) => formatCurrency(Number(value ?? 0))}
                       contentStyle={{
-                        backgroundColor: '#101923',
+                        backgroundColor: '#0f172a',
                         borderColor: '#1e293b',
                         borderRadius: 16,
                         color: '#e2e8f0',
@@ -4266,7 +4238,7 @@ const InvestmentsView = ({
         </div>
       </div>
 
-      <div className="theme-table-surface table-premium rounded-2xl overflow-hidden">
+      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -4680,7 +4652,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card-premium theme-report-card rounded-2xl p-6">
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
             <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Resumo por categoria</h4>
             <div className="space-y-3">
               {categoryData.length === 0 ? (
@@ -4702,13 +4674,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
           </div>
 
-<<<<<<< HEAD
-          <div className="card-premium theme-report-card rounded-2xl p-6">
-            <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Disponível no Pro</h4>
-=======
           <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
             <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">DisponÃƒÆ’Ã‚Â­vel no Pro</h4>
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
             <div className="space-y-3">
               {[
                 'GrÃƒÆ’Ã‚Â¡ficos comparativos completos',
@@ -4775,7 +4742,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       {currentPlan === 'PREMIUM' ? (
         <div className="space-y-6">
-          <div className="card-premium theme-report-card rounded-2xl p-6">
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previs?o de saldo</h4>
@@ -4866,7 +4833,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
           </div>
 
-          <div className="card-premium theme-report-card rounded-2xl p-6">
+          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-widest">AnÃƒÆ’Ã‚Â¡lises profundas de despesas</h4>
@@ -4995,7 +4962,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
       ) : (
-        <div className="card-premium theme-report-card rounded-2xl p-6">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h4 className="text-sm font-bold text-white uppercase tracking-widest">DisponÃƒÆ’Ã‚Â­vel no Premium</h4>
@@ -5013,15 +4980,15 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       )}
 
-      <div className="card-premium theme-report-card rounded-2xl p-6">
+      <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
         <div className="mb-5">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Receita x Despesa (12 meses)</h4>
         </div>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={revenueExpense12Months}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="name" stroke="rgba(167,179,194,0.72)" fontSize={12} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis
                 stroke="#64748b"
                 fontSize={12}
@@ -5031,8 +4998,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#101923',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: '#0f172a',
+                  border: '1px solid #1e293b',
                   borderRadius: '12px',
                 }}
                 formatter={(value, name) => [
@@ -5040,15 +5007,15 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   name === 'income' ? 'Receitas' : 'Despesas',
                 ]}
               />
-              <Line type="monotone" dataKey="income" name="income" stroke="var(--success)" strokeWidth={3} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="expense" name="expense" stroke="#F05B6E" strokeWidth={3} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="income" name="income" stroke="#10b981" strokeWidth={3} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="expense" name="expense" stroke="#f43f5e" strokeWidth={3} dot={{ r: 2 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card-premium theme-report-card rounded-2xl p-6">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Gastos por categoria</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -5068,8 +5035,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#101923',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #1e293b',
                     borderRadius: '12px',
                   }}
                   formatter={(value: number | string | undefined) =>
@@ -5094,13 +5061,13 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
 
-        <div className="card-premium theme-report-card rounded-2xl p-6">
+        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Taxa de economia (6 meses)</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={savingsRate6Months}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="name" stroke="rgba(167,179,194,0.72)" fontSize={12} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis
                   stroke="#64748b"
                   fontSize={12}
@@ -5110,8 +5077,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#101923',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #1e293b',
                     borderRadius: '12px',
                   }}
                   formatter={(value) => [`${Number(value || 0).toFixed(2)}%`, 'Taxa de economia']}
@@ -5130,7 +5097,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       </div>
 
-      <div className="card-premium theme-report-card rounded-2xl p-6">
+      <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Insights da IA</h4>
           <button
@@ -5274,7 +5241,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="Ex: Reserva de Emergencia"
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -5285,7 +5252,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 value={formData.target}
                 onChange={(value) => setFormData((prev) => ({ ...prev, target: value }))}
                 placeholder="R$ 0,00"
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -5295,7 +5262,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 value={formData.accumulated}
                 onChange={(value) => setFormData((prev) => ({ ...prev, accumulated: value }))}
                 placeholder="R$ 0,00"
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -5306,7 +5273,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               >
                 {GOAL_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -5322,7 +5289,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 type="date"
                 value={formData.deadline}
                 onChange={(e) => setFormData((prev) => ({ ...prev, deadline: e.target.value }))}
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -5435,7 +5402,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="Ex: Tesouro Selic 2029"
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -5477,7 +5444,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
                 value={formData.invested}
                 onChange={(value) => setFormData((prev) => ({ ...prev, invested: value }))}
                 placeholder="R$ 0,00"
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-2">
@@ -5486,7 +5453,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
                 value={formData.current}
                 onChange={(value) => setFormData((prev) => ({ ...prev, current: value }))}
                 placeholder="R$ 0,00"
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -5500,7 +5467,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               value={formData.expectedReturnAnnual}
               onChange={(e) => setFormData((prev) => ({ ...prev, expectedReturnAnnual: e.target.value }))}
               placeholder="0.00"
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -5617,7 +5584,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               type="text"
               value={formData.creditor}
               onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               placeholder="Ex: Banco X"
             />
           </div>
@@ -5629,7 +5596,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 value={formData.originalAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, originalAmount: value }))}
                 placeholder="R$ 0,00"
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-2">
@@ -5638,7 +5605,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 value={formData.remainingAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
                 placeholder="R$ 0,00"
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -5652,7 +5619,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 step="0.01"
                 value={formData.interestRateMonthly}
                 onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-2">
@@ -5663,7 +5630,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 max={31}
                 value={formData.dueDay}
                 onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -5674,7 +5641,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               >
                 {DEBT_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -5693,7 +5660,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                     status: e.target.value as DebtFormData['status'],
                   }))
                 }
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               >
                 <option>Em aberto</option>
                 <option>Quitada</option>
@@ -5831,7 +5798,7 @@ const RecurringDebtModal = ({
               type="text"
               value={formData.creditor}
               onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               placeholder="Ex: Aluguel"
             />
           </div>
@@ -5841,7 +5808,7 @@ const RecurringDebtModal = ({
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
               placeholder="R$ 0,00"
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="space-y-2">
@@ -5849,7 +5816,7 @@ const RecurringDebtModal = ({
             <select
               value={formData.category}
               onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             >
               {[...RECURRING_DEBT_PRESETS.map((item) => item.category), 'Outros']
                 .filter((value, index, array) => array.indexOf(value) === index)
@@ -5865,7 +5832,7 @@ const RecurringDebtModal = ({
             <select
               value={formData.status}
               onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             >
               <option>Ativa</option>
               <option>Pausada</option>
@@ -5877,7 +5844,7 @@ const RecurringDebtModal = ({
             <select
               value={formData.frequency}
               onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             >
               {RECURRING_DEBT_FREQUENCIES.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -5893,7 +5860,7 @@ const RecurringDebtModal = ({
               min={1}
               value={formData.interval}
               onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="space-y-2">
@@ -5902,7 +5869,7 @@ const RecurringDebtModal = ({
               type="date"
               value={formData.startDate}
               onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="space-y-2">
@@ -5911,7 +5878,7 @@ const RecurringDebtModal = ({
               type="date"
               value={formData.endDate}
               onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
           {isMonthlyFamily ? (
@@ -5923,7 +5890,7 @@ const RecurringDebtModal = ({
                 max={31}
                 value={formData.dueDay}
                 onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                className="input-premium w-full py-2 px-4 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           ) : null}
@@ -6274,7 +6241,7 @@ const TransactionModal = ({
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
               placeholder="R$ 0,00"
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -6285,7 +6252,7 @@ const TransactionModal = ({
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Ex: Supermercado"
-              className="input-premium w-full py-2 px-4 text-sm"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -10203,7 +10170,7 @@ React.useEffect(() => {
                 setIsCreateWorkspaceModalOpen(false);
                 setCreateWorkspaceError(null);
               }}
-              className="theme-modal-backdrop absolute inset-0 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: 16, opacity: 0, scale: 0.98 }}
@@ -10304,7 +10271,7 @@ React.useEffect(() => {
                 setIsCreateWalletModalOpen(false);
                 setCreateWalletError(null);
               }}
-              className="theme-modal-backdrop absolute inset-0 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: 16, opacity: 0, scale: 0.98 }}
@@ -10433,12 +10400,12 @@ React.useEffect(() => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="theme-modal-backdrop absolute inset-0 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm" />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="theme-modal-surface relative w-full max-w-3xl p-6"
+              className="relative w-full max-w-3xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
             >
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
@@ -10450,7 +10417,7 @@ React.useEffect(() => {
                 </div>
                 <button
                   onClick={() => setIsWorkspaceOnboardingOpen(false)}
-                  className="button-secondary px-3 py-1.5 text-xs font-semibold"
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white"
                 >
                   Depois
                 </button>
@@ -10475,7 +10442,7 @@ React.useEffect(() => {
                   <div className="flex justify-end">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       ComeÃƒÆ’Ã‚Â§ar
                     </button>
@@ -10510,13 +10477,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(0)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       Continuar
                     </button>
@@ -10551,13 +10518,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       Continuar
                     </button>
@@ -10611,7 +10578,7 @@ React.useEffect(() => {
                           }))
                         }
                         placeholder="R$ 0,00"
-                        className="input-premium w-full py-2 px-4 text-sm"
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                     <div className="space-y-2">
@@ -10624,7 +10591,7 @@ React.useEffect(() => {
                             category: event.target.value,
                           }))
                         }
-                        className="input-premium w-full py-2 px-4 text-sm"
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                       >
                         {TRANSACTION_CATEGORIES.filter((category) => category !== 'Auto (IA)').map((category) => (
                           <option key={category} value={category}>
@@ -10647,13 +10614,8 @@ React.useEffect(() => {
                           description: event.target.value,
                         }))
                       }
-<<<<<<< HEAD
-                      placeholder="Ex: Mercado do mês"
-                      className="input-premium w-full py-2 px-4 text-sm"
-=======
                       placeholder="Ex: Mercado do mÃƒÆ’Ã‚Âªs"
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
                     />
                   </div>
 
@@ -10666,7 +10628,7 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
@@ -10687,13 +10649,8 @@ React.useEffect(() => {
                     <h4 className="text-xl font-bold text-white mb-1">Este ÃƒÆ’Ã‚Â© seu painel financeiro</h4>
                     <p className="text-sm text-slate-400">Aqui vocÃƒÆ’Ã‚Âª acompanha tudo em um ÃƒÆ’Ã‚Âºnico lugar.</p>
                   </div>
-<<<<<<< HEAD
-                  <div className="card-premium rounded-2xl p-5 space-y-3">
-                    <p className="text-sm text-slate-200">Aqui você pode ver:</p>
-=======
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
                     <p className="text-sm text-slate-200">Aqui vocÃƒÆ’Ã‚Âª pode ver:</p>
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li>saldo atual</li>
                       <li>despesas por categoria</li>
@@ -10704,13 +10661,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       Continuar
                     </button>
@@ -10726,13 +10683,8 @@ React.useEffect(() => {
                       Este ÃƒÆ’Ã‚Â© um exemplo do tipo de insight automÃƒÆ’Ã‚Â¡tico disponÃƒÆ’Ã‚Â­vel nos planos Pro e Premium.
                     </p>
                   </div>
-<<<<<<< HEAD
-                  <div className="card-premium rounded-2xl border border-[rgba(34,197,94,0.18)] p-5 text-sm leading-relaxed text-[var(--success-text)]">
-                    Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
-=======
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
                     VocÃƒÆ’Ã‚Âª gastou {onboardingPrimaryInsight.percentage}% em{' '}
->>>>>>> 1719efe (Refine dashboard visuals and fix visible dashboard copy)
                     {String(onboardingPrimaryInsight.category || 'alimenta??o').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
                     {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mÃƒÆ’Ã‚Âªs.
@@ -10740,7 +10692,7 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(4)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
@@ -10749,7 +10701,7 @@ React.useEffect(() => {
                         setOnboardingInsightViewed(true);
                         setOnboardingStep(6);
                       }}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       Entendi como funciona
                     </button>
@@ -10765,7 +10717,7 @@ React.useEffect(() => {
                       Conclua estas aÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes para deixar sua conta pronta para anÃƒÆ’Ã‚Â¡lises mais avanÃƒÆ’Ã‚Â§adas.
                     </p>
                   </div>
-                  <div className="card-premium rounded-2xl p-5 space-y-4">
+                  <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
                     <div className="h-2 w-full rounded-full bg-slate-700">
                       <div
                         className="h-full rounded-full bg-emerald-500 transition-all"
@@ -10785,13 +10737,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       Continuar
                     </button>
@@ -10815,13 +10767,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(6)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(8)}
-                      className="button-primary px-5 py-2.5 text-sm font-semibold"
+                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
                     >
                       Ver anÃƒÆ’Ã‚Â¡lise completa
                     </button>
@@ -10857,7 +10809,7 @@ React.useEffect(() => {
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="button-secondary px-4 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
                     >
                       Voltar
                     </button>
@@ -10951,7 +10903,7 @@ React.useEffect(() => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 z-[90] bg-[var(--overlay-strong)] backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[90] bg-slate-950/80 backdrop-blur-sm lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -10959,7 +10911,7 @@ React.useEffect(() => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'sidebar-premium fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-slate-900 bg-slate-950/96 backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
           isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64'
         )}
@@ -10976,12 +10928,12 @@ React.useEffect(() => {
             <button
               type="button"
               onClick={() => setIsSidebarCollapsed((current) => !current)}
-              className="button-secondary hidden h-10 w-10 p-0 lg:inline-flex"
+              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-300 transition hover:border-slate-700 hover:text-white lg:inline-flex"
               title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
             >
               {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
-            <button onClick={() => setIsSidebarOpen(false)} className="text-[var(--text-muted)] transition hover:text-[var(--text-primary)] lg:hidden">
+            <button onClick={() => setIsSidebarOpen(false)} className="text-slate-500 hover:text-white lg:hidden">
               <X size={20} />
             </button>
           </div>
@@ -11131,14 +11083,14 @@ React.useEffect(() => {
                     }
                     handleManageSubscription();
                   }}
-                  className="button-primary w-full py-2.5 text-xs font-semibold"
+                  className="w-full bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
                 >
                   {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
                 </button>
               </div>
               <button
                 onClick={handleLogout}
-                className="button-ghost mt-4 flex w-full items-center justify-center gap-3 px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                className="mt-4 flex w-full items-center justify-center gap-3 px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:text-white"
               >
                 <LogOut size={18} /> Sair
               </button>
@@ -11149,12 +11101,12 @@ React.useEffect(() => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="header-premium sticky top-0 z-30 px-3 py-3 sm:px-4 lg:px-8">
+        <header className="sticky top-0 z-30 border-b border-slate-900 bg-slate-950/80 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="button-secondary p-2 lg:hidden"
+              className="lg:hidden rounded-xl border border-slate-800 bg-slate-900 p-2 text-slate-400 hover:text-white"
             >
               <Menu size={20} />
             </button>
@@ -11195,7 +11147,7 @@ React.useEffect(() => {
                       if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
                       setActiveWorkspaceId(nextWorkspaceId);
                     }}
-                    className="select-premium rounded-lg px-2.5 py-1.5 text-xs"
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                   >
                     {workspaces.map((workspace) => (
                       <option key={workspace.id} value={workspace.id}>
@@ -11206,7 +11158,7 @@ React.useEffect(() => {
                 )}
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
-                  className="button-secondary rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-widest"
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:border-emerald-500 transition-colors"
                 >
                   + Conta
                 </button>
@@ -11222,7 +11174,7 @@ React.useEffect(() => {
                 }
                 handleManageSubscription();
               }}
-              className="button-primary hidden px-3 py-2 text-xs font-semibold md:inline-flex"
+              className="hidden md:inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-600"
             >
               <ArrowUpRight size={14} /> {isFreePlan ? 'Upgrade' : 'Assinatura'}
             </button>
@@ -11232,8 +11184,8 @@ React.useEffect(() => {
                 onClick={handleOpenNew}
                 type="button"
                 className={cn(
-                  'button-secondary inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-semibold sm:gap-2 sm:px-3',
-                  isQuickCreateOpen ? 'border-[rgba(76,141,255,0.34)]' : 'hover:border-[rgba(76,141,255,0.26)]'
+                  'inline-flex items-center gap-1.5 rounded-xl border bg-slate-900 px-2.5 py-2 text-xs font-bold text-white transition-all sm:gap-2 sm:px-3',
+                  isQuickCreateOpen ? 'border-emerald-500' : 'border-slate-800 hover:border-emerald-500'
                 )}
               >
                 <Plus size={14} />
@@ -11247,9 +11199,9 @@ React.useEffect(() => {
                     type="button"
                     aria-label="Fechar atalhos rÃƒÆ’Ã‚Â¡pidos"
                     onClick={() => setIsQuickCreateOpen(false)}
-                    className="fixed inset-0 z-40 bg-[var(--overlay-strong)] md:hidden"
+                    className="fixed inset-0 z-40 bg-slate-950/60 md:hidden"
                   />
-                  <div className="theme-modal-surface fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto p-3 md:absolute md:right-0 md:top-full md:mt-2 md:w-[22rem] md:max-h-[75vh] md:inset-x-auto">
+                  <div className="fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/98 p-3 shadow-2xl backdrop-blur-xl md:absolute md:right-0 md:top-full md:mt-2 md:w-[22rem] md:max-h-[75vh] md:inset-x-auto">
                   <div className="mb-3">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
                       {'Atalhos r\u00e1pidos'}
@@ -11661,7 +11613,7 @@ React.useEffect(() => {
         </div>
         </header>
 
-          <div className="header-premium border-b-0 px-3 py-3 md:hidden">
+          <div className="border-b border-slate-900/80 bg-slate-950/60 px-3 py-3 md:hidden">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Conta ativa</span>
@@ -11930,7 +11882,7 @@ React.useEffect(() => {
                           type="text"
                           value={settingsName}
                           onChange={(e) => setSettingsName(e.target.value)}
-                          className="input-premium w-full py-2 px-4 text-sm"
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                         />
                       </div>
                       <div className="space-y-2">
@@ -11939,7 +11891,7 @@ React.useEffect(() => {
                           type="email"
                           value={settingsEmail}
                           onChange={(e) => setSettingsEmail(e.target.value)}
-                          className="input-premium w-full py-2 px-4 text-sm"
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                         />
                       </div>
                     </div>
@@ -12013,7 +11965,7 @@ React.useEffect(() => {
                             value={settingsWhatsApp}
                             onChange={(e) => setSettingsWhatsApp(e.target.value)}
                             placeholder="+551199999999"
-                            className="input-premium w-full py-2 px-4 text-sm"
+                            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
                           />
                         </div>
                         <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4 space-y-2">
