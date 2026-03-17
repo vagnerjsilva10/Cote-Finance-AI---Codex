@@ -1,20 +1,20 @@
 export const RECURRING_DEBT_CATEGORIES = [
-  '¡gua',
+  '√Ågua',
   'Luz',
   'Internet',
   'Aluguel',
   'Telefone',
-  'CondomÌnio',
+  'Condom√≠nio',
   'Assinatura',
 ] as const;
 
 export const CONVENTIONAL_DEBT_CATEGORIES = [
-  'Cart„o de crÈdito',
-  'EmprÈstimo',
+  'Cart√£o de cr√©dito',
+  'Empr√©stimo',
   'Financiamento',
   'Cheque especial',
   'Acordo',
-  'Pessoa fÌsica',
+  'Pessoa f√≠sica',
   'Outros',
 ] as const;
 
@@ -26,9 +26,9 @@ export const RECURRING_DEBT_FREQUENCIES = [
 ] as const;
 
 export const RECURRING_DEBT_PRESETS = [
-  { category: '¡gua', title: '¡gua', description: 'Conta recorrente da residÍncia.', dueDay: '10' },
+  { category: '√Ågua', title: '√Ågua', description: 'Conta recorrente da resid√™ncia.', dueDay: '10' },
   { category: 'Luz', title: 'Luz', description: 'Energia com vencimento recorrente.', dueDay: '10' },
-  { category: 'Internet', title: 'Internet', description: 'Plano fixo da conex„o principal.', dueDay: '15' },
+  { category: 'Internet', title: 'Internet', description: 'Plano fixo da conex√£o principal.', dueDay: '15' },
   { category: 'Aluguel', title: 'Aluguel', description: 'Compromisso recorrente da moradia.', dueDay: '5' },
 ] as const;
 
