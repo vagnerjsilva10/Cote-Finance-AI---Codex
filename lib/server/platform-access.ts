@@ -84,6 +84,9 @@ export async function resolvePlatformRoleForEmail(email: string | null): Promise
 
   const normalizedEmail = email.trim().toLowerCase();
   const envRole = getPlatformRoleForEmail(normalizedEmail);
+  if (envRole === 'superadmin') {
+    return { role: 'superadmin', source: 'env' };
+  }
   const overrides = await readPlatformRoleOverrides();
   const overrideRole = overrides[normalizedEmail];
 
