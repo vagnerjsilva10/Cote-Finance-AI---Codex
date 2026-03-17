@@ -5,8 +5,8 @@ export const PLAN_LIMITS: Record<
   { transactionsPerMonth: number | null; aiInteractionsPerMonth: number | null; reports: 'basic' | 'full' }
 > = {
   FREE: {
-    transactionsPerMonth: 15,
-    aiInteractionsPerMonth: 15,
+    transactionsPerMonth: 10,
+    aiInteractionsPerMonth: 10,
     reports: 'basic',
   },
   PRO: {

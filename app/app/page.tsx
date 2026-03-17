@@ -391,8 +391,8 @@ type WhatsAppDiagnostic = {
   metaResult?: string | WhatsAppMetaDiagnostic | null;
 };
 
-const FREE_TRANSACTION_LIMIT_PER_MONTH = 15;
-const FREE_AI_LIMIT_PER_MONTH = 20;
+const FREE_TRANSACTION_LIMIT_PER_MONTH = 10;
+const FREE_AI_LIMIT_PER_MONTH = 10;
 const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const AVATAR_OUTPUT_SIZE = 256;
 
@@ -5732,7 +5732,7 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-slate-950/80 p-0 backdrop-blur-sm sm:overflow-y-auto sm:items-center sm:p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-slate-950/96 p-0 sm:overflow-y-auto sm:items-center sm:p-4">
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
