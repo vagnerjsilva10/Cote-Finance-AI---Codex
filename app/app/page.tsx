@@ -10904,6 +10904,13 @@ React.useEffect(() => {
         initialData={editingInvestment}
       />
 
+      <DebtCreateChooserModal
+        isOpen={isDebtTypeModalOpen}
+        onClose={() => setIsDebtTypeModalOpen(false)}
+        onChooseSingle={() => openConventionalDebtModal()}
+        onChooseRecurring={() => handleOpenCreateRecurringDebt()}
+      />
+
       <DebtModal
         isOpen={isDebtModalOpen}
         onClose={() => {
@@ -11712,6 +11719,8 @@ React.useEffect(() => {
               {activeTab === 'debts' && (
                 <DebtsView
                   debts={debts}
+                  feedbackMessage={debtFeedbackMessage}
+                  onDismissFeedback={() => setDebtFeedbackMessage(null)}
                   recurringDebts={recurringDebts}
                   onAddDebt={handleOpenCreateDebt}
                   onAddRecurringDebt={handleOpenCreateRecurringDebt}
