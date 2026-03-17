@@ -1,4 +1,4 @@
-﻿import type { PlatformAccess } from '@/lib/server/platform-access';
+import type { PlatformAccess } from '@/lib/server/platform-access';
 import type { SuperadminNavigationItem } from '@/lib/superadmin/navigation';
 
 export type SuperadminBootstrapResponse = {
@@ -545,69 +545,79 @@ export type SuperadminAiResetResponse = {
   resetReason: string | null;
 };
 
-export type SuperadminWhatsappWorkspaceSummary = {
+export type SuperadminWhatsappWorkspaceRecord = {
   workspaceId: string;
   workspaceName: string;
   ownerName: string | null;
   ownerEmail: string | null;
   plan: string;
-  hasPlanAccess: boolean;
-  whatsappStatus: string;
-  whatsappPhoneNumber: string | null;
-  whatsappConnectedAt: string | null;
-  configUpdatedAt: string | null;
-  lastEventAt: string | null;
-};
-
-export type SuperadminWhatsappRecentEvent = {
-  id: string;
-  type: string;
-  typeLabel: string;
-  category: string;
-  createdAt: string | null;
-  workspaceId: string;
-  workspaceName: string;
-  userId: string | null;
-  userEmail: string | null;
-  userName: string | null;
-  payload: unknown;
+  whatsappStatus: string | null;
+  phoneNumber: string | null;
+  testPhoneNumber: string | null;
+  lastConnectionState: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
+  lastErrorMessage: string | null;
+  lastErrorCategory: string | null;
+  lastValidatedAt: string | null;
+  lastTestSentAt: string | null;
+  updatedAt: string | null;
+  readiness: {
+    ready: boolean;
+    issues: string[];
+    connectTemplateConfigured: boolean;
+    digestTemplateConfigured: boolean;
+    workspacePhoneConfigured: boolean;
+    testDestinationConfigured: boolean;
+    templateLanguage: string | null;
+  };
+  activity: {
+    lastInboundAt: string | null;
+    lastOperationalAt: string | null;
+    lastOperationalType: string | null;
+    lastAiAt: string | null;
+    lastAiMode: string | null;
+    inboundLast24h: number;
+    transactionsLast24h: number;
+    alertsLast24h: number;
+    aiLast24h: number;
+  };
 };
 
 export type SuperadminWhatsappResponse = {
   query: string;
-  filters: {
-    plan: string;
-    status: string;
+  environment: {
+    ready: boolean;
+    accessTokenConfigured: boolean;
+    phoneNumberIdConfigured: boolean;
+    verifyTokenConfigured: boolean;
+    appSecretConfigured: boolean;
+    apiVersionConfigured: boolean;
   };
   summary: {
-    totalWorkspaces: number;
-    eligibleWorkspaces: number;
-    connectedWorkspaces: number;
-    connectingWorkspaces: number;
-    disconnectedWorkspaces: number;
-    configUpdatesLast30Days: number;
-    digestsSentLast30Days: number;
-    previewTestsLast30Days: number;
-  };
-  environment: {
-    apiConfigured: boolean;
-    verifyConfigured: boolean;
-    signatureValidationEnabled: boolean;
-    connectTemplateConfigured: boolean;
-    digestTemplateConfigured: boolean;
-    templateLanguage: string;
-    phoneNumberIdConfigured: boolean;
-  };
-  trend: Array<{
-    date: string;
     total: number;
-    config: number;
-    delivery: number;
-    connection: number;
+    connected: number;
+    withErrors: number;
+    pendingConfig: number;
+    messagesLast30Days: number;
+    transactionsViaWhatsappLast30Days: number;
+    transactionsEditedViaWhatsappLast30Days: number;
+    transactionsRemovedViaWhatsappLast30Days: number;
+    aiViaWhatsappLast30Days: number;
+    aiViaWhatsappGeminiLast30Days: number;
+    aiViaWhatsappDeterministicLast30Days: number;
+    alertsSentLast30Days: number;
+    overdueGoalAlertsLast30Days: number;
+    recurringHeavyAlertsLast30Days: number;
+  };
+  recentEvents: Array<{
+    id: string;
+    workspaceId: string;
+    workspaceName: string;
+    type: string;
+    createdAt: string;
+    userEmail: string | null;
+    aiMode: string | null;
   }>;
-  total: number;
-  workspaces: SuperadminWhatsappWorkspaceSummary[];
-  recentEvents: SuperadminWhatsappRecentEvent[];
+  workspaces: SuperadminWhatsappWorkspaceRecord[];
 };
 
 export type SuperadminReportsResponse = {
@@ -694,6 +704,7 @@ export type SuperadminContentResponse = {
     supportEmail: string;
   };
 };
+
 
 
 

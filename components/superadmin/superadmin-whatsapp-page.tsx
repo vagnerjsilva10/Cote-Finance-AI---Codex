@@ -1,43 +1,16 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
-import { Loader2, RefreshCw, Search } from 'lucide-react';
+import { Loader2, RefreshCw, Search, ShieldCheck } from 'lucide-react';
 
 import { fetchSuperadminJson, useDebouncedValue } from '@/components/superadmin/fetch-superadmin-json';
 import { formatAdminDateTime, formatPlanLabel } from '@/components/superadmin/superadmin-utils';
-
-type WhatsappWorkspaceRecord = {
-  workspaceId: string;
-  workspaceName: string;
-  ownerName: string | null;
-  ownerEmail: string | null;
-  plan: string;
-  whatsappStatus: string | null;
-  phoneNumber: string | null;
-  testPhoneNumber: string | null;
-  lastConnectionState: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
-  lastErrorMessage: string | null;
-  lastErrorCategory: string | null;
-  lastValidatedAt: string | null;
-  lastTestSentAt: string | null;
-  updatedAt: string | null;
-};
-
-type SuperadminWhatsappPanelResponse = {
-  query: string;
-  summary: {
-    total: number;
-    connected: number;
-    withErrors: number;
-    pendingConfig: number;
-  };
-  workspaces: WhatsappWorkspaceRecord[];
-};
+import type { SuperadminWhatsappResponse } from '@/lib/superadmin/types';
 
 export function SuperadminWhatsappPage() {
   const [query, setQuery] = React.useState('');
   const debouncedQuery = useDebouncedValue(query, 250);
-  const [data, setData] = React.useState<SuperadminWhatsappPanelResponse | null>(null);
+  const [data, setData] = React.useState<SuperadminWhatsappResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [feedback, setFeedback] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -47,7 +20,7 @@ export function SuperadminWhatsappPage() {
     try {
       setIsLoading(true);
       setError(null);
-      const payload = await fetchSuperadminJson<SuperadminWhatsappPanelResponse>(
+      const payload = await fetchSuperadminJson<SuperadminWhatsappResponse>(
         `/api/superadmin/whatsapp${debouncedQuery ? `?q=${encodeURIComponent(debouncedQuery)}` : ''}`
       );
       setData(payload);
@@ -63,7 +36,7 @@ export function SuperadminWhatsappPage() {
   }, [load]);
 
   const runAction = React.useCallback(
-    async (workspaceId: string, action: 'disconnect' | 'reset' | 'send_test') => {
+    async (workspaceId: string, action: 'disconnect' | 'reset' | 'diagnose' | 'send_test' | 'send_alerts') => {
       try {
         setIsSaving(`${workspaceId}:${action}`);
         setError(null);
@@ -73,15 +46,19 @@ export function SuperadminWhatsappPage() {
           body: JSON.stringify({ workspaceId, action }),
         });
         setFeedback(
-          action === 'send_test'
-            ? 'Teste enviado com sucesso.'
-            : action === 'reset'
-              ? 'Configuração resetada com sucesso.'
-              : 'Integração desconectada com sucesso.'
+          action === 'diagnose'
+            ? 'DiagnÃƒÂ³stico concluÃƒÂ­do com sucesso.'
+            : action === 'send_test'
+              ? 'Teste enviado com sucesso.'
+              : action === 'send_alerts'
+                ? 'Alertas enviados com sucesso.'
+                : action === 'reset'
+                  ? 'ConfiguraÃƒÂ§ÃƒÂ£o resetada com sucesso.'
+                  : 'IntegraÃƒÂ§ÃƒÂ£o desconectada com sucesso.'
         );
         await load();
       } catch (actionError) {
-        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a ação administrativa.');
+        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a aÃƒÂ§ÃƒÂ£o administrativa.');
       } finally {
         setIsSaving(null);
       }
@@ -97,8 +74,7 @@ export function SuperadminWhatsappPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
             <h1 className="mt-2 text-3xl font-semibold text-white">WhatsApp</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Audite integrações por workspace, identifique falhas de autenticação e execute reset, desconexão e teste
-              manual com rastreabilidade.
+              Audite integraÃƒÂ§ÃƒÂµes por workspace, identifique falhas de autenticaÃƒÂ§ÃƒÂ£o e acompanhe uso, alertas e aÃƒÂ§ÃƒÂµes do canal.
             </p>
           </div>
           <div className="w-full max-w-md">
@@ -108,7 +84,7 @@ export function SuperadminWhatsappPage() {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar workspace, owner ou número"
+                placeholder="Buscar workspace, owner ou nÃƒÂºmero"
                 className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
               />
             </div>
@@ -119,11 +95,62 @@ export function SuperadminWhatsappPage() {
       {feedback ? <Banner tone="success" message={feedback} /> : null}
       {error ? <Banner tone="error" message={error} /> : null}
 
+      <section className="grid gap-3 md:grid-cols-5">
+        <ReadinessCard label="Access token" ok={Boolean(data?.environment.accessTokenConfigured)} />
+        <ReadinessCard label="Phone number ID" ok={Boolean(data?.environment.phoneNumberIdConfigured)} />
+        <ReadinessCard label="Verify token" ok={Boolean(data?.environment.verifyTokenConfigured)} />
+        <ReadinessCard label="App secret" ok={Boolean(data?.environment.appSecretConfigured)} />
+        <ReadinessCard label="API version" ok={Boolean(data?.environment.apiVersionConfigured)} />
+      </section>
+
       <section className="grid gap-3 md:grid-cols-4">
         <MetricCard label="Workspaces" value={String(data?.summary.total ?? 0)} />
         <MetricCard label="Conectados" value={String(data?.summary.connected ?? 0)} />
         <MetricCard label="Com erro" value={String(data?.summary.withErrors ?? 0)} />
         <MetricCard label="Ajustes pendentes" value={String(data?.summary.pendingConfig ?? 0)} />
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-4">
+        <MetricCard label="Mensagens 30d" value={String(data?.summary.messagesLast30Days ?? 0)} />
+        <MetricCard label="TransaÃƒÂ§ÃƒÂµes 30d" value={String(data?.summary.transactionsViaWhatsappLast30Days ?? 0)} />
+        <MetricCard label="IA via WhatsApp" value={String(data?.summary.aiViaWhatsappLast30Days ?? 0)} />
+        <MetricCard label="Alertas 30d" value={String(data?.summary.alertsSentLast30Days ?? 0)} />
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-2">
+        <MetricCard
+          label="IA por intents fixas"
+          value={String(data?.summary.aiViaWhatsappDeterministicLast30Days ?? 0)}
+          helper="Consultas resolvidas pelo fluxo determinÃƒÂ­stico do canal."
+        />
+        <MetricCard
+          label="IA via Gemini"
+          value={String(data?.summary.aiViaWhatsappGeminiLast30Days ?? 0)}
+          helper="Perguntas livres respondidas com contexto financeiro do workspace."
+        />
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="LanÃƒÂ§amentos editados"
+          value={String(data?.summary.transactionsEditedViaWhatsappLast30Days ?? 0)}
+          helper="CorreÃƒÂ§ÃƒÂµes recentes feitas direto no canal."
+        />
+        <MetricCard
+          label="LanÃƒÂ§amentos removidos"
+          value={String(data?.summary.transactionsRemovedViaWhatsappLast30Days ?? 0)}
+          helper="ExclusÃƒÂµes e desfazimentos recentes."
+        />
+        <MetricCard
+          label="Alertas de meta atrasada"
+          value={String(data?.summary.overdueGoalAlertsLast30Days ?? 0)}
+          helper="Metas vencidas que ainda exigem valor adicional."
+        />
+        <MetricCard
+          label="Alertas de recorrÃƒÂªncia pesada"
+          value={String(data?.summary.recurringHeavyAlertsLast30Days ?? 0)}
+          helper="PressÃƒÂ£o de contas recorrentes sobre o mÃƒÂªs."
+        />
       </section>
 
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
@@ -152,31 +179,65 @@ export function SuperadminWhatsappPage() {
                         <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-semibold text-slate-300">
                           {workspace.whatsappStatus || 'DISCONNECTED'}
                         </span>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            workspace.readiness.ready
+                              ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+                              : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
+                          }`}
+                        >
+                          {workspace.readiness.ready ? 'Pronto para teste' : `${workspace.readiness.issues.length} ajuste(s)`}
+                        </span>
                       </div>
                       <div>
                         <p className="text-base font-semibold text-white">{workspace.workspaceName}</p>
                         <p className="text-sm text-slate-400">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
                       </div>
                       <div className="grid gap-2 text-sm text-slate-300 md:grid-cols-2 xl:grid-cols-4">
-                        <Info label="Número do workspace" value={workspace.phoneNumber || 'Não configurado'} />
-                        <Info label="Número de teste" value={workspace.testPhoneNumber || 'Não configurado'} />
-                        <Info label="Última validação" value={formatAdminDateTime(workspace.lastValidatedAt)} />
-                        <Info label="Último teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
+                        <Info label="NÃƒÂºmero do workspace" value={workspace.phoneNumber || 'NÃƒÂ£o configurado'} />
+                        <Info label="NÃƒÂºmero de teste" value={workspace.testPhoneNumber || 'NÃƒÂ£o configurado'} />
+                        <Info label="ÃƒÅ¡ltima validaÃƒÂ§ÃƒÂ£o" value={formatAdminDateTime(workspace.lastValidatedAt)} />
+                        <Info label="ÃƒÅ¡ltimo teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
                       </div>
+                      {!workspace.readiness.ready ? (
+                        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                          <p className="font-semibold text-amber-50">Checklist de prontidÃƒÂ£o</p>
+                          <ul className="mt-2 space-y-1 text-sm">
+                            {workspace.readiness.issues.map((issue) => (
+                              <li key={issue}>Ã¢â‚¬Â¢ {issue}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
                       {workspace.lastErrorMessage ? (
                         <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                          {workspace.lastErrorMessage}
+                          <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conexÃƒÂ£o'}</p>
+                          <p className="mt-1">{workspace.lastErrorMessage}</p>
                         </div>
                       ) : null}
                     </div>
 
                     <div className="flex flex-wrap gap-2">
                       <ActionButton
+                        disabled={isSaving === `${actionKeyPrefix}diagnose`}
+                        onClick={() => void runAction(workspace.workspaceId, 'diagnose')}
+                      >
+                        {isSaving === `${actionKeyPrefix}diagnose` ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                        Diagnosticar
+                      </ActionButton>
+                      <ActionButton
                         disabled={isSaving === `${actionKeyPrefix}send_test`}
                         onClick={() => void runAction(workspace.workspaceId, 'send_test')}
                       >
                         {isSaving === `${actionKeyPrefix}send_test` ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                         Reenviar teste
+                      </ActionButton>
+                      <ActionButton
+                        disabled={isSaving === `${actionKeyPrefix}send_alerts`}
+                        onClick={() => void runAction(workspace.workspaceId, 'send_alerts')}
+                      >
+                        {isSaving === `${actionKeyPrefix}send_alerts` ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        Enviar alertas
                       </ActionButton>
                       <ActionButton
                         disabled={isSaving === `${actionKeyPrefix}disconnect`}
@@ -200,15 +261,54 @@ export function SuperadminWhatsappPage() {
           </div>
         )}
       </section>
+
+      <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Atividade recente do canal</h2>
+            <p className="mt-1 text-sm text-slate-400">Eventos recentes de WhatsApp em todos os workspaces.</p>
+          </div>
+          <span className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-300">
+            {data?.recentEvents.length ?? 0} eventos
+          </span>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {!data?.recentEvents.length ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
+              Nenhum evento recente de WhatsApp encontrado.
+            </div>
+          ) : (
+            data.recentEvents.map((event) => (
+              <div key={event.id} className="rounded-2xl border border-slate-800 bg-slate-950/55 px-4 py-3">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{event.workspaceName}</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      {event.type}
+                      {event.type === 'ai.chat.used' && event.aiMode ? ` Ã¢â‚¬Â¢ modo ${event.aiMode}` : ''}
+                    </p>
+                  </div>
+                  <div className="text-sm text-slate-400">
+                    <p>{formatAdminDateTime(event.createdAt)}</p>
+                    <p>{event.userEmail || 'Sem usuÃƒÂ¡rio vinculado'}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3.5">
       <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
       <p className="mt-2 text-xl font-bold tracking-tight text-white">{value}</p>
+      {helper ? <p className="mt-1 text-xs leading-5 text-slate-400">{helper}</p> : null}
     </div>
   );
 }
@@ -236,7 +336,7 @@ function Banner({ tone, message }: { tone: 'success' | 'error'; message: string 
   );
 }
 
-function StateBadge({ state }: { state: WhatsappWorkspaceRecord['lastConnectionState'] }) {
+function StateBadge({ state }: { state: SuperadminWhatsappResponse['workspaces'][number]['lastConnectionState'] }) {
   const label =
     state === 'connected'
       ? 'Conectado'
@@ -248,7 +348,7 @@ function StateBadge({ state }: { state: WhatsappWorkspaceRecord['lastConnectionS
             ? 'Config pendente'
             : state === 'disconnected'
               ? 'Desconectado'
-              : 'Sem diagnóstico';
+              : 'Sem diagnÃƒÂ³stico';
   const className =
     state === 'connected'
       ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
@@ -279,5 +379,26 @@ function ActionButton(props: {
     >
       {props.children}
     </button>
+  );
+}
+
+function ReadinessCard({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3.5 ${ok ? 'border-emerald-500/20 bg-emerald-500/10' : 'border-amber-500/20 bg-amber-500/10'}`}
+    >
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{label}</p>
+      <p className={`mt-2 text-sm font-semibold ${ok ? 'text-emerald-100' : 'text-amber-100'}`}>
+        {ok ? 'Configurado' : 'Pendente'}
+      </p>
+    </div>
+  );
+}
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+    </div>
   );
 }
