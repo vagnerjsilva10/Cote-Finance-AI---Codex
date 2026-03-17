@@ -100,14 +100,14 @@ export function SuperadminWorkspaceDetailPage() {
           <CompactSection title="Contexto do workspace" subtitle="Plano, owner, canal e limites operacionais.">
             <div className="grid gap-2 sm:grid-cols-2">
               <InfoPill label="ID" value={workspace.id} />
-              <InfoPill label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'N?o identificado'} />
+              <InfoPill label="Owner" value={workspace.owner?.name || workspace.owner?.email || 'Não identificado'} />
               <InfoPill label="Plano do workspace" value={formatPlanLabel(workspace.workspacePlan)} />
               <InfoPill label="Plano do usuário" value={workspace.ownerUserPlan ? formatPlanLabel(workspace.ownerUserPlan) : 'Sem owner'} />
               <InfoPill label="Plano efetivo no app" value={formatPlanLabel(workspace.effectiveAppPlan)} />
               <InfoPill label="Assinatura" value={formatSubscriptionStatus(workspace.subscriptionStatus)} />
               <InfoPill label="Status operacional" value={workspace.lifecycleStatus === 'SUSPENDED' ? 'Suspenso' : 'Ativo'} />
               <InfoPill label="Período atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
-              <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'N?o configurado'} />
+              <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'Não configurado'} />
               <InfoPill label="Atualizado em" value={formatAdminDateTime(workspace.updatedAt)} />
               <InfoPill label="Transações/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
               <InfoPill label="IA/mes" value={workspace.limits.aiInteractionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.aiInteractionsPerMonth)} />

@@ -149,10 +149,10 @@ export async function requireAuthenticatedUser(req: Request) {
 
   const lifecycle = await getUserLifecycleStatus(user.id);
   if (lifecycle.status === 'SUSPENDED') {
-    throw new HttpError(423, lifecycle.reason || 'UsuÃƒÂ¡rio suspenso temporariamente pelo administrador.');
+    throw new HttpError(423, lifecycle.reason || 'Usu?rio suspenso temporariamente pelo administrador.');
   }
   if (lifecycle.status === 'BLOCKED') {
-    throw new HttpError(423, lifecycle.reason || 'UsuÃƒÂ¡rio bloqueado pelo administrador.');
+    throw new HttpError(423, lifecycle.reason || 'Usu?rio bloqueado pelo administrador.');
   }
 
   return {

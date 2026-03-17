@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 
@@ -7,12 +7,12 @@ import { supabase } from '@/lib/supabase';
 export async function fetchSuperadminJson<T>(input: string, init?: RequestInit): Promise<T> {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
-    throw new Error(error.message || 'NÃƒÂ£o foi possÃƒÂ­vel validar sua sessÃƒÂ£o.');
+    throw new Error(error.message || 'Não foi possível validar sua sessão.');
   }
 
   const token = data.session?.access_token;
   if (!token) {
-    throw new Error('SessÃƒÂ£o invÃƒÂ¡lida. FaÃƒÂ§a login novamente.');
+    throw new Error('Sessão inválida. Faça login novamente.');
   }
 
   const timeoutMs = 15000;
@@ -33,7 +33,7 @@ export async function fetchSuperadminJson<T>(input: string, init?: RequestInit):
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('A requisiÃƒÂ§ÃƒÂ£o administrativa demorou mais do que o esperado. Tente novamente.');
+      throw new Error('A requisição administrativa demorou mais do que o esperado. Tente novamente.');
     }
     throw error;
   } finally {

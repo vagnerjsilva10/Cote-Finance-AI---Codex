@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { normalizeWhatsappPhone } from '@/lib/whatsapp';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
@@ -43,6 +44,15 @@ export type ResolvedWorkspaceWhatsAppConfig = WorkspaceWhatsAppConfig & {
   templateLanguageSource: 'workspace' | 'env' | 'fallback';
   testPhoneNumberSource: 'workspace' | 'connected_phone' | 'unset';
 };
+
+function isMissingPlatformSettingError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021' || error.code === 'P2022';
+  }
+
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /PlatformSetting|does not exist|relation .* does not exist|table .* doesn't exist|column .* does not exist/i.test(message);
+}
 
 function cleanValue(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
@@ -164,13 +174,20 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
   }
 
   const settingKey = `${WHATSAPP_CONFIG_KEY_PREFIX}${workspaceId}`;
-  const configSetting = await prisma.platformSetting.findUnique({
-    where: { key: settingKey },
-    select: {
-      value: true,
-      updated_at: true,
-    },
-  });
+  let configSetting: { value: unknown; updated_at: Date } | null = null;
+  try {
+    configSetting = await prisma.platformSetting.findUnique({
+      where: { key: settingKey },
+      select: {
+        value: true,
+        updated_at: true,
+      },
+    });
+  } catch (error) {
+    if (!isMissingPlatformSettingError(error)) {
+      throw error;
+    }
+  }
 
   if (configSetting) {
     const parsed = readConfigPayload(configSetting.value);
@@ -284,26 +301,32 @@ export async function saveWorkspaceWhatsAppConfig(params: {
     updatedAt: new Date().toISOString(),
   };
 
-  await prisma.platformSetting.upsert({
-    where: {
-      key: `${WHATSAPP_CONFIG_KEY_PREFIX}${params.workspaceId}`,
-    },
-    update: {
-      value: {
-        version: 2,
-        updatedAt: normalizedConfig.updatedAt,
-        config: normalizedConfig,
+  try {
+    await prisma.platformSetting.upsert({
+      where: {
+        key: `${WHATSAPP_CONFIG_KEY_PREFIX}${params.workspaceId}`,
       },
-    },
-    create: {
-      key: `${WHATSAPP_CONFIG_KEY_PREFIX}${params.workspaceId}`,
-      value: {
-        version: 2,
-        updatedAt: normalizedConfig.updatedAt,
-        config: normalizedConfig,
+      update: {
+        value: {
+          version: 2,
+          updatedAt: normalizedConfig.updatedAt,
+          config: normalizedConfig,
+        },
       },
-    },
-  });
+      create: {
+        key: `${WHATSAPP_CONFIG_KEY_PREFIX}${params.workspaceId}`,
+        value: {
+          version: 2,
+          updatedAt: normalizedConfig.updatedAt,
+          config: normalizedConfig,
+        },
+      },
+    });
+  } catch (error) {
+    if (!isMissingPlatformSettingError(error)) {
+      throw error;
+    }
+  }
 
   await logWorkspaceEventSafe({
     workspaceId: params.workspaceId,

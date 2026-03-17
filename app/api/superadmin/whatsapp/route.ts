@@ -29,19 +29,19 @@ function buildWorkspaceReadiness(params: {
   const issues: string[] = [];
 
   if (!params.phoneNumber) {
-    issues.push('NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero do workspace nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o configurado.');
+    issues.push('Número do workspace não configurado.');
   } else if (!isValidE164Phone(params.phoneNumber)) {
-    issues.push('NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero do workspace fora do formato E.164.');
+    issues.push('Número do workspace fora do formato E.164.');
   }
 
   if (!params.testPhoneNumber) {
-    issues.push('NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero de teste nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o configurado.');
+    issues.push('Número de teste não configurado.');
   } else if (!isValidE164Phone(params.testPhoneNumber)) {
-    issues.push('NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero de teste fora do formato E.164.');
+    issues.push('Número de teste fora do formato E.164.');
   }
 
   if (!params.connectTemplateName) {
-    issues.push('Template de conexÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o ausente.');
+    issues.push('Template de conexão ausente.');
   }
 
   if (!params.digestTemplateName) {
@@ -49,7 +49,7 @@ function buildWorkspaceReadiness(params: {
   }
 
   if (!params.templateLanguage) {
-    issues.push('Idioma do template nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o configurado.');
+    issues.push('Idioma do template não configurado.');
   }
 
   return {
@@ -68,7 +68,7 @@ function getEnvironmentReadiness() {
   const phoneNumberIdConfigured = Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID);
   const verifyTokenConfigured = Boolean(process.env.WHATSAPP_VERIFY_TOKEN);
   const appSecretConfigured = Boolean(process.env.WHATSAPP_APP_SECRET);
-  const apiVersionConfigured = Boolean(process.env.WHATSAPP_API_VERSION);
+  const apiVersionConfigured = Boolean(process.env.WHATSAPP_API_VERSION || 'v21.0');
 
   return {
     ready:
@@ -84,7 +84,6 @@ function getEnvironmentReadiness() {
     apiVersionConfigured,
   };
 }
-
 export async function GET(req: Request) {
   try {
     await requireSuperadminAccess(req);
@@ -111,143 +110,34 @@ export async function GET(req: Request) {
       },
     });
 
-    const items = await Promise.all(
-      workspaces.map(async (workspace) => {
-        const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
-        const config = await getWorkspaceWhatsAppConfig(workspace.id);
-
-        const readiness = buildWorkspaceReadiness({
-          phoneNumber: workspace.whatsapp_phone_number || null,
-          testPhoneNumber: config.testPhoneNumber,
-          connectTemplateName: config.connectTemplateName,
-          digestTemplateName: config.digestTemplateName,
-          templateLanguage: config.templateLanguage,
-        });
-
-        const [
-          lastInboundEvent,
-          lastOperationalEvent,
-          lastAiEvent,
-          inboundLast24h,
-          transactionsLast24h,
-          alertsLast24h,
-          aiLast24h,
-        ] = await Promise.all([
-          prisma.workspaceEvent.findFirst({
-            where: {
-              workspace_id: workspace.id,
-              type: 'whatsapp.message.received',
-            },
-            orderBy: { created_at: 'desc' },
-            select: { created_at: true },
-          }),
-          prisma.workspaceEvent.findFirst({
-            where: {
-              workspace_id: workspace.id,
-              OR: [{ type: { startsWith: 'whatsapp.' } }, { type: { startsWith: 'superadmin.whatsapp.' } }],
-            },
-            orderBy: { created_at: 'desc' },
-            select: { created_at: true, type: true },
-          }),
-          prisma.workspaceEvent.findFirst({
-            where: {
-              workspace_id: workspace.id,
-              type: 'ai.chat.used',
-              payload: {
-                path: ['channel'],
-                equals: 'whatsapp',
-              },
-            },
-            orderBy: { created_at: 'desc' },
-            select: { created_at: true, payload: true },
-          }),
-          prisma.workspaceEvent.count({
-            where: {
-              workspace_id: workspace.id,
-              type: 'whatsapp.message.received',
-              created_at: { gte: last24HoursAgo },
-            },
-          }),
-          prisma.workspaceEvent.count({
-            where: {
-              workspace_id: workspace.id,
-              type: {
-                in: ['whatsapp.transaction.created', 'whatsapp.transaction.edited', 'whatsapp.transaction.removed', 'whatsapp.transaction.undone'],
-              },
-              created_at: { gte: last24HoursAgo },
-            },
-          }),
-          prisma.workspaceEvent.count({
-            where: {
-              workspace_id: workspace.id,
-              type: {
-                startsWith: 'whatsapp.alert.sent.',
-              },
-              created_at: { gte: last24HoursAgo },
-            },
-          }),
-          prisma.workspaceEvent.count({
-            where: {
-              workspace_id: workspace.id,
-              type: 'ai.chat.used',
-              payload: {
-                path: ['channel'],
-                equals: 'whatsapp',
-              },
-              created_at: { gte: last24HoursAgo },
-            },
-          }),
-        ]);
-
-        const aiMode =
-          lastAiEvent?.payload &&
-          typeof lastAiEvent.payload === 'object' &&
-          !Array.isArray(lastAiEvent.payload) &&
-          typeof (lastAiEvent.payload as Record<string, unknown>).mode === 'string'
-            ? String((lastAiEvent.payload as Record<string, unknown>).mode)
-            : null;
-
-        return {
-          workspaceId: workspace.id,
-          workspaceName: workspace.name,
-          ownerName: owner?.user.name ?? null,
-          ownerEmail: owner?.user.email ?? null,
-          plan: workspace.subscription?.plan || 'FREE',
-          whatsappStatus: workspace.whatsapp_status || null,
-          phoneNumber: workspace.whatsapp_phone_number || null,
-          testPhoneNumber: config.testPhoneNumber,
-          lastConnectionState: config.lastConnectionState,
-          lastErrorMessage: config.lastErrorMessage,
-          lastErrorCategory: config.lastErrorCategory,
-          lastValidatedAt: config.lastValidatedAt,
-          lastTestSentAt: config.lastTestSentAt,
-          updatedAt: config.updatedAt ?? toIso(workspace.updated_at),
-          readiness,
-          activity: {
-            lastInboundAt: toIso(lastInboundEvent?.created_at),
-            lastOperationalAt: toIso(lastOperationalEvent?.created_at),
-            lastOperationalType: lastOperationalEvent?.type ?? null,
-            lastAiAt: toIso(lastAiEvent?.created_at),
-            lastAiMode: aiMode,
-            inboundLast24h,
-            transactionsLast24h,
-            alertsLast24h,
-            aiLast24h,
-          },
-        };
-      })
-    );
-
-    const filtered = query
-      ? items.filter((item) =>
-          [item.workspaceId, item.workspaceName, item.ownerEmail || '', item.ownerName || '', item.phoneNumber || '']
-            .join(' ')
-            .toLowerCase()
-            .includes(query)
-        )
-      : items;
+    const workspaceIds = workspaces.map((workspace) => workspace.id);
+    const emptyActivity: {
+      lastInboundAt: string | null;
+      lastOperationalAt: string | null;
+      lastOperationalType: string | null;
+      lastAiAt: string | null;
+      lastAiMode: string | null;
+      inboundLast24h: number;
+      transactionsLast24h: number;
+      alertsLast24h: number;
+      aiLast24h: number;
+    } = {
+      lastInboundAt: null,
+      lastOperationalAt: null,
+      lastOperationalType: null,
+      lastAiAt: null,
+      lastAiMode: null,
+      inboundLast24h: 0,
+      transactionsLast24h: 0,
+      alertsLast24h: 0,
+      aiLast24h: 0,
+    };
 
     const [
+      configResults,
+      inboundEvents,
+      operationalEvents,
+      aiEvents,
       recentEvents,
       messagesLast30Days,
       transactionsViaWhatsappLast30Days,
@@ -258,145 +148,313 @@ export async function GET(req: Request) {
       alertsSentLast30Days,
       overdueGoalAlertsLast30Days,
       recurringHeavyAlertsLast30Days,
-    ] =
-      await Promise.all([
-        prisma.workspaceEvent.findMany({
-          where: {
-            OR: [
-              {
-                type: {
-                  startsWith: 'whatsapp.',
-                },
+    ] = await Promise.all([
+      Promise.allSettled(workspaceIds.map((workspaceId) => getWorkspaceWhatsAppConfig(workspaceId))),
+      workspaceIds.length
+        ? prisma.workspaceEvent.findMany({
+            where: {
+              workspace_id: { in: workspaceIds },
+              type: 'whatsapp.message.received',
+            },
+            orderBy: { created_at: 'desc' },
+            select: {
+              workspace_id: true,
+              created_at: true,
+            },
+          })
+        : Promise.resolve([]),
+      workspaceIds.length
+        ? prisma.workspaceEvent.findMany({
+            where: {
+              workspace_id: { in: workspaceIds },
+              OR: [{ type: { startsWith: 'whatsapp.' } }, { type: { startsWith: 'superadmin.whatsapp.' } }],
+            },
+            orderBy: { created_at: 'desc' },
+            select: {
+              workspace_id: true,
+              created_at: true,
+              type: true,
+            },
+          })
+        : Promise.resolve([]),
+      workspaceIds.length
+        ? prisma.workspaceEvent.findMany({
+            where: {
+              workspace_id: { in: workspaceIds },
+              type: 'ai.chat.used',
+              payload: {
+                path: ['channel'],
+                equals: 'whatsapp',
               },
-              {
-                type: 'ai.chat.used',
-                payload: {
-                  path: ['channel'],
-                  equals: 'whatsapp',
-                },
-              },
-            ],
-          },
-          orderBy: { created_at: 'desc' },
-          take: 12,
-          select: {
-            id: true,
-            workspace_id: true,
-            type: true,
-            created_at: true,
-            workspace: {
-              select: {
-                name: true,
+            },
+            orderBy: { created_at: 'desc' },
+            select: {
+              workspace_id: true,
+              created_at: true,
+              payload: true,
+            },
+          })
+        : Promise.resolve([]),
+      prisma.workspaceEvent.findMany({
+        where: {
+          OR: [
+            {
+              type: {
+                startsWith: 'whatsapp.',
               },
             },
-            user: {
-              select: {
-                email: true,
+            {
+              type: 'ai.chat.used',
+              payload: {
+                path: ['channel'],
+                equals: 'whatsapp',
               },
             },
-            payload: true,
-          },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: 'whatsapp.message.received',
-            created_at: {
-              gte: thirtyDaysAgo,
+          ],
+        },
+        orderBy: { created_at: 'desc' },
+        take: 12,
+        select: {
+          id: true,
+          workspace_id: true,
+          type: true,
+          created_at: true,
+          workspace: {
+            select: {
+              name: true,
             },
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: 'whatsapp.transaction.created',
-            created_at: {
-              gte: thirtyDaysAgo,
+          user: {
+            select: {
+              email: true,
             },
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: 'whatsapp.transaction.edited',
-            created_at: {
-              gte: thirtyDaysAgo,
-            },
+          payload: true,
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: 'whatsapp.message.received',
+          created_at: {
+            gte: thirtyDaysAgo,
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: {
-              in: ['whatsapp.transaction.removed', 'whatsapp.transaction.undone'],
-            },
-            created_at: {
-              gte: thirtyDaysAgo,
-            },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: 'whatsapp.transaction.created',
+          created_at: {
+            gte: thirtyDaysAgo,
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: 'ai.chat.used',
-            payload: {
-              path: ['channel'],
-              equals: 'whatsapp',
-            },
-            created_at: {
-              gte: thirtyDaysAgo,
-            },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: 'whatsapp.transaction.edited',
+          created_at: {
+            gte: thirtyDaysAgo,
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: 'ai.chat.used',
-            payload: {
-              path: ['channel'],
-              equals: 'whatsapp',
-            },
-            AND: [
-              {
-                payload: {
-                  path: ['mode'],
-                  equals: 'gemini',
-                },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: {
+            in: ['whatsapp.transaction.removed', 'whatsapp.transaction.undone'],
+          },
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: 'ai.chat.used',
+          payload: {
+            path: ['channel'],
+            equals: 'whatsapp',
+          },
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: 'ai.chat.used',
+          payload: {
+            path: ['channel'],
+            equals: 'whatsapp',
+          },
+          AND: [
+            {
+              payload: {
+                path: ['mode'],
+                equals: 'gemini',
               },
-            ],
-            created_at: {
-              gte: thirtyDaysAgo,
             },
+          ],
+          created_at: {
+            gte: thirtyDaysAgo,
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: {
-              startsWith: 'whatsapp.alert.sent.',
-            },
-            created_at: {
-              gte: thirtyDaysAgo,
-            },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: {
+            startsWith: 'whatsapp.alert.sent.',
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: {
-              startsWith: 'whatsapp.alert.sent.goal_overdue.',
-            },
-            created_at: {
-              gte: thirtyDaysAgo,
-            },
+          created_at: {
+            gte: thirtyDaysAgo,
           },
-        }),
-        prisma.workspaceEvent.count({
-          where: {
-            type: {
-              startsWith: 'whatsapp.alert.sent.recurring_heavy.',
-            },
-            created_at: {
-              gte: thirtyDaysAgo,
-            },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: {
+            startsWith: 'whatsapp.alert.sent.goal_overdue.',
           },
-        }),
-      ]);
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+        },
+      }),
+      prisma.workspaceEvent.count({
+        where: {
+          type: {
+            startsWith: 'whatsapp.alert.sent.recurring_heavy.',
+          },
+          created_at: {
+            gte: thirtyDaysAgo,
+          },
+        },
+      }),
+    ]);
+
+    const configByWorkspace = new Map();
+    for (let index = 0; index < workspaceIds.length; index += 1) {
+      const workspaceId = workspaceIds[index];
+      const configResult = configResults[index];
+      if (configResult && configResult.status === 'fulfilled') {
+        configByWorkspace.set(workspaceId, configResult.value);
+        continue;
+      }
+
+      console.error('Superadmin WhatsApp config load failed:', {
+        workspaceId,
+        error: configResult && configResult.status === 'rejected' ? configResult.reason : 'unknown',
+      });
+
+      configByWorkspace.set(workspaceId, {
+        connectTemplateName: null,
+        digestTemplateName: null,
+        templateLanguage: 'pt_BR',
+        testPhoneNumber: null,
+        lastConnectionState: 'error',
+        lastErrorMessage: 'Não foi possível ler a configuração deste workspace agora.',
+        lastErrorCategory: 'config',
+        lastValidatedAt: null,
+        lastTestSentAt: null,
+        pendingConfirmation: null,
+        updatedAt: null,
+      });
+    }
+
+    const activityByWorkspace = new Map(workspaceIds.map((workspaceId) => [workspaceId, { ...emptyActivity }]));
+
+    for (const event of inboundEvents) {
+      const activity = activityByWorkspace.get(event.workspace_id);
+      if (!activity) continue;
+      if (!activity.lastInboundAt) {
+        activity.lastInboundAt = toIso(event.created_at);
+      }
+      if (event.created_at >= last24HoursAgo) {
+        activity.inboundLast24h += 1;
+      }
+    }
+
+    for (const event of operationalEvents) {
+      const activity = activityByWorkspace.get(event.workspace_id);
+      if (!activity) continue;
+      if (!activity.lastOperationalAt) {
+        activity.lastOperationalAt = toIso(event.created_at);
+        activity.lastOperationalType = event.type;
+      }
+      if (event.created_at >= last24HoursAgo) {
+        if (event.type.startsWith('whatsapp.alert.sent.')) {
+          activity.alertsLast24h += 1;
+        }
+        if (
+          event.type === 'whatsapp.transaction.created' ||
+          event.type === 'whatsapp.transaction.edited' ||
+          event.type === 'whatsapp.transaction.removed' ||
+          event.type === 'whatsapp.transaction.undone'
+        ) {
+          activity.transactionsLast24h += 1;
+        }
+      }
+    }
+
+    for (const event of aiEvents) {
+      const activity = activityByWorkspace.get(event.workspace_id);
+      if (!activity) continue;
+      if (!activity.lastAiAt) {
+        activity.lastAiAt = toIso(event.created_at);
+        activity.lastAiMode =
+          event.payload &&
+          typeof event.payload === 'object' &&
+          !Array.isArray(event.payload) &&
+          typeof event.payload.mode === 'string'
+            ? event.payload.mode
+            : null;
+      }
+      if (event.created_at >= last24HoursAgo) {
+        activity.aiLast24h += 1;
+      }
+    }
+
+    const items = workspaces.map((workspace) => {
+      const owner = workspace.members.find((member) => member.role === 'OWNER') || null;
+      const config = configByWorkspace.get(workspace.id);
+      const readiness = buildWorkspaceReadiness({
+        phoneNumber: workspace.whatsapp_phone_number || null,
+        testPhoneNumber: config?.testPhoneNumber || null,
+        connectTemplateName: config?.connectTemplateName || null,
+        digestTemplateName: config?.digestTemplateName || null,
+        templateLanguage: config?.templateLanguage || null,
+      });
+
+      return {
+        workspaceId: workspace.id,
+        workspaceName: workspace.name,
+        ownerName: owner?.user.name ?? null,
+        ownerEmail: owner?.user.email ?? null,
+        plan: workspace.subscription?.plan || 'FREE',
+        whatsappStatus: workspace.whatsapp_status || null,
+        phoneNumber: workspace.whatsapp_phone_number || null,
+        testPhoneNumber: config?.testPhoneNumber || null,
+        lastConnectionState: config?.lastConnectionState || 'idle',
+        lastErrorMessage: config?.lastErrorMessage || null,
+        lastErrorCategory: config?.lastErrorCategory || null,
+        lastValidatedAt: config?.lastValidatedAt || null,
+        lastTestSentAt: config?.lastTestSentAt || null,
+        updatedAt: config?.updatedAt ?? toIso(workspace.updated_at),
+        readiness,
+        activity: activityByWorkspace.get(workspace.id) || { ...emptyActivity },
+      };
+    });
+
+    const filtered = query
+      ? items.filter((item) =>
+          [item.workspaceId, item.workspaceName, item.ownerEmail || '', item.ownerName || '', item.phoneNumber || '']
+            .join(' ')
+            .toLowerCase()
+            .includes(query)
+        )
+      : items;
 
     return json({
       query,
+      environment: getEnvironmentReadiness(),
       summary: {
         total: filtered.length,
         connected: filtered.filter((item) => item.whatsappStatus === 'CONNECTED').length,
@@ -408,10 +466,7 @@ export async function GET(req: Request) {
         transactionsRemovedViaWhatsappLast30Days,
         aiViaWhatsappLast30Days,
         aiViaWhatsappGeminiLast30Days,
-        aiViaWhatsappDeterministicLast30Days: Math.max(
-          0,
-          aiViaWhatsappLast30Days - aiViaWhatsappGeminiLast30Days
-        ),
+        aiViaWhatsappDeterministicLast30Days: Math.max(0, aiViaWhatsappLast30Days - aiViaWhatsappGeminiLast30Days),
         alertsSentLast30Days,
         overdueGoalAlertsLast30Days,
         recurringHeavyAlertsLast30Days,
@@ -428,8 +483,8 @@ export async function GET(req: Request) {
           event.payload &&
           typeof event.payload === 'object' &&
           !Array.isArray(event.payload) &&
-          typeof (event.payload as Record<string, unknown>).mode === 'string'
-            ? String((event.payload as Record<string, unknown>).mode)
+          typeof event.payload.mode === 'string'
+            ? event.payload.mode
             : null,
       })),
       workspaces: filtered,
@@ -443,7 +498,7 @@ export async function GET(req: Request) {
     if (prismaUnavailable) {
       return json(
         {
-          error: 'O painel de WhatsApp nao conseguiu acessar o banco agora. Tente novamente em instantes.',
+          error: 'O painel de WhatsApp não conseguiu acessar o banco agora. Tente novamente em instantes.',
           detail: prismaUnavailable.detail ?? null,
         },
         503
@@ -468,7 +523,7 @@ export async function PATCH(req: Request) {
 
     const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
     if (!workspaceId) {
-      return json({ error: 'Workspace invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' }, 400);
+      return json({ error: 'Workspace inválido.' }, 400);
     }
 
     const workspace = await prisma.workspace.findUnique({
@@ -481,7 +536,7 @@ export async function PATCH(req: Request) {
     });
 
     if (!workspace) {
-      return json({ error: 'Workspace nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o encontrado.' }, 404);
+      return json({ error: 'Workspace não encontrado.' }, 404);
     }
 
     if (body.action === 'save_config') {
@@ -493,11 +548,11 @@ export async function PATCH(req: Request) {
         typeof body.testPhoneNumber === 'string' && body.testPhoneNumber.trim() ? body.testPhoneNumber.trim() : null;
 
       if (nextPhone && !isValidE164Phone(nextPhone)) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero principal invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido. Use o formato E.164.' }, 400);
+        return json({ error: 'Número principal inválido. Use o formato E.164.' }, 400);
       }
 
       if (nextTestPhone && !isValidE164Phone(nextTestPhone)) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºmero de teste invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido. Use o formato E.164.' }, 400);
+        return json({ error: 'Número de teste inválido. Use o formato E.164.' }, 400);
       }
 
       const normalizedPhone = nextPhone ? nextPhone.replace(/\D/g, '') : null;
@@ -627,7 +682,7 @@ export async function PATCH(req: Request) {
       });
 
       if (!result.sent) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­vel enviar o teste do WhatsApp para este workspace.' }, 409);
+        return json({ error: 'Não foi possível enviar o teste do WhatsApp para este workspace.' }, 409);
       }
 
       const updatedConfig = await saveWorkspaceWhatsAppConfig({
@@ -664,7 +719,7 @@ export async function PATCH(req: Request) {
       });
 
       if (!result.sent) {
-        return json({ error: 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o hÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ alertas elegÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis para enviar neste workspace agora.' }, 409);
+        return json({ error: 'Não há alertas elegíveis para enviar neste workspace agora.' }, 409);
       }
 
       await logWorkspaceEventSafe({
@@ -684,7 +739,7 @@ export async function PATCH(req: Request) {
       });
     }
 
-    return json({ error: 'AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o administrativa invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lida.' }, 400);
+    return json({ error: 'Ação administrativa inválida.' }, 400);
   } catch (error) {
     if (error instanceof HttpError) {
       return json({ error: error.message }, error.status);

@@ -25,6 +25,7 @@ export function SuperadminWhatsappPage() {
       );
       setData(payload);
     } catch (fetchError) {
+      setData(null);
       setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar o painel de WhatsApp.');
     } finally {
       setIsLoading(false);
@@ -41,30 +42,37 @@ export function SuperadminWhatsappPage() {
         setIsSaving(`${workspaceId}:${action}`);
         setError(null);
         setFeedback(null);
+
         await fetchSuperadminJson('/api/superadmin/whatsapp', {
           method: 'PATCH',
           body: JSON.stringify({ workspaceId, action }),
         });
+
         setFeedback(
           action === 'diagnose'
-            ? 'DiagnÃƒÂ³stico concluÃƒÂ­do com sucesso.'
+            ? 'Diagnóstico concluído com sucesso.'
             : action === 'send_test'
               ? 'Teste enviado com sucesso.'
               : action === 'send_alerts'
                 ? 'Alertas enviados com sucesso.'
                 : action === 'reset'
-                  ? 'ConfiguraÃƒÂ§ÃƒÂ£o resetada com sucesso.'
-                  : 'IntegraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o desconectada com sucesso.'
+                  ? 'Configuração resetada com sucesso.'
+                  : 'Integração desconectada com sucesso.'
         );
+
         await load();
       } catch (actionError) {
-        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a aÃƒÂ§ÃƒÂ£o administrativa.');
+        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a ação administrativa.');
       } finally {
         setIsSaving(null);
       }
     },
     [load]
   );
+
+  const hasData = Boolean(data);
+  const showInitialLoading = isLoading && !hasData;
+  const showUnavailableState = !isLoading && !hasData;
 
   return (
     <div className="space-y-6">
@@ -74,7 +82,7 @@ export function SuperadminWhatsappPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
             <h1 className="mt-2 text-3xl font-semibold text-white">WhatsApp</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Audite integraÃƒÂ§ÃƒÂµes por workspace, identifique falhas de autenticaÃƒÂ§ÃƒÂ£o e acompanhe uso, alertas e aÃƒÂ§ÃƒÂµes do canal.
+              Audite integrações por workspace, identifique falhas de autenticação e acompanhe uso, alertas e ações do canal.
             </p>
           </div>
           <div className="w-full max-w-md">
@@ -84,7 +92,7 @@ export function SuperadminWhatsappPage() {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar workspace, owner ou nÃƒÂºmero"
+                placeholder="Buscar workspace, owner ou número"
                 className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
               />
             </div>
@@ -94,220 +102,270 @@ export function SuperadminWhatsappPage() {
 
       {feedback ? <Banner tone="success" message={feedback} /> : null}
       {error ? <Banner tone="error" message={error} /> : null}
-      {!isLoading && data && !data.environment.ready ? (
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-4 text-sm text-amber-100">
-          <p className="font-semibold text-amber-50">Configuracao do WhatsApp ainda nao foi concluida.</p>
-          <p className="mt-1 text-amber-100/90">
-            Revise as variaveis do ambiente e finalize os templates antes de usar o painel para testes e operacoes.
-          </p>
-        </div>
-      ) : null}
 
-
-      <section className="grid gap-3 md:grid-cols-5">
-        <ReadinessCard label="Access token" ok={Boolean(data?.environment.accessTokenConfigured)} />
-        <ReadinessCard label="Phone number ID" ok={Boolean(data?.environment.phoneNumberIdConfigured)} />
-        <ReadinessCard label="Verify token" ok={Boolean(data?.environment.verifyTokenConfigured)} />
-        <ReadinessCard label="App secret" ok={Boolean(data?.environment.appSecretConfigured)} />
-        <ReadinessCard label="API version" ok={Boolean(data?.environment.apiVersionConfigured)} />
-      </section>
-
-      <section className="grid gap-3 md:grid-cols-4">
-        <MetricCard label="Workspaces" value={String(data?.summary.total ?? 0)} />
-        <MetricCard label="Conectados" value={String(data?.summary.connected ?? 0)} />
-        <MetricCard label="Com erro" value={String(data?.summary.withErrors ?? 0)} />
-        <MetricCard label="Ajustes pendentes" value={String(data?.summary.pendingConfig ?? 0)} />
-      </section>
-
-      <section className="grid gap-3 md:grid-cols-4">
-        <MetricCard label="Mensagens 30d" value={String(data?.summary.messagesLast30Days ?? 0)} />
-        <MetricCard label="TransaÃƒÂ§ÃƒÂµes 30d" value={String(data?.summary.transactionsViaWhatsappLast30Days ?? 0)} />
-        <MetricCard label="IA via WhatsApp" value={String(data?.summary.aiViaWhatsappLast30Days ?? 0)} />
-        <MetricCard label="Alertas 30d" value={String(data?.summary.alertsSentLast30Days ?? 0)} />
-      </section>
-
-      <section className="grid gap-3 md:grid-cols-2">
-        <MetricCard
-          label="IA por intents fixas"
-          value={String(data?.summary.aiViaWhatsappDeterministicLast30Days ?? 0)}
-          helper="Consultas resolvidas pelo fluxo determinÃƒÂ­stico do canal."
-        />
-        <MetricCard
-          label="IA via Gemini"
-          value={String(data?.summary.aiViaWhatsappGeminiLast30Days ?? 0)}
-          helper="Perguntas livres respondidas com contexto financeiro do workspace."
-        />
-      </section>
-
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="LanÃƒÂ§amentos editados"
-          value={String(data?.summary.transactionsEditedViaWhatsappLast30Days ?? 0)}
-          helper="CorreÃƒÂ§ÃƒÂµes recentes feitas direto no canal."
-        />
-        <MetricCard
-          label="LanÃƒÂ§amentos removidos"
-          value={String(data?.summary.transactionsRemovedViaWhatsappLast30Days ?? 0)}
-          helper="ExclusÃƒÆ’Ã‚Âµes e desfazimentos recentes."
-        />
-        <MetricCard
-          label="Alertas de meta atrasada"
-          value={String(data?.summary.overdueGoalAlertsLast30Days ?? 0)}
-          helper="Metas vencidas que ainda exigem valor adicional."
-        />
-        <MetricCard
-          label="Alertas de recorrÃƒÂªncia pesada"
-          value={String(data?.summary.recurringHeavyAlertsLast30Days ?? 0)}
-          helper="PressÃƒÂ£o de contas recorrentes sobre o mÃƒÂªs."
-        />
-      </section>
-
-      <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-        {isLoading ? (
-          <div className="flex min-h-[240px] items-center justify-center text-slate-300">
+      {showInitialLoading ? (
+        <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8">
+          <div className="flex min-h-[220px] items-center justify-center text-slate-300">
             <Loader2 className="mr-3 h-5 w-5 animate-spin text-emerald-400" />
             Carregando painel de WhatsApp...
           </div>
-        ) : !data || data.workspaces.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
-            Nenhum workspace encontrado.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {data.workspaces.map((workspace) => {
-              const actionKeyPrefix = `${workspace.workspaceId}:`;
-              return (
-                <div key={workspace.workspaceId} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
-                          {formatPlanLabel(workspace.plan)}
-                        </span>
-                        <StateBadge state={workspace.lastConnectionState} />
-                        <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-semibold text-slate-300">
-                          {workspace.whatsappStatus || 'DISCONNECTED'}
-                        </span>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            workspace.readiness.ready
-                              ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
-                              : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
-                          }`}
-                        >
-                          {workspace.readiness.ready ? 'Pronto para teste' : `${workspace.readiness.issues.length} ajuste(s)`}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-white">{workspace.workspaceName}</p>
-                        <p className="text-sm text-slate-400">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
-                      </div>
-                      <div className="grid gap-2 text-sm text-slate-300 md:grid-cols-2 xl:grid-cols-4">
-                        <Info label="NÃƒÂºmero do workspace" value={workspace.phoneNumber || 'NÃƒÂ£o configurado'} />
-                        <Info label="NÃƒÂºmero de teste" value={workspace.testPhoneNumber || 'NÃƒÂ£o configurado'} />
-                        <Info label="ÃƒÅ¡ltima validaÃƒÂ§ÃƒÂ£o" value={formatAdminDateTime(workspace.lastValidatedAt)} />
-                        <Info label="ÃƒÅ¡ltimo teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
-                      </div>
-                      {!workspace.readiness.ready ? (
-                        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                          <p className="font-semibold text-amber-50">Checklist de prontidÃƒÂ£o</p>
-                          <ul className="mt-2 space-y-1 text-sm">
-                            {workspace.readiness.issues.map((issue) => (
-                              <li key={issue}>ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {issue}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-                      {workspace.lastErrorMessage ? (
-                        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                          <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conexÃƒÂ£o'}</p>
-                          <p className="mt-1">{workspace.lastErrorMessage}</p>
-                        </div>
-                      ) : null}
-                    </div>
+        </section>
+      ) : null}
 
-                    <div className="flex flex-wrap gap-2">
-                      <ActionButton
-                        disabled={isSaving === `${actionKeyPrefix}diagnose`}
-                        onClick={() => void runAction(workspace.workspaceId, 'diagnose')}
-                      >
-                        {isSaving === `${actionKeyPrefix}diagnose` ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                        Diagnosticar
-                      </ActionButton>
-                      <ActionButton
-                        disabled={isSaving === `${actionKeyPrefix}send_test`}
-                        onClick={() => void runAction(workspace.workspaceId, 'send_test')}
-                      >
-                        {isSaving === `${actionKeyPrefix}send_test` ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                        Reenviar teste
-                      </ActionButton>
-                      <ActionButton
-                        disabled={isSaving === `${actionKeyPrefix}send_alerts`}
-                        onClick={() => void runAction(workspace.workspaceId, 'send_alerts')}
-                      >
-                        {isSaving === `${actionKeyPrefix}send_alerts` ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                        Enviar alertas
-                      </ActionButton>
-                      <ActionButton
-                        disabled={isSaving === `${actionKeyPrefix}disconnect`}
-                        onClick={() => void runAction(workspace.workspaceId, 'disconnect')}
-                      >
-                        Desconectar
-                      </ActionButton>
-                      <ActionButton
-                        tone="danger"
-                        disabled={isSaving === `${actionKeyPrefix}reset`}
-                        onClick={() => void runAction(workspace.workspaceId, 'reset')}
-                      >
-                        {isSaving === `${actionKeyPrefix}reset` ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                        Resetar
-                      </ActionButton>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Atividade recente do canal</h2>
-            <p className="mt-1 text-sm text-slate-400">Eventos recentes de WhatsApp em todos os workspaces.</p>
-          </div>
-          <span className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-300">
-            {data?.recentEvents.length ?? 0} eventos
-          </span>
-        </div>
-
-        <div className="mt-5 space-y-3">
-          {!data?.recentEvents.length ? (
-            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
-              Nenhum evento recente de WhatsApp encontrado.
+      {showUnavailableState ? (
+        <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-5 text-sm text-rose-100">
+            <p className="font-semibold text-rose-50">O painel de WhatsApp não conseguiu carregar os dados agora.</p>
+            <p className="mt-2 text-rose-100/90">
+              Quando a requisição falha, o sistema não mostra mais estados falsos de configuração pendente ou métricas zeradas.
+              Tente novamente para validar o estado real da integração.
+            </p>
+            <div className="mt-4">
+              <ActionButton onClick={() => void load()}>
+                <RefreshCw className="h-4 w-4" />
+                Tentar novamente
+              </ActionButton>
             </div>
-          ) : (
-            data.recentEvents.map((event) => (
-              <div key={event.id} className="rounded-2xl border border-slate-800 bg-slate-950/55 px-4 py-3">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-white">{event.workspaceName}</p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      {event.type}
-                      {event.type === 'ai.chat.used' && event.aiMode ? ` ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ modo ${event.aiMode}` : ''}
-                    </p>
-                  </div>
-                  <div className="text-sm text-slate-400">
-                    <p>{formatAdminDateTime(event.createdAt)}</p>
-                    <p>{event.userEmail || 'Sem usuÃƒÂ¡rio vinculado'}</p>
-                  </div>
-                </div>
+          </div>
+        </section>
+      ) : null}
+
+      {data ? (
+        <>
+          {!isLoading && !data.environment.ready ? (
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-4 text-sm text-amber-100">
+              <p className="font-semibold text-amber-50">Configuração do WhatsApp ainda não foi concluída.</p>
+              <p className="mt-1 text-amber-100/90">
+                Revise as variáveis de ambiente, os templates e os números por workspace antes de usar o painel para testes e operações.
+              </p>
+            </div>
+          ) : null}
+
+          <section className="grid gap-3 md:grid-cols-5">
+            <ReadinessCard label="Access token" ok={data.environment.accessTokenConfigured} />
+            <ReadinessCard label="Phone number ID" ok={data.environment.phoneNumberIdConfigured} />
+            <ReadinessCard label="Verify token" ok={data.environment.verifyTokenConfigured} />
+            <ReadinessCard label="App secret" ok={data.environment.appSecretConfigured} />
+            <ReadinessCard label="API version" ok={data.environment.apiVersionConfigured} />
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-4">
+            <MetricCard label="Workspaces" value={String(data.summary.total)} />
+            <MetricCard label="Conectados" value={String(data.summary.connected)} />
+            <MetricCard label="Com erro" value={String(data.summary.withErrors)} />
+            <MetricCard label="Ajustes pendentes" value={String(data.summary.pendingConfig)} />
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-4">
+            <MetricCard label="Mensagens 30d" value={String(data.summary.messagesLast30Days)} />
+            <MetricCard label="Transações 30d" value={String(data.summary.transactionsViaWhatsappLast30Days)} />
+            <MetricCard label="IA via WhatsApp" value={String(data.summary.aiViaWhatsappLast30Days)} />
+            <MetricCard label="Alertas 30d" value={String(data.summary.alertsSentLast30Days)} />
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-2">
+            <MetricCard
+              label="IA por intents fixas"
+              value={String(data.summary.aiViaWhatsappDeterministicLast30Days)}
+              helper="Consultas resolvidas pelo fluxo determinístico do canal."
+            />
+            <MetricCard
+              label="IA via Gemini"
+              value={String(data.summary.aiViaWhatsappGeminiLast30Days)}
+              helper="Perguntas livres respondidas com contexto financeiro do workspace."
+            />
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Lançamentos editados"
+              value={String(data.summary.transactionsEditedViaWhatsappLast30Days)}
+              helper="Correções recentes feitas direto no canal."
+            />
+            <MetricCard
+              label="Lançamentos removidos"
+              value={String(data.summary.transactionsRemovedViaWhatsappLast30Days)}
+              helper="Exclusões e desfazimentos recentes."
+            />
+            <MetricCard
+              label="Alertas de meta atrasada"
+              value={String(data.summary.overdueGoalAlertsLast30Days)}
+              helper="Metas vencidas que ainda exigem valor adicional."
+            />
+            <MetricCard
+              label="Alertas de recorrência pesada"
+              value={String(data.summary.recurringHeavyAlertsLast30Days)}
+              helper="Pressão de contas recorrentes sobre o mês."
+            />
+          </section>
+
+          <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+            {data.workspaces.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
+                Nenhum workspace com configuração ou atividade de WhatsApp foi encontrado para este filtro.
               </div>
-            ))
-          )}
-        </div>
-      </section>
+            ) : (
+              <div className="space-y-4">
+                {data.workspaces.map((workspace) => {
+                  const actionKeyPrefix = `${workspace.workspaceId}:`;
+                  return (
+                    <div key={workspace.workspaceId} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+                              {formatPlanLabel(workspace.plan)}
+                            </span>
+                            <StateBadge state={workspace.lastConnectionState} />
+                            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-semibold text-slate-300">
+                              {workspace.whatsappStatus || 'DISCONNECTED'}
+                            </span>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                workspace.readiness.ready
+                                  ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+                                  : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
+                              }`}
+                            >
+                              {workspace.readiness.ready ? 'Pronto para teste' : `${workspace.readiness.issues.length} ajuste(s)`}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-base font-semibold text-white">{workspace.workspaceName}</p>
+                            <p className="text-sm text-slate-400">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
+                          </div>
+                          <div className="grid gap-2 text-sm text-slate-300 md:grid-cols-2 xl:grid-cols-4">
+                            <Info label="Número do workspace" value={workspace.phoneNumber || 'Não configurado'} />
+                            <Info label="Número de teste" value={workspace.testPhoneNumber || 'Não configurado'} />
+                            <Info label="Última validação" value={formatAdminDateTime(workspace.lastValidatedAt)} />
+                            <Info label="Último teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
+                          </div>
+                          {!workspace.readiness.ready ? (
+                            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                              <p className="font-semibold text-amber-50">Checklist de prontidão</p>
+                              <ul className="mt-2 space-y-1 text-sm">
+                                {workspace.readiness.issues.map((issue) => (
+                                  <li key={issue}>• {issue}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ) : null}
+                          {workspace.lastErrorMessage ? (
+                            <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                              <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conexão'}</p>
+                              <p className="mt-1">{workspace.lastErrorMessage}</p>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <ActionButton
+                            disabled={isSaving === `${actionKeyPrefix}diagnose`}
+                            onClick={() => void runAction(workspace.workspaceId, 'diagnose')}
+                          >
+                            {isSaving === `${actionKeyPrefix}diagnose` ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                            Diagnosticar
+                          </ActionButton>
+                          <ActionButton
+                            disabled={isSaving === `${actionKeyPrefix}send_test`}
+                            onClick={() => void runAction(workspace.workspaceId, 'send_test')}
+                          >
+                            {isSaving === `${actionKeyPrefix}send_test` ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                            Reenviar teste
+                          </ActionButton>
+                          <ActionButton
+                            disabled={isSaving === `${actionKeyPrefix}send_alerts`}
+                            onClick={() => void runAction(workspace.workspaceId, 'send_alerts')}
+                          >
+                            {isSaving === `${actionKeyPrefix}send_alerts` ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                            Enviar alertas
+                          </ActionButton>
+                          <ActionButton
+                            disabled={isSaving === `${actionKeyPrefix}disconnect`}
+                            onClick={() => void runAction(workspace.workspaceId, 'disconnect')}
+                          >
+                            Desconectar
+                          </ActionButton>
+                          <ActionButton
+                            tone="danger"
+                            disabled={isSaving === `${actionKeyPrefix}reset`}
+                            onClick={() => void runAction(workspace.workspaceId, 'reset')}
+                          >
+                            {isSaving === `${actionKeyPrefix}reset` ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                            Resetar
+                          </ActionButton>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                        <MiniMetric label="Última entrada" value={formatAdminDateTime(workspace.activity.lastInboundAt)} />
+                        <MiniMetric
+                          label="Última operação"
+                          value={
+                            workspace.activity.lastOperationalType
+                              ? `${workspace.activity.lastOperationalType} • ${formatAdminDateTime(workspace.activity.lastOperationalAt)}`
+                              : 'Sem atividade recente'
+                          }
+                        />
+                        <MiniMetric
+                          label="Última IA"
+                          value={
+                            workspace.activity.lastAiAt
+                              ? `${formatAdminDateTime(workspace.activity.lastAiAt)}${workspace.activity.lastAiMode ? ` • ${workspace.activity.lastAiMode}` : ''}`
+                              : 'Sem atividade recente'
+                          }
+                        />
+                        <MiniMetric label="Entradas 24h" value={String(workspace.activity.inboundLast24h)} />
+                        <MiniMetric label="Lançamentos 24h" value={String(workspace.activity.transactionsLast24h)} />
+                        <MiniMetric label="Alertas 24h" value={String(workspace.activity.alertsLast24h)} />
+                        <MiniMetric label="IA 24h" value={String(workspace.activity.aiLast24h)} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Atividade recente do canal</h2>
+                <p className="mt-1 text-sm text-slate-400">Eventos recentes de WhatsApp em todos os workspaces.</p>
+              </div>
+              <span className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-300">
+                {data.recentEvents.length} eventos
+              </span>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {!data.recentEvents.length ? (
+                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
+                  Nenhum evento recente de WhatsApp encontrado.
+                </div>
+              ) : (
+                data.recentEvents.map((event) => (
+                  <div key={event.id} className="rounded-2xl border border-slate-800 bg-slate-950/55 px-4 py-3">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{event.workspaceName}</p>
+                        <p className="mt-1 text-sm text-slate-400">
+                          {event.type}
+                          {event.type === 'ai.chat.used' && event.aiMode ? ` • modo ${event.aiMode}` : ''}
+                        </p>
+                      </div>
+                      <div className="text-sm text-slate-400">
+                        <p>{formatAdminDateTime(event.createdAt)}</p>
+                        <p>{event.userEmail || 'Sem usuário vinculado'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -354,10 +412,10 @@ function StateBadge({ state }: { state: SuperadminWhatsappResponse['workspaces']
         : state === 'testing'
           ? 'Testando'
           : state === 'config_pending'
-            ? 'Config pendente'
+            ? 'Config. pendente'
             : state === 'disconnected'
               ? 'Desconectado'
-              : 'Sem diagnÃƒÂ³stico';
+              : 'Sem diagnóstico';
   const className =
     state === 'connected'
       ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
@@ -403,6 +461,7 @@ function ReadinessCard({ label, ok }: { label: string; ok: boolean }) {
     </div>
   );
 }
+
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5">
