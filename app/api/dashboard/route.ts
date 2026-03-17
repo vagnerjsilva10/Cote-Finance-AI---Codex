@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
@@ -14,6 +14,11 @@ import { getWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const DASHBOARD_TRANSACTION_LIMIT = 120;
+const DASHBOARD_INVESTMENT_LIMIT = 40;
+const DASHBOARD_DEBT_LIMIT = 40;
+const DASHBOARD_EVENT_LIMIT = 8;
+
 const isMissingTableError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';
@@ -27,8 +32,25 @@ async function findWorkspaceTransactions(workspaceId: string) {
     return await prisma.transaction.findMany({
       where: { workspace_id: workspaceId },
       orderBy: { date: 'desc' },
-      take: 200,
-      include: { category: true, wallet: true, destination_wallet: true },
+      take: DASHBOARD_TRANSACTION_LIMIT,
+      select: {
+        id: true,
+        workspace_id: true,
+        wallet_id: true,
+        destination_wallet_id: true,
+        category_id: true,
+        type: true,
+        payment_method: true,
+        amount: true,
+        date: true,
+        description: true,
+        status: true,
+        receipt_url: true,
+        created_at: true,
+        category: { select: { name: true } },
+        wallet: { select: { name: true } },
+        destination_wallet: { select: { name: true } },
+      },
     });
   } catch (error) {
     if (!isMissingTableError(error)) throw error;
@@ -60,7 +82,7 @@ async function findWorkspaceTransactions(workspaceId: string) {
       FROM "Transaction"
       WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
       ORDER BY "date" DESC
-      LIMIT 200
+      LIMIT ${DASHBOARD_TRANSACTION_LIMIT}
     `;
 
     const walletIds = [...new Set(rows.map((row) => row.wallet_id).filter(Boolean))];
@@ -121,7 +143,10 @@ async function findWorkspaceTransactions(workspaceId: string) {
 
 async function findWorkspaceWallets(workspaceId: string) {
   try {
-    return await prisma.wallet.findMany({ where: { workspace_id: workspaceId } });
+    return await prisma.wallet.findMany({
+      where: { workspace_id: workspaceId },
+      select: { id: true, name: true, balance: true },
+    });
   } catch (error) {
     if (isMissingTableError(error)) return [];
     throw error;
@@ -130,7 +155,16 @@ async function findWorkspaceWallets(workspaceId: string) {
 
 async function findWorkspaceGoals(workspaceId: string) {
   try {
-    return await prisma.goal.findMany({ where: { workspace_id: workspaceId } });
+    return await prisma.goal.findMany({
+      where: { workspace_id: workspaceId },
+      select: {
+        id: true,
+        name: true,
+        target_amount: true,
+        current_amount: true,
+        deadline: true,
+      },
+    });
   } catch (error) {
     if (isMissingTableError(error)) return [];
     throw error;
@@ -194,6 +228,16 @@ async function findWorkspaceInvestments(workspaceId: string) {
     return await prisma.investment.findMany({
       where: { workspace_id: workspaceId },
       orderBy: { created_at: 'desc' },
+      take: DASHBOARD_INVESTMENT_LIMIT,
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        institution: true,
+        invested_amount: true,
+        current_amount: true,
+        expected_return_annual: true,
+      },
     });
   } catch (error) {
     if (isMissingTableError(error)) return [];
@@ -206,6 +250,17 @@ async function findWorkspaceDebts(workspaceId: string) {
     return await prisma.debt.findMany({
       where: { workspace_id: workspaceId },
       orderBy: { created_at: 'desc' },
+      take: DASHBOARD_DEBT_LIMIT,
+      select: {
+        id: true,
+        creditor: true,
+        original_amount: true,
+        remaining_amount: true,
+        interest_rate_monthly: true,
+        due_day: true,
+        category: true,
+        status: true,
+      },
     });
   } catch (error) {
     if (isMissingTableError(error)) return [];
@@ -223,7 +278,7 @@ async function getWorkspaceEventSnapshot(workspaceId: string) {
       prisma.workspaceEvent.findMany({
         where: { workspace_id: workspaceId },
         orderBy: { created_at: 'desc' },
-        take: 12,
+        take: DASHBOARD_EVENT_LIMIT,
         select: {
           id: true,
           type: true,
@@ -279,20 +334,19 @@ export async function GET(req: Request) {
       investments,
       debts,
       eventSnapshot,
-    ] =
-      await Promise.all([
-        findWorkspaceWallets(workspaceId),
-        findWorkspaceTransactions(workspaceId),
-        findWorkspaceGoals(workspaceId),
-        findWorkspaceSnapshot(workspaceId),
-        getWorkspaceWhatsAppConfig(workspaceId),
-        getWorkspacePlan(workspaceId, context.userId),
-        getWorkspacePreference(workspaceId, context.userId),
-        countWorkspaceTransactions(workspaceId, monthStart, nextMonthStart),
-        findWorkspaceInvestments(workspaceId),
-        findWorkspaceDebts(workspaceId),
-        getWorkspaceEventSnapshot(workspaceId),
-      ]);
+    ] = await Promise.all([
+      findWorkspaceWallets(workspaceId),
+      findWorkspaceTransactions(workspaceId),
+      findWorkspaceGoals(workspaceId),
+      findWorkspaceSnapshot(workspaceId),
+      getWorkspaceWhatsAppConfig(workspaceId),
+      getWorkspacePlan(workspaceId, context.userId),
+      getWorkspacePreference(workspaceId, context.userId),
+      countWorkspaceTransactions(workspaceId, monthStart, nextMonthStart),
+      findWorkspaceInvestments(workspaceId),
+      findWorkspaceDebts(workspaceId),
+      getWorkspaceEventSnapshot(workspaceId),
+    ]);
 
     const safeWorkspace =
       workspace ||
@@ -326,10 +380,7 @@ export async function GET(req: Request) {
     };
 
     const totalBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
-    const totalInvested = investments.reduce<number>(
-      (acc, item) => acc + Number(item.current_amount),
-      0
-    );
+    const totalInvested = investments.reduce<number>((acc, item) => acc + Number(item.current_amount), 0);
     const insights = plan === 'FREE' ? [] : buildFinancialInsights(transactions as any, totalBalance);
 
     return NextResponse.json({
@@ -370,4 +421,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to load dashboard' }, { status: 500 });
   }
 }
-
