@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
   HttpError,
   getWorkspacePlan,
   getWorkspacePreference,
   logWorkspaceEventSafe,
+  normalizePlan,
+  requireAuthenticatedUser,
   resolveWorkspaceContext,
   upsertWorkspacePreferenceSafe,
   upsertWorkspaceSubscriptionSafe,
@@ -57,13 +60,52 @@ type CreateWorkspaceBody = {
   name?: string;
 };
 
+const isMissingTableError = (error: unknown) => {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021' || error.code === 'P2022';
+  }
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /does not exist|relation .* does not exist|table .* doesn't exist|column .* does not exist/i.test(
+    message
+  );
+};
+
+async function readCurrentUserPlan(userId: string) {
+  try {
+    const [entitlement, profile] = await Promise.all([
+      prisma.subscriptionEntitlement.findUnique({
+        where: { user_id: userId },
+        select: { plan: true, status: true },
+      }),
+      prisma.profile.findUnique({
+        where: { user_id: userId },
+        select: { plan: true },
+      }),
+    ]);
+
+    if (entitlement) {
+      return entitlement.status === 'ACTIVE' ? normalizePlan(entitlement.plan) : 'FREE';
+    }
+
+    return normalizePlan(profile?.plan);
+  } catch (error) {
+    if (asPrismaServiceUnavailableError(error)) {
+      throw error;
+    }
+    if (!isMissingTableError(error)) {
+      throw error;
+    }
+    return 'FREE' as const;
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const context = await resolveWorkspaceContext(req);
+    const authUser = await requireAuthenticatedUser(req);
     const body = (await req.json().catch(() => null)) as CreateWorkspaceBody | null;
     const name = body?.name?.trim() || 'Nova Conta';
 
-    const currentWorkspacePlan = await getWorkspacePlan(context.workspaceId, context.userId);
+    const currentWorkspacePlan = await readCurrentUserPlan(authUser.userId);
 
     const created = await prisma.$transaction(async (tx) => {
       const workspace = await tx.workspace.create({
@@ -79,7 +121,7 @@ export async function POST(req: Request) {
       await tx.workspaceMember.create({
         data: {
           workspace_id: workspace.id,
-          user_id: context.userId,
+          user_id: authUser.userId,
           role: 'OWNER',
         },
       });
@@ -96,7 +138,7 @@ export async function POST(req: Request) {
       return workspace;
     });
 
-    await Promise.all([
+    await Promise.allSettled([
       upsertWorkspaceSubscriptionSafe({
         workspaceId: created.id,
         plan: currentWorkspacePlan,
@@ -106,11 +148,11 @@ export async function POST(req: Request) {
         workspaceId: created.id,
         onboardingCompleted: false,
         aiSuggestionsEnabled: true,
-        userId: context.userId,
+        userId: authUser.userId,
       }),
       logWorkspaceEventSafe({
         workspaceId: created.id,
-        userId: context.userId,
+        userId: authUser.userId,
         type: 'workspace.created',
         payload: {
           source: 'api/workspaces',
