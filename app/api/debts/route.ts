@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import { CONVENTIONAL_DEBT_CATEGORIES, isRecurringDebtCategory, mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -39,13 +40,7 @@ const parseInteger = (value: unknown) => {
   return null;
 };
 
-const normalizeDebtStatus = (value: string | undefined) => {
-  const normalized = String(value || '')
-    .trim()
-    .toUpperCase();
-  if (normalized === 'QUITADA' || normalized === 'PAID') return 'PAID';
-  return 'ACTIVE';
-};
+const normalizeDebtStatus = (value: string | undefined) => mapConventionalStatusToLegacyDebtStatus(value);
 
 const isMissingTableError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -69,7 +64,7 @@ export async function GET(req: Request) {
       where: { workspace_id: context.workspaceId },
       orderBy: { created_at: 'desc' },
     });
-    return NextResponse.json(debts);
+    return NextResponse.json(debts.filter((debt) => !isRecurringDebtCategory(String(debt.category || ''))));
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -100,6 +95,9 @@ export async function POST(req: Request) {
     const interestRateMonthly = parseAmount(body.interestRateMonthly);
     const dueDay = parseInteger(body.dueDay);
     const category = (body.category || '').trim() || 'Outros';
+    if (isRecurringDebtCategory(category)) {
+      return NextResponse.json({ error: 'Use a Ã¡rea de recorrÃªncias para contas mensais e demais dÃ­vidas recorrentes.' }, { status: 400 });
+    }
     const status = normalizeDebtStatus(body.status);
 
     if (!creditor) {
@@ -183,6 +181,9 @@ export async function PATCH(req: Request) {
     const interestRateMonthly = parseAmount(body.interestRateMonthly);
     const dueDay = parseInteger(body.dueDay);
     const category = body.category?.trim();
+    if (category && isRecurringDebtCategory(category)) {
+      return NextResponse.json({ error: 'Use a Ã¡rea de recorrÃªncias para contas mensais e demais dÃ­vidas recorrentes.' }, { status: 400 });
+    }
     const status = body.status ? normalizeDebtStatus(body.status) : undefined;
 
     const debt = await prisma.debt.update({
@@ -274,5 +275,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to delete debt' }, { status: 500 });
   }
 }
+
 
 

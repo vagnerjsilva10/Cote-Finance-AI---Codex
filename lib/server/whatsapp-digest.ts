@@ -1,4 +1,4 @@
-﻿import 'server-only';
+import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
@@ -99,6 +99,12 @@ function buildUpcomingAgendaItems(params: {
     due_day: number;
     status: string;
   }>;
+  recurringDebts: Array<{
+    creditor: string;
+    amount: unknown;
+    next_due_date: Date;
+    status: string;
+  }>;
   goals: Array<{
     name: string;
     target_amount: unknown;
@@ -120,6 +126,19 @@ function buildUpcomingAgendaItems(params: {
       label: debt.creditor,
       date: nextDueDate,
       amount: Number(debt.remaining_amount || 0),
+      type: 'debt',
+    });
+  }
+
+  for (const debt of params.recurringDebts) {
+    if (String(debt.status || '').toUpperCase() !== 'ACTIVE') continue;
+    const daysUntil = getDaysUntil(debt.next_due_date, now);
+    if (daysUntil < 0 || daysUntil > UPCOMING_WINDOW_DAYS) continue;
+
+    items.push({
+      label: debt.creditor,
+      date: debt.next_due_date,
+      amount: Number(debt.amount || 0),
       type: 'debt',
     });
   }
@@ -273,6 +292,14 @@ export async function sendWorkspaceWhatsAppDigest(params: {
           status: true,
         },
       },
+      recurring_debts: {
+        select: {
+          creditor: true,
+          amount: true,
+          next_due_date: true,
+          status: true,
+        },
+      },
       goals: {
         select: {
           name: true,
@@ -367,6 +394,7 @@ export async function sendWorkspaceWhatsAppDigest(params: {
   const insights = buildFinancialInsights(workspace.transactions as any, totalBalance, now);
   const upcomingItems = buildUpcomingAgendaItems({
     debts: workspace.debts,
+    recurringDebts: workspace.recurring_debts,
     goals: workspace.goals,
     now,
   });
@@ -462,4 +490,6 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     deliveryMode,
   } satisfies WhatsAppDigestResult;
 }
+
+
 

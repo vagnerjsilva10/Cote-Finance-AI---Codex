@@ -57,7 +57,7 @@ const buildMissingTableResponse = () =>
   NextResponse.json(
     {
       error:
-        'Tabela de investimentos indisponÌvel. Execute `npx prisma db push` para aplicar o schema atual.',
+        'Tabela de investimentos indispon√≠vel. Execute `npx prisma db push` para aplicar o schema atual.',
     },
     { status: 503 }
   );
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
     }
     if (!wallet) {
       return NextResponse.json(
-        { error: 'Selecione uma carteira v·lida para vincular o investimento.' },
+        { error: 'Selecione uma carteira v√°lida para vincular o investimento.' },
         { status: 400 }
       );
     }
@@ -190,7 +190,7 @@ export async function PATCH(req: Request) {
 
     if (body.walletId && !wallet) {
       return NextResponse.json(
-        { error: 'Selecione uma carteira v·lida para vincular o investimento.' },
+        { error: 'Selecione uma carteira v√°lida para vincular o investimento.' },
         { status: 400 }
       );
     }

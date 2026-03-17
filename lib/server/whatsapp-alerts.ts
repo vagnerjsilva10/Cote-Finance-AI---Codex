@@ -8,7 +8,7 @@ const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
 const UPCOMING_WINDOW_DAYS = 7;
 
 type AlertKind = 'low_balance' | 'high_spending' | 'upcoming_due' | 'category_spike' | 'goal_overdue' | 'recurring_heavy';
-const RECURRING_BILL_CATEGORIES = ['Ãgua', 'Luz', 'Internet', 'Aluguel', 'Telefone', 'CondomÃ­nio', 'Assinatura'];
+
 
 type WorkspaceAlert = {
   kind: AlertKind;
@@ -157,13 +157,25 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
       },
       debts: {
         where: {
-          status: 'ACTIVE',
+          status: {
+            in: ['ACTIVE', 'OVERDUE', 'INSTALLMENT'],
+          },
         },
         select: {
           creditor: true,
           category: true,
           remaining_amount: true,
           due_day: true,
+        },
+      },
+      recurring_debts: {
+        where: {
+          status: 'ACTIVE',
+        },
+        select: {
+          creditor: true,
+          amount: true,
+          next_due_date: true,
         },
       },
     },
@@ -216,7 +228,7 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
       alerts.push({
         kind: 'low_balance',
         title: 'Saldo baixo',
-        message: `Seu saldo atual estÃ¡ em ${formatCurrency(totalBalance)} e merece atenÃ§Ã£o nesta semana.`,
+        message: `Seu saldo atual está em ${formatCurrency(totalBalance)} e merece atenção nesta semana.`, 
       });
     }
   }
@@ -226,8 +238,8 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     if (delta >= 20) {
       alerts.push({
         kind: 'high_spending',
-        title: 'Gasto acima da mÃ©dia',
-        message: `Suas saÃ­das subiram ${delta.toFixed(1)}% em relaÃ§Ã£o ao mÃªs anterior.`,
+        title: 'Gasto acima da média',
+        message: `Suas saídas subiram ${delta.toFixed(1)}% em relação ao mês anterior.`, 
       });
     }
   }
@@ -269,19 +281,25 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
           title: 'Categoria em destaque',
           message:
             categoryDelta !== null && categoryDelta >= 30
-              ? `${topCurrentCategory[0]} subiu ${categoryDelta.toFixed(1)}% e jÃ¡ soma ${formatCurrency(topCurrentCategory[1])} no mÃªs.`
-              : `${topCurrentCategory[0]} concentra ${categoryShare.toFixed(1)}% das saÃ­das do mÃªs, com ${formatCurrency(topCurrentCategory[1])}.`,
+              ? `${topCurrentCategory[0]} subiu ${categoryDelta.toFixed(1)}% e já soma ${formatCurrency(topCurrentCategory[1])} no mês.`
+              : `${topCurrentCategory[0]} concentra ${categoryShare.toFixed(1)}% das saídas do mês, com ${formatCurrency(topCurrentCategory[1])}.`,
         });
       }
     }
   }
 
-  const upcomingDebts = workspace.debts
-    .map((debt) => ({
+  const upcomingDebts = [
+    ...workspace.debts.map((debt) => ({
       creditor: debt.creditor,
       amount: Number(debt.remaining_amount || 0),
       nextDueDate: getNextDueDate(Number(debt.due_day || 1), now),
-    }))
+    })),
+    ...workspace.recurring_debts.map((debt) => ({
+      creditor: debt.creditor,
+      amount: Number(debt.amount || 0),
+      nextDueDate: debt.next_due_date,
+    })),
+  ]
     .map((item) => ({
       ...item,
       daysUntil: getDaysUntil(item.nextDueDate, now),
@@ -293,7 +311,7 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     const topDebt = upcomingDebts[0];
     alerts.push({
       kind: 'upcoming_due',
-      title: 'Vencimento prÃ³ximo',
+      title: 'Vencimento próximo',
       message: `${topDebt.creditor} vence em ${formatDateLabel(topDebt.nextDueDate)} com ${formatCurrency(topDebt.amount)} em aberto.`,
     });
   }
@@ -329,23 +347,18 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
   }
 
   if (plan !== 'FREE') {
-    const recurringDebts = workspace.debts.filter((debt) =>
-      RECURRING_BILL_CATEGORIES.includes(String(debt.category || ''))
-    );
-    const recurringTotal = recurringDebts.reduce(
-      (acc, debt) => acc + Number(debt.remaining_amount || 0),
-      0
-    );
+    const recurringDebts = workspace.recurring_debts;
+    const recurringTotal = recurringDebts.reduce((acc, debt) => acc + Number(debt.amount || 0), 0);
 
     if (recurringDebts.length > 0 && currentExpense > 0) {
       const recurringShare = (recurringTotal / currentExpense) * 100;
       if (recurringShare >= 30 || recurringTotal >= 500) {
         alerts.push({
           kind: 'recurring_heavy',
-          title: 'RecorrÃªncia pesada',
-          message: `As contas recorrentes jÃ¡ somam ${formatCurrency(recurringTotal)} e representam ${recurringShare.toFixed(
+          title: 'Recorrência pesada',
+          message: `As contas recorrentes já somam ${formatCurrency(recurringTotal)} e representam ${recurringShare.toFixed(
             1
-          )}% das saÃ­das do mÃªs.`,
+          )}% das saídas do mês.`,
         });
       }
     }
@@ -422,3 +435,5 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     count: kindsToSend.length,
   } satisfies WhatsAppAlertsResult;
 }
+
+

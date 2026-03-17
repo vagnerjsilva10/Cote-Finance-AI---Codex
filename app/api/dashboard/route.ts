@@ -9,6 +9,7 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
+import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
 import { getWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,7 @@ export const runtime = 'nodejs';
 const DASHBOARD_TRANSACTION_LIMIT = 120;
 const DASHBOARD_INVESTMENT_LIMIT = 40;
 const DASHBOARD_DEBT_LIMIT = 40;
+const DASHBOARD_RECURRING_DEBT_LIMIT = 40;
 const DASHBOARD_EVENT_LIMIT = 8;
 
 const isMissingTableError = (error: unknown) => {
@@ -247,21 +249,18 @@ async function findWorkspaceInvestments(workspaceId: string) {
 
 async function findWorkspaceDebts(workspaceId: string) {
   try {
-    return await prisma.debt.findMany({
-      where: { workspace_id: workspaceId },
-      orderBy: { created_at: 'desc' },
-      take: DASHBOARD_DEBT_LIMIT,
-      select: {
-        id: true,
-        creditor: true,
-        original_amount: true,
-        remaining_amount: true,
-        interest_rate_monthly: true,
-        due_day: true,
-        category: true,
-        status: true,
-      },
-    });
+    const debts = await findWorkspaceConventionalDebts(workspaceId);
+    return debts.slice(0, DASHBOARD_DEBT_LIMIT);
+  } catch (error) {
+    if (isMissingTableError(error)) return [];
+    throw error;
+  }
+}
+
+async function findWorkspaceRecurringDebtItems(workspaceId: string) {
+  try {
+    const recurringDebts = await findWorkspaceRecurringDebts(workspaceId);
+    return recurringDebts.slice(0, DASHBOARD_RECURRING_DEBT_LIMIT);
   } catch (error) {
     if (isMissingTableError(error)) return [];
     throw error;
@@ -340,6 +339,7 @@ export async function GET(req: Request) {
     const goals = await findWorkspaceGoals(workspaceId);
     const investments = await findWorkspaceInvestments(workspaceId);
     const debts = await findWorkspaceDebts(workspaceId);
+    const recurringDebts = await findWorkspaceRecurringDebtItems(workspaceId);
 
     const safeWorkspace =
       workspace ||
@@ -414,3 +414,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to load dashboard' }, { status: 500 });
   }
 }
+
