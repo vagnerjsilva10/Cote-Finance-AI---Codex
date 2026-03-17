@@ -13,6 +13,15 @@ const SUBSCRIPTION_METADATA_KEY = 'superadmin.subscription-metadata';
 const AI_USAGE_OVERRIDES_KEY = 'superadmin.ai-usage-overrides';
 const TRANSACTION_USAGE_OVERRIDES_KEY = 'superadmin.transaction-usage-overrides';
 const FEATURE_FLAGS_KEY = 'superadmin.feature-flags';
+const PLATFORM_SETTING_CACHE_TTL_MS = 15_000;
+
+const platformSettingCache = new Map<
+  string,
+  {
+    expiresAt: number;
+    value: unknown;
+  }
+>();
 
 export type EditablePlanCode = WorkspacePlan;
 export type WorkspaceLifecycleStatus = 'ACTIVE' | 'SUSPENDED';
@@ -305,12 +314,22 @@ function normalizePlanConfig(value: unknown, fallback: EditablePlanConfig): Edit
 }
 
 async function readPlatformSetting<T>(key: string, fallback: T): Promise<T> {
+  const cached = platformSettingCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return clonePlatformSettingValue((cached.value as T) ?? fallback);
+  }
+
   try {
     const setting = await prisma.platformSetting.findUnique({
       where: { key },
       select: { value: true },
     });
-    return setting?.value ? (setting.value as T) : fallback;
+    const resolvedValue = setting?.value ? (setting.value as T) : fallback;
+    platformSettingCache.set(key, {
+      expiresAt: Date.now() + PLATFORM_SETTING_CACHE_TTL_MS,
+      value: resolvedValue,
+    });
+    return clonePlatformSettingValue(resolvedValue);
   } catch (error) {
     if (asPrismaServiceUnavailableError(error) || isMissingPlatformSettingError(error)) {
       return fallback;
@@ -325,6 +344,19 @@ async function writePlatformSetting(key: string, value: Prisma.InputJsonValue) {
     update: { value },
     create: { key, value },
   });
+  platformSettingCache.set(key, {
+    expiresAt: Date.now() + PLATFORM_SETTING_CACHE_TTL_MS,
+    value,
+  });
+}
+
+function clonePlatformSettingValue<T>(value: T): T {
+  if (value === null || value === undefined) return value;
+  try {
+    return JSON.parse(JSON.stringify(value)) as T;
+  } catch {
+    return value;
+  }
 }
 
 export async function getEditablePlanCatalog(): Promise<EditablePlanConfig[]> {

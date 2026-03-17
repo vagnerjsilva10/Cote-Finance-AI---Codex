@@ -14,6 +14,14 @@ export type PlatformAccess = {
 };
 
 const PLATFORM_ROLE_OVERRIDES_KEY = 'superadmin.platform-role-overrides';
+const PLATFORM_ROLE_OVERRIDES_CACHE_TTL_MS = 15_000;
+
+let platformRoleOverridesCache:
+  | {
+      expiresAt: number;
+      value: Record<string, PlatformRole>;
+    }
+  | null = null;
 
 function parseEmailList(value: string | undefined) {
   return new Set(
@@ -51,6 +59,10 @@ function isMissingPlatformSettingError(error: unknown) {
 }
 
 async function readPlatformRoleOverrides() {
+  if (platformRoleOverridesCache && platformRoleOverridesCache.expiresAt > Date.now()) {
+    return { ...platformRoleOverridesCache.value };
+  }
+
   try {
     const setting = await prisma.platformSetting.findUnique({
       where: { key: PLATFORM_ROLE_OVERRIDES_KEY },
@@ -62,11 +74,16 @@ async function readPlatformRoleOverrides() {
       return {} as Record<string, PlatformRole>;
     }
 
-    return Object.entries(raw as Record<string, unknown>).reduce<Record<string, PlatformRole>>((acc, [email, role]) => {
+    const resolved = Object.entries(raw as Record<string, unknown>).reduce<Record<string, PlatformRole>>((acc, [email, role]) => {
       const normalizedRole = normalizeOverrideRole(role);
       if (normalizedRole) acc[email.trim().toLowerCase()] = normalizedRole;
       return acc;
     }, {});
+    platformRoleOverridesCache = {
+      expiresAt: Date.now() + PLATFORM_ROLE_OVERRIDES_CACHE_TTL_MS,
+      value: resolved,
+    };
+    return { ...resolved };
   } catch (error) {
     if (asPrismaServiceUnavailableError(error) || isMissingPlatformSettingError(error)) {
       return {} as Record<string, PlatformRole>;
