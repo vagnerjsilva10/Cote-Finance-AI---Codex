@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       recentEvents,
       aiUsageEvents,
       errorEvents,
-      activeUserEvents,
+      activeUserGroups,
       userLifecycleMap,
       workspaceLifecycleMap,
       subscriptionMetadataMap,
@@ -104,7 +104,7 @@ export async function GET(req: Request) {
           OR: [{ type: { contains: 'error' } }, { type: { contains: 'failed' } }],
         },
       }),
-      prisma.workspaceEvent.findMany({
+      prisma.workspaceEvent.groupBy({
         where: {
           created_at: {
             gte: thirtyDaysAgo,
@@ -113,10 +113,7 @@ export async function GET(req: Request) {
             not: null,
           },
         },
-        distinct: ['user_id'],
-        select: {
-          user_id: true,
-        },
+        by: ['user_id'],
       }),
       getUserLifecycleMap(),
       getWorkspaceLifecycleMap(),
@@ -188,7 +185,7 @@ export async function GET(req: Request) {
       metrics: {
         totalUsers,
         totalWorkspaces,
-        activeUsers: activeUserEvents.length,
+        activeUsers: activeUserGroups.length,
         newSignupsLast30Days,
         activeTrials: null,
         payingWorkspaces,

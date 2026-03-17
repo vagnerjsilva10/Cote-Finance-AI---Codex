@@ -15,15 +15,30 @@ export async function fetchSuperadminJson<T>(input: string, init?: RequestInit):
     throw new Error('Sessão inválida. Faça login novamente.');
   }
 
-  const response = await fetch(input, {
-    ...init,
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...(init?.headers || {}),
-    },
-  });
+  const timeoutMs = 15000;
+  const abortController = new AbortController();
+  const timeoutId = window.setTimeout(() => abortController.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetch(input, {
+      ...init,
+      cache: 'no-store',
+      signal: init?.signal ?? abortController.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        ...(init?.headers || {}),
+      },
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('A requisição administrativa demorou mais do que o esperado. Tente novamente.');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 
   const text = await response.text();
   const payload = text ? safeParseJson(text) : null;
