@@ -53,12 +53,12 @@ export function SuperadminWhatsappPage() {
               : action === 'send_alerts'
                 ? 'Alertas enviados com sucesso.'
                 : action === 'reset'
-                  ? 'Configura??o resetada com sucesso.'
-                  : 'Integra??o desconectada com sucesso.'
+                  ? 'Configuração resetada com sucesso.'
+                  : 'Integração desconectada com sucesso.'
         );
         await load();
       } catch (actionError) {
-        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a a??o administrativa.');
+        setError(actionError instanceof Error ? actionError.message : 'Falha ao executar a ação administrativa.');
       } finally {
         setIsSaving(null);
       }
@@ -74,7 +74,7 @@ export function SuperadminWhatsappPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
             <h1 className="mt-2 text-3xl font-semibold text-white">WhatsApp</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Audite integra??es por workspace, identifique falhas de autentica??o e acompanhe uso, alertas e a??es do canal.
+              Audite integrações por workspace, identifique falhas de autenticação e acompanhe uso, alertas e ações do canal.
             </p>
           </div>
           <div className="w-full max-w-md">
@@ -149,7 +149,7 @@ export function SuperadminWhatsappPage() {
         <MetricCard
           label="Alertas de recorrência pesada"
           value={String(data?.summary.recurringHeavyAlertsLast30Days ?? 0)}
-          helper="Press?o de contas recorrentes sobre o m?s."
+          helper="Press?o de contas recorrentes sobre o mês."
         />
       </section>
 
@@ -194,9 +194,9 @@ export function SuperadminWhatsappPage() {
                         <p className="text-sm text-slate-400">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
                       </div>
                       <div className="grid gap-2 text-sm text-slate-300 md:grid-cols-2 xl:grid-cols-4">
-                        <Info label="N?mero do workspace" value={workspace.phoneNumber || 'N?o configurado'} />
-                        <Info label="N?mero de teste" value={workspace.testPhoneNumber || 'N?o configurado'} />
-                        <Info label="?ltima valida??o" value={formatAdminDateTime(workspace.lastValidatedAt)} />
+                        <Info label="N?mero do workspace" value={workspace.phoneNumber || 'Não configurado'} />
+                        <Info label="N?mero de teste" value={workspace.testPhoneNumber || 'Não configurado'} />
+                        <Info label="Última validação" value={formatAdminDateTime(workspace.lastValidatedAt)} />
                         <Info label="Último teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
                       </div>
                       {!workspace.readiness.ready ? (
@@ -211,7 +211,7 @@ export function SuperadminWhatsappPage() {
                       ) : null}
                       {workspace.lastErrorMessage ? (
                         <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                          <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conex?o'}</p>
+                          <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conexão'}</p>
                           <p className="mt-1">{workspace.lastErrorMessage}</p>
                         </div>
                       ) : null}

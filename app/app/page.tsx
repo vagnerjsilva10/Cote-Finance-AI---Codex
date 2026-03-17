@@ -465,7 +465,7 @@ const getWhatsAppConnectionLabel = (
   isConnecting: boolean
 ) => {
   if (isConnecting) {
-    return 'Validando conex?o';
+    return 'Validando conexão';
   }
 
   switch (state) {
@@ -474,13 +474,13 @@ const getWhatsAppConnectionLabel = (
     case 'testing':
       return 'Testando';
     case 'error':
-      return 'Erro de autentica??o';
+      return 'Erro de autenticação';
     case 'disconnected':
       return 'Desconectado';
     case 'config_pending':
-      return 'Aguardando configura??o';
+      return 'Aguardando configuração';
     default:
-      return isConnected ? 'Conectado' : 'Aguardando configura??o';
+      return isConnected ? 'Conectado' : 'Aguardando configuração';
   }
 };
 
@@ -507,15 +507,15 @@ const getWhatsAppConnectionDescription = (
   hasValidationIssues: boolean
 ) => {
   if (state === 'error') {
-    return 'A conex?o com a Meta falhou. Revise token, permiss?es e os dados deste workspace.';
+    return 'A conexão com a Meta falhou. Revise token, permiss?es e os dados deste workspace.';
   }
   if (state === 'connected' || isConnected) {
-    return 'Configura??o pronta para envio. Voc? j? pode disparar um teste com seguran?a.';
+    return 'Configuração pronta para envio. Você j? pode disparar um teste com segurança.';
   }
   if (hasValidationIssues) {
     return 'Há ajustes pendentes antes de ativar o envio deste workspace.';
   }
-  return 'Preencha os dados do workspace, valide a conex?o e depois envie um teste.';
+  return 'Preencha os dados do workspace, valide a conexão e depois envie um teste.';
 };
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -581,7 +581,7 @@ const buildPremiumSmartAlerts = ({
     alerts.push({
       id: 'premium-expense-spike',
       title: 'Alerta inteligente: gasto acima do padr?o',
-      message: `Suas despesas subiram ${variation}% em rela??o ao m?s anterior. Vale revisar onde o caixa acelerou.`,
+      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
       tone: 'warning',
       targetTab: 'reports',
     });
@@ -723,7 +723,7 @@ const optimizeAvatarFile = (file: File) =>
 
         const context = canvas.getContext('2d');
         if (!context) {
-          throw new Error('N?o foi poss?vel processar a imagem.');
+          throw new Error('Não foi poss?vel processar a imagem.');
         }
 
         const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
@@ -754,7 +754,7 @@ const optimizeAvatarFile = (file: File) =>
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('N?o foi poss?vel ler a imagem selecionada.'));
+      reject(new Error('Não foi poss?vel ler a imagem selecionada.'));
     };
 
     image.src = objectUrl;
@@ -783,10 +783,10 @@ const PAYMENT_METHODS: PaymentMethodLabel[] = [
 ];
 
 const TRANSACTION_CATEGORIES = [
-  'Alimenta??o',
+  'Alimentação',
   'Transporte',
   'Saúde',
-  'Educa??o',
+  'Educação',
   'Lazer',
   'Moradia',
   'Salário',
@@ -812,10 +812,10 @@ const REVENUE_TRANSACTION_CATEGORIES: readonly string[] = [
   'Outros',
 ] as const;
 const EXPENSE_TRANSACTION_CATEGORIES: readonly string[] = [
-  'Alimenta??o',
+  'Alimentação',
   'Transporte',
   'Saúde',
-  'Educa??o',
+  'Educação',
   'Lazer',
   'Moradia',
   'Marketing',
@@ -847,7 +847,7 @@ const GOAL_CATEGORIES = [
   'Casa',
   'Carro',
   'Investimentos',
-  'Educa??o',
+  'Educação',
   'Aposentadoria',
   'Outros',
 ];
@@ -894,7 +894,7 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
   description: '',
   amount: '',
   flowType: 'Despesa',
-  category: 'Alimenta??o',
+  category: 'Alimentação',
   paymentMethod: 'PIX',
   wallet: DEFAULT_TRANSACTION_WALLET,
   destinationWallet: '',
@@ -977,7 +977,7 @@ const getDefaultPaymentMethodForFlow = (flowType: TransactionFlowType): PaymentM
 const getDefaultCategoryForFlow = (flowType: TransactionFlowType) => {
   if (flowType === 'Receita') return 'Salário';
   if (flowType === 'Transferência') return 'Outros';
-  return 'Alimenta??o';
+  return 'Alimentação';
 };
 
 const getAvailableCategoriesForFlow = (flowType: TransactionFlowType): string[] => {
@@ -1024,9 +1024,9 @@ const getPlanLabel = (plan: SubscriptionPlan) => {
 
 const getWorkspaceEventLabel = (eventType: string) => {
   const labels: Record<string, string> = {
-    'transaction.created': 'Transa??o criada',
-    'transaction.updated': 'Transa??o atualizada',
-    'transaction.deleted': 'Transa??o removida',
+    'transaction.created': 'Transação criada',
+    'transaction.updated': 'Transação atualizada',
+    'transaction.deleted': 'Transação removida',
     'workspace.created': 'Workspace criado',
     'onboarding.completed': 'Onboarding concluído',
     'workspace.whatsapp.connected': 'WhatsApp conectado',
@@ -1039,7 +1039,7 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'stripe.invoice.paid': 'Pagamento confirmado',
     'stripe.invoice.payment_failed': 'Falha na cobrança',
     'ai.chat.used': 'Assistente IA utilizado',
-    'ai.classify.used': 'Classifica??o autom?tica usada',
+    'ai.classify.used': 'Classificação automática usada',
   };
 
   return labels[eventType] || eventType.replace(/\./g, ' • ');
@@ -1047,25 +1047,25 @@ const getWorkspaceEventLabel = (eventType: string) => {
 
 const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
   const messages: Record<string, string> = {
-    'transaction.created': 'Uma nova movimenta??o foi registrada e j? apareceu no seu painel.',
-    'transaction.updated': 'Uma movimenta??o foi atualizada com os dados mais recentes.',
-    'transaction.deleted': 'Uma movimenta??o foi removida do hist?rico deste workspace.',
+    'transaction.created': 'Uma nova movimentação foi registrada e j? apareceu no seu painel.',
+    'transaction.updated': 'Uma movimentação foi atualizada com os dados mais recentes.',
+    'transaction.deleted': 'Uma movimentação foi removida do histórico deste workspace.',
     'workspace.created': 'Seu espaço financeiro foi criado e está pronto para uso.',
-    'onboarding.completed': 'Sua configura??o inicial foi conclu?da com sucesso.',
+    'onboarding.completed': 'Sua configuração inicial foi conclu?da com sucesso.',
     'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
     'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
-    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirma??o.',
+    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
     'stripe.portal.created': 'A área de gerenciamento da assinatura foi aberta.',
     'stripe.customer.subscription.created': 'Sua assinatura foi criada e está sendo preparada para uso.',
-    'stripe.customer.subscription.updated': 'Houve uma atualiza??o recente na sua assinatura.',
+    'stripe.customer.subscription.updated': 'Houve uma atualização recente na sua assinatura.',
     'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada neste workspace.',
-    'stripe.invoice.paid': 'Recebemos a confirma??o do pagamento da sua assinatura.',
-    'stripe.invoice.payment_failed': 'A ?ltima tentativa de cobran?a n?o foi conclu?da.',
+    'stripe.invoice.paid': 'Recebemos a confirmação do pagamento da sua assinatura.',
+    'stripe.invoice.payment_failed': 'A Última tentativa de cobran?a não foi conclu?da.',
     'ai.chat.used': 'Uma análise com IA foi gerada para este workspace.',
-    'ai.classify.used': 'Uma classifica??o autom?tica foi aplicada em uma movimenta??o.',
+    'ai.classify.used': 'Uma classificação automática foi aplicada em uma movimentação.',
   };
 
-  return messages[event.type] || 'Uma atualiza??o recente foi registrada neste workspace.';
+  return messages[event.type] || 'Uma atualização recente foi registrada neste workspace.';
 };
 
 const getNotificationStorageKey = (userId: string, workspaceId: string) =>
@@ -1146,10 +1146,10 @@ const mapAiCategoryToCategory = (rawCategory: string) => {
     return normalizedMap.get(normalized) as string;
   }
 
-  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'Alimenta??o';
+  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'Alimentação';
   if (normalized.includes('transp')) return 'Transporte';
   if (normalized.includes('saud')) return 'Saúde';
-  if (normalized.includes('educ')) return 'Educa??o';
+  if (normalized.includes('educ')) return 'Educação';
   if (normalized.includes('lazer')) return 'Lazer';
   if (normalized.includes('morad') || normalized.includes('aluguel')) return 'Moradia';
   if (normalized.includes('salario')) return 'Salário';
@@ -1366,7 +1366,7 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
             <h2 className="text-xl font-bold text-white mb-2">Erro na interface</h2>
             <p className="text-sm text-slate-400 mb-5">
-              Ocorreu uma falha inesperada de renderiza??o. Recarregue a p?gina para continuar.
+              Ocorreu uma falha inesperada de renderização. Recarregue a p?gina para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -1660,7 +1660,7 @@ const SubscriptionView = ({
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-slate-400">
-                  Tudo o que importa para este workspace fica vis?vel aqui. Quando uma a??o exigir a Stripe,
+                  Tudo o que importa para este workspace fica vis?vel aqui. Quando uma ação exigir a Stripe,
                   abrimos apenas a etapa necessária.
                 </p>
               </div>
@@ -1867,7 +1867,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           onClick={onAddTransaction}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={16} /> Nova Transa??o
+          <Plus size={16} /> Nova Transação
         </button>
       </div>
 
@@ -2036,7 +2036,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   Categoria
                 </th>
                 <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Descri??o
+                  Descrição
                 </th>
                 <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
                   Data
@@ -2050,7 +2050,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               {recentTransactions.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-sm text-slate-500">
-                    Nenhuma transa??o encontrada.
+                    Nenhuma transação encontrada.
                   </td>
                 </tr>
               )}
@@ -2129,7 +2129,7 @@ const TransactionsView = ({
           onClick={onAddTransaction}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
         >
-          <Plus size={18} /> Nova Transa??o
+          <Plus size={18} /> Nova Transação
         </button>
       </div>
 
@@ -2157,7 +2157,7 @@ const TransactionsView = ({
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por descri??o"
+              placeholder="Buscar por descrição"
               className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
@@ -2180,7 +2180,7 @@ const TransactionsView = ({
       <div className="lg:hidden space-y-4">
         {filteredTransactions.length === 0 && (
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-sm">
-            Nenhuma transa??o encontrada para os filtros atuais.
+            Nenhuma transação encontrada para os filtros atuais.
           </div>
         )}
 
@@ -2252,7 +2252,7 @@ const TransactionsView = ({
           <thead>
             <tr className="border-b border-slate-800 bg-slate-800/30">
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Data</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Descri??o</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Descrição</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Tipo</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Categoria</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Método</th>
@@ -2265,7 +2265,7 @@ const TransactionsView = ({
             {filteredTransactions.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
-                  Nenhuma transa??o encontrada para os filtros atuais.
+                  Nenhuma transação encontrada para os filtros atuais.
                 </td>
               </tr>
             )}
@@ -2423,7 +2423,7 @@ const IntegrationsView = ({
         'Insights financeiros avançados',
         'Previsões de saldo e alertas inteligentes',
         'Planejamento estratégico',
-        'Automa??o financeira no WhatsApp',
+        'Automação financeira no WhatsApp',
         'Suporte prioritário',
       ],
     },
@@ -2502,7 +2502,7 @@ const IntegrationsView = ({
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white">Integra??o com WhatsApp</h3>
+              <h3 className="text-xl font-bold text-white">Integração com WhatsApp</h3>
               <p className="text-sm text-slate-500">Alertas e resumos automáticos direto no celular do workspace</p>
             </div>
           </div>
@@ -2547,13 +2547,13 @@ const IntegrationsView = ({
                 </div>
                 <p className="leading-relaxed text-slate-300">
                   Alertas e resumos no WhatsApp ficam disponíveis a partir do plano Pro. Use esse canal para receber
-                  lembretes financeiros e acompanhar o que merece aten??o sem abrir o app.
+                  lembretes financeiros e acompanhar o que merece atenção sem abrir o app.
                 </p>
                 <ul className="space-y-3 text-sm text-slate-300">
                   {[
                     'Resumo diário com saldo, entradas e saídas',
                     'Alertas de vencimentos e compromissos próximos',
-                    'Teste de envio e configura??o por workspace',
+                    'Teste de envio e configuração por workspace',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <CheckCircle2 size={16} className="mt-0.5 text-amber-300" />
@@ -2619,7 +2619,7 @@ const IntegrationsView = ({
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                      Status da configura??o
+                      Status da configuração
                     </label>
                     <div className="flex min-h-[52px] items-center rounded-xl border border-slate-800 bg-slate-950/60 px-4 text-sm text-slate-300">
                       {connectionDescription}
@@ -2636,7 +2636,7 @@ const IntegrationsView = ({
 
                 {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
                   <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                    <p className="text-sm font-bold text-amber-200">Revis?o necess?ria</p>
+                    <p className="text-sm font-bold text-amber-200">Revisão necess?ria</p>
                     <ul className="mt-2 space-y-2 text-sm text-amber-100/90">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
                         <li key={issue}>{issue}</li>
@@ -2718,7 +2718,7 @@ const IntegrationsView = ({
                         onClick={() => setShowWhatsAppConnectionDetails((current) => !current)}
                         className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
                       >
-                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da valida??o' : 'Ver detalhes da valida??o'}
+                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da validação' : 'Ver detalhes da validação'}
                       </button>
                     )}
                   </div>
@@ -2735,7 +2735,7 @@ const IntegrationsView = ({
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                          Template de conex?o
+                          Template de conexão
                         </label>
                         <input
                           type="text"
@@ -2789,7 +2789,7 @@ const IntegrationsView = ({
                         onClick={onRunWhatsAppDiagnostic}
                         className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500/50 hover:text-white sm:col-span-1"
                       >
-                        Validar configura??o
+                        Validar configuração
                       </button>
                     </div>
                   </div>
@@ -2828,24 +2828,24 @@ const IntegrationsView = ({
                 Resumo diário com saldo, entradas, saídas, próximos vencimentos e insights práticos para agir mais rápido.
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
-                Exemplo: <span className="font-semibold text-white">Maior gasto do m?s</span>, contas pr?ximas do vencimento e um resumo do que merece aten??o no caixa.
+                Exemplo: <span className="font-semibold text-white">Maior gasto do mês</span>, contas próximas do vencimento e um resumo do que merece atenção no caixa.
               </div>
             </div>
 
             {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
               <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70">
                 <div className="border-b border-slate-800 px-4 py-3 text-sm font-bold text-slate-200">
-                  Detalhes da valida??o
+                  Detalhes da validação
                 </div>
                 <div className="p-4">
                   <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Template conex?o</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.connectTemplateConfigured || 'N?o configurado'}</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Template conexão</p>
+                      <p className="mt-1 break-all">{whatsAppDiagnostic.connectTemplateConfigured || 'Não configurado'}</p>
                     </div>
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Template resumo</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.templateConfigured || 'N?o configurado'}</p>
+                      <p className="mt-1 break-all">{whatsAppDiagnostic.templateConfigured || 'Não configurado'}</p>
                     </div>
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Idioma</p>
@@ -2853,11 +2853,11 @@ const IntegrationsView = ({
                     </div>
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Destino de teste</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.destinoTeste || 'N?o configurado'}</p>
+                      <p className="mt-1 break-all">{whatsAppDiagnostic.destinoTeste || 'Não configurado'}</p>
                     </div>
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Número conectado</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.numeroConectado || 'N?o configurado'}</p>
+                      <p className="mt-1 break-all">{whatsAppDiagnostic.numeroConectado || 'Não configurado'}</p>
                     </div>
                   </div>
 
@@ -2886,7 +2886,7 @@ const IntegrationsView = ({
 
                   {whatsAppDiagnostic.metaResult && (
                     <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs text-slate-400">
-                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da valida??o</p>
+                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da validação</p>
                       <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-slate-300">
                         {typeof whatsAppDiagnostic.metaResult === 'string'
                           ? whatsAppDiagnostic.metaResult
@@ -2943,7 +2943,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
           </p>
           <h3 className="text-2xl font-black text-white">Próximos compromissos do seu caixa</h3>
           <p className="max-w-2xl text-sm leading-relaxed text-slate-400">
-            Veja o que vence primeiro, o que merece aten??o nesta semana e quanto do seu
+            Veja o que vence primeiro, o que merece atenção nesta semana e quanto do seu
             caixa já está comprometido nos próximos 30 dias.
           </p>
         </div>
@@ -3129,7 +3129,7 @@ const DebtsView = ({
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Dívida convencional</p>
               <h4 className="mt-1 text-lg font-bold text-white">Parcelas, acordos e obrigações pontuais</h4>
               <p className="mt-2 text-sm leading-7 text-slate-400">
-                Use para empr?stimos, cart?o atrasado, acordo com pessoa f?sica ou qualquer obriga??o com valor total definido.
+                Use para empr?stimos, cartão atrasado, acordo com pessoa física ou qualquer obrigação com valor total definido.
               </p>
             </div>
           </div>
@@ -3222,7 +3222,7 @@ const DebtsView = ({
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Atalhos de cria??o</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Atalhos de criação</p>
               <button
                 onClick={() => onAddRecurringDebt()}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
@@ -3260,7 +3260,7 @@ const DebtsView = ({
             </div>
             {recurringDebts.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-950/60 p-6 text-sm leading-7 text-slate-400">
-                Voc? ainda n?o cadastrou d?vidas recorrentes. Use os atalhos acima para separar contas fixas das d?vidas ?nicas.
+                Você ainda não cadastrou dívidas recorrentes. Use os atalhos acima para separar contas fixas das dívidas ?nicas.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -3461,11 +3461,11 @@ const buildPortfolioInsights = ({
   const topWallet = [...wallets].sort((a, b) => b.balance - a.balance)[0] ?? null;
 
   if (totalAssets <= 0 && totalDebt <= 0) {
-    return ['Voc? ainda n?o consolidou patrim?nio suficiente para gerar insights da carteira.'];
+    return ['Você ainda não consolidou patrimônio suficiente para gerar insights da carteira.'];
   }
 
   if (totalAssets > 0 && totalInvested === 0) {
-    insights.push('Seu patrim?nio ainda est? concentrado em caixa. Registrar investimentos pode melhorar sua diversifica??o.');
+    insights.push('Seu patrimônio ainda est? concentrado em caixa. Registrar investimentos pode melhorar sua diversificação.');
   }
 
   if (topWallet && totalBalance > 0) {
@@ -3485,7 +3485,7 @@ const buildPortfolioInsights = ({
   }
 
   if (insights.length === 0 && totalAssets > 0) {
-    insights.push('Sua carteira est? equilibrada neste momento. Continue acompanhando a distribui??o entre caixa, investimentos e d?vidas.');
+    insights.push('Sua carteira est? equilibrada neste momento. Continue acompanhando a distribuição entre caixa, investimentos e dívidas.');
   }
 
   return insights.slice(0, 3);
@@ -3694,7 +3694,7 @@ const PortfolioView = ({
         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h4 className="text-lg font-bold text-white">Distribui??o do patrim?nio</h4>
+              <h4 className="text-lg font-bold text-white">Distribui??o do patrimônio</h4>
               <p className="text-sm text-slate-500">Entenda rapidamente quanto do seu patrimônio está em contas, investimentos e dívidas.</p>
             </div>
           </div>
@@ -3730,7 +3730,7 @@ const PortfolioView = ({
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-800 text-sm text-slate-500">
-                  Assim que voc? registrar contas, investimentos ou d?vidas, a distribui??o aparecer? aqui.
+                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecer? aqui.
                 </div>
               )}
             </div>
@@ -3764,7 +3764,7 @@ const PortfolioView = ({
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="text-lg font-bold text-white">Onde está meu dinheiro</h4>
-              <p className="text-sm text-slate-500">Veja as principais carteiras, participa??o no saldo total e a??es r?pidas.</p>
+              <p className="text-sm text-slate-500">Veja as principais carteiras, participação no saldo total e ações r?pidas.</p>
             </div>
             {walletAllocation.length > 4 && (
               <button
@@ -3847,9 +3847,9 @@ const PortfolioView = ({
           <div className="space-y-3">
             {topInvestments.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
-                <p className="text-sm font-semibold text-white">Voc? ainda n?o registrou investimentos.</p>
+                <p className="text-sm font-semibold text-white">Você ainda não registrou investimentos.</p>
                 <p className="mt-2 text-sm text-slate-500">
-                  Adicione seus principais ativos para ver a participa??o deles no patrim?nio total.
+                  Adicione seus principais ativos para ver a participação deles no patrimônio total.
                 </p>
                 <button
                   type="button"
@@ -3912,7 +3912,7 @@ const PortfolioView = ({
           <div className="space-y-3">
             {topDebts.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
-                <p className="text-sm font-semibold text-white">Voc? n?o possui d?vidas registradas.</p>
+                <p className="text-sm font-semibold text-white">Você não possui dívidas registradas.</p>
                 <p className="mt-2 text-sm text-slate-500">
                   Registre dívidas para acompanhar o valor em aberto e o impacto delas no seu patrimônio.
                 </p>
@@ -3951,7 +3951,7 @@ const PortfolioView = ({
           <h4 className="text-lg font-bold text-white">Insights da IA</h4>
           <p className="text-sm text-slate-500">
             {hasPortfolioAiInsights
-              ? 'Mensagens r?pidas para ajudar voc? a entender a composi??o da sua carteira.'
+              ? 'Mensagens r?pidas para ajudar você a entender a composi??o da sua carteira.'
               : 'Descubra para onde seu dinheiro está indo com os Insights automáticos da IA.'}
           </p>
         </div>
@@ -3978,7 +3978,7 @@ const PortfolioView = ({
                 </div>
                 <p className="text-sm leading-relaxed text-slate-200">
                   Receba análises automáticas da sua vida financeira com inteligência artificial e veja rapidamente onde seu
-                  patrim?nio est? concentrado, quais pontos exigem aten??o e quais oportunidades merecem prioridade.
+                  patrimônio est? concentrado, quais pontos exigem atenção e quais oportunidades merecem prioridade.
                 </p>
               </div>
               <button
@@ -4322,7 +4322,7 @@ const ReportsView = ({
       .map((tx) => ({
         id: tx.id,
         amount: parseCurrency(tx.amount),
-        description: tx.desc || tx.cat || 'Despesa sem descri??o',
+        description: tx.desc || tx.cat || 'Despesa sem descrição',
         category: tx.cat || 'Outros',
         date: tx.parsedDate,
       }))
@@ -4412,10 +4412,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao gerar insights.');
       }
-      setAiInsight(typeof data?.text === 'string' ? data.text : 'N?o foi poss?vel gerar insights no momento.');
+      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi poss?vel gerar insights no momento.');
     } catch (error) {
       console.error('AI Insight error:', error);
-      setAiInsight('N?o foi poss?vel gerar insights no momento.');
+      setAiInsight('Não foi poss?vel gerar insights no momento.');
     } finally {
       setIsGeneratingInsight(false);
     }
@@ -4428,7 +4428,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div>
             <h3 className="text-xl font-bold text-white">Relatórios</h3>
             <p className="text-sm text-slate-400">
-              Vis?o b?sica da sua movimenta??o financeira atual.
+              Vis?o básica da sua movimentação financeira atual.
             </p>
           </div>
           {currentPlan === 'FREE' && (
@@ -4485,7 +4485,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               {[
                 'Gráficos comparativos completos',
                 'Insights automáticos com IA',
-                'Exporta??o em PDF e CSV',
+                'Exportação em PDF e CSV',
                 'Comparativos avançados de receita, despesa e economia',
               ].map((feature) => (
                 <div
@@ -4550,9 +4550,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
-                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previs?o de saldo</h4>
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previsão de saldo</h4>
                 <p className="text-sm text-slate-400 mt-2">
-                  Proje??o baseada no ritmo m?dio das suas movimenta??es dos ?ltimos 60 dias.
+                  Proje??o baseada no ritmo m?dio das suas movimentações dos Últimos 60 dias.
                 </p>
               </div>
               <div
@@ -4643,7 +4643,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-widest">Análises profundas de despesas</h4>
                 <p className="mt-2 max-w-3xl text-sm text-slate-400">
-                  Veja quais categorias mais cresceram, onde est?o os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste m?s.
+                  Veja quais categorias mais cresceram, onde est?o os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
                 </p>
               </div>
               <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
@@ -4658,12 +4658,12 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="mt-2 text-xs text-slate-400">
                   {expenseDeepDive.previousMonthTotal > 0
                     ? `Mês anterior: ${formatCurrency(expenseDeepDive.previousMonthTotal)}`
-                    : 'Sem compara??o v?lida com o m?s anterior.'}
+                    : 'Sem comparação válida com o mês anterior.'}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Varia??o mensal</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Variação mensal</p>
                 <p
                   className={cn(
                     'text-2xl font-black',
@@ -4679,7 +4679,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
-                  Compara??o entre as despesas do m?s atual e do m?s anterior.
+                  Comparação entre as despesas do mês atual e do mês anterior.
                 </p>
               </div>
 
@@ -4703,7 +4703,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="mt-2 text-xs text-slate-400">
                   {expenseDeepDive.largestExpense
                     ? `${formatCurrency(expenseDeepDive.largestExpense.amount)} em ${expenseDeepDive.largestExpense.category}`
-                    : 'Ainda n?o h? lan?amentos suficientes neste m?s.'}
+                    : 'Ainda não h? lan?amentos suficientes neste mês.'}
                 </p>
               </div>
             </div>
@@ -4714,7 +4714,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <div className="space-y-3">
                   {expenseDeepDive.growingCategories.length === 0 ? (
                     <p className="text-sm text-slate-400">
-                      Nenhuma categoria apresentou crescimento relevante em rela??o ao m?s anterior.
+                      Nenhuma categoria apresentou crescimento relevante em relação ao mês anterior.
                     </p>
                   ) : (
                     expenseDeepDive.growingCategories.map((item) => (
@@ -4743,7 +4743,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <div className="space-y-3">
                   {expenseDeepDive.recurringHeavyCategories.length === 0 ? (
                     <p className="text-sm text-slate-400">
-                      Ainda n?o h? categorias recorrentes suficientes neste m?s para uma an?lise mais profunda.
+                      Ainda não h? categorias recorrentes suficientes neste mês para uma an?lise mais profunda.
                     </p>
                   ) : (
                     expenseDeepDive.recurringHeavyCategories.map((item) => (
@@ -5598,7 +5598,7 @@ const RecurringDebtModal = ({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descri??o</label>
+            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descrição</label>
             <input
               type="text"
               value={formData.creditor}
@@ -5946,7 +5946,7 @@ const TransactionModal = ({
         }));
         setReceiptStatus('Dados detectados automaticamente. Revise antes de salvar.');
       } else {
-        setReceiptStatus('N?o foi poss?vel extrair dados do comprovante.');
+        setReceiptStatus('Não foi poss?vel extrair dados do comprovante.');
       }
     } catch {
       setReceiptStatus('Falha ao processar comprovante.');
@@ -5997,7 +5997,7 @@ const TransactionModal = ({
           <div className="h-1.5 w-12 rounded-full bg-slate-700" />
         </div>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Transa??o' : 'Nova Transa??o'}</h3>
+          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -6051,7 +6051,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descri??o</label>
+            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descrição</label>
             <input
               type="text"
               value={formData.description}
@@ -6225,7 +6225,7 @@ const TransactionModal = ({
 
           {formData.flowType === 'Transferência' && formData.destinationWallet === formData.wallet && (
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
-              Conta origem e destino n?o podem ser iguais.
+              Conta origem e destino não podem ser iguais.
             </div>
           )}
 
@@ -6239,7 +6239,7 @@ const TransactionModal = ({
                 : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar altera??es' : 'Criar transa??o'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
           </button>
         </div>
       </motion.div>
@@ -6276,7 +6276,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       target: 'ai-assistant',
     },
     {
-      title: 'Integra??o WhatsApp',
+      title: 'Integração WhatsApp',
       description: 'Registre gastos e receba alertas diretamente pelo WhatsApp. Praticidade total.',
       target: 'whatsapp-integration',
     },
@@ -6428,9 +6428,9 @@ const LoginView = ({
 
       if (resendError) throw resendError;
 
-      setNotice('Enviamos um novo e-mail de confirma??o. Verifique sua caixa de entrada e spam.');
+      setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
-      setError(err?.message || 'N?o foi poss?vel reenviar o e-mail de confirma??o.');
+      setError(err?.message || 'Não foi poss?vel reenviar o e-mail de confirmação.');
     } finally {
       setLoading(false);
     }
@@ -6483,7 +6483,7 @@ const LoginView = ({
     const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
 
     if (!accessToken || !resolvedUser) {
-      throw new Error('N?o foi poss?vel validar o c?digo. Solicite um novo e tente novamente.');
+      throw new Error('Não foi poss?vel validar o c?digo. Solicite um novo e tente novamente.');
     }
 
     await runSetupForToken(accessToken);
@@ -6550,14 +6550,14 @@ const LoginView = ({
       if (!isLogin) {
         setPendingConfirmationEmail(normalizedEmail);
         setNotice(
-          'Conta criada com sucesso. Enviamos um e-mail de confirma??o para continuar seu acesso.'
+          'Conta criada com sucesso. Enviamos um e-mail de confirmação para continuar seu acesso.'
         );
         setIsLogin(true);
         setPassword('');
         return;
       }
 
-      throw new Error('N?o foi poss?vel iniciar sess?o. Tente novamente.');
+      throw new Error('Não foi poss?vel iniciar sess?o. Tente novamente.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -6586,7 +6586,7 @@ const LoginView = ({
       const rawMessage = String(err?.message || '');
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError(
-          'Google OAuth n?o est? habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
+          'Google OAuth não est? habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
         );
       } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
         setError(
@@ -6845,7 +6845,7 @@ const LoginView = ({
               disabled={loading}
               className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
             >
-              N?o recebeu o e-mail? Reenviar confirma??o
+              Não recebeu o e-mail? Reenviar confirmação
             </button>
           ) : null}
 
@@ -6861,7 +6861,7 @@ const LoginView = ({
                   try {
                     await requestEmailCode(otpRequestedEmail);
                   } catch (err: any) {
-                    setError(err?.message || 'N?o foi poss?vel reenviar o c?digo.');
+                    setError(err?.message || 'Não foi poss?vel reenviar o c?digo.');
                   } finally {
                     setLoading(false);
                   }
@@ -6922,7 +6922,7 @@ const LoginView = ({
         </button>
 
         <p className="mt-7 text-center text-sm text-slate-500">
-          {isLogin ? 'N?o tem uma conta?' : 'J? tem uma conta?'}
+          {isLogin ? 'Não tem uma conta?' : 'J? tem uma conta?'}
           <button
             onClick={() => {
               setError(null);
@@ -7385,8 +7385,8 @@ export default function App() {
             label: item.name,
             type: item.type || 'Outros',
             walletId: null,
-            walletName: item.institution || 'N?o informado',
-            institution: item.institution || 'N?o informado',
+            walletName: item.institution || 'Não informado',
+            institution: item.institution || 'Não informado',
             invested: Number(item.invested_amount || 0),
             value: Number(item.current_amount || 0),
             expectedReturnAnnual: Number(item.expected_return_annual || 0),
@@ -7474,8 +7474,8 @@ export default function App() {
                 label: item.name,
                 type: item.type || 'Outros',
                 walletId: null,
-                walletName: item.institution || 'N?o informado',
-                institution: item.institution || 'N?o informado',
+                walletName: item.institution || 'Não informado',
+                institution: item.institution || 'Não informado',
                 invested: Number(item.invested_amount || 0),
                 value: Number(item.current_amount || 0),
                 expectedReturnAnnual: Number(item.expected_return_annual || 0),
@@ -7575,7 +7575,7 @@ export default function App() {
         setDashboardInsights((current) =>
           current.length > 0
             ? current
-            : ['N?o foi poss?vel atualizar os dados agora. Exibindo o ?ltimo estado conhecido.']
+            : ['Não foi poss?vel atualizar os dados agora. Exibindo o Último estado conhecido.']
         );
       }
     } finally {
@@ -7951,7 +7951,7 @@ React.useEffect(() => {
       applyWhatsAppPayload(payload);
       setWhatsAppFeedback({
         tone: 'success',
-        title: 'Configura??o salva',
+        title: 'Configuração salva',
         message:
           typeof payload?.message === 'string'
             ? payload.message
@@ -7961,7 +7961,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'N?o foi poss?vel salvar a configura??o do WhatsApp.';
+          : 'Não foi poss?vel salvar a configuração do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -7990,23 +7990,23 @@ React.useEffect(() => {
       applyWhatsAppPayload(payload);
       setWhatsAppFeedback({
         tone: payload?.success ? 'success' : 'info',
-        title: payload?.success ? 'Valida??o conclu?da' : 'Revis?o necess?ria',
+        title: payload?.success ? 'Validação conclu?da' : 'Revisão necess?ria',
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A valida??o do WhatsApp foi conclu?da.',
+            : 'A validação do WhatsApp foi conclu?da.',
       });
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'N?o foi poss?vel validar a configura??o do WhatsApp.';
+          : 'Não foi poss?vel validar a configuração do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
       setWhatsAppFeedback({
         tone: 'error',
-        title: 'Falha na valida??o',
+        title: 'Falha na validação',
         message,
       });
     }
@@ -8039,13 +8039,13 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'N?o foi poss?vel conectar o WhatsApp.';
+          : 'Não foi poss?vel conectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
       setWhatsAppFeedback({
         tone: 'error',
-        title: 'Falha na conex?o',
+        title: 'Falha na conexão',
         message,
       });
     } finally {
@@ -8077,7 +8077,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'N?o foi poss?vel desconectar o WhatsApp.';
+          : 'Não foi poss?vel desconectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8115,7 +8115,7 @@ React.useEffect(() => {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'N?o foi poss?vel enviar o teste do WhatsApp.';
+          : 'Não foi poss?vel enviar o teste do WhatsApp.';
       if (error?.payload?.diagnostic) {
         setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
       }
@@ -8235,7 +8235,7 @@ React.useEffect(() => {
       notifications.push({
         id: `agenda-overdue-${overdueBills.length}`,
         title: 'Você tem compromissos em atraso',
-        message: `${overdueBills.length} item(ns) exigem aten??o imediata na sua agenda financeira.`,
+        message: `${overdueBills.length} item(ns) exigem atenção imediata na sua agenda financeira.`,
         tone: 'error',
         targetTab: 'agenda',
       });
@@ -8252,7 +8252,7 @@ React.useEffect(() => {
     if (subscriptionSummary?.status === 'PENDING') {
       notifications.push({
         id: 'subscription-pending',
-        title: 'Sua assinatura precisa de aten??o',
+        title: 'Sua assinatura precisa de atenção',
         message: 'Revise a cobrança para manter seu acesso premium ativo.',
         tone: 'error',
         targetTab: 'subscription',
@@ -9125,7 +9125,7 @@ React.useEffect(() => {
 
     (doc as any).autoTable({
       startY: 80,
-      head: [['Data', 'Descri??o', 'Categoria', 'Valor', 'Carteira']],
+      head: [['Data', 'Descrição', 'Categoria', 'Valor', 'Carteira']],
       body: tableData,
     });
 
@@ -9133,7 +9133,7 @@ React.useEffect(() => {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Data', 'Descri??o', 'Categoria', 'Valor', 'Tipo', 'Carteira'];
+    const headers = ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Carteira'];
     const rows = transactions.map((tx) => [
       tx.date,
       tx.desc,
@@ -9274,7 +9274,7 @@ React.useEffect(() => {
     const resolvedCategory = await resolveTransactionCategory(tx);
     const absoluteAmount = parseMoneyInput(tx.amount);
     if (!absoluteAmount || absoluteAmount <= 0) {
-      alert('Valor inv?lido para transa??o.');
+      alert('Valor inválido para transação.');
       return false;
     }
     if (flowType === 'Transferência') {
@@ -9283,7 +9283,7 @@ React.useEffect(() => {
         return false;
       }
       if (tx.destinationWallet === tx.wallet) {
-        alert('Conta origem e destino n?o podem ser iguais.');
+        alert('Conta origem e destino não podem ser iguais.');
         return false;
       }
     }
@@ -9337,7 +9337,7 @@ React.useEffect(() => {
         const message =
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao salvar transa??o.';
+            : 'Falha ao salvar transação.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -9357,7 +9357,7 @@ React.useEffect(() => {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Save transaction error:', error);
-      alert('Falha ao salvar transa??o. Tente novamente.');
+      alert('Falha ao salvar transação. Tente novamente.');
       return false;
     }
   };
@@ -9406,7 +9406,7 @@ React.useEffect(() => {
         const message =
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao excluir transa??o.';
+            : 'Falha ao excluir transação.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -9425,7 +9425,7 @@ React.useEffect(() => {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Delete transaction error:', error);
-      alert('Falha ao excluir transa??o. Tente novamente.');
+      alert('Falha ao excluir transação. Tente novamente.');
     }
   };
 
@@ -9927,7 +9927,7 @@ React.useEffect(() => {
                   onClick={() => setIsUpgradeLimitModalOpen(false)}
                   className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300 hover:text-white transition-colors"
                 >
-                  Agora n?o
+                  Agora não
                 </button>
                 <button
                   onClick={() => {
@@ -10030,7 +10030,7 @@ React.useEffect(() => {
                     }}
                     className="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-bold text-slate-300 transition-colors hover:text-white"
                   >
-                    Agora n?o
+                    Agora não
                   </button>
                   <button
                     type="submit"
@@ -10167,7 +10167,7 @@ React.useEffect(() => {
                     }}
                     className="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-bold text-slate-300 transition-colors hover:text-white"
                   >
-                    Agora n?o
+                    Agora não
                   </button>
                   <button
                     type="submit"
@@ -10395,7 +10395,7 @@ React.useEffect(() => {
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                      Descri??o (opcional)
+                      Descrição (opcional)
                     </label>
                     <input
                       value={onboardingFirstRecord.description}
@@ -10445,7 +10445,7 @@ React.useEffect(() => {
                     <ul className="space-y-2 text-sm text-slate-300">
                       <li>saldo atual</li>
                       <li>despesas por categoria</li>
-                      <li>evolu??o dos gastos</li>
+                      <li>evolução dos gastos</li>
                       <li>análises completas disponíveis no Pro</li>
                     </ul>
                   </div>
@@ -10476,7 +10476,7 @@ React.useEffect(() => {
                   </div>
                   <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
                     Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
-                    {String(onboardingPrimaryInsight.category || 'alimenta??o').toLowerCase()}. Se reduzir esse gasto em
+                    {String(onboardingPrimaryInsight.category || 'alimentação').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
                     {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mês.
                   </div>
@@ -11058,7 +11058,7 @@ React.useEffect(() => {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {([
-                        { value: 'Alimenta??o', label: 'Alimenta??o' },
+                        { value: 'Alimentação', label: 'Alimentação' },
                         { value: 'Transporte', label: 'Transporte' },
                         { value: 'Moradia', label: 'Moradia' },
                         { value: 'Saúde', label: 'Saúde' },
@@ -11188,7 +11188,7 @@ React.useEffect(() => {
 
                         {visibleNotifications.length === 0 ? (
                           <div className="px-4 py-5">
-                            <p className="text-sm text-slate-300">Nenhuma atualiza??o pendente no momento.</p>
+                            <p className="text-sm text-slate-300">Nenhuma atualização pendente no momento.</p>
                             <p className="mt-1 text-xs text-slate-500">
                               Quando surgir algo importante sobre sua conta, assinatura ou agenda, isso aparece aqui.
                             </p>
@@ -11245,7 +11245,7 @@ React.useEffect(() => {
                                         type="button"
                                         onClick={() => deleteNotification(notification.id)}
                                         className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
-                                        aria-label="Apagar notifica??o"
+                                        aria-label="Apagar notificação"
                                       >
                                         <Trash2 size={14} />
                                       </button>
@@ -11296,7 +11296,7 @@ React.useEffect(() => {
                                       type="button"
                                       onClick={() => deleteNotification(notification.id)}
                                       className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
-                                      aria-label="Apagar notifica??o"
+                                      aria-label="Apagar notificação"
                                     >
                                       <Trash2 size={14} />
                                     </button>
@@ -11662,7 +11662,7 @@ React.useEffect(() => {
                           </button>
                         </div>
                         <p className="text-xs text-slate-500">
-                          Se n?o houver foto, o sistema mostra automaticamente as iniciais do usu?rio.
+                          Se não houver foto, o sistema mostra automaticamente as iniciais do usuário.
                         </p>
                       </div>
                     </div>
