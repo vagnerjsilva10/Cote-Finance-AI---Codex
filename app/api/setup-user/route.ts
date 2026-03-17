@@ -96,27 +96,32 @@ export async function POST(req: Request) {
     }
 
     const activeWorkspaceId = dbData.workspaceMember.workspace_id;
-    const attributionFromCookie = await readAttributionFromCookies();
-    await upsertAttributionForUser({
-      userId: user.id,
-      workspaceId: activeWorkspaceId,
-      attribution: attributionFromCookie,
-    });
-    await logWorkspaceEventSafe({
-      workspaceId: activeWorkspaceId,
-      userId: user.id,
-      type: 'tracking.signup_completed',
-      payload: {
-        utm_source: attributionFromCookie?.utm_source ?? null,
-        utm_medium: attributionFromCookie?.utm_medium ?? null,
-        utm_campaign: attributionFromCookie?.utm_campaign ?? null,
-      },
-    });
 
     const [plan, onboardingPreference] = await Promise.all([
       getWorkspacePlan(activeWorkspaceId, user.id),
       getWorkspacePreference(activeWorkspaceId, user.id),
     ]);
+
+    const attributionFromCookie = await readAttributionFromCookies();
+    if (attributionFromCookie) {
+      await Promise.allSettled([
+        upsertAttributionForUser({
+          userId: user.id,
+          workspaceId: activeWorkspaceId,
+          attribution: attributionFromCookie,
+        }),
+        logWorkspaceEventSafe({
+          workspaceId: activeWorkspaceId,
+          userId: user.id,
+          type: 'tracking.signup_completed',
+          payload: {
+            utm_source: attributionFromCookie.utm_source ?? null,
+            utm_medium: attributionFromCookie.utm_medium ?? null,
+            utm_campaign: attributionFromCookie.utm_campaign ?? null,
+          },
+        }),
+      ]);
+    }
 
     return NextResponse.json({
       ...dbData,

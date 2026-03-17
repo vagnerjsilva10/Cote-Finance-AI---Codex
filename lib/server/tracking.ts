@@ -8,6 +8,14 @@ import type { MetaPurchasePayload, PublicTrackingSettings, StoredAttribution, Tr
 
 const TRACKING_SETTINGS_KEY = 'tracking_settings';
 export const ATTRIBUTION_COOKIE_NAME = 'cote_tracking_attribution';
+const PLATFORM_SETTING_CACHE_TTL_MS = 15_000;
+
+type TrackingSettingsCacheEntry = {
+  expiresAt: number;
+  value: TrackingSettings;
+};
+
+let trackingSettingsCache: TrackingSettingsCacheEntry | null = null;
 
 export const DEFAULT_TRACKING_SETTINGS: TrackingSettings = {
   pixelId: '',
@@ -66,13 +74,23 @@ export function toPublicTrackingSettings(settings: TrackingSettings): PublicTrac
 }
 
 export async function readTrackingSettings(): Promise<TrackingSettings> {
+  const now = Date.now();
+  if (trackingSettingsCache && trackingSettingsCache.expiresAt > now) {
+    return { ...trackingSettingsCache.value };
+  }
+
   try {
     const setting = await prisma.platformSetting.findUnique({
       where: { key: TRACKING_SETTINGS_KEY },
       select: { value: true },
     });
 
-    return sanitizeTrackingSettings(setting?.value ?? DEFAULT_TRACKING_SETTINGS);
+    const value = sanitizeTrackingSettings(setting?.value ?? DEFAULT_TRACKING_SETTINGS);
+    trackingSettingsCache = {
+      expiresAt: now + PLATFORM_SETTING_CACHE_TTL_MS,
+      value,
+    };
+    return { ...value };
   } catch (error) {
     if (isMissingTrackingTableError(error)) {
       return DEFAULT_TRACKING_SETTINGS;
@@ -90,6 +108,10 @@ export async function saveTrackingSettings(nextValue: TrackingSettings) {
       update: { value },
       create: { key: TRACKING_SETTINGS_KEY, value },
     });
+    trackingSettingsCache = {
+      expiresAt: Date.now() + PLATFORM_SETTING_CACHE_TTL_MS,
+      value,
+    };
   } catch (error) {
     if (!isMissingTrackingTableError(error)) {
       throw error;

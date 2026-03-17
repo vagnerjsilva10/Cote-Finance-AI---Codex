@@ -7,6 +7,14 @@ import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = 'pt_BR';
 const WHATSAPP_CONFIG_EVENT_TYPE = 'whatsapp.config.updated';
 const WHATSAPP_CONFIG_KEY_PREFIX = 'workspace.whatsapp-config.';
+const WHATSAPP_CONFIG_CACHE_TTL_MS = 15_000;
+
+type WorkspaceWhatsAppConfigCacheEntry = {
+  expiresAt: number;
+  value: WorkspaceWhatsAppConfig;
+};
+
+const workspaceWhatsAppConfigCache = new Map<string, WorkspaceWhatsAppConfigCacheEntry>();
 
 export type WorkspaceWhatsAppConfig = {
   connectTemplateName: string | null;
@@ -142,7 +150,19 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
   };
 }
 
+function cloneWorkspaceWhatsAppConfig(config: WorkspaceWhatsAppConfig): WorkspaceWhatsAppConfig {
+  return {
+    ...config,
+    pendingConfirmation: config.pendingConfirmation ? { ...config.pendingConfirmation } : null,
+  };
+}
+
 export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<WorkspaceWhatsAppConfig> {
+  const cached = workspaceWhatsAppConfigCache.get(workspaceId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cloneWorkspaceWhatsAppConfig(cached.value);
+  }
+
   const settingKey = `${WHATSAPP_CONFIG_KEY_PREFIX}${workspaceId}`;
   const configSetting = await prisma.platformSetting.findUnique({
     where: { key: settingKey },
@@ -154,10 +174,15 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
 
   if (configSetting) {
     const parsed = readConfigPayload(configSetting.value);
-    return {
+    const resolved = {
       ...parsed,
       updatedAt: parsed.updatedAt ?? configSetting.updated_at.toISOString(),
     };
+    workspaceWhatsAppConfigCache.set(workspaceId, {
+      expiresAt: Date.now() + WHATSAPP_CONFIG_CACHE_TTL_MS,
+      value: resolved,
+    });
+    return cloneWorkspaceWhatsAppConfig(resolved);
   }
 
   const latestConfigEvent = await prisma.workspaceEvent.findFirst({
@@ -175,7 +200,7 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
   });
 
   if (!latestConfigEvent) {
-    return {
+    const resolved: WorkspaceWhatsAppConfig = {
       connectTemplateName: null,
       digestTemplateName: null,
       templateLanguage: DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
@@ -188,13 +213,23 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
       pendingConfirmation: null,
       updatedAt: null,
     };
+    workspaceWhatsAppConfigCache.set(workspaceId, {
+      expiresAt: Date.now() + WHATSAPP_CONFIG_CACHE_TTL_MS,
+      value: resolved,
+    });
+    return cloneWorkspaceWhatsAppConfig(resolved);
   }
 
   const parsed = readConfigPayload(latestConfigEvent.payload);
-  return {
+  const resolved = {
     ...parsed,
     updatedAt: parsed.updatedAt ?? latestConfigEvent.created_at.toISOString(),
   };
+  workspaceWhatsAppConfigCache.set(workspaceId, {
+    expiresAt: Date.now() + WHATSAPP_CONFIG_CACHE_TTL_MS,
+    value: resolved,
+  });
+  return cloneWorkspaceWhatsAppConfig(resolved);
 }
 
 export async function saveWorkspaceWhatsAppConfig(params: {
@@ -290,6 +325,11 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         pendingConfirmation: normalizedConfig.pendingConfirmation,
       },
     },
+  });
+
+  workspaceWhatsAppConfigCache.set(params.workspaceId, {
+    expiresAt: Date.now() + WHATSAPP_CONFIG_CACHE_TTL_MS,
+    value: normalizedConfig,
   });
 
   return normalizedConfig;
