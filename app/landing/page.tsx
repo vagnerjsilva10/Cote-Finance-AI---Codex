@@ -68,7 +68,7 @@ const legacyPlans: PlanCard[] = [
       'Previsão de saldo futuro',
       'Alertas financeiros inteligentes',
       'Análise profunda de despesas',
-      'Automação financeira no WhatsApp',
+      'WhatsApp com alertas, resumos e automações',
       'Suporte prioritário',
     ],
   },
@@ -88,7 +88,7 @@ const legacyPlans: PlanCard[] = [
       'Análise automática da IA sobre seus gastos',
       'Insights financeiros automáticos',
       'Relatórios completos de despesas e receitas',
-      'Resumos e alertas financeiros no WhatsApp',
+      'Resumos, alertas e acompanhamento no WhatsApp',
     ],
   },
   {
@@ -98,7 +98,7 @@ const legacyPlans: PlanCard[] = [
     buttonText: 'Criar conta grátis',
     microcopy: 'Experimente gratuitamente. Sem cartão.',
     features: [
-      'Até 15 lançamentos por mês',
+      'Até 10 lançamentos por mês',
       'Dashboard financeiro básico',
       'Acompanhamento simples de saldo',
       'Sem análise da IA',
@@ -127,12 +127,12 @@ const legacyPricingFaqs = [
   {
     question: 'Qual a diferença entre Pro e Premium?',
     answer:
-      'O Pro entrega controle financeiro completo com IA, relatórios e WhatsApp. O Premium adiciona previsões, alertas inteligentes, análises profundas e suporte prioritário.',
+      'O Pro entrega controle financeiro completo com IA, relatórios e acompanhamento no WhatsApp. O Premium adiciona previsões, alertas inteligentes, automações mais profundas e suporte prioritário.',
   },
   {
     question: 'O WhatsApp está incluído em quais planos?',
     answer:
-      'Os resumos e alertas financeiros no WhatsApp estão disponíveis nos planos Pro e Premium. O Premium também inclui automações financeiras mais avançadas.',
+      'Os resumos e alertas financeiros no WhatsApp estão disponíveis nos planos Pro e Premium. No Premium, o canal ganha automações mais avançadas, consultas e ações mais ricas.',
   },
 ] as const;
 
@@ -145,8 +145,8 @@ const currentPlans: PlanCard[] = [
     buttonText: 'Começar grátis',
     microcopy: 'Sem cartão. Ideal para dar o primeiro passo com segurança.',
     features: [
-      'Até 15 lançamentos por mês',
-      'Até 15 interações com IA por mês',
+      'Até 10 lançamentos por mês',
+      'Até 10 interações com IA por mês',
       'Dashboard financeiro essencial',
       'Visão inicial de saldo, entradas e saídas',
       'Organização básica para sair do zero',
@@ -189,7 +189,7 @@ const currentPlans: PlanCard[] = [
       'Previsão de saldo para antecipar apertos e sobras',
       'Alertas inteligentes para agir antes do problema virar bola de neve',
       'Análises mais profundas de despesas e comportamento financeiro',
-      'Automações financeiras no WhatsApp para acompanhamento contínuo',
+      'WhatsApp com automações, alertas e acompanhamento contínuo',
       'Suporte prioritário para quem quer mais agilidade',
     ],
     accent: 'premium',
@@ -220,7 +220,7 @@ const currentPricingFaqs = [
   {
     question: 'O WhatsApp está incluído em quais planos?',
     answer:
-      'Os resumos e alertas no WhatsApp estão disponíveis no Pro e no Premium. No Premium, esse acompanhamento ganha automações mais avançadas.',
+      'Os resumos e alertas no WhatsApp estão disponíveis no Pro e no Premium. No Premium, esse acompanhamento ganha automações mais avançadas, consultas e ações no canal.',
   },
 ] as const;
 
@@ -272,8 +272,8 @@ const fallbackPlans: PlanCard[] = [
     microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
     signupHref: '/signup?plan=free',
     features: [
-      'Até 15 lançamentos por mês',
-      'Até 15 interações com IA por mês',
+      'Até 10 lançamentos por mês',
+      'Até 10 interações com IA por mês',
       'Controle básico de receitas e despesas',
       'Dashboard financeiro',
       'Gráficos simples',

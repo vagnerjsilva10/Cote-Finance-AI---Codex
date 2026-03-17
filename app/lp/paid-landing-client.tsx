@@ -62,7 +62,7 @@ const solutionBullets = [
 const howItWorks = [
   { step: '1. Registre seus gastos', text: 'Adicione suas despesas e receitas em poucos segundos.' },
   { step: '2. O sistema analisa seus hábitos', text: 'O Cote Finance AI organiza seus gastos automaticamente e identifica padrões.' },
-  { step: '3. Receba insights e alertas', text: 'Descubra onde economizar e receba resumos diretamente no WhatsApp.' },
+  { step: '3. Receba insights e alertas', text: 'Descubra onde economizar e acompanhe alertas e resumos diretamente no WhatsApp.' },
 ];
 
 const functionalityCards = [
@@ -81,9 +81,9 @@ const functionalityCards = [
     accent: 'emerald',
   },
   {
-    title: 'Alertas no WhatsApp',
-    text: 'Acompanhe sua vida financeira sem precisar abrir o app o tempo todo.',
-    items: ['Resumo diário', 'Alertas importantes', 'Lembretes úteis'],
+    title: 'WhatsApp no dia a dia',
+    text: 'Acompanhe sua vida financeira pelo canal mais prático da rotina.',
+    items: ['Resumo diário', 'Alertas importantes', 'Acompanhamento mais rápido'],
     icon: MessageCircle,
     accent: 'slate',
   },
@@ -130,8 +130,8 @@ const fallbackPlans = [
       'Dashboard financeiro',
       'Categorias automáticas',
       'Análise básica de despesas',
-      'Até 15 lançamentos por mês',
-      'Até 15 interações com IA por mês',
+      'Até 10 lançamentos por mês',
+      'Até 10 interações com IA por mês',
     ],
   },
   {
@@ -147,7 +147,7 @@ const fallbackPlans = [
       '500 interações com IA por mês',
       'Insights avancados da IA',
       'Alertas financeiros',
-      'Resumos no WhatsApp',
+      'Resumos e alertas no WhatsApp',
       'Relatórios detalhados',
     ],
   },
@@ -215,7 +215,7 @@ const faqs = [
   {
     question: 'Existe plano gratuito?',
     answer:
-      'Sim. Você pode criar sua conta no plano Free e começar a organizar suas finanças sem custo. Depois, se quiser mais análises, alertas e recursos avançados, pode evoluir para um plano pago.',
+      'Sim. Você pode criar sua conta no plano Free e começar a organizar suas finanças sem custo. Depois, se quiser mais análises, alertas, WhatsApp e recursos avançados, pode evoluir para um plano pago.',
   },
   {
     question: 'Posso cancelar quando quiser?',
