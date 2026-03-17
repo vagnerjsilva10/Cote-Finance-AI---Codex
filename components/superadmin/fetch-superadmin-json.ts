@@ -7,12 +7,12 @@ import { supabase } from '@/lib/supabase';
 export async function fetchSuperadminJson<T>(input: string, init?: RequestInit): Promise<T> {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
-    throw new Error(error.message || 'Não foi possível validar sua sessão.');
+    throw new Error(error.message || 'NÃƒÂ£o foi possÃƒÂ­vel validar sua sessÃƒÂ£o.');
   }
 
   const token = data.session?.access_token;
   if (!token) {
-    throw new Error('Sessão inválida. Faça login novamente.');
+    throw new Error('SessÃƒÂ£o invÃƒÂ¡lida. FaÃƒÂ§a login novamente.');
   }
 
   const timeoutMs = 15000;
@@ -33,7 +33,7 @@ export async function fetchSuperadminJson<T>(input: string, init?: RequestInit):
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('A requisição administrativa demorou mais do que o esperado. Tente novamente.');
+      throw new Error('A requisiÃƒÂ§ÃƒÂ£o administrativa demorou mais do que o esperado. Tente novamente.');
     }
     throw error;
   } finally {
@@ -48,7 +48,11 @@ export async function fetchSuperadminJson<T>(input: string, init?: RequestInit):
       payload && typeof payload === 'object' && payload && 'error' in payload && typeof payload.error === 'string'
         ? payload.error
         : `Falha ao carregar dados administrativos (HTTP ${response.status}).`;
-    throw new Error(message);
+    const detail =
+      payload && typeof payload === 'object' && payload && 'detail' in payload && typeof payload.detail === 'string'
+        ? payload.detail
+        : null;
+    throw new Error(detail ? `${message} ${detail}` : message);
   }
 
   return payload as T;
