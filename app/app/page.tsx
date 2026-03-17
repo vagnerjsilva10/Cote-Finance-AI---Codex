@@ -3078,8 +3078,6 @@ type DebtsViewProps = {
   onDeleteDebt: (id: string | number) => void;
   onEditRecurringDebt: (id: string | number) => void;
   onDeleteRecurringDebt: (id: string | number) => void;
-  feedbackMessage?: string | null;
-  onDismissFeedback?: () => void;
 };
 
 const DebtsView = ({
@@ -3091,285 +3089,149 @@ const DebtsView = ({
   onDeleteDebt,
   onEditRecurringDebt,
   onDeleteRecurringDebt,
-  feedbackMessage = null,
-  onDismissFeedback,
 }: DebtsViewProps) => {
-  const [activeDebtTab, setActiveDebtTab] = React.useState<'single' | 'recurring'>(() =>
-    debts.length === 0 && recurringDebts.length > 0 ? 'recurring' : 'single'
-  );
-
   const totalOriginal = debts.reduce((acc, debt) => acc + debt.originalAmount, 0);
   const totalRemaining = debts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
-  const totalPaid = Math.max(0, totalOriginal - totalRemaining);
+  const totalPaid = totalOriginal - totalRemaining;
   const progress = totalOriginal > 0 ? (totalPaid / totalOriginal) * 100 : 0;
-  const overdueDebts = debts.filter((debt) => debt.status === 'Atrasada');
   const activeRecurringDebts = recurringDebts.filter((debt) => debt.status === 'Ativa');
   const recurringMonthlyTotal = activeRecurringDebts.reduce((acc, debt) => acc + debt.amount, 0);
-  const nextRecurringCharge = [...activeRecurringDebts]
-    .sort((left, right) => new Date(left.nextDueDate).getTime() - new Date(right.nextDueDate).getTime())[0] ?? null;
-  const totalRegisteredItems = debts.length + recurringDebts.length;
-  const globalOpenAmount = totalRemaining + recurringMonthlyTotal;
-
-  const getDebtStatusTone = (status: Debt['status']) => {
-    if (status === 'Quitada') return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300';
-    if (status === 'Atrasada') return 'border-rose-500/20 bg-rose-500/10 text-rose-300';
-    if (status === 'Parcelada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-    return 'border-slate-700 bg-slate-800/70 text-slate-200';
-  };
-
-  const getRecurringStatusTone = (status: RecurringDebt['status']) => {
-    if (status === 'Ativa') return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300';
-    if (status === 'Pausada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-    return 'border-slate-700 bg-slate-800/70 text-slate-300';
-  };
-
-  const headerCards = [
-    {
-      label: 'Total em aberto',
-      value: formatCurrency(globalOpenAmount),
-      helper: recurringMonthlyTotal > 0 ? `${formatCurrency(recurringMonthlyTotal)} em recorrências ativas` : 'Sem recorrências ativas no momento',
-      tone: 'text-white',
-    },
-    {
-      label: 'Valor quitado',
-      value: formatCurrency(totalPaid),
-      helper: debts.length > 0 ? `${debts.filter((debt) => debt.status === 'Quitada').length} dívida(s) quitadas` : 'Nenhuma dívida única quitada ainda',
-      tone: 'text-emerald-400',
-    },
-    {
-      label: 'Itens cadastrados',
-      value: String(totalRegisteredItems),
-      helper: `${debts.length} dívida(s) única(s) e  recorrência(s)`,
-      tone: 'text-white',
-    },
-  ];
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 duration-500">
-      <section className="rounded-3xl border border-slate-800 bg-slate-900/55 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)] lg:p-7">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300/80">Dívidas</p>
-              <h3 className="mt-2 text-3xl font-black tracking-tight text-white">Dívidas</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-                Organize tudo em um só lugar. Cadastre uma dívida única quando houver valor total definido
-                e use recorrências para contas que se repetem automaticamente.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {headerCards.map((card) => (
-                <div key={card.label} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">{card.label}</p>
-                  <p className={cn('mt-2 text-2xl font-black', card.tone)}>{card.value}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{card.helper}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row xl:flex-col">
-            <button
-              onClick={onAddDebt}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600 sm:w-auto"
-            >
-              <Plus size={16} /> Nova dívida
-            </button>
-            <button
-              onClick={() => onAddRecurringDebt()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/80 px-5 py-3 text-sm font-black text-white transition-colors hover:border-slate-500 sm:w-auto"
-            >
-              <Plus size={16} /> Nova recorrência
-            </button>
-          </div>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-white">Dívidas</h3>
+          <p className="mt-1 text-sm text-slate-400">
+            Dívidas únicas ficam separadas das recorrências para evitar mistura de regras e de leitura.
+          </p>
         </div>
-      </section>
-
-      {feedbackMessage ? (
-        <div className="flex items-start justify-between gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-          <div>
-            <p className="font-bold">{feedbackMessage}</p>
-            <p className="mt-1 text-emerald-200/80">Sua área de dívidas foi atualizada sem afetar as outras páginas.</p>
-          </div>
-          {onDismissFeedback ? (
-            <button onClick={onDismissFeedback} className="text-emerald-200 transition-colors hover:text-white">
-              <X size={16} />
-            </button>
-          ) : null}
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            onClick={onAddDebt}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:border-slate-500"
+          >
+            <Plus size={16} /> Nova dívida única
+          </button>
+          <button
+            onClick={() => onAddRecurringDebt()}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+          >
+            <Plus size={16} /> Nova recorrência
+          </button>
         </div>
-      ) : null}
-
-      <div className="inline-flex w-full rounded-2xl border border-slate-800 bg-slate-900/55 p-1 sm:w-auto">
-        <button
-          type="button"
-          onClick={() => setActiveDebtTab('single')}
-          className={cn(
-            'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
-            activeDebtTab === 'single'
-              ? 'bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.18)]'
-              : 'text-slate-400 hover:text-white'
-          )}
-        >
-          Dívidas únicas
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveDebtTab('recurring')}
-          className={cn(
-            'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
-            activeDebtTab === 'recurring'
-              ? 'bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.18)]'
-              : 'text-slate-400 hover:text-white'
-          )}
-        >
-          Recorrentes
-        </button>
       </div>
 
-      {activeDebtTab === 'single' ? (
-        <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section className="theme-report-card rounded-2xl border border-slate-800 bg-slate-900/50 p-6 space-y-6">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Dívidas únicas</p>
-              <h4 className="mt-2 text-2xl font-black text-white">Obrigações com começo, meio e fim</h4>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-                Use para empréstimos, cartão atrasado, acordos e qualquer compromisso com valor total definido.
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Dívida convencional</p>
+              <h4 className="mt-1 text-lg font-bold text-white">Parcelas, acordos e obrigações pontuais</h4>
+              <p className="mt-2 text-sm leading-7 text-slate-400">
+                Use para empr?stimos, cartão atrasado, acordo com pessoa física ou qualquer obrigação com valor total definido.
               </p>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
-                <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining)}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Progresso</p>
-                <p className="mt-2 text-2xl font-black text-white">{progress.toFixed(1)}%</p>
-                <div className="mt-3 h-2 rounded-full bg-slate-800">
-                  <div className="h-2 rounded-full bg-emerald-500 transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
-                </div>
-              </div>
             </div>
           </div>
 
-          {debts.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-                <Wallet size={26} />
-              </div>
-              <h5 className="text-xl font-black text-white">Você ainda não cadastrou nenhuma dívida.</h5>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">
-                Adicione uma dívida para começar a ter controle completo do seu dinheiro, acompanhar vencimentos e enxergar o quanto já foi quitado.
-              </p>
-              <button
-                onClick={onAddDebt}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
-              >
-                <Plus size={16} /> Adicionar primeira dívida
-              </button>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
+              <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining)}</p>
             </div>
-          ) : (
-            <div className="grid gap-4 xl:grid-cols-2">
-              {debts.map((debt) => {
-                const paidAmount = Math.max(0, debt.originalAmount - debt.remainingAmount);
-                return (
-                  <article
-                    key={debt.id}
-                    className={cn(
-                      'rounded-2xl border bg-slate-950/60 p-5 transition-colors hover:border-slate-700',
-                      debt.status === 'Atrasada' ? 'border-rose-500/30' : 'border-slate-800'
-                    )}
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="text-lg font-black text-white">{debt.creditor}</h5>
-                          <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtStatusTone(debt.status))}>
-                            {debt.status}
-                          </span>
-                          {debt.status === 'Atrasada' ? (
-                            <span className="rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-rose-300">
-                              Requer atenção
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="text-sm text-slate-400">{debt.category} · vencimento no dia {debt.dueDay}</p>
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Em aberto</p>
-                            <p className="mt-1 text-base font-bold text-white">{formatCurrency(debt.remainingAmount)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor total</p>
-                            <p className="mt-1 text-base font-bold text-slate-200">{formatCurrency(debt.originalAmount)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Quitado</p>
-                            <p className="mt-1 text-base font-bold text-emerald-400">{formatCurrency(paidAmount)}</p>
-                          </div>
-                        </div>
-                      </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
+              <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Progresso</p>
+              <p className="mt-2 text-2xl font-black text-white">{progress.toFixed(1)}%</p>
+            </div>
+          </div>
 
-                      <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                        <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
-                          <Pencil size={12} /> Editar
-                        </button>
-                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20">
-                          <Trash2 size={12} /> Excluir
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+          <div className="theme-table-surface overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60">
+            <div className="border-b border-slate-800 bg-slate-900/60 px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Lista de dívidas únicas</p>
             </div>
-          )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 bg-slate-900/50">
+                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-500">Credor</th>
+                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-500">Categoria</th>
+                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-500">Restante</th>
+                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-500">Vencimento</th>
+                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-500">Status</th>
+                    <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-widest text-slate-500">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {debts.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-8 text-center text-sm text-slate-500">
+                        Nenhuma dívida convencional cadastrada.
+                      </td>
+                    </tr>
+                  ) : (
+                    debts.map((debt) => (
+                      <tr key={debt.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-5 py-4 text-sm font-semibold text-white">{debt.creditor}</td>
+                        <td className="px-5 py-4 text-sm text-slate-400">{debt.category}</td>
+                        <td className="px-5 py-4 text-sm font-bold text-white">{formatCurrency(debt.remainingAmount)}</td>
+                        <td className="px-5 py-4 text-sm text-slate-300">Dia {debt.dueDay}</td>
+                        <td className="px-5 py-4 text-sm text-slate-300">{debt.status}</td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button onClick={() => onEditDebt(debt.id)} className="p-1.5 text-slate-500 hover:text-white transition-colors">
+                              <Pencil size={16} />
+                            </button>
+                            <button onClick={() => onDeleteDebt(debt.id)} className="p-1.5 text-slate-600 hover:text-rose-500 transition-colors">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
-      ) : (
-        <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+
+        <section className="theme-report-card rounded-2xl border border-slate-800 bg-slate-900/50 p-6 space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Recorrentes</p>
-              <h4 className="mt-2 text-2xl font-black text-white">Contas que se repetem automaticamente</h4>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-                Use para mensalidades, aluguel, assinaturas e qualquer compromisso fixo com frequência definida.
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Dívida recorrente</p>
+              <h4 className="mt-1 text-lg font-bold text-white">Contas que se repetem automaticamente</h4>
+              <p className="mt-2 text-sm leading-7 text-slate-400">
+                Use para mensalidades, aluguel, financiamento recorrente e qualquer cobrança com frequência definida.
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Compromisso mensal</p>
-                <p className="mt-2 text-2xl font-black text-white">{formatCurrency(recurringMonthlyTotal)}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Recorrências ativas</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Recorrências ativas</p>
                 <p className="mt-2 text-2xl font-black text-white">{activeRecurringDebts.length}</p>
               </div>
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próxima cobrança</p>
-                <p className="mt-2 text-base font-black text-emerald-400">
-                  {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previsão'}
-                </p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Compromisso previsto</p>
+                <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(recurringMonthlyTotal)}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Atalhos rápidos</p>
-                <p className="mt-1 text-sm text-slate-400">Escolha uma conta fixa comum e acelere seu cadastro.</p>
-              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Atalhos de criação</p>
               <button
                 onClick={() => onAddRecurringDebt()}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-xs font-black text-white transition-colors hover:border-slate-500"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
               >
                 <Plus size={14} /> Nova recorrência manual
               </button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               {RECURRING_DEBT_PRESETS.map((preset) => (
                 <button
                   key={preset.category}
@@ -3379,8 +3241,8 @@ const DebtsView = ({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-black text-white">{preset.title}</p>
-                      <p className="mt-2 text-xs leading-6 text-slate-400">{preset.description}</p>
+                      <p className="text-sm font-bold text-white">{preset.title}</p>
+                      <p className="mt-1 text-xs leading-6 text-slate-400">{preset.description}</p>
                     </div>
                     <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
                       Dia {preset.dueDay}
@@ -3391,81 +3253,68 @@ const DebtsView = ({
             </div>
           </div>
 
-          {recurringDebts.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-                <Calendar size={26} />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Recorrências cadastradas</p>
+              <span className="text-xs text-slate-500">{recurringDebts.length} recorrência(s)</span>
+            </div>
+            {recurringDebts.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-950/60 p-6 text-sm leading-7 text-slate-400">
+                Você ainda não cadastrou dívidas recorrentes. Use os atalhos acima para separar contas fixas das dívidas ?nicas.
               </div>
-              <h5 className="text-xl font-black text-white">Você ainda não cadastrou recorrências.</h5>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">
-                Cadastre contas fixas para visualizar o impacto mensal, prever próximas cobranças e evitar misturar compromissos recorrentes com dívidas únicas.
-              </p>
-              <button
-                onClick={() => onAddRecurringDebt()}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
-              >
-                <Plus size={16} /> Adicionar primeira recorrência
-              </button>
-            </div>
-          ) : (
-            <div className="grid gap-4 xl:grid-cols-2">
-              {recurringDebts.map((debt) => (
-                <article key={debt.id} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-colors hover:border-slate-700">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h5 className="text-lg font-black text-white">{debt.creditor}</h5>
-                        <span className="rounded-full border border-slate-700 bg-slate-800/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-200">
-                          {debt.category}
-                        </span>
-                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
-                          {getRecurringDebtFrequencyLabel(debt.frequency)}
-                        </span>
-                        <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getRecurringStatusTone(debt.status))}>
-                          {debt.status}
-                        </span>
-                      </div>
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor</p>
-                          <p className="mt-1 text-base font-bold text-white">{formatCurrency(debt.amount)}</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {recurringDebts.map((debt) => (
+                  <article key={debt.id} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-colors hover:border-slate-700">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h5 className="text-base font-bold text-white">{debt.creditor}</h5>
+                          <span className="rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300">
+                            {debt.category}
+                          </span>
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                            {getRecurringDebtFrequencyLabel(debt.frequency)}
+                          </span>
+                          <span className="rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300">
+                            {debt.status}
+                          </span>
                         </div>
-                        <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Frequência</p>
-                          <p className="mt-1 text-base font-bold text-slate-200">{getRecurringDebtFrequencyLabel(debt.frequency)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próximo vencimento</p>
-                          <p className="mt-1 text-base font-bold text-slate-200">{new Date(debt.nextDueDate).toLocaleDateString('pt-BR')}</p>
-                        </div>
-                      </div>
-                      {debt.notes ? <p className="text-sm leading-7 text-slate-400">{debt.notes}</p> : null}
-                      {debt.source === 'legacy_debt' ? (
-                        <p className="text-[11px] leading-5 text-amber-300">
-                          Registro legado mantido por compatibilidade. Você pode editar normalmente sem perder histórico.
+                        <p className="text-sm text-slate-400">
+                          Próxima cobrança em {new Date(debt.nextDueDate).toLocaleDateString('pt-BR')} com valor previsto de {formatCurrency(debt.amount)}.
                         </p>
-                      ) : null}
+                        {debt.notes ? <p className="text-xs leading-6 text-slate-500">{debt.notes}</p> : null}
+                        {debt.source === 'legacy_debt' ? (
+                          <p className="text-[11px] leading-5 text-amber-300">
+                            Registro legado: ele já existia como dívida comum e continua editável sem perder histórico.
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onEditRecurringDebt(debt.id)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                        >
+                          <Pencil size={12} /> Editar
+                        </button>
+                        <button
+                          onClick={() => onDeleteRecurringDebt(debt.id)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20"
+                        >
+                          <Trash2 size={12} /> Excluir
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                      <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
-                        <Pencil size={12} /> Editar
-                      </button>
-                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20">
-                        <Trash2 size={12} /> Excluir
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
-      )}
+      </div>
     </div>
   );
-};
-
-type GoalsViewProps = {
+};type GoalsViewProps = {
   goals: Goal[];
   onAddGoal: () => void;
   onEditGoal: (id: string | number) => void;
@@ -5438,75 +5287,6 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
-
-type DebtCreateChooserModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onChooseSingle: () => void;
-  onChooseRecurring: () => void;
-};
-
-const DebtCreateChooserModal = ({
-  isOpen,
-  onClose,
-  onChooseSingle,
-  onChooseRecurring,
-}: DebtCreateChooserModalProps) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-      <motion.div
-        initial={{ scale: 0.96, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl"
-      >
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-300/80">Nova dívida</p>
-            <h3 className="mt-2 text-2xl font-black text-white">O que você deseja criar?</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">
-              Escolha o tipo certo para manter sua organização clara desde o primeiro cadastro.
-            </p>
-          </div>
-          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white">
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <button
-            type="button"
-            onClick={onChooseSingle}
-            className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
-          >
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-              <Wallet size={22} />
-            </div>
-            <h4 className="mt-5 text-xl font-black text-white">Dívida única</h4>
-            <p className="mt-2 text-sm leading-7 text-slate-400">
-              Para empréstimos, acordos, cartão atrasado ou qualquer obrigação com valor total definido.
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={onChooseRecurring}
-            className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
-          >
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-              <Calendar size={22} />
-            </div>
-            <h4 className="mt-5 text-xl font-black text-white">Conta recorrente</h4>
-            <p className="mt-2 text-sm leading-7 text-slate-400">
-              Para mensalidades, aluguel, assinaturas e compromissos que se repetem automaticamente.
-            </p>
           </button>
         </div>
       </motion.div>
@@ -7824,8 +7604,6 @@ export default function App() {
   const [editingDebtId, setEditingDebtId] = React.useState<string | number | null>(null);
   const [debtDraft, setDebtDraft] = React.useState<Partial<DebtFormData> | null>(null);
   const [isRecurringDebtModalOpen, setIsRecurringDebtModalOpen] = React.useState(false);
-  const [isDebtTypeModalOpen, setIsDebtTypeModalOpen] = React.useState(false);
-  const [debtFeedbackMessage, setDebtFeedbackMessage] = React.useState<string | null>(null);
   const [editingRecurringDebtId, setEditingRecurringDebtId] = React.useState<string | number | null>(null);
   const [recurringDebtDraft, setRecurringDebtDraft] = React.useState<Partial<RecurringDebtFormData> | null>(null);
   const [isWhatsAppConnected, setIsWhatsAppConnected] = React.useState(false);
@@ -9785,7 +9563,6 @@ React.useEffect(() => {
   };
 
   const handleSubmitDebt = async (debt: DebtFormData) => {
-    const isEditingDebt = Boolean(editingDebtId);
     const payload = {
       ...(editingDebtId ? { id: String(editingDebtId) } : {}),
       creditor: debt.creditor.trim(),
@@ -9814,20 +9591,13 @@ React.useEffect(() => {
 
     setEditingDebtId(null);
     setDebtDraft(null);
-    setDebtFeedbackMessage(isEditingDebt ? 'Dívida única atualizada com sucesso.' : 'Dívida adicionada com sucesso.');
     await fetchDashboardData();
   };
 
-  const openConventionalDebtModal = (draft?: Partial<DebtFormData> | null) => {
-    setIsDebtTypeModalOpen(false);
-    setEditingDebtId(null);
-    setDebtDraft(draft ?? null);
-    setIsDebtModalOpen(true);
-  };
-
   const handleOpenCreateDebt = () => {
-    setDebtFeedbackMessage(null);
-    setIsDebtTypeModalOpen(true);
+    setEditingDebtId(null);
+    setDebtDraft(null);
+    setIsDebtModalOpen(true);
   };
 
   const handleOpenCreateRecurringDebt = (category?: string) => {
@@ -9835,8 +9605,6 @@ React.useEffect(() => {
       typeof category === 'string' && category.trim().length > 0
         ? category
         : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
-    setIsDebtTypeModalOpen(false);
-    setDebtFeedbackMessage(null);
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft({
       creditor: resolvedCategory,
@@ -9851,7 +9619,6 @@ React.useEffect(() => {
   };
 
   const handleStartEditDebt = (id: string | number) => {
-    setDebtFeedbackMessage(null);
     setEditingDebtId(id);
     setDebtDraft(null);
     setIsDebtModalOpen(true);
@@ -9878,7 +9645,6 @@ React.useEffect(() => {
           setDebtDraft(null);
           setIsDebtModalOpen(false);
         }
-        setDebtFeedbackMessage('Dívida removida com sucesso.');
         await fetchDashboardData();
       } catch (error) {
         alert(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
@@ -9887,7 +9653,6 @@ React.useEffect(() => {
   };
 
   const handleSubmitRecurringDebt = async (debt: RecurringDebtFormData) => {
-    const isEditingRecurringDebt = Boolean(editingRecurringDebt);
     const payload = {
       ...(editingRecurringDebt
         ? {
@@ -9919,20 +9684,16 @@ React.useEffect(() => {
       const message =
         typeof responseData?.error === 'string'
           ? responseData.error
-          : 'Falha ao salvar recorrência.';
+          : 'Falha ao salvar recorr?ncia.';
       throw new Error(message);
     }
 
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft(null);
-    setDebtFeedbackMessage(
-      isEditingRecurringDebt ? 'Recorrência atualizada com sucesso.' : 'Recorrência adicionada com sucesso.'
-    );
     await fetchDashboardData();
   };
 
   const handleStartEditRecurringDebt = (id: string | number) => {
-    setDebtFeedbackMessage(null);
     setEditingRecurringDebtId(id);
     setRecurringDebtDraft(null);
     setIsRecurringDebtModalOpen(true);
@@ -9956,7 +9717,7 @@ React.useEffect(() => {
           throw new Error(
             typeof responseData?.error === 'string'
               ? responseData.error
-              : 'Falha ao excluir recorrência.'
+              : 'Falha ao excluir recorr?ncia.'
           );
         }
         if (editingRecurringDebtId === id) {
@@ -9964,13 +9725,12 @@ React.useEffect(() => {
           setRecurringDebtDraft(null);
           setIsRecurringDebtModalOpen(false);
         }
-        setDebtFeedbackMessage('Recorrência removida com sucesso.');
         await fetchDashboardData();
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir recorrência.');
+        alert(error instanceof Error ? error.message : 'Falha ao excluir recorr?ncia.');
       }
     })();
-
+  };
 
   const handleOpenCreateWorkspaceModal = () => {
     setCreateWorkspaceError(null);
@@ -10904,13 +10664,6 @@ React.useEffect(() => {
         initialData={editingInvestment}
       />
 
-      <DebtCreateChooserModal
-        isOpen={isDebtTypeModalOpen}
-        onClose={() => setIsDebtTypeModalOpen(false)}
-        onChooseSingle={() => openConventionalDebtModal()}
-        onChooseRecurring={() => handleOpenCreateRecurringDebt()}
-      />
-
       <DebtModal
         isOpen={isDebtModalOpen}
         onClose={() => {
@@ -11719,8 +11472,6 @@ React.useEffect(() => {
               {activeTab === 'debts' && (
                 <DebtsView
                   debts={debts}
-                  feedbackMessage={debtFeedbackMessage}
-                  onDismissFeedback={() => setDebtFeedbackMessage(null)}
                   recurringDebts={recurringDebts}
                   onAddDebt={handleOpenCreateDebt}
                   onAddRecurringDebt={handleOpenCreateRecurringDebt}
@@ -12242,5 +11993,3 @@ React.useEffect(() => {
 
 
 
-
-}
