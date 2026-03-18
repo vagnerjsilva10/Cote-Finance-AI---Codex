@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -133,7 +133,7 @@ export function AnalysisScreen({
   rewardLabel?: string;
 }) {
   return (
-    <QuestionCard eyebrow="DiagnÃ³stico em andamento" title={title}>
+    <QuestionCard eyebrow="Diagnóstico em andamento" title={title}>
       <div className="space-y-6">
         {statusLabel ? (
           <div className="inline-flex max-w-full rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold leading-5 text-[var(--text-secondary)]">
@@ -180,7 +180,7 @@ export function AnalysisScreen({
             <div className="space-y-4">
               {[
                 { label: 'Mapa de gastos', width: '82%', color: 'bg-[var(--primary)]' },
-                { label: 'PadrÃµes invisÃ­veis', width: '68%', color: 'bg-[var(--primary)]' },
+                { label: 'Padrões invisíveis', width: '68%', color: 'bg-[var(--primary)]' },
                 { label: 'Potencial de economia', width: '74%', color: 'bg-sky-400' },
               ].map((item, index) => (
                 <div key={item.label} className="space-y-2">

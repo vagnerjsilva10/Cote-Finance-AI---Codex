@@ -1611,10 +1611,20 @@ export async function GET(req: Request) {
     const verifyToken = getWhatsAppVerifyToken();
 
     if (mode === 'subscribe' && token === verifyToken && challenge) {
-      return new Response(challenge, { status: 200 });
+      return new Response(challenge, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+        },
+      });
     }
 
-    return new Response('Forbidden', { status: 403 });
+    return new Response('Forbidden', {
+      status: 403,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
   } catch (error: any) {
     if (error instanceof Error && error.message === WHATSAPP_VERIFY_TOKEN_MISSING_ERROR) {
       return NextResponse.json({ error: error.message }, { status: 500 });

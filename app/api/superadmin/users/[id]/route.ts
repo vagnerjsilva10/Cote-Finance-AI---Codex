@@ -75,7 +75,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usu?rio n?o encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -205,7 +205,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usu?rio n?o encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
     }
 
     const nextName =

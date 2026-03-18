@@ -5,11 +5,14 @@
   "scripts": {
     "predev": "npm run clean",
     "dev": "next dev --hostname 0.0.0.0 --port 3000",
-    "prebuild": "npm run clean",
+    "prebuild": "npm run clean && npm run check:encoding",
+    "prelint": "npm run check:encoding",
     "prisma:generate": "prisma generate",
     "build": "node scripts/build-with-prisma.js",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
+    "fix:encoding": "node scripts/fix-mojibake.js",
+    "check:encoding": "node scripts/check-mojibake.js",
     "check:theme": "node scripts/check-theme-hardcodes.js",
     "clean": "node scripts/clean-next.js"
   },

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -255,7 +255,7 @@ function EmbeddedPaymentForm(props: {
       if (!elements.getElement(PaymentElement)) {
         setDidElementTimeout(true);
         setInlineError(
-          'NÃ£o foi possÃ­vel carregar o formulÃ¡rio do cartÃ£o neste navegador. Use o checkout legado para concluir a assinatura.'
+          'Não foi possível carregar o formulário do cartão neste navegador. Use o checkout legado para concluir a assinatura.'
         );
       }
       window.clearInterval(mountProbe);
@@ -277,14 +277,14 @@ function EmbeddedPaymentForm(props: {
     try {
       const paymentElement = elements.getElement(PaymentElement);
       if (!paymentElement) {
-        setInlineError('O formulÃ¡rio de pagamento ainda nÃ£o terminou de carregar. Aguarde alguns segundos e tente novamente.');
+        setInlineError('O formulário de pagamento ainda não terminou de carregar. Aguarde alguns segundos e tente novamente.');
         setStatus('idle');
         return;
       }
 
       const submission = await elements.submit();
       if (submission.error) {
-        setInlineError(submission.error.message || 'NÃ£o foi possÃ­vel validar o formulÃ¡rio de pagamento.');
+        setInlineError(submission.error.message || 'Não foi possível validar o formulário de pagamento.');
         setStatus('idle');
         return;
       }
@@ -307,7 +307,7 @@ function EmbeddedPaymentForm(props: {
             });
 
       if (result.error) {
-        setInlineError(result.error.message || 'NÃ£o foi possÃ­vel confirmar o pagamento.');
+        setInlineError(result.error.message || 'Não foi possível confirmar o pagamento.');
         setStatus('idle');
         return;
       }
@@ -347,14 +347,14 @@ function EmbeddedPaymentForm(props: {
         {status === 'submitting' ? 'Confirmando pagamento...' : props.submitLabel}
       </button>
       <div className="space-y-2 text-center">
-        <p className="text-xs font-medium text-[var(--text-secondary)]">Sem compromisso â€¢ Cancele quando quiser</p>
+        <p className="text-xs font-medium text-[var(--text-secondary)]">Sem compromisso ⬢ Cancele quando quiser</p>
         <div className="mx-auto flex max-w-md items-start justify-center gap-2 text-left text-xs text-[var(--text-secondary)]">
           <LockKeyhole className="mt-0.5 size-3.5 shrink-0 text-[var(--primary)]" />
           <p className="leading-5">{props.helperText}</p>
         </div>
       </div>
       {!isPaymentElementReady ? (
-        <p className="text-center text-xs text-[var(--text-muted)]">Carregando formulÃ¡rio de pagamento seguro...</p>
+        <p className="text-center text-xs text-[var(--text-muted)]">Carregando formulário de pagamento seguro...</p>
       ) : null}
       {inlineError ? <p className="text-center text-sm text-[var(--danger)]">{inlineError}</p> : null}
       {didElementTimeout ? (
@@ -383,8 +383,8 @@ function PixPaymentPanel(props: {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-[var(--text-primary)]">Pagamento via Pix</p>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">Pagamento instantÃ¢neo via banco.</p>
-          <p className="mt-2 text-xs text-[var(--text-muted)]">Assinaturas mensais funcionam melhor com cartÃ£o.</p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Pagamento instantâneo via banco.</p>
+          <p className="mt-2 text-xs text-[var(--text-muted)]">Assinaturas mensais funcionam melhor com cartão.</p>
         </div>
         <button
           type="button"
@@ -428,13 +428,13 @@ function PixPaymentPanel(props: {
               ) : props.data.hostedInstructionsUrl ? (
                 <iframe
                   src={props.data.hostedInstructionsUrl}
-                  title="InstruÃ§Ãµes oficiais do Pix"
+                  title="Instruções oficiais do Pix"
                   className="h-52 w-full rounded-xl border-0"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-center text-[var(--text-muted)]">
                   <QrCode className="size-10" />
-                  <p className="text-sm">QR Code indisponÃ­vel. Use o cÃ³digo copia e cola abaixo.</p>
+                  <p className="text-sm">QR Code indisponível. Use o código copia e cola abaixo.</p>
                 </div>
               )}
             </div>
@@ -446,9 +446,9 @@ function PixPaymentPanel(props: {
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">CÃ³digo Pix copia e cola</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">Código Pix copia e cola</p>
                 <div className="mt-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3">
-                  <p className="break-all text-sm text-[var(--text-primary)]">{props.data.copyAndPasteCode || 'CÃ³digo indisponÃ­vel no momento.'}</p>
+                  <p className="break-all text-sm text-[var(--text-primary)]">{props.data.copyAndPasteCode || 'Código indisponível no momento.'}</p>
                 </div>
               </div>
 
@@ -460,7 +460,7 @@ function PixPaymentPanel(props: {
                   className="button-light-primary inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Copy className="size-4" />
-                  Copiar cÃ³digo Pix
+                  Copiar código Pix
                 </button>
                 {props.data.hostedInstructionsUrl ? (
                   <a
@@ -469,7 +469,7 @@ function PixPaymentPanel(props: {
                     rel="noreferrer"
                     className="inline-flex items-center rounded-2xl border border-[var(--border-default)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]/5"
                   >
-                    Abrir instruÃ§Ãµes do Pix
+                    Abrir instruções do Pix
                   </a>
                 ) : null}
               </div>
@@ -622,7 +622,7 @@ function CheckoutPageContent() {
 
       const payload = (await response.json().catch(() => ({}))) as { error?: string; url?: string };
       if (!response.ok || !payload.url) {
-        throw new Error(payload.error || 'NÃ£o foi possÃ­vel abrir o checkout legado.');
+        throw new Error(payload.error || 'Não foi possível abrir o checkout legado.');
       }
 
       if (pendingPurchaseValue > 0 && plan) {
@@ -660,7 +660,7 @@ function CheckoutPageContent() {
 
       const payload = (await response.json().catch(() => ({}))) as { error?: string; url?: string };
       if (!response.ok || !payload.url) {
-        throw new Error(payload.error || 'NÃ£o foi possÃ­vel abrir o portal do cliente.');
+        throw new Error(payload.error || 'Não foi possível abrir o portal do cliente.');
       }
 
       if (pendingPurchaseValue > 0 && plan) {
@@ -678,7 +678,7 @@ function CheckoutPageContent() {
 
   React.useEffect(() => {
     if (!plan || !interval) {
-      setError('SeleÃ§Ã£o de plano invÃ¡lida. Volte e escolha um plano vÃ¡lido.');
+      setError('Seleção de plano inválida. Volte e escolha um plano válido.');
       setIsLoading(false);
       return;
     }
@@ -693,13 +693,13 @@ function CheckoutPageContent() {
     const resolveRedirectResult = async () => {
       const stripe = await stripePromise;
       if (!stripe) {
-        throw new Error('Stripe.js indisponÃ­vel. Verifique NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.');
+        throw new Error('Stripe.js indisponível. Verifique NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.');
       }
 
       if (paymentIntentClientSecret) {
         const result = await stripe.retrievePaymentIntent(paymentIntentClientSecret);
         if (result.error) {
-          throw new Error(result.error.message || 'NÃ£o foi possÃ­vel confirmar o pagamento.');
+          throw new Error(result.error.message || 'Não foi possível confirmar o pagamento.');
         }
 
         const status = result.paymentIntent?.status;
@@ -718,26 +718,26 @@ function CheckoutPageContent() {
           return;
         }
 
-        throw new Error('O pagamento nÃ£o foi concluÃ­do. Tente novamente.');
+        throw new Error('O pagamento não foi concluído. Tente novamente.');
       }
 
       if (setupIntentClientSecret) {
         const result = await stripe.retrieveSetupIntent(setupIntentClientSecret);
         if (result.error) {
-          throw new Error(result.error.message || 'NÃ£o foi possÃ­vel confirmar o mÃ©todo de pagamento.');
+          throw new Error(result.error.message || 'Não foi possível confirmar o método de pagamento.');
         }
 
         const status = result.setupIntent?.status;
         if (status === 'succeeded' || status === 'processing') {
           clearCachedCheckout(plan, interval, workspaceId);
           setSuccessMessage(
-            'MÃ©todo de pagamento confirmado. O Stripe vai ativar a assinatura do workspace via webhook.'
+            'Método de pagamento confirmado. O Stripe vai ativar a assinatura do workspace via webhook.'
           );
           window.history.replaceState({}, '', getCheckoutPath({ plan, interval, workspaceId }));
           return;
         }
 
-        throw new Error('O mÃ©todo de pagamento nÃ£o foi confirmado. Tente novamente.');
+        throw new Error('O método de pagamento não foi confirmado. Tente novamente.');
       }
     };
 
@@ -765,7 +765,7 @@ function CheckoutPageContent() {
         } = await withClientTimeout(
           supabase.auth.getSession(),
           8000,
-          'NÃ£o foi possÃ­vel validar sua sessÃ£o a tempo. FaÃ§a login novamente.'
+          'Não foi possível validar sua sessão a tempo. Faça login novamente.'
         );
 
         if (!session?.access_token) {
@@ -818,7 +818,7 @@ function CheckoutPageContent() {
         if (!isCancelled) {
           if (!typedPayload.requiresConfirmation) {
             clearCachedCheckout(plan, interval, typedPayload.workspaceId);
-            setSuccessMessage('A assinatura nÃ£o exige confirmaÃ§Ã£o adicional. O workspace serÃ¡ atualizado em instantes.');
+            setSuccessMessage('A assinatura não exige confirmação adicional. O workspace será atualizado em instantes.');
           }
           setCheckoutData(typedPayload);
         }
@@ -869,14 +869,14 @@ function CheckoutPageContent() {
   const summaryPlan = plan ? BILLING_PLAN_DETAILS[plan] : null;
   const showLegacyFallback = !publishableKey;
   const checkoutPlanName = checkoutData?.planName || summaryPlan?.name || 'Pro';
-  const checkoutPriceLabel = checkoutData?.priceLabel || (plan && interval ? formatBillingPrice(plan, interval) : 'R$ 29 / mÃªs');
+  const checkoutPriceLabel = checkoutData?.priceLabel || (plan && interval ? formatBillingPrice(plan, interval) : 'R$ 29 / mês');
   const checkoutWorkspaceName = checkoutData?.workspaceName || 'Meu Workspace';
   const checkoutPlanDescription =
     checkoutData?.planDescription ||
     pixData?.planDescription ||
     (plan === 'PREMIUM'
-      ? 'Camada avanÃ§ada de inteligÃªncia financeira para quem quer mais previsibilidade e acompanhamento proativo.'
-      : 'Controle financeiro completo com inteligÃªncia artificial.');
+      ? 'Camada avançada de inteligência financeira para quem quer mais previsibilidade e acompanhamento proativo.'
+      : 'Controle financeiro completo com inteligência artificial.');
   const checkoutBenefits =
     checkoutData?.features?.length
       ? checkoutData.features
@@ -886,32 +886,32 @@ function CheckoutPageContent() {
       ? [
           'Tudo do plano Pro',
           'Insights financeiros mais profundos',
-          'PrevisÃµes de saldo e alertas inteligentes',
-          'AnÃ¡lises avanÃ§adas de despesas',
-          'Alertas e resumos automÃ¡ticos no WhatsApp',
-          'Suporte prioritÃ¡rio com acompanhamento acelerado',
+          'Previsões de saldo e alertas inteligentes',
+          'Análises avançadas de despesas',
+          'Alertas e resumos automáticos no WhatsApp',
+          'Suporte prioritário com acompanhamento acelerado',
         ]
       : [
-          'LanÃ§amentos ilimitados',
-          'RelatÃ³rios completos e grÃ¡ficos avanÃ§ados',
-          'AnÃ¡lises inteligentes com IA',
-          'Insights financeiros automÃ¡ticos',
+          'Lançamentos ilimitados',
+          'Relatórios completos e gráficos avançados',
+          'Análises inteligentes com IA',
+          'Insights financeiros automáticos',
           'Metas financeiras ilimitadas',
-          'Acompanhamento de dÃ­vidas',
+          'Acompanhamento de dívidas',
           'Controle de investimentos',
           'Resumos e alertas no WhatsApp',
-          'Suporte prioritÃ¡rio por e-mail',
+          'Suporte prioritário por e-mail',
         ];
   const checkoutSecurityItems =
     checkoutData?.trustBadges?.length
-      ? [...checkoutData.trustBadges, 'Seus dados sÃ£o criptografados']
+      ? [...checkoutData.trustBadges, 'Seus dados são criptografados']
       : pixData?.trustBadges?.length
-        ? [...pixData.trustBadges, 'Seus dados sÃ£o criptografados']
+        ? [...pixData.trustBadges, 'Seus dados são criptografados']
         : [
-            'CobranÃ§a recorrente automÃ¡tica',
+            'Cobrança recorrente automática',
             'Cancele quando quiser',
             'Pagamento protegido pela Stripe',
-            'Seus dados sÃ£o criptografados',
+            'Seus dados são criptografados',
           ];
   const subscriptionCenterPath = '/app?tab=subscription';
   const trialDays = checkoutData?.trialDays ?? (plan === 'PRO' ? 3 : 0);
@@ -921,7 +921,7 @@ function CheckoutPageContent() {
     paymentMethod === 'pix'
       ? `Ativar ${checkoutPlanName} com Pix`
       : trialDays > 0
-        ? 'ComeÃ§ar teste grÃ¡tis'
+        ? 'Começar teste grátis'
         : `Ativar plano ${checkoutPlanName}`;
 
   React.useEffect(() => {
@@ -969,7 +969,7 @@ function CheckoutPageContent() {
           setPixData(payload);
         } catch (pixInitError) {
       setPixError(
-        pixInitError instanceof Error ? pixInitError.message : 'NÃ£o foi possÃ­vel gerar o Pix agora. Tente novamente.'
+        pixInitError instanceof Error ? pixInitError.message : 'Não foi possível gerar o Pix agora. Tente novamente.'
       );
     } finally {
       setIsPixLoading(false);
@@ -1020,17 +1020,17 @@ function CheckoutPageContent() {
         });
         const payload = (await response.json().catch(() => ({}))) as PixCheckoutResponse & { error?: string };
         if (!response.ok) {
-          throw new Error(payload.error || 'NÃ£o foi possÃ­vel atualizar o status do Pix.');
+          throw new Error(payload.error || 'Não foi possível atualizar o status do Pix.');
         }
 
         if (isCancelled) return;
           setPixData(payload);
         if (payload.status === 'confirmed') {
-          setSuccessMessage('Pagamento confirmado. Seu acesso serÃ¡ liberado em instantes.');
+          setSuccessMessage('Pagamento confirmado. Seu acesso será liberado em instantes.');
         }
       } catch {
         if (!isCancelled) {
-          setPixError('NÃ£o foi possÃ­vel atualizar o status do Pix em tempo real.');
+          setPixError('Não foi possível atualizar o status do Pix em tempo real.');
         }
       }
     };
@@ -1089,7 +1089,7 @@ function CheckoutPageContent() {
                   Finalizar assinatura
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-[var(--text-secondary)] md:text-base">
-                  Finalize sua assinatura em poucos segundos. Seu pagamento Ã© processado com seguranÃ§a pela Stripe.
+                  Finalize sua assinatura em poucos segundos. Seu pagamento é processado com segurança pela Stripe.
                 </p>
               </div>
 
@@ -1109,7 +1109,7 @@ function CheckoutPageContent() {
                     {checkoutWorkspaceName}
                   </p>
                   <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                    Esta assinatura serÃ¡ vinculada a este workspace. VocÃª poderÃ¡ gerenciar tudo depois na sua Ã¡rea de assinatura.
+                    Esta assinatura será vinculada a este workspace. Você poderá gerenciar tudo depois na sua área de assinatura.
                   </p>
                 </div>
               </div>
@@ -1117,7 +1117,7 @@ function CheckoutPageContent() {
               {summaryPlan ? (
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface)]/85 p-5">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">O que vocÃª desbloqueia com o {checkoutPlanName}</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">O que você desbloqueia com o {checkoutPlanName}</p>
                     <ul className="mt-4 space-y-3">
                       {checkoutBenefits.map((feature) => (
                         <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
@@ -1177,7 +1177,7 @@ function CheckoutPageContent() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
-                        {trialDays > 0 && paymentMethod === 'card' ? 'ApÃ³s o perÃ­odo de teste' : 'Plano contratado'}
+                        {trialDays > 0 && paymentMethod === 'card' ? 'Após o período de teste' : 'Plano contratado'}
                       </p>
                       <p className="mt-2 text-[2.1rem] font-black tracking-tight text-[var(--text-primary)] md:text-[2.25rem]">
                         {postTrialLabel}
@@ -1187,33 +1187,33 @@ function CheckoutPageContent() {
                   <p className="mt-3 text-sm text-[var(--text-secondary)]">
                     {paymentMethod === 'card'
                       ? trialDays > 0
-                        ? 'VocÃª nÃ£o serÃ¡ cobrado hoje. ApÃ³s o teste, a assinatura renova automaticamente.'
-                        : 'Pagamento seguro processado pela Stripe com renovaÃ§Ã£o automÃ¡tica.'
-                      : 'Pix ativa o plano por 1 ciclo, sem renovaÃ§Ã£o automÃ¡tica.'}
+                        ? 'Você não será cobrado hoje. Após o teste, a assinatura renova automaticamente.'
+                        : 'Pagamento seguro processado pela Stripe com renovação automática.'
+                      : 'Pix ativa o plano por 1 ciclo, sem renovação automática.'}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3 rounded-[1.6rem] border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-secondary)]">MÃ©todo de pagamento</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-secondary)]">Método de pagamento</p>
                 </div>
                 <div className="grid gap-3">
                   {([
                     {
                       value: 'card',
-                      title: 'CartÃ£o de crÃ©dito',
+                      title: 'Cartão de crédito',
                       badge: 'Mais indicado',
                       description:
                         trialDays > 0
-                          ? '3 dias de teste grÃ¡tis e renovaÃ§Ã£o automÃ¡tica depois.'
-                          : 'Recomendado para assinaturas com renovaÃ§Ã£o automÃ¡tica.',
+                          ? '3 dias de teste grátis e renovação automática depois.'
+                          : 'Recomendado para assinaturas com renovação automática.',
                     },
                     {
                       value: 'pix',
                       title: 'Pix',
-                      badge: 'Sem renovaÃ§Ã£o',
-                      description: 'Pagamento instantÃ¢neo com acesso por 1 ciclo, sem renovaÃ§Ã£o automÃ¡tica.',
+                      badge: 'Sem renovação',
+                      description: 'Pagamento instantâneo com acesso por 1 ciclo, sem renovação automática.',
                     },
                   ] as const).map((option) => (
                     <button
@@ -1252,7 +1252,7 @@ function CheckoutPageContent() {
                   ))}
                 </div>
                 <p className="text-xs leading-5 text-[var(--text-muted)]">
-                  Assinaturas mensais funcionam melhor com cartÃ£o. Pix libera acesso por um ciclo e nÃ£o renova sozinho.
+                  Assinaturas mensais funcionam melhor com cartão. Pix libera acesso por um ciclo e não renova sozinho.
                 </p>
               </div>
 
@@ -1291,7 +1291,7 @@ function CheckoutPageContent() {
                 </div>
               ) : error ? (
                 <div className="space-y-5 rounded-[1.6rem] border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--danger)]">Checkout indisponÃ­vel</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--danger)]">Checkout indisponível</p>
                   <p className="text-base text-[var(--text-primary)]">{error}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link
@@ -1307,7 +1307,7 @@ function CheckoutPageContent() {
                         disabled={isPortalLoading}
                         className="inline-flex items-center justify-center rounded-2xl button-light-secondary px-5 py-3 text-sm font-semibold disabled:opacity-60"
                       >
-                        {isPortalLoading ? 'Abrindo portal...' : 'Abrir portal de cobranÃ§a'}
+                        {isPortalLoading ? 'Abrindo portal...' : 'Abrir portal de cobrança'}
                       </button>
                     ) : (
                       <button
@@ -1333,7 +1333,7 @@ function CheckoutPageContent() {
                     }}
                     onCopy={handleCopyPixCode}
                   />
-                  {copiedPixCode ? <p className="text-center text-xs text-[var(--primary)]">CÃ³digo Pix copiado.</p> : null}
+                  {copiedPixCode ? <p className="text-center text-xs text-[var(--primary)]">Código Pix copiado.</p> : null}
                 </div>
               ) : checkoutData?.clientSecret && publishableKey ? (
                 <Elements
@@ -1349,11 +1349,11 @@ function CheckoutPageContent() {
                     intentType={checkoutData.intentType}
                     returnUrl={checkoutReturnUrl}
                     submitLabel={submitLabel}
-                    helperText="Pagamento seguro processado pela Stripe. Seus dados sÃ£o protegidos por criptografia SSL."
+                    helperText="Pagamento seguro processado pela Stripe. Seus dados são protegidos por criptografia SSL."
                     onFallbackCheckout={handleLegacyCheckout}
                     onSuccess={() => {
                       clearCachedCheckout(checkoutData.plan, checkoutData.interval, checkoutData.workspaceId);
-                      setSuccessMessage('Pagamento enviado. Seu acesso serÃ¡ liberado assim que a Stripe confirmar a assinatura.');
+                      setSuccessMessage('Pagamento enviado. Seu acesso será liberado assim que a Stripe confirmar a assinatura.');
                     }}
                   />
                 </Elements>
@@ -1364,7 +1364,7 @@ function CheckoutPageContent() {
                     Assinatura pronta
                   </div>
                   <p className="text-base text-[var(--text-primary)]">
-                    Sua assinatura jÃ¡ estÃ¡ pronta. Seu acesso serÃ¡ atualizado automaticamente em instantes.
+                    Sua assinatura já está pronta. Seu acesso será atualizado automaticamente em instantes.
                   </p>
                   <Link
                     href={subscriptionCenterPath}
@@ -1376,7 +1376,7 @@ function CheckoutPageContent() {
               ) : (
                 <div className="space-y-4 rounded-[1.6rem] border border-[var(--border-default)] bg-[var(--bg-app)] p-6">
                   <p className="text-sm text-[var(--text-secondary)]">
-                    NÃ£o foi possÃ­vel iniciar o Payment Element com a configuraÃ§Ã£o atual.
+                    Não foi possível iniciar o Payment Element com a configuração atual.
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <button
@@ -1398,8 +1398,8 @@ function CheckoutPageContent() {
 
               {showLegacyFallback ? (
                 <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY nÃ£o estÃ¡ definida. O fallback legado continua disponÃ­vel enquanto o
-                  Payment Element nÃ£o pode ser renderizado.
+                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY não está definida. O fallback legado continua disponível enquanto o
+                  Payment Element não pode ser renderizado.
                 </div>
               ) : null}
 
@@ -1439,7 +1439,7 @@ function CheckoutPageContent() {
                     </div>
                     <div className="flex items-start gap-2 border-t border-[var(--border-default)] pt-3">
                       <ShieldCheck className="mt-0.5 size-4 text-[var(--primary)]" />
-                      <span>Seus dados sÃ£o protegidos por criptografia SSL.</span>
+                      <span>Seus dados são protegidos por criptografia SSL.</span>
                     </div>
                     <div className="flex items-start gap-2 border-t border-[var(--border-default)] pt-3">
                       <BadgeCheck className="mt-0.5 size-4 text-[var(--primary)]" />
@@ -1458,7 +1458,7 @@ function CheckoutPageContent() {
                     Termos de uso
                   </Link>
                   <Link href="/politica-de-privacidade" className="transition hover:text-[var(--text-primary)]">
-                    PolÃ­tica de privacidade
+                    Política de privacidade
                   </Link>
                   <a href="mailto:suporte@cotejuros.com.br" className="transition hover:text-[var(--text-primary)]">
                     suporte@cotejuros.com.br
