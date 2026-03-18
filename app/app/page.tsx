@@ -11037,8 +11037,8 @@ React.useEffect(() => {
         <div className="p-4">
           {isSidebarCollapsed ? (
             <div className="space-y-3">
-              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-2 py-3 text-center">
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{planLabel}</p>
+              <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/8 px-2 py-3 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">{planLabel}</p>
               </div>
               <button
                 type="button"
@@ -11049,7 +11049,7 @@ React.useEffect(() => {
                   }
                   handleManageSubscription();
                 }}
-                className="flex h-12 w-full items-center justify-center rounded-xl bg-emerald-500 text-slate-950 transition-all duration-200 hover:bg-emerald-400"
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white transition-all duration-200 hover:brightness-105"
                 title={isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
               >
                 <ArrowUpRight size={18} />
@@ -11065,8 +11065,8 @@ React.useEffect(() => {
             </div>
           ) : (
             <>
-              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4">
-                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">
+              <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/8 p-4">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
                   Plano {planLabel}
                 </p>
                 <p className="text-xs text-slate-400 mb-4 leading-relaxed">
@@ -11084,7 +11084,7 @@ React.useEffect(() => {
                     }
                     handleManageSubscription();
                   }}
-                  className="w-full bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
+                  className="w-full rounded-xl bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] py-2.5 text-xs font-bold text-white transition-all hover:brightness-105 shadow-lg shadow-[#4C8DFF]/15"
                 >
                   {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
                 </button>
@@ -11148,7 +11148,7 @@ React.useEffect(() => {
                       if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
                       setActiveWorkspaceId(nextWorkspaceId);
                     }}
-                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#4C8DFF]"
                   >
                     {workspaces.map((workspace) => (
                       <option key={workspace.id} value={workspace.id}>
@@ -11159,7 +11159,7 @@ React.useEffect(() => {
                 )}
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:border-emerald-500 transition-colors"
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:border-[#4C8DFF] transition-colors"
                 >
                   + Conta
                 </button>
@@ -11175,7 +11175,7 @@ React.useEffect(() => {
                 }
                 handleManageSubscription();
               }}
-              className="hidden md:inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-600"
+              className="hidden md:inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-3 py-2 text-xs font-bold text-white transition-all hover:brightness-105"
             >
               <ArrowUpRight size={14} /> {isFreePlan ? 'Upgrade' : 'Assinatura'}
             </button>
@@ -11186,7 +11186,7 @@ React.useEffect(() => {
                 type="button"
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-xl border bg-slate-900 px-2.5 py-2 text-xs font-bold text-white transition-all sm:gap-2 sm:px-3',
-                  isQuickCreateOpen ? 'border-emerald-500' : 'border-slate-800 hover:border-emerald-500'
+                  isQuickCreateOpen ? 'border-[#4C8DFF]' : 'border-slate-800 hover:border-[#4C8DFF]'
                 )}
               >
                 <Plus size={14} />
@@ -11216,10 +11216,10 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction('Receita')}
-                      className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-3 text-left text-white transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/15"
+                      className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-3 text-left text-white transition-colors hover:border-[#4C8DFF]/40 hover:bg-[#4C8DFF]/15"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
-                        <ArrowUpRight size={15} className="text-emerald-400" />
+                        <ArrowUpRight size={15} className="text-[#86B7FF]" />
                         Receita
                       </div>
                       <p className="text-[11px] text-slate-300">{'Entrada r\u00e1pida de sal\u00e1rio, pix ou freelance.'}</p>
@@ -11278,7 +11278,7 @@ React.useEffect(() => {
                           key={quickCategory.value}
                           type="button"
                           onClick={() => handleQuickCreateTransaction('Despesa', quickCategory.value)}
-                          className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1.5 text-[11px] font-semibold text-slate-200 transition-colors hover:border-emerald-500 hover:text-white"
+                          className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1.5 text-[11px] font-semibold text-slate-200 transition-colors hover:border-[#4C8DFF] hover:text-white"
                         >
                           {quickCategory.label}
                         </button>
@@ -11290,7 +11290,7 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('debts')}
-                      className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-emerald-500 hover:text-white"
+                      className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF] hover:text-white"
                     >
                       <div className="mb-1 flex items-center gap-2">
                         <CreditCard size={14} className="text-slate-400" />
@@ -11301,7 +11301,7 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('investments')}
-                      className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-emerald-500 hover:text-white"
+                      className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF] hover:text-white"
                     >
                       <div className="mb-1 flex items-center gap-2">
                         <TrendingUp size={14} className="text-slate-400" />
@@ -11320,7 +11320,7 @@ React.useEffect(() => {
               <input
                 type="text"
                 placeholder="Buscar..."
-                className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all w-64"
+                className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-[#4C8DFF] transition-all w-64"
               />
             </div>
 
@@ -11329,7 +11329,7 @@ React.useEffect(() => {
               className={cn(
                 'p-2 rounded-xl border transition-all',
                 isAssistantOpen
-                  ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+                  ? 'bg-[#4C8DFF]/10 border-[#4C8DFF] text-[#86B7FF]'
                   : 'bg-slate-900 border border-slate-800 text-slate-500 hover:text-white'
               )}
             >
@@ -11381,7 +11381,7 @@ React.useEffect(() => {
                                 <button
                                   type="button"
                                   onClick={markAllNotificationsAsRead}
-                                  className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-200 transition hover:border-emerald-500 hover:text-white"
+                                  className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-200 transition hover:border-[#4C8DFF] hover:text-white"
                                 >
                                   <CheckCircle2 size={12} />
                                   Marcar lidas
@@ -11525,12 +11525,12 @@ React.useEffect(() => {
             <div className="relative">
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="size-10 rounded-full bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-emerald-500 transition-all flex items-center justify-center group"
+                className="size-10 rounded-full bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-[#4C8DFF] transition-all flex items-center justify-center group"
               >
                 <UserAvatar
                   user={user}
                   className="size-full"
-                  fallbackClassName="border border-emerald-500/30"
+                  fallbackClassName="border border-[#4C8DFF]/30"
                   textClassName="text-sm"
                 />
               </button>
@@ -11553,7 +11553,7 @@ React.useEffect(() => {
                           <UserAvatar
                             user={user}
                             className="size-12 border border-slate-700 bg-slate-800"
-                            fallbackClassName="border border-emerald-500/30"
+                            fallbackClassName="border border-[#4C8DFF]/30"
                             textClassName="text-base"
                           />
                           <div className="min-w-0">
@@ -11566,13 +11566,13 @@ React.useEffect(() => {
                             'mt-3 inline-block rounded border px-2 py-0.5',
                             isFreePlan
                               ? 'bg-slate-500/10 border-slate-500/20'
-                              : 'bg-emerald-500/10 border-emerald-500/20'
+                              : 'bg-[#4C8DFF]/10 border-[#4C8DFF]/20'
                           )}
                         >
                           <span
                             className={cn(
                               'text-[10px] font-black uppercase tracking-widest',
-                              isFreePlan ? 'text-slate-300' : 'text-emerald-500'
+                              isFreePlan ? 'text-slate-300' : 'text-[#86B7FF]'
                             )}
                           >
                             Plano {planLabel}
@@ -11620,7 +11620,7 @@ React.useEffect(() => {
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Conta ativa</span>
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
-                  className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 transition-colors hover:border-emerald-500 hover:text-white"
+                  className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 transition-colors hover:border-[#4C8DFF] hover:text-white"
                 >
                   + Conta
                 </button>
@@ -11633,7 +11633,7 @@ React.useEffect(() => {
                     if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
                     setActiveWorkspaceId(nextWorkspaceId);
                   }}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-3 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
                 >
                   {workspaces.map((workspace) => (
                     <option key={workspace.id} value={workspace.id}>
