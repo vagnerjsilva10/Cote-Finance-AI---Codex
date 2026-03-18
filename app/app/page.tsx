@@ -172,7 +172,7 @@ type Goal = {
   category: string;
   deadline?: string | null;
   icon: LucideIcon;
-  color: string; // className ex: 'text-emerald-500'
+  color: string; // className ex: 'text-[#22C55E]'
 };
 
 type Investment = {
@@ -185,7 +185,7 @@ type Investment = {
   value: number; // valor atual
   invested: number; // valor total investido
   expectedReturnAnnual: number;
-  color: string; // className ex: 'bg-emerald-500'
+  color: string; // className ex: 'bg-[#4C8DFF]'
 };
 
 type WalletAccount = {
@@ -904,10 +904,10 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
 
 const getInvestmentColor = (type: string) => {
   const colorMap: Record<string, string> = {
-    'Renda fixa': 'bg-emerald-500',
+    'Renda fixa': 'bg-[#4C8DFF]',
     'Renda variável': 'bg-blue-500',
     Tesouro: 'bg-cyan-500',
-    CDB: 'bg-teal-500',
+    CDB: 'bg-blue-500',
     'LCI/LCA': 'bg-lime-500',
     'Ações': 'bg-amber-500',
     Fundos: 'bg-violet-500',
@@ -1324,7 +1324,7 @@ const renderAssistantMessageText = (rawText: string) => {
         if (orderedItem) {
           return (
             <div key={`assistant-item-${lineIndex}`} className="flex items-start gap-2">
-              <span className="text-emerald-400 font-bold">{orderedItem[1]}.</span>
+              <span className="text-[#86B7FF] font-bold">{orderedItem[1]}.</span>
               <p className="text-sm text-slate-200 leading-relaxed break-words">
                 {renderInlineAssistantText(orderedItem[2])}
               </p>
@@ -1364,13 +1364,13 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
       return (
         <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
-            <h2 className="text-xl font-bold text-white mb-2">Erro na interface</h2>
+            <h2 className="page-title-premium mb-2 text-white">Erro na interface</h2>
             <p className="text-sm text-slate-400 mb-5">
               Ocorreu uma falha inesperada de renderização. Recarregue a página para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[#4C8DFF] text-white text-sm font-bold hover:bg-[#3B7DF5] transition-colors"
             >
               Recarregar página
             </button>
@@ -1451,7 +1451,7 @@ const UserAvatar = ({
       ) : (
         <div
           className={cn(
-            'flex h-full w-full items-center justify-center bg-emerald-500/20 font-bold text-emerald-300',
+            'flex h-full w-full items-center justify-center bg-[#4C8DFF]/16 font-bold text-[#86B7FF]',
             fallbackClassName,
             textClassName
           )}
@@ -1515,7 +1515,7 @@ const StatCard = ({
         className={cn(
           'rounded-full border p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]',
           trendType === 'up'
-            ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-400'
+            ? 'border-[#4C8DFF]/18 bg-[#4C8DFF]/10 text-[#86B7FF]'
             : 'border-rose-500/18 bg-rose-500/10 text-rose-400'
         )}
       >
@@ -1527,7 +1527,7 @@ const StatCard = ({
       <div
         className={cn(
           'text-sm font-semibold flex items-center gap-1',
-          trendType === 'up' ? 'text-emerald-500' : 'text-rose-500'
+          trendType === 'up' ? 'text-[#22C55E]' : 'text-rose-500'
         )}
       >
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
@@ -1574,13 +1574,13 @@ const SubscriptionView = ({
         ? 'border-rose-400/20 bg-rose-500/10 text-rose-100'
         : summary?.status === 'TRIALING'
           ? 'border-cyan-400/20 bg-cyan-500/10 text-cyan-100'
-          : 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100';
+          : 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#D8E7FF]';
 
   return (
     <div className="max-w-6xl space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-emerald-200">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[#D8E7FF]">
             <Sparkles size={14} />
             Billing interno
           </span>
@@ -1593,7 +1593,7 @@ const SubscriptionView = ({
         </div>
         <button
           onClick={onChangePlan}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-400"
+          className="app-button-primary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold"
         >
           <ArrowUpRight size={16} />
           {summary?.primaryActionLabel || 'Alterar plano'}
@@ -1665,9 +1665,9 @@ const SubscriptionView = ({
                 </p>
               </div>
 
-              <div className="space-y-3 rounded-[1.4rem] border border-emerald-500/15 bg-emerald-500/8 p-4">
+              <div className="space-y-3 rounded-[1.4rem] border border-[#4C8DFF]/15 bg-[#4C8DFF]/7 p-4">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="mt-0.5 text-emerald-300" />
+                  <CheckCircle2 size={18} className="mt-0.5 text-[#86B7FF]" />
                   <div>
                     <p className="text-sm font-semibold text-white">Pagamento seguro</p>
                     <p className="mt-1 text-sm text-slate-300">
@@ -1676,7 +1676,7 @@ const SubscriptionView = ({
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <CreditCard size={18} className="mt-0.5 text-emerald-300" />
+                  <CreditCard size={18} className="mt-0.5 text-[#86B7FF]" />
                   <div>
                     <p className="text-sm font-semibold text-white">Gestáo sem sair do app</p>
                     <p className="mt-1 text-sm text-slate-300">
@@ -1714,10 +1714,10 @@ const SubscriptionView = ({
               <div className="mt-5 space-y-3">
                 <button
                   onClick={onChangePlan}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-emerald-500/30 hover:bg-slate-900"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-[#4C8DFF]/30 hover:bg-slate-900"
                 >
                   <span>{summary.primaryActionLabel || 'Alterar plano'}</span>
-                  <ArrowUpRight size={16} className="text-emerald-300" />
+                  <ArrowUpRight size={16} className="text-[#86B7FF]" />
                 </button>
                 <button
                   onClick={onCancel}
@@ -1729,7 +1729,7 @@ const SubscriptionView = ({
                 <button
                   onClick={onReactivate}
                   disabled={!summary.canReactivate || actionLoading !== null}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-emerald-400/30 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-[#4C8DFF]/30 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span>{actionLoading === 'reactivate' ? 'Reativando...' : 'Reativar assinatura'}</span>
                 </button>
@@ -1908,7 +1908,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,#121A24_0%,#101924_100%)] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-white">Receitas vs Despesas</h3>
+            <h3 className="card-title-premium text-white">Receitas vs Despesas</h3>
             <p className="text-sm text-slate-400">Últimos 6 meses</p>
           </div>
 
@@ -1960,7 +1960,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
 
         <div className="app-surface-card rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-6">Insights do mês</h3>
+          <h3 className="card-title-premium mb-6 text-white">Insights do mês</h3>
           <div className="space-y-4">
             <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
               <p className="label-premium mb-2 text-slate-500">
@@ -2023,7 +2023,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
 
       <div className="app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
-          <h3 className="text-lg font-bold text-white">Últimas transações</h3>
+          <h3 className="card-title-premium text-white">Últimas transações</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
@@ -2064,7 +2064,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
                       tx.type === 'income'
-                        ? 'text-emerald-500'
+                        ? 'text-[#22C55E]'
                         : tx.type === 'expense'
                           ? 'text-rose-500'
                           : 'text-cyan-400'
@@ -2137,7 +2137,7 @@ const TransactionsView = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Entradas totais</p>
-          <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
+          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Saídas totais</p>
@@ -2145,7 +2145,7 @@ const TransactionsView = ({
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Saldo</p>
-          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
+          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
             {formatCurrency(balance)}
           </p>
         </div>
@@ -2199,7 +2199,7 @@ const TransactionsView = ({
                   className={cn(
                     'text-sm font-bold',
                     baseType === 'income'
-                      ? 'text-emerald-500'
+                      ? 'text-[#22C55E]'
                       : baseType === 'expense'
                         ? 'text-rose-500'
                         : 'text-cyan-400'
@@ -2219,7 +2219,7 @@ const TransactionsView = ({
                 <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
                   {getPaymentMethodIconLabel(tx.paymentMethod)}
                 </span>
-                <span className="text-[10px] text-emerald-500/80 font-bold uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] text-[#22C55E]/80 font-bold uppercase tracking-widest flex items-center gap-1">
                   <Wallet size={10} /> {tx.wallet}
                 </span>
                 {tx.flowType === 'Transferência' && tx.destinationWallet && (
@@ -2293,7 +2293,7 @@ const TransactionsView = ({
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
                       baseType === 'income'
-                        ? 'text-emerald-500'
+                        ? 'text-[#22C55E]'
                         : baseType === 'expense'
                           ? 'text-rose-500'
                           : 'text-cyan-400'
@@ -2487,7 +2487,7 @@ const IntegrationsView = ({
               <ul className="space-y-4">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3 text-sm text-slate-400">
-                    <CheckCircle2 size={16} className="text-emerald-500" />
+                    <CheckCircle2 size={16} className="text-[#86B7FF]" />
                     {feature}
                   </li>
                 ))}
@@ -2502,7 +2502,7 @@ const IntegrationsView = ({
       <div className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-emerald-500/10 p-3 text-emerald-500">
+            <div className="rounded-xl bg-[#4C8DFF]/10 p-3 text-[#86B7FF]">
               <MessageSquare size={24} />
             </div>
             <div>
@@ -2515,7 +2515,7 @@ const IntegrationsView = ({
               'flex items-center gap-2 self-start rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest lg:self-center',
               hasWhatsAppAccess
                 ? connectionTone === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-500'
+                  ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
                   : connectionTone === 'warning'
                     ? 'bg-amber-500/10 text-amber-300'
                     : connectionTone === 'error'
@@ -2529,7 +2529,7 @@ const IntegrationsView = ({
                 'size-1.5 rounded-full animate-pulse',
                 hasWhatsAppAccess
                   ? connectionTone === 'success'
-                    ? 'bg-emerald-500'
+                    ? 'bg-[#4C8DFF]'
                     : connectionTone === 'warning'
                       ? 'bg-amber-300'
                       : connectionTone === 'error'
@@ -2790,7 +2790,7 @@ const IntegrationsView = ({
 
                       <button
                         onClick={onRunWhatsAppDiagnostic}
-                        className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500/50 hover:text-white sm:col-span-1"
+                        className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-[#4C8DFF]/50 hover:text-white sm:col-span-1"
                       >
                         Validar configuração
                       </button>
@@ -2805,13 +2805,13 @@ const IntegrationsView = ({
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">WhatsApp</p>
-                <h4 className="mt-2 text-lg font-black text-white">Como o resumo aparece no celular</h4>
+                <h4 className="mt-2 card-title-premium text-white">Como o resumo aparece no celular</h4>
               </div>
               <span
                 className={cn(
                   'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                   connectionTone === 'success'
-                    ? 'bg-emerald-500/10 text-emerald-300'
+                    ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
                     : connectionTone === 'warning'
                     ? 'bg-amber-500/10 text-amber-300'
                     : connectionTone === 'error'
@@ -2824,7 +2824,7 @@ const IntegrationsView = ({
             </div>
 
             <div className="space-y-4 rounded-3xl border border-slate-800 bg-[#0b141a] p-4">
-              <div className="ml-auto max-w-[90%] rounded-2xl bg-[#005c4b] px-4 py-3 text-sm leading-relaxed text-white shadow-lg shadow-black/10">
+              <div className="ml-auto max-w-[90%] rounded-2xl bg-[#4C8DFF] px-4 py-3 text-sm leading-relaxed text-white shadow-lg shadow-black/10">
                 Quais alertas vou receber no WhatsApp?
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
@@ -2869,7 +2869,7 @@ const IntegrationsView = ({
                       className={cn(
                         'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                         whatsAppDiagnostic.validationResult === 'OK'
-                          ? 'bg-emerald-500/10 text-emerald-300'
+                          ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
                           : 'bg-rose-500/10 text-rose-300'
                       )}
                     >
@@ -2941,7 +2941,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300/80">
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#86B7FF]/80">
             Agenda financeira
           </p>
           <h3 className="text-2xl font-black text-white">Próximos compromissos do seu caixa</h3>
@@ -2951,7 +2951,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
           </p>
         </div>
         <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-300">
-          <Calendar size={16} className="text-emerald-400" />
+          <Calendar size={16} className="text-[#86B7FF]" />
           Próximos 30 dias
         </div>
       </div>
@@ -2990,10 +2990,10 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
 
       {upcomingBills.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-900/45 p-10 text-center">
-          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
             <Calendar size={26} />
           </div>
-          <h4 className="text-lg font-bold text-white">Sua agenda está limpa por enquanto</h4>
+          <h4 className="card-title-premium text-white">Sua agenda está limpa por enquanto</h4>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">
             Adicione dívidas com vencimento ou metas com prazo para acompanhar compromissos sem
             perder o timing do seu caixa.
@@ -3005,7 +3005,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
             <section key={group.key} className="rounded-3xl border border-slate-800 bg-slate-900/55 p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <h4 className="text-lg font-black text-white">{group.title}</h4>
+                  <h4 className="card-title-premium text-white">{group.title}</h4>
                   <p className="text-sm text-slate-400">
                     {group.items.length} {group.items.length === 1 ? 'item' : 'itens'} programados
                   </p>
@@ -3055,7 +3055,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                       </div>
 
                       <div className="text-right">
-                        <p className="text-lg font-black text-white">{formatCurrency(bill.amount)}</p>
+                        <p className="card-title-premium text-white">{formatCurrency(bill.amount)}</p>
                         <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
                           {bill.kind === 'goal' ? 'Meta' : 'Conta'}
                         </p>
@@ -3113,13 +3113,13 @@ const DebtsView = ({
   )[0] ?? null;
   const totalRegisteredItems = debts.length + recurringDebts.length;
   const getDebtStatusTone = (status: Debt['status']) => {
-    if (status === 'Quitada') return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300';
+    if (status === 'Quitada') return 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]';
     if (status === 'Atrasada') return 'border-rose-500/20 bg-rose-500/10 text-rose-300';
     if (status === 'Parcelada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
     return 'border-slate-700 bg-slate-800/70 text-slate-200';
   };
   const getRecurringStatusTone = (status: RecurringDebt['status']) => {
-    if (status === 'Ativa') return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300';
+    if (status === 'Ativa') return 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]';
     if (status === 'Pausada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
     return 'border-slate-700 bg-slate-800/70 text-slate-300';
   };
@@ -3137,7 +3137,7 @@ const DebtsView = ({
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300/80">Dívidas</p>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#86B7FF]/80">Dívidas</p>
               <h3 className="mt-2 text-3xl font-black tracking-tight text-white">Dívidas</h3>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
                 Separe dívidas pontuais de contas recorrentes para ter mais clareza financeira.
@@ -3156,7 +3156,7 @@ const DebtsView = ({
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
+                <p className="mt-2 text-2xl font-black text-[#86B7FF]">{formatCurrency(totalPaid)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   {paidDebts > 0 ? `${paidDebts} dívida(s) já quitadas` : 'Ainda não há dívidas quitadas'}
                 </p>
@@ -3181,13 +3181,13 @@ const DebtsView = ({
         </div>
       </section>
       {feedbackMessage ? (
-        <div className="flex items-start justify-between gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+        <div className="flex items-start justify-between gap-3 rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-4 py-3 text-sm text-[#D8E7FF]">
           <div>
             <p className="font-bold">{feedbackMessage}</p>
-            <p className="mt-1 text-emerald-200/80">Sua área de dívidas foi atualizada com sucesso.</p>
+            <p className="mt-1 text-[#B9D3FF]/80">Sua área de dívidas foi atualizada com sucesso.</p>
           </div>
           {onDismissFeedback ? (
-            <button onClick={onDismissFeedback} className="text-emerald-200 transition-colors hover:text-white">
+            <button onClick={onDismissFeedback} className="text-[#B9D3FF] transition-colors hover:text-white">
               <X size={16} />
             </button>
           ) : null}
@@ -3236,7 +3236,7 @@ const DebtsView = ({
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
+                <p className="mt-2 text-2xl font-black text-[#86B7FF]">{formatCurrency(totalPaid)}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -3249,14 +3249,14 @@ const DebtsView = ({
                 </div>
                 <p className="mt-2 text-2xl font-black text-white">{progress.toFixed(1)}%</p>
                 <div className="mt-3 h-2 rounded-full bg-slate-800">
-                  <div className="h-2 rounded-full bg-emerald-500 transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
+                  <div className="h-2 rounded-full bg-[#4C8DFF] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
                 </div>
               </div>
             </div>
           </div>
           {debts.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
                 <Wallet size={26} />
               </div>
               <h5 className="text-xl font-black text-white">Você ainda não cadastrou nenhuma dívida.</h5>
@@ -3285,7 +3285,7 @@ const DebtsView = ({
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="text-lg font-black text-white">{debt.creditor}</h5>
+                          <h5 className="card-title-premium text-white">{debt.creditor}</h5>
                           <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtStatusTone(debt.status))}>
                             {debt.status}
                           </span>
@@ -3302,7 +3302,7 @@ const DebtsView = ({
                           </div>
                           <div>
                             <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Quitado</p>
-                            <p className="mt-1 text-base font-bold text-emerald-400">{formatCurrency(paidAmount)}</p>
+                            <p className="mt-1 text-base font-bold text-[#86B7FF]">{formatCurrency(paidAmount)}</p>
                           </div>
                         </div>
                       </div>
@@ -3342,7 +3342,7 @@ const DebtsView = ({
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próxima cobrança</p>
-                <p className="mt-2 text-base font-black text-emerald-400">
+                <p className="mt-2 text-base font-black text-[#86B7FF]">
                   {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previs?o'}
                 </p>
               </div>
@@ -3374,7 +3374,7 @@ const DebtsView = ({
                       <p className="text-sm font-black text-white">{preset.title}</p>
                       <p className="mt-2 text-xs leading-6 text-slate-400">{preset.description}</p>
                     </div>
-                    <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                    <span className="rounded-full bg-[#4C8DFF]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#86B7FF]">
                       Dia {preset.dueDay}
                     </span>
                   </div>
@@ -3384,7 +3384,7 @@ const DebtsView = ({
           </div>
           {recurringDebts.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
                 <Calendar size={26} />
               </div>
               <h5 className="text-xl font-black text-white">Você ainda não cadastrou contas fixas.</h5>
@@ -3405,11 +3405,11 @@ const DebtsView = ({
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h5 className="text-lg font-black text-white">{debt.creditor}</h5>
+                        <h5 className="card-title-premium text-white">{debt.creditor}</h5>
                         <span className="rounded-full border border-slate-700 bg-slate-800/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-200">
                           {debt.category}
                         </span>
-                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                        <span className="rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#86B7FF]">
                           {getRecurringDebtFrequencyLabel(debt.frequency)}
                         </span>
                         <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getRecurringStatusTone(debt.status))}>
@@ -3541,7 +3541,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Meta total</p>
-          <p className="text-2xl font-black text-emerald-500">{formatCurrency(targetTotal)}</p>
+          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(targetTotal)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Valor acumulado</p>
@@ -3593,13 +3593,13 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
 
               <div className="space-y-2">
                 <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                  <div className="h-full bg-[#4C8DFF] rounded-full transition-all" style={{ width: `${progress}%` }} />
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-slate-300">{formatCurrency(goal.current)} acumulado</span>
                   <span className="text-slate-500">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-emerald-500 font-bold">{progress.toFixed(1)}%</span>
+                  <span className="text-[#22C55E] font-bold">{progress.toFixed(1)}%</span>
                 </div>
 
                 <p className="text-xs text-slate-500">Faltam {formatCurrency(remaining)} para concluir.</p>
@@ -3829,7 +3829,7 @@ const PortfolioView = ({
 
         {!hasAnyPortfolioData && (
           <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-900/40 px-6 py-8 text-center">
-            <h4 className="text-lg font-bold text-white">Crie sua primeira carteira</h4>
+            <h4 className="card-title-premium text-white">Crie sua primeira carteira</h4>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
               Adicione contas bancárias, dinheiro em espécie ou carteiras digitais para começar a organizar suas finanças.
             </p>
@@ -3863,7 +3863,7 @@ const PortfolioView = ({
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Saldo em contas</p>
-          <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalBalance)}</p>
+          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalBalance)}</p>
           <p className="mt-3 text-xs text-slate-500">Veja o histórico e movimente saldo entre carteiras</p>
         </button>
         <button
@@ -3890,7 +3890,7 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h4 className="text-lg font-bold text-white">Distribuição do patrimônio</h4>
+              <h4 className="card-title-premium text-white">Distribuição do patrimônio</h4>
               <p className="text-sm text-slate-500">Entenda rapidamente quanto do seu patrimônio está em contas, investimentos e dívidas.</p>
             </div>
           </div>
@@ -3959,14 +3959,14 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-lg font-bold text-white">Onde está meu dinheiro</h4>
+              <h4 className="card-title-premium text-white">Onde está meu dinheiro</h4>
               <p className="text-sm text-slate-500">Veja as principais carteiras, participação no saldo total e ações rápidas.</p>
             </div>
             {walletAllocation.length > 4 && (
               <button
                 type="button"
                 onClick={() => setShowAllWallets((current) => !current)}
-                className="text-xs font-bold uppercase tracking-widest text-emerald-300 transition-colors hover:text-white"
+                className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] transition-colors hover:text-white"
               >
                 {showAllWallets ? 'Mostrar menos' : 'Ver todas as carteiras'}
               </button>
@@ -3984,10 +3984,10 @@ const PortfolioView = ({
               <div key={wallet.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <span className="text-sm font-semibold text-white">{wallet.name}</span>
-                  <span className="text-sm font-bold text-emerald-400">{formatCurrency(wallet.balance)}</span>
+                  <span className="text-sm font-bold text-[#86B7FF]">{formatCurrency(wallet.balance)}</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${wallet.share}%` }} />
+                  <div className="h-full rounded-full bg-[#4C8DFF]" style={{ width: `${wallet.share}%` }} />
                 </div>
                 <p className="mt-2 text-xs text-slate-500">{wallet.share.toFixed(1)}% do saldo em contas</p>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -4026,7 +4026,7 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-lg font-bold text-white">Resumo de investimentos</h4>
+              <h4 className="card-title-premium text-white">Resumo de investimentos</h4>
               <p className="text-sm text-slate-500">Veja os ativos que mais representam seu patrimônio.</p>
             </div>
             {topInvestments.length > 0 && (
@@ -4075,7 +4075,7 @@ const PortfolioView = ({
                     <p
                       className={cn(
                         'text-xs font-semibold',
-                        investment.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                        investment.profit >= 0 ? 'text-[#86B7FF]' : 'text-rose-400'
                       )}
                     >
                       {investment.profit >= 0 ? '+' : ''}
@@ -4091,7 +4091,7 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-lg font-bold text-white">Resumo de dívidas</h4>
+              <h4 className="card-title-premium text-white">Resumo de dívidas</h4>
               <p className="text-sm text-slate-500">Entenda o que está em aberto e o peso disso no seu patrimônio.</p>
             </div>
             {topDebts.length > 0 && (
@@ -4115,7 +4115,7 @@ const PortfolioView = ({
                 <button
                   type="button"
                   onClick={onAddDebt}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition-colors hover:border-amber-400/50 hover:text-white"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-[#4C8DFF]/30 bg-[#4C8DFF]/10 px-4 py-2 text-sm font-semibold text-[#D8E7FF] transition-colors hover:border-[#4C8DFF]/50 hover:text-white"
                 >
                   <Plus size={14} />
                   Registrar dívida
@@ -4130,7 +4130,7 @@ const PortfolioView = ({
                     <p className="text-sm font-semibold text-white">{debt.creditor}</p>
                     <p className="mt-1 text-xs text-slate-500">{debt.category}</p>
                   </div>
-                  <span className="text-sm font-bold text-amber-300">{formatCurrency(debt.remainingAmount)}</span>
+                  <span className="text-sm font-bold text-rose-300">{formatCurrency(debt.remainingAmount)}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
                   <span>Vence no dia {debt.dueDay}</span>
@@ -4144,7 +4144,7 @@ const PortfolioView = ({
 
       <div className="app-surface-card rounded-2xl p-6">
         <div className="mb-4">
-          <h4 className="text-lg font-bold text-white">Insights da IA</h4>
+          <h4 className="card-title-premium text-white">Insights da IA</h4>
           <p className="text-sm text-slate-500">
             {hasPortfolioAiInsights
               ? 'Mensagens rápidas para ajudar você a entender a composição da sua carteira.'
@@ -4156,7 +4156,7 @@ const PortfolioView = ({
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             {portfolioInsights.map((insight, index) => (
               <div key={`${index}-${insight}`} className="app-surface-subtle rounded-2xl p-4">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#86B7FF]">
                   <Sparkles size={12} />
                   Insight
                 </div>
@@ -4165,10 +4165,10 @@ const PortfolioView = ({
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-slate-950/90 via-slate-950/70 to-emerald-950/20 p-5">
+          <div className="rounded-3xl border border-[#4C8DFF]/20 bg-gradient-to-br from-slate-950/90 via-slate-950/70 to-[#0F213D]/60 p-5">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#86B7FF]">
                   <Lock size={12} />
                   Disponível no plano Pro
                 </div>
@@ -4227,13 +4227,13 @@ const InvestmentsView = ({
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Rendimento</p>
-          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
+          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
             {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
           </p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Rentabilidade %</p>
-          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
+          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
             {profitPercentage.toFixed(2)}%
           </p>
         </div>
@@ -4279,10 +4279,10 @@ const InvestmentsView = ({
                     <td className="px-6 py-4 text-sm text-slate-300">{item.walletName}</td>
                     <td className="px-6 py-4 text-sm text-slate-300">{formatCurrency(item.invested)}</td>
                     <td className="px-6 py-4 text-sm text-white">{formatCurrency(item.value)}</td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
                       {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
                     </td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
                       {itemProfitPct.toFixed(2)}%
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-300">{item.expectedReturnAnnual.toFixed(2)}%</td>
@@ -4640,7 +4640,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
-            <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
+            <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
@@ -4686,7 +4686,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               ].map((feature) => (
                 <div
                   key={feature}
-                  className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-100/90"
+                  className="rounded-xl border border-[#4C8DFF]/15 bg-[#4C8DFF]/5 px-4 py-3 text-sm text-[#D8E7FF]/90"
                 >
                   {feature}
                 </div>
@@ -4729,7 +4729,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
-          <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
+          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
@@ -4754,7 +4754,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               <div
                 className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${
                   balanceForecast.trend === 'positive'
-                    ? 'bg-emerald-500/10 text-emerald-300'
+                    ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
                     : balanceForecast.trend === 'negative'
                       ? 'bg-rose-500/10 text-rose-300'
                       : 'bg-slate-800 text-slate-300'
@@ -4812,7 +4812,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                         ? 'border-rose-500/30 bg-rose-500/10'
                         : alert.tone === 'warning'
                           ? 'border-amber-400/30 bg-amber-400/10'
-                          : 'border-emerald-500/20 bg-emerald-500/10'
+                          : 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10'
                     )}
                   >
                     <p
@@ -4822,7 +4822,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                           ? 'text-rose-300'
                           : alert.tone === 'warning'
                             ? 'text-amber-200'
-                            : 'text-emerald-300'
+                            : 'text-[#86B7FF]'
                       )}
                     >
                       {alert.title}
@@ -4867,7 +4867,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                       ? 'text-white'
                       : expenseDeepDive.monthOverMonthVariation > 0
                         ? 'text-amber-300'
-                        : 'text-emerald-300'
+                        : 'text-[#86B7FF]'
                   )}
                 >
                   {expenseDeepDive.monthOverMonthVariation === null
@@ -4881,7 +4881,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
               <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="label-premium mb-2 text-slate-500">Categoria mais pesada</p>
-                <p className="text-lg font-black text-white">
+                <p className="card-title-premium text-white">
                   {expenseDeepDive.topCurrentCategory?.name || 'Sem dados'}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
@@ -4893,7 +4893,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
               <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="label-premium mb-2 text-slate-500">Maior despesa individual</p>
-                <p className="text-lg font-black text-white">
+                <p className="card-title-premium text-white">
                   {expenseDeepDive.largestExpense?.description || 'Sem dados'}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
@@ -5087,7 +5087,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <Line
                   type="monotone"
                   dataKey="savingsRate"
-                  stroke="#22c55e"
+                  stroke="#4C8DFF"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -5104,17 +5104,17 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <button
             onClick={generateAIInsight}
             disabled={isGeneratingInsight}
-            className="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline disabled:opacity-50"
+            className="text-[10px] font-black text-[#86B7FF] uppercase tracking-widest hover:underline disabled:opacity-50"
           >
             {isGeneratingInsight ? 'Gerando...' : 'Atualizar Insights'}
           </button>
         </div>
         <div className="space-y-4">
           {aiInsight ? (
-            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+            <div className="p-4 rounded-xl bg-[#4C8DFF]/5 border border-[#4C8DFF]/10">
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={16} className="text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-500 uppercase">Análise personalizada</span>
+                <Sparkles size={16} className="text-[#86B7FF]" />
+                <span className="text-xs font-bold text-[#86B7FF] uppercase">Análise personalizada</span>
               </div>
               <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
                 {aiInsight}
@@ -6264,7 +6264,7 @@ const TransactionModal = ({
               ) : suggestedCategory ? (
                 <div className="flex items-center justify-between gap-2">
                   <span>
-                    Sugestão: <span className="font-bold text-emerald-400">{suggestedCategory}</span>
+                    Sugestão: <span className="font-bold text-[#86B7FF]">{suggestedCategory}</span>
                   </span>
                   <button
                     type="button"
@@ -6359,7 +6359,7 @@ const TransactionModal = ({
           </div>
 
           {formData.category === 'Auto (IA)' && (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-300">
+            <div className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/5 p-3 text-xs text-[#86B7FF]">
               A categoria será classificada automaticamente com base na descrição.
             </div>
           )}
@@ -6500,14 +6500,14 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
         className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">
+          <span className="text-xs font-black text-[#86B7FF] uppercase tracking-widest">
             Passo {step + 1} de {steps.length}
           </span>
           <div className="flex gap-1">
             {steps.map((_, i) => (
               <div
                 key={i}
-                className={cn('h-1 w-4 rounded-full transition-all', i === step ? 'bg-emerald-500' : 'bg-slate-800')}
+                className={cn('h-1 w-4 rounded-full transition-all', i === step ? 'bg-[#4C8DFF]' : 'bg-slate-800')}
               />
             ))}
           </div>
@@ -6532,7 +6532,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             )}
             <button
               onClick={nextStep}
-              className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
+              className="px-6 py-2 rounded-xl bg-[#4C8DFF] text-white font-bold hover:bg-[#3B7DF5] transition-all shadow-lg shadow-[#4C8DFF]/20"
             >
               {step === steps.length - 1 ? 'Começar agora' : 'Próximo'}
             </button>
@@ -6843,7 +6843,7 @@ const LoginView = ({
                 className={cn(
                   'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
                   loginMethod === 'password'
-                    ? 'bg-emerald-500 text-white'
+                    ? 'bg-[#4C8DFF] text-white'
                     : 'text-slate-400 hover:text-white'
                 )}
               >
@@ -6860,7 +6860,7 @@ const LoginView = ({
                 className={cn(
                   'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
                   loginMethod === 'otp'
-                    ? 'bg-emerald-500 text-white'
+                    ? 'bg-[#4C8DFF] text-white'
                     : 'text-slate-400 hover:text-white'
                 )}
               >
@@ -6878,7 +6878,7 @@ const LoginView = ({
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
                   placeholder="Seu nome"
                 />
               </div>
@@ -6889,7 +6889,7 @@ const LoginView = ({
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
                   placeholder="Seu sobrenome"
                 />
               </div>
@@ -6903,7 +6903,7 @@ const LoginView = ({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
               placeholder="seuemail@exemplo.com"
             />
           </div>
@@ -6915,7 +6915,7 @@ const LoginView = ({
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
                 placeholder={isLogin ? 'Digite sua senha' : 'Crie uma senha segura'}
               />
               {isLogin ? (
@@ -6934,7 +6934,7 @@ const LoginView = ({
                           className={cn(
                             'inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold',
                             rule.valid
-                              ? 'bg-emerald-500/20 text-emerald-300'
+                              ? 'bg-[#4C8DFF]/20 text-[#86B7FF]'
                               : 'bg-slate-700 text-slate-400'
                           )}
                         >
@@ -6971,7 +6971,7 @@ const LoginView = ({
                     autoComplete="one-time-code"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
                     placeholder="Digite o código recebido"
                   />
                 </div>
@@ -6997,7 +6997,7 @@ const LoginView = ({
                   <label htmlFor="accepted-terms" className="cursor-pointer">
                     Aceito os{' '}
                   </label>
-                  <Link href="/termos-de-uso" target="_blank" rel="noreferrer" className="font-semibold text-emerald-300 hover:text-emerald-200">
+                  <Link href="/termos-de-uso" target="_blank" rel="noreferrer" className="font-semibold text-[#86B7FF] hover:text-[#B9D3FF]">
                     termos de uso
                   </Link>
                   <span>{' '}e{' '}</span>
@@ -7005,7 +7005,7 @@ const LoginView = ({
                     href="/politica-de-privacidade"
                     target="_blank"
                     rel="noreferrer"
-                    className="font-semibold text-emerald-300 hover:text-emerald-200"
+                    className="font-semibold text-[#86B7FF] hover:text-[#B9D3FF]"
                   >
                     política de privacidade
                   </Link>
@@ -7015,13 +7015,13 @@ const LoginView = ({
             </>
           )}
 
-          {notice && <p className="text-emerald-400 text-xs font-bold leading-relaxed">{notice}</p>}
+          {notice && <p className="text-[#86B7FF] text-xs font-bold leading-relaxed">{notice}</p>}
           {error && <p className="text-rose-500 text-xs font-bold leading-relaxed">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+            className="w-full rounded-xl bg-[#4C8DFF] py-3 text-sm font-bold text-white transition-all hover:bg-[#3B7DF5] shadow-lg shadow-[#4C8DFF]/20 disabled:opacity-50"
           >
             {loading
               ? 'Processando...'
@@ -7129,7 +7129,7 @@ const LoginView = ({
               setOtpRequestedEmail('');
               setPassword('');
             }}
-            className="ml-1 font-bold text-emerald-500 hover:underline"
+            className="ml-1 font-bold text-[#86B7FF] hover:underline"
           >
             {isLogin ? 'Criar conta gratuita' : 'Entrar'}
           </button>
@@ -7569,7 +7569,7 @@ export default function App() {
           category: g.category || 'Outros',
           deadline: g.deadline || null,
           icon: Wallet,
-          color: 'text-emerald-500',
+          color: 'text-[#22C55E]',
         })));
       } else {
         setGoals([]);
@@ -7661,7 +7661,7 @@ export default function App() {
                 category: g.category || 'Outros',
                 deadline: g.deadline || null,
                 icon: Wallet,
-                color: 'text-emerald-500',
+                color: 'text-[#22C55E]',
               }))
             : [],
           investments: Array.isArray(data.investments)
@@ -8365,8 +8365,8 @@ React.useEffect(() => {
         isoDate: nextDueDate.toISOString(),
         amount: debt.amount,
         icon: Workflow,
-        color: 'text-emerald-300',
-        bg: 'bg-emerald-500/10',
+        color: 'text-[#86B7FF]',
+        bg: 'bg-[#4C8DFF]/10',
         status: daysUntil < 0 ? 'overdue' : 'pending',
         kind: 'debt',
         helperText: `${debt.category} - ${getRecurringDebtFrequencyLabel(debt.frequency)}`,
@@ -10119,9 +10119,9 @@ React.useEffect(() => {
               exit={{ scale: 0.95, opacity: 0 }}
               className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
             >
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1">
-                <ArrowUpRight size={12} className="text-emerald-400" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1">
+                <ArrowUpRight size={12} className="text-[#86B7FF]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
                   Upgrade
                 </span>
               </div>
@@ -10145,7 +10145,7 @@ React.useEffect(() => {
                     setActiveTab('integrations');
                     void handleUpgrade('Pro Mensal');
                   }}
-                  className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-600 transition-colors"
+                  className="flex-1 rounded-xl bg-[#4C8DFF] px-4 py-2 text-sm font-bold text-white hover:bg-[#3B7DF5] transition-colors"
                 >
                   Fazer upgrade
                 </button>
@@ -10182,7 +10182,7 @@ React.useEffect(() => {
               <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">Nova conta</p>
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">Nova conta</p>
                   <h3 className="text-xl font-bold text-white">Criar workspace</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">
                     Crie uma nova conta para separar finanças pessoais, empresa ou operações diferentes dentro do mesmo
@@ -10220,7 +10220,7 @@ React.useEffect(() => {
                     placeholder="Ex.: Empresa, Casa ou Projeto"
                     autoFocus
                     maxLength={80}
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-[#4C8DFF]"
                   />
                 </div>
 
@@ -10245,7 +10245,7 @@ React.useEffect(() => {
                   <button
                     type="submit"
                     disabled={isCreatingWorkspace}
-                    className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-2xl bg-[#4C8DFF] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#3B7DF5] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isCreatingWorkspace ? 'Criando conta...' : 'Criar conta'}
                   </button>
@@ -10283,7 +10283,7 @@ React.useEffect(() => {
               <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
                     Nova carteira
                   </p>
                   <h3 className="text-xl font-bold text-white">Criar carteira</h3>
@@ -10322,7 +10322,7 @@ React.useEffect(() => {
                       setNewWalletBank(nextBank);
                       setNewWalletName((prev) => (prev.trim() ? prev : nextBank));
                     }}
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-emerald-500"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#4C8DFF]"
                   >
                     <option value="">Selecione um banco</option>
                     {MAIN_BANK_OPTIONS.map((bank) => (
@@ -10343,7 +10343,7 @@ React.useEffect(() => {
                     onChange={(event) => setNewWalletName(event.target.value)}
                     placeholder="Ex.: Nubank pessoal ou Caixa empresa"
                     maxLength={80}
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-[#4C8DFF]"
                   />
                 </div>
 
@@ -10357,7 +10357,7 @@ React.useEffect(() => {
                     value={newWalletInitialBalance}
                     onChange={(event) => setNewWalletInitialBalance(maskMoneyInput(event.target.value))}
                     placeholder="R$ 0,00"
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-emerald-500"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-[#4C8DFF]"
                   />
                 </div>
 
@@ -10382,7 +10382,7 @@ React.useEffect(() => {
                   <button
                     type="submit"
                     disabled={isCreatingWallet}
-                    className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-2xl bg-[#4C8DFF] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#3B7DF5] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isCreatingWallet ? 'Criando carteira...' : 'Criar carteira'}
                   </button>
@@ -10410,7 +10410,7 @@ React.useEffect(() => {
             >
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-emerald-400 font-black mb-2">
+                  <p className="text-[10px] uppercase tracking-widest text-[#86B7FF] font-black mb-2">
                     Onboarding Cote Finance AI
                   </p>
                   <h3 className="text-xl font-bold text-white">Setup inteligente do seu workspace</h3>
@@ -10426,7 +10426,7 @@ React.useEffect(() => {
 
               <div className="mb-6 h-2 w-full rounded-full bg-slate-800">
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                  className="h-full rounded-full bg-[#4C8DFF] transition-all duration-300"
                   style={{ width: `${onboardingFlowProgress}%` }}
                 />
               </div>
@@ -10443,7 +10443,7 @@ React.useEffect(() => {
                   <div className="flex justify-end">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Começar
                     </button>
@@ -10467,7 +10467,7 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors',
                           onboardingObjective === objective
-                            ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
+                            ? 'border-emerald-500 bg-[#4C8DFF]/10 text-[#86B7FF]'
                             : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
                         )}
                       >
@@ -10484,7 +10484,7 @@ React.useEffect(() => {
                     </button>
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Continuar
                     </button>
@@ -10525,7 +10525,7 @@ React.useEffect(() => {
                     </button>
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Continuar
                     </button>
@@ -10558,7 +10558,7 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-sm font-bold transition-colors',
                           onboardingFirstRecord.flowType === flowType
-                            ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
+                            ? 'border-emerald-500 bg-[#4C8DFF]/10 text-[#86B7FF]'
                             : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
                         )}
                       >
@@ -10579,7 +10579,7 @@ React.useEffect(() => {
                           }))
                         }
                         placeholder="R$ 0,00"
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
                       />
                     </div>
                     <div className="space-y-2">
@@ -10592,7 +10592,7 @@ React.useEffect(() => {
                             category: event.target.value,
                           }))
                         }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
                       >
                         {TRANSACTION_CATEGORIES.filter((category) => category !== 'Auto (IA)').map((category) => (
                           <option key={category} value={category}>
@@ -10616,12 +10616,12 @@ React.useEffect(() => {
                         }))
                       }
                       placeholder="Ex: Mercado do mês"
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
                     />
                   </div>
 
                   {onboardingFirstRecordAdded && (
-                    <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                    <div className="rounded-xl border border-emerald-500/25 bg-[#4C8DFF]/10 px-4 py-3 text-sm text-emerald-200">
                       Parabéns! Seu primeiro registro foi adicionado.
                     </div>
                   )}
@@ -10636,7 +10636,7 @@ React.useEffect(() => {
                     <button
                       onClick={() => void handleAddOnboardingFirstRecord()}
                       disabled={isSavingOnboardingRecord || parseMoneyInput(onboardingFirstRecord.amount) <= 0}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-60"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5] disabled:opacity-60"
                     >
                       {isSavingOnboardingRecord ? 'Adicionando...' : 'Adicionar registro'}
                     </button>
@@ -10668,7 +10668,7 @@ React.useEffect(() => {
                     </button>
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Continuar
                     </button>
@@ -10684,7 +10684,7 @@ React.useEffect(() => {
                       Este é um exemplo do tipo de insight automático disponível nos planos Pro e Premium.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm leading-relaxed text-emerald-100">
+                  <div className="rounded-2xl border border-emerald-500/25 bg-[#4C8DFF]/10 p-5 text-sm leading-relaxed text-emerald-100">
                     Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
                     {String(onboardingPrimaryInsight.category || 'alimenta??o').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
@@ -10702,7 +10702,7 @@ React.useEffect(() => {
                         setOnboardingInsightViewed(true);
                         setOnboardingStep(6);
                       }}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Entendi como funciona
                     </button>
@@ -10721,7 +10721,7 @@ React.useEffect(() => {
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
                     <div className="h-2 w-full rounded-full bg-slate-700">
                       <div
-                        className="h-full rounded-full bg-emerald-500 transition-all"
+                        className="h-full rounded-full bg-[#4C8DFF] transition-all"
                         style={{ width: `${onboardingChecklistProgress}%` }}
                       />
                     </div>
@@ -10729,8 +10729,8 @@ React.useEffect(() => {
                     <div className="space-y-2">
                       {onboardingChecklist.map((item) => (
                         <div key={item.label} className="flex items-center gap-2 text-sm text-slate-200">
-                          <CheckCircle2 size={16} className={item.done ? 'text-emerald-400' : 'text-slate-500'} />
-                          <span className={item.done ? 'text-emerald-300' : 'text-slate-300'}>{item.label}</span>
+                          <CheckCircle2 size={16} className={item.done ? 'text-[#86B7FF]' : 'text-slate-500'} />
+                          <span className={item.done ? 'text-[#86B7FF]' : 'text-slate-300'}>{item.label}</span>
                         </div>
                       ))}
                     </div>
@@ -10744,7 +10744,7 @@ React.useEffect(() => {
                     </button>
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Continuar
                     </button>
@@ -10774,7 +10774,7 @@ React.useEffect(() => {
                     </button>
                     <button
                       onClick={() => setOnboardingStep(8)}
-                      className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
                     >
                       Ver análise completa
                     </button>
@@ -10790,7 +10790,7 @@ React.useEffect(() => {
                     </h4>
                     <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
                   </div>
-                  <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
+                  <div className="rounded-2xl border border-emerald-500/25 bg-[#4C8DFF]/10 p-5">
                     <ul className="space-y-2 text-sm text-emerald-100">
                       <li>• insights financeiros completos</li>
                       <li>• previsões de saldo</li>
@@ -10825,7 +10825,7 @@ React.useEffect(() => {
                       <button
                         onClick={() => void handleCompleteWorkspaceOnboarding('PRO')}
                         disabled={isSavingOnboarding}
-                        className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-60"
+                        className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5] disabled:opacity-60"
                       >
                         {isSavingOnboarding ? 'Preparando...' : 'Testar Pro gratuitamente por 3 dias'}
                       </button>
@@ -11102,7 +11102,7 @@ React.useEffect(() => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-[#0E141D]/88 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
+        <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
             <button
@@ -11430,7 +11430,7 @@ React.useEffect(() => {
                                             : notification.tone === 'warning'
                                               ? 'bg-amber-400'
                                               : notification.tone === 'success'
-                                                ? 'bg-emerald-500'
+                                                ? 'bg-[#4C8DFF]'
                                                 : 'bg-cyan-400'
                                         )}
                                       />
@@ -11490,7 +11490,7 @@ React.useEffect(() => {
                                             : notification.tone === 'warning'
                                               ? 'bg-amber-400/70'
                                               : notification.tone === 'success'
-                                                ? 'bg-emerald-500/70'
+                                                ? 'bg-[#4C8DFF]/70'
                                                 : 'bg-cyan-400/70'
                                         )}
                                       />
@@ -12027,7 +12027,7 @@ React.useEffect(() => {
                       <button
                         onClick={handleSaveSettings}
                         disabled={isAvatarProcessing}
-                        className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                        className="px-4 py-2 rounded-xl bg-[#4C8DFF] text-white text-sm font-bold hover:bg-[#3B7DF5] transition-all disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Salvar alterações
                       </button>
@@ -12054,12 +12054,12 @@ React.useEffect(() => {
             <div className="p-6 border-b border-slate-900 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="size-2 rounded-full bg-[#4C8DFF] animate-pulse" />
                   <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Assistente Cote</h3>
                   {isWhatsAppConnected && (
-                    <div className="flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                      <MessageSquare size={8} className="text-emerald-500" />
-                      <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">WhatsApp Ativo</span>
+                    <div className="flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded bg-[#4C8DFF]/10 border border-[#4C8DFF]/20">
+                      <MessageSquare size={8} className="text-[#86B7FF]" />
+                      <span className="text-[8px] font-black text-[#86B7FF] uppercase tracking-widest">WhatsApp Ativo</span>
                     </div>
                   )}
                 </div>
@@ -12080,7 +12080,7 @@ React.useEffect(() => {
                         key={suggestion}
                         onClick={() => void handleSendMessage(suggestion)}
                         disabled={isLoading}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 hover:text-white hover:border-emerald-500 transition-all disabled:opacity-50"
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 hover:text-white hover:border-[#4C8DFF] transition-all disabled:opacity-50"
                       >
                         {suggestion}
                       </button>
@@ -12095,14 +12095,14 @@ React.useEffect(() => {
                     className={cn(
                       'p-4 rounded-2xl max-w-[90%]',
                       msg.role === 'user'
-                        ? 'bg-emerald-500 text-white rounded-tr-none'
+                        ? 'bg-[#4C8DFF] text-white rounded-tr-none'
                         : 'bg-slate-900 border border-slate-800 text-slate-300 rounded-tl-none'
                     )}
                   >
                     {msg.role === 'model' && i > 0 && (
                       <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="text-emerald-500" size={14} />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Análise Cote</span>
+                        <TrendingUp className="text-[#86B7FF]" size={14} />
+                        <span className="text-[10px] font-black text-[#86B7FF] uppercase tracking-widest">Análise Cote</span>
                       </div>
                     )}
                     {msg.role === 'model' ? (
@@ -12137,12 +12137,12 @@ React.useEffect(() => {
                   }}
                   placeholder="Digite uma mensagem..."
                   disabled={isLoading}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-all disabled:opacity-50"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-[#4C8DFF] transition-all disabled:opacity-50"
                 />
                 <button
                   onClick={() => void handleSendMessage()}
                   disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 hover:text-emerald-400 transition-colors disabled:opacity-50"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86B7FF] hover:text-[#B9D3FF] transition-colors disabled:opacity-50"
                 >
                   <Send size={16} />
                 </button>
@@ -12156,7 +12156,7 @@ React.useEffect(() => {
                   {aiLimitReached && (
                     <button
                       onClick={() => openUpgradeLimitModal('ai')}
-                      className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors"
+                      className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF] hover:text-[#86B7FF] transition-colors"
                     >
                       Desbloquear IA
                     </button>
@@ -12176,7 +12176,7 @@ React.useEffect(() => {
         {!isAssistantOpen && (
           <button
             onClick={() => setIsAssistantOpen(true)}
-            className="fixed bottom-8 right-8 size-14 bg-emerald-500 text-white rounded-full shadow-2xl shadow-emerald-500/20 flex items-center justify-center hover:scale-110 transition-all z-50"
+            className="fixed bottom-8 right-8 size-14 bg-[#4C8DFF] text-white rounded-full shadow-2xl shadow-[#4C8DFF]/20 flex items-center justify-center hover:scale-110 transition-all z-50"
           >
             <MessageSquare size={24} />
           </button>
