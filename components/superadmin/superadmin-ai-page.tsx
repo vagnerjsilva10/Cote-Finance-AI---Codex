@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -119,23 +119,23 @@ export function SuperadminAiPage() {
             />
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Quotas por plano</p>
-                <h3 className="mt-2 text-lg font-semibold text-white">Referência operacional</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Quotas por plano</p>
+                <h3 className="mt-2 text-lg font-semibold text-[var(--text-primary)]">Referência operacional</h3>
               </div>
-              <Sparkles className="h-5 w-5 text-emerald-300" />
+              <Sparkles className="h-5 w-5 text-[var(--text-secondary)]" />
             </div>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {Object.entries(data?.quotaReference || {}).map(([planKey, limits]) => (
-                <div key={planKey} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{formatPlanLabel(planKey)}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">
+                <div key={planKey} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{formatPlanLabel(planKey)}</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">
                     {typeof limits.aiInteractionsPerMonth === 'number' ? formatAdminNumber(limits.aiInteractionsPerMonth) : 'Ilimitada'}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">interações de IA por mês</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">interações de IA por mês</p>
                 </div>
               ))}
             </div>
@@ -153,21 +153,21 @@ export function SuperadminAiPage() {
           <ErrorState message={error || 'Falha ao carregar tendência de IA.'} />
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="grid h-56 grid-cols-7 gap-3 rounded-2xl border border-white/10 bg-slate-950/55 p-4 sm:grid-cols-14">
+            <div className="grid h-56 grid-cols-7 gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 sm:grid-cols-14">
               {data.trend.map((item) => {
                 const height = Math.max(12, Math.round((item.total / trendMax) * 100));
                 return (
                   <div key={item.date} className="flex min-w-0 flex-col justify-end gap-3">
-                    <div className="flex flex-1 items-end justify-center rounded-2xl border border-white/5 bg-white/[0.03] px-1 pb-1 pt-4">
+                    <div className="flex flex-1 items-end justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)]/[0.03] px-1 pb-1 pt-4">
                       <div
-                        className="w-full rounded-xl bg-[linear-gradient(180deg,rgba(16,185,129,.95),rgba(6,182,212,.75))] shadow-[0_16px_40px_-24px_rgba(16,185,129,.9)]"
+                        className="w-full rounded-xl bg-[linear-gradient(180deg,var(--primary),var(--primary-hover))] shadow-[0_16px_40px_-24px_rgba(59,130,246,.38)]"
                         style={{ height: `${height}%` }}
                         title={`${item.total} interações em ${item.date}`}
                       />
                     </div>
                     <div className="text-center">
-                      <p className="text-[11px] font-semibold text-white">{formatAdminNumber(item.total)}</p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-slate-500">{item.date.slice(8, 10)}/{item.date.slice(5, 7)}</p>
+                      <p className="text-[11px] font-semibold text-[var(--text-primary)]">{formatAdminNumber(item.total)}</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">{item.date.slice(8, 10)}/{item.date.slice(5, 7)}</p>
                     </div>
                   </div>
                 );
@@ -189,24 +189,24 @@ export function SuperadminAiPage() {
       >
         <div className="grid gap-3 lg:grid-cols-[1.1fr_0.45fr]">
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Buscar</span>
             <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar por workspace, owner ou ID"
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
+                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]"
               />
             </div>
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Plano</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Plano</span>
             <select
               value={plan}
               onChange={(event) => setPlan(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400"
+              className="mt-2 w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]"
             >
               {PLAN_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -228,7 +228,7 @@ export function SuperadminAiPage() {
             <div className="space-y-4">
               <div className="hidden overflow-x-auto xl:block">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  <thead className="text-xs uppercase tracking-[0.2em] text-[var(--text-muted)]">
                     <tr>
                       <th className="pb-3 pr-4 font-semibold">Workspace</th>
                       <th className="pb-3 pr-4 font-semibold">Plano</th>
@@ -243,27 +243,27 @@ export function SuperadminAiPage() {
                     {data.workspaces.map((item) => (
                       <tr key={item.workspaceId}>
                         <td className="py-4 pr-4 align-top">
-                          <div className="font-semibold text-white">{item.workspaceName}</div>
-                          <div className="mt-1 text-xs text-slate-400">{item.ownerEmail || 'Sem owner'}</div>
-                          <div className="mt-1 text-[11px] text-slate-500">{item.workspaceId}</div>
+                          <div className="font-semibold text-[var(--text-primary)]">{item.workspaceName}</div>
+                          <div className="mt-1 text-xs text-[var(--text-secondary)]">{item.ownerEmail || 'Sem owner'}</div>
+                          <div className="mt-1 text-[11px] text-[var(--text-muted)]">{item.workspaceId}</div>
                         </td>
-                        <td className="py-4 pr-4 align-top text-slate-200">{formatPlanLabel(item.plan)}</td>
+                        <td className="py-4 pr-4 align-top text-[var(--text-primary)]">{formatPlanLabel(item.plan)}</td>
                         <td className="py-4 pr-4 align-top">
-                          <p className="font-semibold text-white">
+                          <p className="font-semibold text-[var(--text-primary)]">
                             {formatAdminNumber(item.effectiveUsage)}
                             {typeof item.limit === 'number' ? ` / ${formatAdminNumber(item.limit)}` : ' / ilimitado'}
                           </p>
-                          <p className="mt-1 text-xs text-slate-400">
+                          <p className="mt-1 text-xs text-[var(--text-secondary)]">
                             {item.usageRate !== null ? formatAdminPercent(item.usageRate) : 'Sem teto mensal'}
                           </p>
                         </td>
-                        <td className="py-4 pr-4 align-top text-slate-300">{formatAdminNumber(item.chatUsage)} chat • {formatAdminNumber(item.classifyUsage)} class.</td>
+                        <td className="py-4 pr-4 align-top text-[var(--text-secondary)]">{formatAdminNumber(item.chatUsage)} chat • {formatAdminNumber(item.classifyUsage)} class.</td>
                         <td className="py-4 pr-4 align-top">
-                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.aiSuggestionsEnabled ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border border-white/10 bg-white/5 text-slate-300'}`}>
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.aiSuggestionsEnabled ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]' : 'border border-[var(--border-default)] bg-[var(--bg-surface)]/5 text-[var(--text-secondary)]'}`}>
                             {item.aiSuggestionsEnabled ? 'Sugestões ativas' : 'Sugestões inativas'}
                           </span>
                         </td>
-                        <td className="py-4 pr-4 align-top text-slate-300">{formatAdminDateTime(item.lastAiEventAt)}</td>
+                        <td className="py-4 pr-4 align-top text-[var(--text-secondary)]">{formatAdminDateTime(item.lastAiEventAt)}</td>
                         <td className="py-4 pr-0 align-top">
                           <div className="flex flex-wrap gap-2">
                             <button
@@ -310,14 +310,14 @@ export function SuperadminAiPage() {
                                   setResettingWorkspaceId(null);
                                 }
                               }}
-                              className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:opacity-60"
+                              className="inline-flex rounded-full border border-[var(--border-default)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]/5 hover:text-[var(--text-primary)] disabled:opacity-60"
                             >
                               {resettingWorkspaceId === item.workspaceId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                               Resetar IA
                             </button>
                             <Link
                               href={`/superadmin/workspaces/${item.workspaceId}`}
-                              className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
+                              className="inline-flex rounded-full border border-[var(--border-default)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]/5 hover:text-[var(--text-primary)]"
                             >
                               Ver workspace
                             </Link>
@@ -331,13 +331,13 @@ export function SuperadminAiPage() {
 
               <div className="grid gap-4 xl:hidden">
                 {data.workspaces.map((item) => (
-                  <article key={item.workspaceId} className="rounded-2xl border border-white/10 bg-slate-950/55 p-5">
+                  <article key={item.workspaceId} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-semibold text-white">{item.workspaceName}</p>
-                        <p className="mt-1 text-xs text-slate-400">{item.ownerEmail || 'Sem owner'}</p>
+                        <p className="font-semibold text-[var(--text-primary)]">{item.workspaceName}</p>
+                        <p className="mt-1 text-xs text-[var(--text-secondary)]">{item.ownerEmail || 'Sem owner'}</p>
                       </div>
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">{formatPlanLabel(item.plan)}</span>
+                      <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)]/5 px-3 py-1 text-xs text-[var(--text-secondary)]">{formatPlanLabel(item.plan)}</span>
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -348,11 +348,11 @@ export function SuperadminAiPage() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${item.aiSuggestionsEnabled ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border border-white/10 bg-white/5 text-slate-300'}`}>
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${item.aiSuggestionsEnabled ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]' : 'border border-[var(--border-default)] bg-[var(--bg-surface)]/5 text-[var(--text-secondary)]'}`}>
                         {item.aiSuggestionsEnabled ? 'Sugestões ativas' : 'Sugestões inativas'}
                       </span>
                       {item.nearLimit ? (
-                        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                        <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                           Próximo do limite
                         </span>
                       ) : null}
@@ -401,14 +401,14 @@ export function SuperadminAiPage() {
                               setResettingWorkspaceId(null);
                             }
                           }}
-                          className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:opacity-60"
+                          className="inline-flex rounded-full border border-[var(--border-default)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]/5 hover:text-[var(--text-primary)] disabled:opacity-60"
                         >
                           {resettingWorkspaceId === item.workspaceId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                           Resetar IA
                         </button>
                         <Link
                           href={`/superadmin/workspaces/${item.workspaceId}`}
-                          className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
+                          className="inline-flex rounded-full border border-[var(--border-default)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]/5 hover:text-[var(--text-primary)]"
                         >
                           Ver workspace
                         </Link>
@@ -435,19 +435,19 @@ export function SuperadminAiPage() {
         ) : (
           <div className="space-y-3">
             {data.recentEvents.map((event) => (
-              <article key={event.id} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+              <article key={event.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200">
+                      <span className="rounded-full border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                         {event.typeLabel}
                       </span>
-                      <span className="text-xs text-slate-500">{formatAdminDateTime(event.createdAt)}</span>
+                      <span className="text-xs text-[var(--text-muted)]">{formatAdminDateTime(event.createdAt)}</span>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-white">{event.workspaceName}</p>
-                    <p className="mt-1 text-sm text-slate-400">{event.userEmail || 'Usuário não identificado'} • {humanizeEventType(event.type)}</p>
+                    <p className="mt-3 text-sm font-semibold text-[var(--text-primary)]">{event.workspaceName}</p>
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">{event.userEmail || 'Usuário não identificado'} • {humanizeEventType(event.type)}</p>
                   </div>
-                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">
+                  <div className="flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)]/5 px-3 py-1.5 text-xs text-[var(--text-secondary)]">
                     <Bot className="h-3.5 w-3.5" />
                     {event.id.slice(0, 8)}
                   </div>
@@ -474,35 +474,35 @@ function StatusTile({
 }) {
   const toneClassName =
     tone === 'success'
-      ? 'border-emerald-500/20 bg-emerald-500/10'
+      ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)]'
       : tone === 'danger'
-        ? 'border-rose-500/20 bg-rose-500/10'
-        : 'border-white/10 bg-slate-950/55';
+        ? 'border-[var(--border-default)] bg-[color:var(--danger-soft)]'
+        : 'border-[var(--border-default)] bg-[var(--bg-app)]';
 
   return (
     <div className={`rounded-[1.5rem] border p-4 ${toneClassName}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
-      <p className="mt-2 text-xs leading-6 text-slate-400">{description}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{value}</p>
+      <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)]">{description}</p>
     </div>
   );
 }
 
 function BreakdownTile({ label, value, description }: { label: string; value: string; description: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
-      <p className="mt-2 text-xs leading-6 text-slate-400">{description}</p>
+    <div className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{value}</p>
+      <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)]">{description}</p>
     </div>
   );
 }
 
 function InfoPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">{value}</p>
     </div>
   );
 }
@@ -510,8 +510,8 @@ function InfoPill({ label, value }: { label: string; value: string }) {
 function LoadingState({ message }: { message: string }) {
   return (
     <div className="flex min-h-[220px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         {message}
       </div>
     </div>
@@ -519,14 +519,14 @@ function LoadingState({ message }: { message: string }) {
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>;
 }
 
 function SuccessState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-5 text-sm text-[var(--text-secondary)]">{message}</div>;
 }
 
 function EmptyState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{message}</div>;
+  return <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">{message}</div>;
 }
 

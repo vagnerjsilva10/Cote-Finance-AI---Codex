@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { FileText, Loader2, Megaphone, ShieldCheck } from 'lucide-react';
@@ -13,9 +13,9 @@ import {
 import type { SuperadminContentResponse } from '@/lib/superadmin/types';
 
 const inputClassName =
-  'w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400';
+  'w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]';
 const textareaClassName =
-  'w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm leading-6 text-white outline-none transition focus:border-emerald-400';
+  'w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]';
 
 export function SuperadminContentPage() {
   const [data, setData] = React.useState<SuperadminContentResponse | null>(null);
@@ -85,7 +85,7 @@ export function SuperadminContentPage() {
               type="button"
               onClick={handleSave}
               disabled={!draft || isLoading || isSaving}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Salvar configurações
@@ -113,7 +113,7 @@ export function SuperadminContentPage() {
             <LoadingState message="Carregando configurações de conteúdo..." />
           ) : (
             <div className="space-y-4">
-              <EditorGroup title="Marca" icon={<ShieldCheck className="h-4 w-4 text-emerald-300" />}>
+              <EditorGroup title="Marca" icon={<ShieldCheck className="h-4 w-4 text-[var(--text-secondary)]" />}>
                 <Field label="Nome do produto">
                   <input value={draft.brand.productName} onChange={(event) => setDraft({ ...draft, brand: { ...draft.brand, productName: event.target.value } })} className={inputClassName} />
                 </Field>
@@ -133,7 +133,7 @@ export function SuperadminContentPage() {
                 </div>
               </EditorGroup>
 
-              <EditorGroup title="Aquisição" icon={<Megaphone className="h-4 w-4 text-cyan-300" />}>
+              <EditorGroup title="Aquisição" icon={<Megaphone className="h-4 w-4 text-[var(--text-secondary)]" />}>
                 <Field label="CTA primário padrão">
                   <input value={draft.acquisition.defaultPrimaryCta} onChange={(event) => setDraft({ ...draft, acquisition: { ...draft.acquisition, defaultPrimaryCta: event.target.value } })} className={inputClassName} />
                 </Field>
@@ -160,7 +160,7 @@ export function SuperadminContentPage() {
               <LoadingState message="Carregando descrições comerciais..." />
             ) : (
               <div className="space-y-4">
-                <EditorGroup title="Planos" icon={<FileText className="h-4 w-4 text-violet-300" />}>
+                <EditorGroup title="Planos" icon={<FileText className="h-4 w-4 text-[var(--text-secondary)]" />}>
                   <Field label="Descrição do Free">
                     <textarea value={draft.pricing.freeDescription} onChange={(event) => setDraft({ ...draft, pricing: { ...draft.pricing, freeDescription: event.target.value } })} className={textareaClassName} rows={3} />
                   </Field>
@@ -172,7 +172,7 @@ export function SuperadminContentPage() {
                   </Field>
                 </EditorGroup>
 
-                <EditorGroup title="Direção editorial" icon={<Megaphone className="h-4 w-4 text-amber-300" />}>
+                <EditorGroup title="Direção editorial" icon={<Megaphone className="h-4 w-4 text-[var(--text-secondary)]" />}>
                   <Field label="Tom de voz">
                     <textarea value={draft.editorial.voiceAndTone} onChange={(event) => setDraft({ ...draft, editorial: { ...draft.editorial, voiceAndTone: event.target.value } })} className={textareaClassName} rows={3} />
                   </Field>
@@ -196,19 +196,19 @@ export function SuperadminContentPage() {
             ) : (
               <div className="space-y-3">
                 {data.surfaces.map((surface) => (
-                  <article key={surface.key} className="rounded-2xl border border-white/10 bg-slate-950/55 p-3.5">
+                  <article key={surface.key} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3.5">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-sm font-semibold text-white">{surface.label}</p>
-                        <p className="mt-1 text-xs text-slate-400">{surface.objective}</p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">{surface.label}</p>
+                        <p className="mt-1 text-xs text-[var(--text-secondary)]">{surface.objective}</p>
                       </div>
-                      <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+                      <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                         {surface.status}
                       </span>
                     </div>
-                    <div className="mt-4 grid gap-2 text-xs text-slate-400">
-                      <p><span className="text-slate-500">Rota:</span> {surface.route}</p>
-                      <p><span className="text-slate-500">Arquivo:</span> {surface.file}</p>
+                    <div className="mt-4 grid gap-2 text-xs text-[var(--text-secondary)]">
+                      <p><span className="text-[var(--text-muted)]">Rota:</span> {surface.route}</p>
+                      <p><span className="text-[var(--text-muted)]">Arquivo:</span> {surface.file}</p>
                       <p>{surface.notes}</p>
                     </div>
                   </article>
@@ -232,10 +232,10 @@ function EditorGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
       <div className="flex items-center gap-3">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-2">{icon}</div>
-        <h3 className="text-sm font-semibold text-white">{title}</h3>
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/5 p-2">{icon}</div>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
       </div>
       <div className="mt-4 space-y-4">{children}</div>
     </div>
@@ -245,7 +245,7 @@ function EditorGroup({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</span>
       <div className="mt-2">{children}</div>
     </label>
   );
@@ -254,8 +254,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function LoadingState({ message }: { message: string }) {
   return (
     <div className="flex min-h-[180px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         {message}
       </div>
     </div>
@@ -263,11 +263,11 @@ function LoadingState({ message }: { message: string }) {
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>;
 }
 
 function SuccessState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-5 text-sm text-[var(--text-secondary)]">{message}</div>;
 }
 
 

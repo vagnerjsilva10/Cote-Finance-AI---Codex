@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -69,19 +69,19 @@ export function SuperadminWorkspaceDetailPage() {
       {message ? <FeedbackState message={message} success /> : null}
       {error ? <ErrorState message={error} /> : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">Workspace</span>
+              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">Workspace</span>
               <PlanBadge label={formatPlanLabel(workspace.effectiveAppPlan)} />
               <StatusBadge status={workspace.subscriptionStatus} />
               <ChannelBadge label={workspace.whatsappStatus || 'DISCONNECTED'} />
               <LifecycleBadge status={workspace.lifecycleStatus} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">{workspace.name}</h1>
-              <p className="mt-1 text-sm text-slate-300">{workspace.owner?.name || workspace.owner?.email || 'Sem owner definido'}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] md:text-3xl">{workspace.name}</h1>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">{workspace.owner?.name || workspace.owner?.email || 'Sem owner definido'}</p>
             </div>
           </div>
           <Link href="/superadmin/workspaces" className={secondaryActionClassName}>Voltar para workspaces</Link>
@@ -119,7 +119,7 @@ export function SuperadminWorkspaceDetailPage() {
           </CompactSection>
 
           <CompactSection title="Time do workspace" subtitle="Membros, ownership e governanca interna.">
-            <div className="mb-3 rounded-xl border border-slate-800 bg-slate-950/55 p-4">
+            <div className="mb-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
               <div className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
                 <input value={newMemberEmail} onChange={(event) => setNewMemberEmail(event.target.value)} placeholder="usuario@empresa.com" className={fieldClassName} />
                 <SelectField label="Papel inicial" value={newMemberRole} onChange={(value) => setNewMemberRole(value as 'MEMBER' | 'ADMIN')} options={[{ value: 'MEMBER', label: 'Member' }, { value: 'ADMIN', label: 'Admin' }]} />
@@ -153,14 +153,14 @@ export function SuperadminWorkspaceDetailPage() {
 
             <div className="space-y-2.5">
               {workspace.members.map((member) => (
-                <div key={member.id} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <div key={member.id} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-white">{member.name || member.email}</p>
-                      <p className="truncate text-xs text-slate-400">{member.email}</p>
+                      <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{member.name || member.email}</p>
+                      <p className="truncate text-xs text-[var(--text-secondary)]">{member.email}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">{member.role}</span>
+                      <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-secondary)]">{member.role}</span>
                       <ActionChip
                         disabled={isSaving || member.role === 'MEMBER'}
                         onClick={async () => {
@@ -286,12 +286,12 @@ export function SuperadminWorkspaceDetailPage() {
           <CompactSection title="Eventos recentes" subtitle="Ultima atividade operacional do ambiente.">
             <div className="space-y-2.5">
               {workspace.recentEvents.length === 0 ? <EmptyState text="Nenhum evento recente encontrado para este workspace." /> : workspace.recentEvents.map((event) => (
-                <div key={event.id} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <div key={event.id} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-white">{humanizeEventType(event.type)}</p>
-                    <span className="text-xs text-slate-500">{formatAdminDateTime(event.createdAt)}</span>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{humanizeEventType(event.type)}</p>
+                    <span className="text-xs text-[var(--text-muted)]">{formatAdminDateTime(event.createdAt)}</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">{event.userEmail || 'Sistema'}</p>
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">{event.userEmail || 'Sistema'}</p>
                 </div>
               ))}
             </div>
@@ -345,11 +345,11 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
         <button type="button" disabled={isSaving} onClick={() => void onSubmit({ name, whatsappStatus, whatsappPhoneNumber: whatsappPhoneNumber || null, onboardingCompleted, aiSuggestionsEnabled, objective: objective || null, financialProfile: financialProfile || null, lifecycleStatus, lifecycleReason: lifecycleReason || null, ownerUserId: ownerUserId || null })} className={primaryActionClassName}>{isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Salvar ajustes</button>
       </div>
 
-      <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/55 p-4">
+      <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 className="text-sm font-bold text-white">Resets administrativos do mes</h3>
-            <p className="mt-1 text-sm text-slate-400">Zere o consumo efetivo de transações ou IA sem mexer manualmente no banco.</p>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">Resets administrativos do mes</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Zere o consumo efetivo de transações ou IA sem mexer manualmente no banco.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -377,23 +377,23 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
   );
 }
 
-function CompactSection({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) { return <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4"><div className="mb-3"><h2 className="text-base font-bold text-white">{title}</h2><p className="mt-1 text-sm text-slate-400">{subtitle}</p></div>{children}</section>; }
-function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; }) { return <label className="block"><span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className={fieldClassName}>{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>; }
-function ToggleCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void; }) { return <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-sm text-white"><span>{label}</span><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400" /></label>; }
-function InfoPill({ label, value }: { label: string; value: string }) { return <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3"><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p><p className="mt-1.5 text-sm font-semibold text-white">{value}</p></div>; }
-function StatCard({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3.5"><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p><p className="mt-2 text-xl font-bold tracking-tight text-white">{value}</p></div>; }
+function CompactSection({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) { return <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4"><div className="mb-3"><h2 className="text-base font-bold text-[var(--text-primary)]">{title}</h2><p className="mt-1 text-sm text-[var(--text-secondary)]">{subtitle}</p></div>{children}</section>; }
+function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; }) { return <label className="block"><span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className={fieldClassName}>{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>; }
+function ToggleCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void; }) { return <label className="flex items-center justify-between rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2.5 text-sm text-[var(--text-primary)]"><span>{label}</span><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 rounded border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-secondary)]" /></label>; }
+function InfoPill({ label, value }: { label: string; value: string }) { return <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3"><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p><p className="mt-1.5 text-sm font-semibold text-[var(--text-primary)]">{value}</p></div>; }
+function StatCard({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3.5"><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p><p className="mt-2 text-xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p></div>; }
 function ActionChip({ children, onClick, disabled, primary = false }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; primary?: boolean; }) { return <button type="button" disabled={disabled} onClick={onClick} className={primary ? primaryActionClassName : secondaryActionClassName}>{children}</button>; }
-function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>; }
+function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">{label}</span>; }
 function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
 function ChannelBadge({ label }: { label: string }) { const normalized = label === 'CONNECTED' ? 'Canal conectado' : label === 'CONNECTING' ? 'Conectando' : 'Sem canal'; return <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-200">{normalized}</span>; }
-function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' }) { return <span className={status === 'SUSPENDED' ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200' : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200'}>{status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
-function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" />{label}</div></div>; }
-function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>; }
-function FeedbackState({ message, success }: { message: string; success: boolean }) { return <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100' : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'}`}>{message}</div>; }
-function EmptyState({ text }: { text: string }) { return <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-5 text-sm text-slate-400">{text}</div>; }
-const fieldClassName = 'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500';
-const secondaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white disabled:opacity-60';
-const primaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' }) { return <span className={status === 'SUSPENDED' ? 'rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]' : 'rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]'}>{status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
+function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]"><Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />{label}</div></div>; }
+function ErrorState({ message }: { message: string }) { return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>; }
+function FeedbackState({ message, success }: { message: string; success: boolean }) { return <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]' : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'}`}>{message}</div>; }
+function EmptyState({ text }: { text: string }) { return <div className="rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-5 text-sm text-[var(--text-secondary)]">{text}</div>; }
+const fieldClassName = 'mt-2 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]';
+const secondaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-sm font-bold text-[var(--text-primary)] transition-all hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:opacity-60';
+const primaryActionClassName = 'inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--primary-hover)] disabled:opacity-60';
 
 
 

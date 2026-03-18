@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import {
@@ -284,14 +284,14 @@ export function HelpCenterExperience() {
 
   return (
     <BlogShell activeItem="help">
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8 lg:p-10">
+      <section className="rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8 lg:p-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_320px] lg:items-end">
           <div className="max-w-4xl space-y-5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
               <ShieldCheck size={14} /> Central de ajuda
             </span>
             <div className="space-y-4">
-              <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">Como podemos ajudar?</h1>
+              <h1 className="text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl">Como podemos ajudar?</h1>
               <p className="max-w-3xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
                 Encontre respostas rápidas sobre como usar o Cote Finance AI, organizar suas finanças e resolver dúvidas
                 sobre sua conta.
@@ -299,13 +299,13 @@ export function HelpCenterExperience() {
             </div>
 
             <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" size={18} />
               <input
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar ajuda..."
-                className="w-full rounded-2xl border border-[rgba(15,23,42,0.10)] bg-[#f7f8f3] py-4 pl-12 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(76,141,255,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)] focus:bg-white"
+                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] py-4 pl-12 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)] focus:bg-[var(--bg-surface)]"
               />
             </div>
 
@@ -315,7 +315,7 @@ export function HelpCenterExperience() {
             </p>
           </div>
 
-          <div className="rounded-[1.75rem] border border-slate-200 bg-[#f7f8f3] p-5">
+          <div className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] public-light-subtle">Atalhos rápidos</p>
             <div className="mt-4 space-y-3">
               {categories.slice(0, 4).map((category) => {
@@ -325,9 +325,9 @@ export function HelpCenterExperience() {
                     key={category.id}
                     type="button"
                     onClick={() => scrollToAnchor(category.id)}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] transition hover:border-emerald-300 hover:text-slate-950"
+                    className="flex w-full items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] transition hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
                   >
-                    <span className="inline-flex rounded-xl border border-emerald-200 bg-emerald-50 p-2 text-emerald-700">
+                    <span className="inline-flex rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-2 text-[var(--text-secondary)]">
                       <Icon size={16} />
                     </span>
                     <span>{category.title}</span>
@@ -339,9 +339,9 @@ export function HelpCenterExperience() {
         </div>
 
         {trimmedQuery ? (
-          <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-4 shadow-sm">
+          <div className="mt-6 rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-950">Resultados da busca</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Resultados da busca</p>
               <p className="text-xs uppercase tracking-[0.18em] public-light-subtle">
                 {results.length} resultado{results.length === 1 ? '' : 's'}
               </p>
@@ -354,19 +354,19 @@ export function HelpCenterExperience() {
                     key={result.id}
                     type="button"
                     onClick={() => scrollToAnchor(result.anchor)}
-                    className="flex w-full items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-300"
+                    className="flex w-full items-start justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-4 text-left transition hover:border-[var(--border-default)]"
                   >
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{result.kind}</p>
-                      <p className="text-sm font-semibold text-slate-950">{result.title}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">{result.kind}</p>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">{result.title}</p>
                       <p className="text-sm leading-6 text-[var(--text-secondary)]">{result.body}</p>
                     </div>
-                    <ArrowRight className="mt-1 shrink-0 text-slate-400" size={16} />
+                    <ArrowRight className="mt-1 shrink-0 text-[var(--text-secondary)]" size={16} />
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-sm leading-7 text-[var(--text-secondary)]">
+              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-5 text-sm leading-7 text-[var(--text-secondary)]">
                 Nenhum resultado encontrado para essa busca. Tente palavras como &quot;login&quot;, &quot;gastos&quot;,
                 &quot;metas&quot; ou &quot;assinatura&quot;.
               </div>
@@ -377,7 +377,7 @@ export function HelpCenterExperience() {
 
       <section className="mt-10">
         <div className="mb-6">
-          <h2 className="text-3xl font-black tracking-tight text-slate-950">Categorias principais</h2>
+          <h2 className="text-3xl font-black tracking-tight text-[var(--text-primary)]">Categorias principais</h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--text-secondary)]">
             Escolha o assunto certo e vá direto ao que você precisa resolver.
           </p>
@@ -387,11 +387,11 @@ export function HelpCenterExperience() {
           {categories.map((category) => {
             const Icon = category.icon;
             return (
-              <article key={category.id} className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+              <article key={category.id} className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 shadow-sm">
+                <div className="inline-flex rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3 text-[var(--text-secondary)]">
                   <Icon size={20} />
                 </div>
-                <h3 className="mt-4 text-lg font-black tracking-tight text-slate-950">{category.title}</h3>
+                <h3 className="mt-4 text-lg font-black tracking-tight text-[var(--text-primary)]">{category.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{category.description}</p>
               </article>
             );
@@ -400,27 +400,27 @@ export function HelpCenterExperience() {
       </section>
 
       <section className="mt-14 grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-24 lg:h-fit">
+        <aside className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm lg:sticky lg:top-24 lg:h-fit">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] public-light-subtle">Navegação</p>
           <nav className="mt-4 flex flex-col gap-3 text-sm">
             {categories.map((category) => (
               <a
                 key={category.id}
                 href={`#${category.id}`}
-                className="rounded-xl border border-slate-200 px-4 py-3 font-medium text-[var(--text-primary)] transition-colors hover:border-[rgba(15,23,42,0.10)] hover:text-slate-950"
+                className="rounded-xl border border-[var(--border-default)] px-4 py-3 font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
               >
                 {category.title}
               </a>
             ))}
             <a
               href="#guias-populares"
-              className="rounded-xl border border-slate-200 px-4 py-3 font-medium text-[var(--text-primary)] transition-colors hover:border-[rgba(15,23,42,0.10)] hover:text-slate-950"
+              className="rounded-xl border border-[var(--border-default)] px-4 py-3 font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
             >
               Guias mais acessados
             </a>
             <a
               href="#faq"
-              className="rounded-xl border border-slate-200 px-4 py-3 font-medium text-[var(--text-primary)] transition-colors hover:border-[rgba(15,23,42,0.10)] hover:text-slate-950"
+              className="rounded-xl border border-[var(--border-default)] px-4 py-3 font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
             >
               Perguntas frequentes
             </a>
@@ -434,13 +434,13 @@ export function HelpCenterExperience() {
             const relatedFaqs = faqs.filter((faq) => faqCategoryMap[category.id]?.includes(faq.id));
 
             return (
-              <section key={category.id} id={category.id} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <section key={category.id} id={category.id} className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm sm:p-8">
                 <div className="flex items-start gap-4">
-                  <div className="inline-flex rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                  <div className="inline-flex rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3 text-[var(--text-secondary)]">
                     <Icon size={22} />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl font-black tracking-tight text-slate-950">{category.title}</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">{category.title}</h2>
                     <p className="mt-3 text-base leading-8 text-[var(--text-primary)]">{category.description}</p>
                   </div>
                 </div>
@@ -448,11 +448,11 @@ export function HelpCenterExperience() {
                 {categoryGuides.length ? (
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
                     {categoryGuides.map((guide) => (
-                      <article key={guide.id} id={guide.id} className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+                      <article key={guide.id} id={guide.id} className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                           <BookOpenText size={14} /> Guia
                         </div>
-                        <h3 className="mt-4 text-lg font-black tracking-tight text-slate-950">{guide.title}</h3>
+                        <h3 className="mt-4 text-lg font-black tracking-tight text-[var(--text-primary)]">{guide.title}</h3>
                         <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{guide.description}</p>
                       </article>
                     ))}
@@ -462,8 +462,8 @@ export function HelpCenterExperience() {
                 {relatedFaqs.length ? (
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
                     {relatedFaqs.map((faq) => (
-                      <article key={faq.id} className="rounded-[1.5rem] border border-slate-200 bg-[#f7f8f3] p-5">
-                        <p className="text-sm font-semibold text-slate-950">{faq.question}</p>
+                      <article key={faq.id} className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">{faq.question}</p>
                         <div className="mt-3 space-y-2 text-sm leading-7 text-[var(--text-secondary)]">
                           {faq.answer.map((paragraph) => (
                             <p key={paragraph}>{paragraph}</p>
@@ -477,32 +477,32 @@ export function HelpCenterExperience() {
             );
           })}
 
-          <section id="guias-populares" className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <section id="guias-populares" className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm sm:p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-black tracking-tight text-slate-950">Guias mais acessados</h2>
+              <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">Guias mais acessados</h2>
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
               {popularGuides.map((guide) => (
-                <article key={guide.id} className="rounded-[1.6rem] border border-slate-200 bg-[#f7f8f3] p-6">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+                <article key={guide.id} className="rounded-[1.6rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                     <BookOpenText size={14} /> Guia
                   </div>
-                  <h3 className="mt-4 text-xl font-black tracking-tight text-slate-950">{guide.title}</h3>
+                  <h3 className="mt-4 text-xl font-black tracking-tight text-[var(--text-primary)]">{guide.title}</h3>
                   <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{guide.description}</p>
                 </article>
               ))}
             </div>
           </section>
 
-          <section id="faq" className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <section id="faq" className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm sm:p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-black tracking-tight text-slate-950">Perguntas frequentes</h2>
+              <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">Perguntas frequentes</h2>
             </div>
 
             <div className="space-y-4">
               {faqs.map((faq) => (
-                <details key={faq.id} className="group rounded-[1.4rem] border border-slate-200 bg-[#f7f8f3] px-5 py-4">
-                  <summary className="cursor-pointer list-none text-base font-semibold text-slate-950 marker:hidden">
+                <details key={faq.id} className="group rounded-[1.4rem] border border-[var(--border-default)] bg-[var(--bg-surface)] px-5 py-4">
+                  <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)] marker:hidden">
                     {faq.question}
                   </summary>
                   <div className="mt-3 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
@@ -517,27 +517,27 @@ export function HelpCenterExperience() {
         </div>
       </section>
 
-      <section className="mt-14 rounded-[2rem] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff_0%,#f0fdf4_100%)] p-6 shadow-[0_24px_80px_-50px_rgba(16,185,129,0.30)] sm:p-8">
+      <section className="mt-14 rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,var(--bg-surface)_0%,var(--bg-surface-elevated)_100%)] p-6 shadow-[0_24px_80px_-50px_rgba(59,130,246,0.24)] sm:p-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
           <div className="space-y-3">
-            <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
               <BadgeHelp size={14} /> Suporte
             </p>
-            <h2 className="text-3xl font-black tracking-tight text-slate-950">Ainda precisa de ajuda?</h2>
+            <h2 className="text-3xl font-black tracking-tight text-[var(--text-primary)]">Ainda precisa de ajuda?</h2>
             <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)]">
               Se você não encontrou o que procurava, envie um ticket para nossa equipe. Vamos receber sua solicitação no
               e-mail de suporte com o contexto já organizado.
             </p>
-            <div className="rounded-[1.5rem] border border-emerald-200 bg-white/90 p-5">
-              <p className="text-sm font-semibold text-slate-950">Atendimento por e-mail</p>
+            <div className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Atendimento por e-mail</p>
               <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                 Preencha o formulário ao lado e envie sua dúvida. Nossa equipe vai responder pelo e-mail{' '}
-                <span className="font-semibold text-slate-950">suporte@cotejuros.com.br</span>.
+                <span className="font-semibold text-[var(--text-primary)]">suporte@cotejuros.com.br</span>.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleTicketSubmit} className="rounded-[1.75rem] border border-white/70 bg-white/95 p-6 shadow-sm">
+          <form onSubmit={handleTicketSubmit} className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2 text-sm font-medium text-[var(--text-primary)]">
                 <span>Nome</span>
@@ -546,7 +546,7 @@ export function HelpCenterExperience() {
                   value={ticketName}
                   onChange={(event) => setTicketName(event.target.value)}
                   placeholder="Seu nome"
-                  className="w-full rounded-xl border border-[rgba(15,23,42,0.10)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(76,141,255,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 />
               </label>
               <label className="space-y-2 text-sm font-medium text-[var(--text-primary)]">
@@ -556,7 +556,7 @@ export function HelpCenterExperience() {
                   value={ticketEmail}
                   onChange={(event) => setTicketEmail(event.target.value)}
                   placeholder="voce@exemplo.com"
-                  className="w-full rounded-xl border border-[rgba(15,23,42,0.10)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(76,141,255,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 />
               </label>
             </div>
@@ -567,7 +567,7 @@ export function HelpCenterExperience() {
                 <select
                   value={ticketCategory}
                   onChange={(event) => setTicketCategory(event.target.value)}
-                  className="w-full rounded-xl border border-[rgba(15,23,42,0.10)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(76,141,255,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 >
                   {categories.map((category) => (
                     <option key={category.id} value={category.title}>
@@ -584,7 +584,7 @@ export function HelpCenterExperience() {
                   value={ticketSubject}
                   onChange={(event) => setTicketSubject(event.target.value)}
                   placeholder="Resumo rápido da sua dúvida"
-                  className="w-full rounded-xl border border-[rgba(15,23,42,0.10)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(76,141,255,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 />
               </label>
             </div>
@@ -596,7 +596,7 @@ export function HelpCenterExperience() {
                 onChange={(event) => setTicketMessage(event.target.value)}
                 rows={6}
                 placeholder="Explique o que aconteceu, o que você tentou fazer e qual ajuda você precisa."
-                className="w-full resize-none rounded-xl border border-[rgba(15,23,42,0.10)] bg-white px-4 py-3 text-sm leading-7 text-[var(--text-primary)] outline-none transition focus:border-[rgba(76,141,255,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                className="w-full resize-none rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm leading-7 text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
               />
             </label>
 

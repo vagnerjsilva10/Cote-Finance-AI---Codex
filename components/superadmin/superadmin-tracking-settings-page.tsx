@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { fetchSuperadminJson } from '@/components/superadmin/fetch-superadmin-json';
@@ -82,8 +82,8 @@ export function SuperadminTrackingSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-white">Tracking e Marketing</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+        <h1 className="text-3xl font-semibold text-[var(--text-primary)]">Tracking e Marketing</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-secondary)]">
           Configure Pixel da Meta, toggles do funil e prepare a estrutura para UTMIFY, Stripe e futuras integrações server-side.
         </p>
       </div>
@@ -94,30 +94,30 @@ export function SuperadminTrackingSettingsPage() {
           { label: 'Captura de UTM', value: status?.utmCaptureActive ? 'Ativa' : 'Desligada' },
           { label: 'Purchase tracking', value: status?.purchaseTrackingActive ? 'Ativo' : 'Desligado' },
         ].map((item) => (
-          <div key={item.label} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{item.label}</p>
-            <p className="mt-3 text-lg font-semibold text-white">{item.value}</p>
+          <div key={item.label} className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">{item.label}</p>
+            <p className="mt-3 text-lg font-semibold text-[var(--text-primary)]">{item.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
         {isLoading ? (
-          <p className="text-sm text-slate-300">Carregando configurações...</p>
+          <p className="text-sm text-[var(--text-secondary)]">Carregando configurações...</p>
         ) : (
           <div className="space-y-6">
             <div className="grid gap-5 md:grid-cols-2">
               <Field label="Meta Pixel ID">
-                <input value={settings.pixelId} onChange={(event) => updateField('pixelId', event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500" placeholder="123456789012345" />
+                <input value={settings.pixelId} onChange={(event) => updateField('pixelId', event.target.value)} className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--primary)]" placeholder="123456789012345" />
               </Field>
               <Field label="Meta Test Event Code">
-                <input value={settings.testEventCode} onChange={(event) => updateField('testEventCode', event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500" placeholder="TEST12345" />
+                <input value={settings.testEventCode} onChange={(event) => updateField('testEventCode', event.target.value)} className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--primary)]" placeholder="TEST12345" />
               </Field>
             </div>
 
             <Field label="Meta Conversions API Access Token">
-              <input value={settings.conversionsApiAccessToken} onChange={(event) => updateField('conversionsApiAccessToken', event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500" placeholder="EAAG..." />
-              <p className="mt-2 text-xs text-slate-500">Esse token fica apenas no backend. Não é exposto no frontend.</p>
+              <input value={settings.conversionsApiAccessToken} onChange={(event) => updateField('conversionsApiAccessToken', event.target.value)} className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--primary)]" placeholder="EAAG..." />
+              <p className="mt-2 text-xs text-[var(--text-muted)]">Esse token fica apenas no backend. Não é exposto no frontend.</p>
             </Field>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -129,15 +129,15 @@ export function SuperadminTrackingSettingsPage() {
               <ToggleCard label="Habilitar captura de UTM" checked={settings.utmCaptureEnabled} onChange={(value) => updateField('utmCaptureEnabled', value)} />
             </div>
 
-            {notice ? <p className="text-sm text-emerald-300">{notice}</p> : null}
-            {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+            {notice ? <p className="text-sm text-[var(--text-secondary)]">{notice}</p> : null}
+            {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
 
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={() => void handleSave()}
                 disabled={isSaving}
-                className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:opacity-60"
+                className="rounded-2xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--primary-hover)] disabled:opacity-60"
               >
                 {isSaving ? 'Salvando...' : 'Salvar configurações'}
               </button>
@@ -152,7 +152,7 @@ export function SuperadminTrackingSettingsPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{label}</span>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">{label}</span>
       {children}
     </label>
   );
@@ -172,11 +172,11 @@ function ToggleCard({
       type="button"
       onClick={() => onChange(!checked)}
       className={`rounded-3xl border p-4 text-left transition ${
-        checked ? 'border-emerald-500/40 bg-emerald-500/10 text-white' : 'border-slate-800 bg-slate-950/70 text-slate-300'
+        checked ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)]' : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-secondary)]'
       }`}
     >
       <p className="text-sm font-semibold">{label}</p>
-      <p className="mt-3 text-xs uppercase tracking-[0.22em] text-slate-500">{checked ? 'Ligado' : 'Desligado'}</p>
+      <p className="mt-3 text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">{checked ? 'Ligado' : 'Desligado'}</p>
     </button>
   );
 }

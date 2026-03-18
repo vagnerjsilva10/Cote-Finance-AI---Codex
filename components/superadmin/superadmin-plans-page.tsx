@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { Loader2, Save, Settings2, Sparkles } from 'lucide-react';
@@ -110,12 +110,12 @@ export function SuperadminPlansPage() {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Planos</p>
-            <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">Catalogo de planos</h1>
-            <p className="max-w-3xl text-sm leading-6 text-slate-300">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Planos</p>
+            <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)] md:text-3xl">Catalogo de planos</h1>
+            <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
               Ajuste preco, trial, visibilidade, limites e beneficios sem sair do backoffice.
             </p>
           </div>
@@ -161,27 +161,27 @@ export function SuperadminPlansPage() {
             .slice()
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map((plan) => (
-              <section key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+              <section key={plan.code} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-black text-white">{plan.name}</h2>
+                      <h2 className="text-lg font-black text-[var(--text-primary)]">{plan.name}</h2>
                       {plan.default ? (
-                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-200">
+                        <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text-secondary)]">
                           Padrão
                         </span>
                       ) : null}
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">{plan.description}</p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{plan.description}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-slate-300">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-[var(--text-secondary)]">
                     {plan.code === 'FREE' ? <Settings2 className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Nome</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Nome</span>
                     <input
                       value={plan.name}
                       onChange={(event) => updatePlan(plan.code, (current) => ({ ...current, name: event.target.value }))}
@@ -189,7 +189,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ordem</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Ordem</span>
                     <input
                       type="number"
                       value={plan.sortOrder}
@@ -203,7 +203,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preco mensal</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Preco mensal</span>
                     <input
                       type="number"
                       value={plan.monthlyPrice}
@@ -217,7 +217,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Preco anual</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Preco anual</span>
                     <input
                       type="number"
                       value={plan.annualPrice}
@@ -231,7 +231,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Trial</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Trial</span>
                     <input
                       type="number"
                       value={plan.trialDays}
@@ -272,7 +272,7 @@ export function SuperadminPlansPage() {
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Transações/mes</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Transações/mes</span>
                     <input
                       value={plan.limits.transactionsPerMonth ?? ''}
                       onChange={(event) =>
@@ -289,7 +289,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">IA/mes</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">IA/mes</span>
                     <input
                       value={plan.limits.aiInteractionsPerMonth ?? ''}
                       onChange={(event) =>
@@ -306,7 +306,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Relatórios</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Relatórios</span>
                     <select
                       value={plan.limits.reports}
                       onChange={(event) =>
@@ -327,7 +327,7 @@ export function SuperadminPlansPage() {
                 </div>
 
                 <label className="mt-3 block">
-                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Descricao</span>
+                  <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Descricao</span>
                   <textarea
                     value={plan.description}
                     onChange={(event) => updatePlan(plan.code, (current) => ({ ...current, description: event.target.value }))}
@@ -338,7 +338,7 @@ export function SuperadminPlansPage() {
 
                 <div className="mt-3 grid gap-3">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Beneficios</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Beneficios</span>
                     <textarea
                       value={plan.featuresText}
                       onChange={(event) =>
@@ -349,7 +349,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Badges</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Badges</span>
                     <textarea
                       value={plan.trustBadgesText}
                       onChange={(event) =>
@@ -366,28 +366,28 @@ export function SuperadminPlansPage() {
       )}
 
       {data ? (
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-          <h2 className="text-lg font-black text-white">Leitura rapida do catalogo</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-400">Veja o estado atual da oferta sem abrir cada formulário.</p>
+        <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+          <h2 className="text-lg font-black text-[var(--text-primary)]">Leitura rapida do catalogo</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">Veja o estado atual da oferta sem abrir cada formulário.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {plans.map((plan) => (
-              <div key={plan.code} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-3.5">
+              <div key={plan.code} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3.5">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-white">{plan.name}</p>
-                  <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                  <p className="font-semibold text-[var(--text-primary)]">{plan.name}</p>
+                  <span className="rounded-full border border-[var(--border-default)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text-secondary)]">
                     {plan.active ? 'Ativo' : 'Inativo'}
                   </span>
                 </div>
-                <p className="mt-3 text-2xl font-bold tracking-tight text-white">
+                <p className="mt-3 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
                   {formatAdminCurrency(plan.monthlyPrice)}
-                  <span className="text-sm font-medium text-slate-500"> / mes</span>
+                  <span className="text-sm font-medium text-[var(--text-muted)]"> / mes</span>
                 </p>
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   {plan.limits.transactionsPerMonth === null
                     ? 'Transações ilimitadas'
                     : `${formatAdminNumber(plan.limits.transactionsPerMonth)} transações/mes`}
                 </p>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {plan.limits.aiInteractionsPerMonth === null
                     ? 'IA ilimitada'
                     : `${formatAdminNumber(plan.limits.aiInteractionsPerMonth)} interacoes de IA/mes`}
@@ -403,10 +403,10 @@ export function SuperadminPlansPage() {
 
 function MetricCard({ label, value, helper }: { label: string; value: string; helper: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-xl font-bold tracking-tight text-white">{value}</p>
-      <p className="mt-1 text-sm text-slate-500">{helper}</p>
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
+      <p className="mt-1 text-sm text-[var(--text-muted)]">{helper}</p>
     </div>
   );
 }
@@ -421,13 +421,13 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-sm text-white">
+    <label className="flex items-center justify-between rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2.5 text-sm text-[var(--text-primary)]">
       <span>{label}</span>
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400"
+        className="h-4 w-4 rounded border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-secondary)]"
       />
     </label>
   );
@@ -436,8 +436,8 @@ function ToggleRow({
 function LoadingState({ label }: { label: string }) {
   return (
     <div className="flex min-h-[220px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         {label}
       </div>
     </div>
@@ -446,7 +446,7 @@ function LoadingState({ label }: { label: string }) {
 
 function SuccessState({ message }: { message: string }) {
   return (
-    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-5 text-sm text-emerald-100">
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-5 text-sm text-[var(--text-secondary)]">
       {message}
     </div>
   );
@@ -454,16 +454,16 @@ function SuccessState({ message }: { message: string }) {
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">
       {message}
     </div>
   );
 }
 
 const fieldClassName =
-  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500';
+  'mt-2 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]';
 const textareaClassName =
-  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'mt-2 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]';
 const primaryButtonClassName =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-600 disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--primary-hover)] disabled:opacity-60';
 

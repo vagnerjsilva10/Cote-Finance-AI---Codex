@@ -1,4 +1,4 @@
-import Image from 'next/image';
+﻿import Image from 'next/image';
 import Link from 'next/link';
 
 type LegalSection = {
@@ -137,7 +137,7 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
         </section>
       </main>
 
-      <footer className="border-t border-[rgba(15,23,42,0.08)] bg-white/80 py-8 backdrop-blur">
+      <footer className="border-t border-[rgba(15,23,42,0.08)] bg-[var(--bg-surface)] py-8 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-sm public-light-subtle sm:flex-row sm:px-6 sm:text-left">
           <p>© 2026 Cote Finance AI. Blog e plataforma financeira integrados.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

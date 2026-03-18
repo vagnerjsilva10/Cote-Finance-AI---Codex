@@ -23,12 +23,12 @@ export function BlogCard({ article }: BlogCardProps) {
         <div className="space-y-4 p-6">
           <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] public-light-subtle">
             <span>{article.publishedLabel}</span>
-            <span className="h-1 w-1 rounded-full bg-slate-300" />
+            <span className="h-1 w-1 rounded-full bg-[var(--border-strong)]" />
             <span>{article.readingTimeLabel}</span>
-            <span className="h-1 w-1 rounded-full bg-slate-300" />
+            <span className="h-1 w-1 rounded-full bg-[var(--border-strong)]" />
             <span className="text-[var(--primary-active)]">{localizeBlogText(article.category)}</span>
           </div>
-          <h2 className="text-2xl font-semibold leading-tight text-slate-950 transition-colors group-hover:text-[var(--primary-active)]">
+          <h2 className="text-2xl font-semibold leading-tight text-[var(--text-primary)] transition-colors group-hover:text-[var(--primary-active)]">
             {localizedTitle}
           </h2>
           <p className="text-sm leading-7 text-[var(--text-secondary)]">{localizedDescription}</p>

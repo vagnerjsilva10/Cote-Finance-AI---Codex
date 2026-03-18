@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -626,32 +626,32 @@ export default function LandingPage() {
               transform: `translate3d(${heroParallax.x * -0.35}px, ${heroParallax.y * -0.35}px, 0)`,
             }}
           >
-            <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-emerald-500/25 via-cyan-500/12 to-blue-500/20 blur-3xl sm:-inset-6" />
-            <div className="relative rounded-[2rem] border border-white/10 bg-slate-900/75 p-4 sm:p-5">
+            <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-[var(--primary)]/25 via-[color:var(--primary-soft)] to-[color:var(--primary-soft)] blur-3xl sm:-inset-6" />
+            <div className="relative rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/75 p-4 sm:p-5">
               <motion.div
                 animate={{ y: [0, -4, 0] }}
                 transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="mb-3 inline-flex items-center rounded-xl border border-cyan-300/25 bg-slate-900/90 px-3 py-2 text-[11px] text-cyan-200 sm:text-xs"
+                className="mb-3 inline-flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-[11px] text-[var(--text-secondary)] sm:text-xs"
               >
                 IA detectou 3 oportunidades
               </motion.div>
-              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-slate-500">Preview do dashboard</p>
+              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-[var(--text-muted)]">Preview do dashboard</p>
               <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
-                  <p className="text-[11px] text-emerald-200">Saldo</p>
-                  <p className="text-sm font-bold text-emerald-100">R$ 12.830</p>
+                <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3">
+                  <p className="text-[11px] text-[var(--text-secondary)]">Saldo</p>
+                  <p className="text-sm font-bold text-[var(--text-secondary)]">R$ 12.830</p>
                 </div>
-                <div className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 p-3">
-                  <p className="text-[11px] text-cyan-200">Receitas</p>
-                  <p className="text-sm font-bold text-cyan-100">R$ 9.430</p>
+                <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3">
+                  <p className="text-[11px] text-[var(--text-secondary)]">Receitas</p>
+                  <p className="text-sm font-bold text-[var(--text-secondary)]">R$ 9.430</p>
                 </div>
-                <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3">
-                  <p className="text-[11px] text-rose-200">Despesas</p>
-                  <p className="text-sm font-bold text-rose-100">R$ 4.180</p>
+                <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3">
+                  <p className="text-[11px] text-[var(--danger)]">Despesas</p>
+                  <p className="text-sm font-bold text-[var(--danger)]">R$ 4.180</p>
                 </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                <p className="mb-2 text-xs text-slate-400">Receitas x Despesas (6 meses)</p>
+              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+                <p className="mb-2 text-xs text-[var(--text-secondary)]">Receitas x Despesas (6 meses)</p>
                 <svg viewBox="0 0 320 96" className="h-24 w-full">
                   <path
                     d="M0,70 C22,62 42,42 68,38 C92,34 116,49 142,42 C168,35 190,24 214,22 C238,20 262,34 288,36 C302,38 311,33 320,27"
@@ -668,10 +668,10 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-[var(--text-secondary)]">
+                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-xs text-[var(--text-secondary)]">
                   Insight IA: gasto em alimentação subiu 14%.
                 </div>
-                <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 text-xs text-[var(--text-secondary)]">
+                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-xs text-[var(--text-secondary)]">
                   Meta mensal: 82% concluída.
                 </div>
               </div>
@@ -679,7 +679,7 @@ export default function LandingPage() {
             <motion.div
               animate={{ y: [0, 6, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -bottom-5 -right-6 hidden rounded-xl border border-emerald-300/25 bg-slate-900/90 px-3 py-2 text-xs text-emerald-200 xl:block"
+              className="absolute -bottom-5 -right-6 hidden rounded-xl border border-[var(--border-default)]/25 bg-[var(--bg-surface)] px-3 py-2 text-xs text-[var(--text-secondary)] xl:block"
               style={{
                 transform: `translate3d(${heroParallax.x * 0.45}px, ${heroParallax.y * 0.45}px, 0)`,
               }}
@@ -699,7 +699,7 @@ export default function LandingPage() {
         >
           <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(248,113,113,.14),transparent_55%)]" />
           <div className="space-y-5 lg:order-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-rose-300/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--danger)]">
               <TrendingDown size={14} /> Problemas comuns no controle financeiro
             </span>
             <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
@@ -708,15 +708,15 @@ export default function LandingPage() {
             <p className="text-[var(--text-secondary)]">
               Pequenos gastos passam despercebidos, o saldo some no fim do mês e fica difícil saber o que ajustar.
             </p>
-            <ul className="space-y-2 text-slate-200">
+            <ul className="space-y-2 text-[var(--text-primary)]">
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> Assinaturas esquecidas
+                <TrendingDown size={16} className="text-[var(--danger)]" /> Assinaturas esquecidas
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> Delivery frequente
+                <TrendingDown size={16} className="text-[var(--danger)]" /> Delivery frequente
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-rose-300" /> Compras impulsivas
+                <TrendingDown size={16} className="text-[var(--danger)]" /> Compras impulsivas
               </li>
             </ul>
             <p className="text-[var(--text-secondary)]">
@@ -737,10 +737,10 @@ export default function LandingPage() {
               className="h-auto w-full"
               priority={false}
             />
-            <div className="absolute left-3 top-3 hidden rounded-lg border border-rose-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-rose-200 sm:block lg:-left-3 lg:top-5">
+            <div className="absolute left-3 top-3 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--danger)] sm:block lg:-left-3 lg:top-5">
               Sem visibilidade real
             </div>
-            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-amber-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-amber-200 sm:block lg:-right-3 lg:bottom-7">
+            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-right-3 lg:bottom-7">
               Decisão no escuro
             </div>
           </motion.div>
@@ -768,39 +768,39 @@ export default function LandingPage() {
               className="h-auto w-full"
               priority={false}
             />
-            <div className="absolute left-3 top-3 hidden rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-emerald-200 sm:block lg:-left-3 lg:top-5">
+            <div className="absolute left-3 top-3 hidden rounded-lg border border-[var(--border-default)]/25 bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-left-3 lg:top-5">
               Insights automáticos
             </div>
-            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-cyan-200 sm:block lg:-right-3 lg:bottom-7">
+            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-right-3 lg:bottom-7">
               Clareza em minutos
             </div>
           </motion.div>
 
           <div className="space-y-5 lg:order-1">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
               <Sparkles size={14} /> Clareza financeira com inteligência artificial
             </span>
             <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
               Clareza financeira muda tudo
             </h2>
-            <p className="text-emerald-100">
+            <p className="text-[var(--text-secondary)]">
               Em vez de planilhas complicadas, você passa a contar com uma inteligência financeira trabalhando por você.
             </p>
-            <ul className="space-y-2 text-emerald-100">
+            <ul className="space-y-2 text-[var(--text-secondary)]">
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> IA analisando gastos automaticamente
+                <Check size={16} className="text-[var(--text-secondary)]" /> IA analisando gastos automaticamente
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> Gráficos financeiros inteligentes
+                <Check size={16} className="text-[var(--text-secondary)]" /> Gráficos financeiros inteligentes
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> Insights personalizados
+                <Check size={16} className="text-[var(--text-secondary)]" /> Insights personalizados
               </li>
               <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-emerald-300" /> Organização financeira mais simples
+                <Check size={16} className="text-[var(--text-secondary)]" /> Organização financeira mais simples
               </li>
             </ul>
-            <p className="text-emerald-100">Tudo explicado de forma simples, clara e prática.</p>
+            <p className="text-[var(--text-secondary)]">Tudo explicado de forma simples, clara e prática.</p>
           </div>
         </motion.section>
 
@@ -819,17 +819,17 @@ export default function LandingPage() {
             Tudo o que você precisa para organizar sua vida financeira
           </h2>
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Receitas e despesas</p>
-              <p className="text-slate-200">Registro simples de receitas e despesas.</p>
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center">
+              <p className="mb-2 text-xs uppercase tracking-widest text-[var(--text-secondary)]">Receitas e despesas</p>
+              <p className="text-[var(--text-primary)]">Registro simples de receitas e despesas.</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Gráficos inteligentes</p>
-              <p className="text-slate-200">Gráficos financeiros inteligentes para entender o mês com clareza.</p>
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center">
+              <p className="mb-2 text-xs uppercase tracking-widest text-[var(--text-secondary)]">Gráficos inteligentes</p>
+              <p className="text-[var(--text-primary)]">Gráficos financeiros inteligentes para entender o mês com clareza.</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">IA e alertas</p>
-              <p className="text-slate-200">
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center">
+              <p className="mb-2 text-xs uppercase tracking-widest text-[var(--text-secondary)]">IA e alertas</p>
+              <p className="text-[var(--text-primary)]">
                 Análise automática com IA, insights personalizados e alertas via WhatsApp.
               </p>
             </div>
@@ -847,7 +847,7 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-72 bg-[radial-gradient(circle_at_15%_20%,rgba(16,185,129,.2),transparent_46%),radial-gradient(circle_at_82%_80%,rgba(59,130,246,.18),transparent_42%)]" />
           <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12">
             <div className="max-w-xl space-y-5 text-left">
-              <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                 <Sparkles size={14} /> Demonstração do produto
               </span>
               <div className="space-y-4">
@@ -868,9 +868,9 @@ export default function LandingPage() {
                 ].map((benefit) => (
                   <div
                     key={benefit}
-                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 shadow-[0_18px_40px_-34px_rgba(15,23,42,.9)]"
+                    className="flex items-start gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] shadow-[0_18px_40px_-34px_rgba(15,23,42,.9)]"
                   >
-                    <div className="mt-0.5 rounded-full border border-emerald-300/25 bg-emerald-500/10 p-1 text-emerald-200">
+                    <div className="mt-0.5 rounded-full border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-1 text-[var(--text-secondary)]">
                       <Check size={14} />
                     </div>
                     <span>{benefit}</span>
@@ -878,26 +878,26 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              <p className="text-sm leading-6 text-slate-400">
+              <p className="text-sm leading-6 text-[var(--text-secondary)]">
                 Experimente a organização financeira com IA sem complicar sua rotina.
               </p>
             </div>
 
             <motion.div whileHover={{ y: -3, scale: 1.005 }} className="relative mx-auto w-full max-w-3xl px-1 sm:px-0">
               <div className="absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_35%_15%,rgba(16,185,129,.35),transparent_48%),radial-gradient(circle_at_70%_80%,rgba(16,185,129,.18),transparent_45%)] blur-2xl sm:-inset-5 sm:rounded-[2.3rem]" />
-              <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/88 p-3 sm:p-4 ring-1 ring-emerald-300/15 shadow-[0_28px_95px_-38px_rgba(16,185,129,.68)]">
-                <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-900/80 px-3 py-2 sm:px-4">
+              <div className="relative overflow-hidden rounded-[2rem] bg-[var(--bg-app)]/88 p-3 sm:p-4 ring-1 ring-[color:var(--primary-soft)] shadow-[0_28px_95px_-38px_rgba(59,130,246,.38)]">
+                <div className="mb-4 flex items-center justify-between rounded-xl bg-[var(--bg-surface)] px-3 py-2 sm:px-4">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-rose-400/90" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400/90" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/90" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--danger-soft)]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--danger-soft)]/90" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]/90" />
                   </div>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Cote Finance AI</p>
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--text-muted)]">Cote Finance AI</p>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
-                  <div className="space-y-4 rounded-2xl bg-slate-900/70 p-4 ring-1 ring-emerald-300/12">
-                    <p className="text-xs text-slate-400">Receitas x despesas (6 meses)</p>
+                  <div className="space-y-4 rounded-2xl bg-[var(--bg-surface)] p-4 ring-1 ring-[color:var(--primary-soft)]">
+                    <p className="text-xs text-[var(--text-secondary)]">Receitas x despesas (6 meses)</p>
                     <svg viewBox="0 0 320 120" className="h-32 w-full">
                       <motion.path
                         d="M0,88 C28,78 48,42 74,36 C100,30 122,52 149,42 C176,32 200,18 226,16 C252,14 274,30 300,32 C312,33 318,26 320,24"
@@ -922,9 +922,9 @@ export default function LandingPage() {
                     </svg>
                     <div className="grid grid-cols-3 gap-2">
                       {[62, 84, 56, 88, 70, 94].map((height, idx) => (
-                        <div key={`bar-${idx}`} className="flex h-16 items-end rounded-lg bg-slate-950/70 p-1">
+                        <div key={`bar-${idx}`} className="flex h-16 items-end rounded-lg bg-[var(--bg-app)] p-1">
                           <motion.div
-                            className="w-full rounded-md bg-gradient-to-t from-emerald-500 to-cyan-400"
+                            className="w-full rounded-md bg-gradient-to-t from-[var(--primary)] to-[var(--primary-hover)]"
                             initial={{ height: 6 }}
                             animate={{ height: [Math.max(8, height - 16), height, Math.max(10, height - 10)] }}
                             transition={{
@@ -945,30 +945,30 @@ export default function LandingPage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.35 }}
-                      className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3"
+                      className="rounded-2xl border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] p-3"
                     >
-                      <p className="text-[11px] text-emerald-200">Saldo projetado</p>
-                      <p className="text-lg font-bold text-emerald-100">R$ 8.430</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">Saldo projetado</p>
+                      <p className="text-lg font-bold text-[var(--text-secondary)]">R$ 8.430</p>
                     </motion.div>
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.35, delay: 0.1 }}
-                      className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-3"
+                      className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3"
                     >
-                      <p className="text-[11px] text-cyan-200">Economia potencial</p>
-                      <p className="text-lg font-bold text-cyan-100">+ R$ 1.280/ano</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">Economia potencial</p>
+                      <p className="text-lg font-bold text-[var(--text-secondary)]">+ R$ 1.280/ano</p>
                     </motion.div>
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.35, delay: 0.2 }}
-                      className="rounded-2xl bg-slate-900/70 p-3 ring-1 ring-white/10"
+                      className="rounded-2xl bg-[var(--bg-surface)] p-3 ring-1 ring-white/10"
                     >
-                      <p className="mb-1 text-[11px] text-slate-400">Insight IA</p>
-                      <p className="text-sm text-slate-200">
+                      <p className="mb-1 text-[11px] text-[var(--text-secondary)]">Insight IA</p>
+                      <p className="text-sm text-[var(--text-primary)]">
                         Transporte subiu 18%. Reduzindo 10% você recupera R$ 146/mês.
                       </p>
                     </motion.div>
@@ -977,10 +977,10 @@ export default function LandingPage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.35, delay: 0.28 }}
-                      className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-3"
+                      className="rounded-2xl border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-3"
                     >
-                      <p className="mb-1 text-[11px] text-emerald-200">WhatsApp</p>
-                      <p className="text-sm text-emerald-50">
+                      <p className="mb-1 text-[11px] text-[var(--text-secondary)]">WhatsApp</p>
+                      <p className="text-sm text-[var(--text-secondary)]">
                         Receba lembretes de vencimento, resumo diário e alertas do que merece atenção.
                       </p>
                     </motion.div>
@@ -991,14 +991,14 @@ export default function LandingPage() {
               <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -left-5 top-12 hidden rounded-xl border border-cyan-300/30 bg-slate-900/92 px-3 py-2 text-xs text-cyan-200 xl:block"
+                className="absolute -left-5 top-12 hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/92 px-3 py-2 text-xs text-[var(--text-secondary)] xl:block"
               >
                 IA analisando gastos
               </motion.div>
               <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -right-4 -bottom-2 hidden rounded-xl border border-emerald-300/30 bg-slate-900/92 px-3 py-2 text-xs text-emerald-200 xl:block"
+                className="absolute -right-4 -bottom-2 hidden rounded-xl border border-[var(--border-default)]/30 bg-[var(--bg-surface)]/92 px-3 py-2 text-xs text-[var(--text-secondary)] xl:block"
               >
                 Organização em tempo real
               </motion.div>
@@ -1025,9 +1025,9 @@ export default function LandingPage() {
               <motion.div
                 key={feature.title}
                 whileHover={{ y: -4 }}
-                className="rounded-2xl border border-white/10 bg-slate-900/55 p-5 text-center"
+                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center"
               >
-                <feature.icon size={18} className="mx-auto mb-3 text-emerald-300" />
+                <feature.icon size={18} className="mx-auto mb-3 text-[var(--text-secondary)]" />
                 <h3 className="mb-2 text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
                 <p className="text-sm text-[var(--text-secondary)]">{feature.text}</p>
               </motion.div>
@@ -1049,21 +1049,21 @@ export default function LandingPage() {
               Quando você entende seu dinheiro, tudo muda
             </h2>
             <p className="text-[var(--text-secondary)]">Quando você tem clareza financeira, você pode:</p>
-            <ul className="space-y-2 text-slate-200">
+            <ul className="space-y-2 text-[var(--text-primary)]">
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Parar de perder dinheiro sem perceber
+                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Parar de perder dinheiro sem perceber
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Identificar gastos desnecessários
+                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Identificar gastos desnecessários
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Tomar decisões financeiras melhores
+                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Tomar decisões financeiras melhores
               </li>
               <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-emerald-300" /> Planejar seu futuro com mais segurança
+                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Planejar seu futuro com mais segurança
               </li>
             </ul>
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">
               Resultado: mais clareza, mais controle e decisões mais seguras.
             </div>
           </div>
@@ -1081,17 +1081,17 @@ export default function LandingPage() {
               className="h-auto w-full"
               priority={false}
             />
-            <div className="absolute left-3 top-4 hidden rounded-lg border border-emerald-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-emerald-200 sm:block lg:-left-3 lg:top-7">
+            <div className="absolute left-3 top-4 hidden rounded-lg border border-[var(--border-default)]/25 bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-left-3 lg:top-7">
               + Controle
             </div>
-            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-cyan-300/25 bg-slate-900/90 px-3 py-1.5 text-[11px] text-cyan-200 sm:block lg:-right-3 lg:bottom-7">
+            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-right-3 lg:bottom-7">
               + Decisões melhores
             </div>
           </motion.div>
         </motion.section>
 
         <motion.section
-          className="rounded-3xl border border-white/10 bg-slate-900/50 p-5 md:p-10"
+          className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 md:p-10"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-120px' }}
@@ -1103,27 +1103,27 @@ export default function LandingPage() {
           <p className="mb-6 text-[var(--text-secondary)]">
             Cada vez mais usuários usam o Cote Finance AI para:
           </p>
-          <ul className="mb-6 space-y-2 text-slate-200">
+          <ul className="mb-6 space-y-2 text-[var(--text-primary)]">
             <li className="flex items-center justify-start gap-2">
-              <Check size={16} className="text-emerald-300" /> Entender melhor seus gastos
+              <Check size={16} className="text-[var(--text-secondary)]" /> Entender melhor seus gastos
             </li>
             <li className="flex items-center justify-start gap-2">
-              <Check size={16} className="text-emerald-300" /> Melhorar sua saúde financeira
+              <Check size={16} className="text-[var(--text-secondary)]" /> Melhorar sua saúde financeira
             </li>
             <li className="flex items-center justify-start gap-2">
-              <Check size={16} className="text-emerald-300" /> Tomar decisões mais inteligentes com seu dinheiro
+              <Check size={16} className="text-[var(--text-secondary)]" /> Tomar decisões mais inteligentes com seu dinheiro
             </li>
           </ul>
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
               <p className="text-2xl font-bold text-[var(--text-primary)]">+12.000</p>
               <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">usuários ativos</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
               <p className="text-2xl font-bold text-[var(--text-primary)]">R$320 milhões</p>
               <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">analisados em movimentações</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
               <p className="text-2xl font-bold text-[var(--text-primary)]">94%</p>
               <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">afirmam ter mais controle financeiro</p>
             </div>
@@ -1138,7 +1138,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <div className="space-y-3 text-center">
-            <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100">
+            <span className="inline-flex rounded-full border border-[var(--border-default)] bg-[var(--primary)]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
               Histórias de quem usa
             </span>
             <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
@@ -1153,12 +1153,12 @@ export default function LandingPage() {
             {testimonials.map((testimonial) => (
               <div
                 key={`${testimonial.author}-${testimonial.location}`}
-                className="rounded-[1.75rem] border border-white/10 bg-slate-900/55 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,.9)]"
+                className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,.9)]"
               >
-                <p className="text-base leading-7 text-slate-100">&ldquo;{testimonial.quote}&rdquo;</p>
-                <div className="mt-5 border-t border-white/10 pt-4">
+                <p className="text-base leading-7 text-[var(--text-primary)]">&ldquo;{testimonial.quote}&rdquo;</p>
+                <div className="mt-5 border-t border-[var(--border-default)] pt-4">
                   <p className="text-sm font-semibold text-[var(--text-primary)]">{testimonial.author}</p>
-                  <p className="text-sm text-slate-400">{testimonial.location}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{testimonial.location}</p>
                 </div>
               </div>
             ))}
@@ -1174,7 +1174,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <div className="space-y-5 text-center">
-            <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
+            <span className="inline-flex rounded-full border border-[var(--border-default)]/30 bg-[var(--primary)]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
               Planos para cada fase da sua organização
             </span>
             <h2 className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
@@ -1191,23 +1191,23 @@ export default function LandingPage() {
                 key={plan.name}
                 className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 sm:p-7 ${
                   plan.accent === 'highlight'
-                    ? 'border-emerald-300/50 bg-gradient-to-b from-emerald-400/20 via-slate-900/95 to-slate-950 shadow-[0_30px_90px_rgba(16,185,129,0.24)] ring-1 ring-emerald-300/20 lg:-translate-y-3 lg:scale-[1.02]'
+                    ? 'border-[var(--border-default)]/50 bg-gradient-to-b from-[var(--primary)]/20 via-[var(--bg-surface)]/95 to-[var(--bg-app)] shadow-[0_30px_90px_rgba(59,130,246,0.22)] ring-1 ring-[color:var(--primary-soft)] lg:-translate-y-3 lg:scale-[1.02]'
                     : plan.accent === 'premium'
-                      ? 'border-cyan-300/25 bg-[linear-gradient(180deg,rgba(14,116,144,0.22),rgba(15,23,42,0.94)_30%,rgba(2,6,23,0.98)_100%)] shadow-[0_26px_80px_rgba(34,211,238,0.14)]'
-                      : 'border-white/10 bg-slate-900/55'
+                      ? 'border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(59,130,246,0.20),rgba(15,26,46,0.94)_30%,rgba(11,18,32,0.98)_100%)] shadow-[0_26px_80px_rgba(59,130,246,0.18)]'
+                      : 'border-[var(--border-default)] bg-[var(--bg-surface)]'
                 }`}
               >
                 <div
                   className={`pointer-events-none absolute inset-x-0 top-0 h-28 ${
                     plan.accent === 'highlight'
-                      ? 'bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.24),transparent_72%)]'
+                      ? 'bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.22),transparent_72%)]'
                       : plan.accent === 'premium'
                         ? 'bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),transparent_72%)]'
                         : 'bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.1),transparent_72%)]'
                   }`}
                 />
                 {plan.popular && (
-                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
+                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-[var(--primary)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
                     Mais popular
                   </span>
                 )}
@@ -1217,10 +1217,10 @@ export default function LandingPage() {
                     <span
                       className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
                         plan.accent === 'highlight'
-                          ? 'border border-emerald-300/30 bg-emerald-400/10 text-emerald-100'
+                          ? 'border border-[var(--border-default)]/30 bg-[var(--primary)]/10 text-[var(--text-secondary)]'
                           : plan.accent === 'premium'
-                            ? 'border border-cyan-300/25 bg-cyan-400/10 text-cyan-100'
-                            : 'border border-white/10 bg-white/5 text-[var(--text-secondary)]'
+                            ? 'border border-[var(--border-default)] bg-[var(--primary)]/10 text-[var(--text-secondary)]'
+                            : 'border border-[var(--border-default)] bg-[var(--bg-surface)]/5 text-[var(--text-secondary)]'
                       }`}
                     >
                       {plan.label}
@@ -1228,10 +1228,10 @@ export default function LandingPage() {
                     <h3 className="text-2xl font-bold text-[var(--text-primary)] md:text-[2rem]" style={{ fontFamily: 'var(--font-display)' }}>
                       Plano {plan.name}
                     </h3>
-                    <p className="text-sm leading-6 text-slate-200">{plan.benefit}</p>
+                    <p className="text-sm leading-6 text-[var(--text-primary)]">{plan.benefit}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
                     <p className="text-3xl font-semibold text-[var(--text-primary)] md:text-4xl">{plan.price}</p>
                     <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{plan.microcopy}</p>
                   </div>
@@ -1239,9 +1239,9 @@ export default function LandingPage() {
 
                 <ul className="mb-7 mt-7 space-y-3.5">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm leading-6 text-slate-200">
-                      <span className="mt-0.5 rounded-full border border-emerald-300/25 bg-emerald-400/10 p-1">
-                        <Check size={12} className="shrink-0 text-emerald-300" />
+                    <li key={feature} className="flex items-start gap-3 text-sm leading-6 text-[var(--text-primary)]">
+                      <span className="mt-0.5 rounded-full border border-[var(--border-default)]/25 bg-[var(--primary)]/10 p-1">
+                        <Check size={12} className="shrink-0 text-[var(--text-secondary)]" />
                       </span>
                       <span>{feature}</span>
                     </li>
@@ -1253,23 +1253,23 @@ export default function LandingPage() {
                   disabled={isBusy}
                   className={`mt-auto w-full rounded-xl px-4 py-3.5 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.accent === 'highlight'
-                      ? 'bg-emerald-500 text-[var(--text-primary)] hover:bg-emerald-600'
+                      ? 'bg-[var(--primary)] text-[var(--text-primary)] hover:bg-[var(--primary-hover)]'
                       : plan.accent === 'premium'
-                        ? 'bg-cyan-100 text-slate-950 hover:bg-white'
-                        : 'bg-slate-100 text-slate-900 hover:bg-white'
+                        ? 'bg-[color:var(--primary-soft)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
+                        : 'bg-[color:var(--primary-soft)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
                   }`}
                 >
                   {plan.buttonText}
                 </button>
 
-                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-emerald-100">{plan.proof}</p> : null}
+                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-[var(--text-secondary)]">{plan.proof}</p> : null}
               </div>
             ))}
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
             {pricingFaqs.map((item) => (
-              <details key={item.question} className="rounded-3xl border border-white/10 bg-slate-900/55 p-6">
+              <details key={item.question} className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
                 <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)]">{item.question}</summary>
                 <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
               </details>
@@ -1286,7 +1286,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45 }}
         >
           <div className="space-y-5 text-center">
-            <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
+            <span className="inline-flex rounded-full border border-[var(--border-default)]/30 bg-[var(--primary)]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
               Planos para cada fase da sua organização
             </span>
             <h2
@@ -1307,17 +1307,17 @@ export default function LandingPage() {
                 key={plan.name}
                 className={`relative flex h-full flex-col rounded-[30px] border p-6 ${
                   plan.popular
-                    ? 'border-emerald-300/45 bg-gradient-to-b from-emerald-400/18 via-white/10 to-white/8 shadow-[0_30px_90px_rgba(16,185,129,0.22)] lg:-translate-y-3'
-                    : 'border-white/10 bg-slate-900/55'
+                    ? 'border-[var(--border-default)]/45 bg-gradient-to-b from-[var(--primary)]/18 via-white/10 to-white/8 shadow-[0_30px_90px_rgba(59,130,246,0.2)] lg:-translate-y-3'
+                    : 'border-[var(--border-default)] bg-[var(--bg-surface)]'
                 }`}
               >
                 {plan.popular && (
-                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
+                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-[var(--primary)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
                     Mais popular
                   </span>
                 )}
                 <div className="space-y-4">
-                  <p className="max-w-[18rem] text-sm leading-6 text-slate-200">{plan.benefit}</p>
+                  <p className="max-w-[18rem] text-sm leading-6 text-[var(--text-primary)]">{plan.benefit}</p>
                   <div>
                     <h3 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
                       Plano {plan.name}
@@ -1329,8 +1329,8 @@ export default function LandingPage() {
 
                 <ul className="mb-6 mt-8 space-y-3">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-sm text-slate-200">
-                      <Check size={15} className="mt-0.5 shrink-0 text-emerald-300" />
+                    <li key={feature} className="flex items-start gap-2 text-sm text-[var(--text-primary)]">
+                      <Check size={15} className="mt-0.5 shrink-0 text-[var(--text-secondary)]" />
                       {feature}
                     </li>
                   ))}
@@ -1341,21 +1341,21 @@ export default function LandingPage() {
                   disabled={isBusy}
                   className={`mt-auto w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${
                     plan.popular
-                      ? 'bg-emerald-500 text-[var(--text-primary)] hover:bg-emerald-600'
-                      : 'bg-slate-100 text-slate-900 hover:bg-white'
+                      ? 'bg-[var(--primary)] text-[var(--text-primary)] hover:bg-[var(--primary-hover)]'
+                      : 'bg-[color:var(--primary-soft)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
                   }`}
                 >
                   {plan.buttonText}
                 </button>
 
-                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-emerald-100">{plan.proof}</p> : null}
+                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-[var(--text-secondary)]">{plan.proof}</p> : null}
               </div>
             ))}
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
             {legacyPricingFaqs.map((item) => (
-              <details key={item.question} className="rounded-3xl border border-white/10 bg-slate-900/55 p-6">
+              <details key={item.question} className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
                 <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)]">{item.question}</summary>
                 <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
               </details>
@@ -1375,7 +1375,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
               Comece a organizar suas finanças hoje
             </h2>
-            <p className="mx-auto max-w-2xl text-base leading-7 text-slate-100/90 md:text-lg">
+            <p className="mx-auto max-w-2xl text-base leading-7 text-[var(--text-primary)]/90 md:text-lg">
               Crie sua conta gratuita e tenha clareza total do seu dinheiro.
             </p>
           </div>
@@ -1383,21 +1383,21 @@ export default function LandingPage() {
             <button
               onClick={startFree}
               disabled={isBusy}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100 disabled:opacity-60 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--bg-surface)] px-6 py-3 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-[color:var(--primary-soft)] disabled:opacity-60 sm:w-auto"
             >
               Começar grátis <ArrowRight size={16} />
             </button>
             <p className="mt-4 text-sm font-medium text-[var(--text-secondary)]">Comece gratuitamente. Cancele quando quiser.</p>
-            <div className="mt-3 inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
-              <ShieldCheck size={14} className="text-emerald-300" />
+            <div className="mt-3 inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] sm:text-sm">
+              <ShieldCheck size={14} className="text-[var(--text-secondary)]" />
               Dados protegidos e conexões seguras.
             </div>
           </div>
         </motion.section>
       </main>
 
-      <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center text-xs text-slate-500 sm:flex-row sm:px-6 sm:text-left">
+      <footer className="border-t border-[var(--border-default)] py-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center text-xs text-[var(--text-muted)] sm:flex-row sm:px-6 sm:text-left">
           <p>© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <Link href="/blog" className="hover:text-[var(--text-secondary)]">

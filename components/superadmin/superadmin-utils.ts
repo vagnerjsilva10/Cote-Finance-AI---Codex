@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   SuperadminUserSummary,
   SuperadminWorkspaceSummary,
 } from '@/lib/superadmin/types';
@@ -89,20 +89,20 @@ export function formatSubscriptionStatus(status: string | null) {
 }
 
 export function getSubscriptionTone(status: string | null) {
-  if (!status) return 'border-slate-700/70 bg-slate-900/70 text-slate-300';
+  if (!status) return 'border-[var(--border-default)]/70 bg-[var(--bg-surface)] text-[var(--text-secondary)]';
 
   switch (status.toUpperCase()) {
     case 'ACTIVE':
     case 'TRIALING':
-      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
+      return 'border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
     case 'PAST_DUE':
     case 'INCOMPLETE':
-      return 'border-amber-500/30 bg-amber-500/10 text-amber-300';
+      return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]';
     case 'CANCELED':
     case 'UNPAID':
-      return 'border-rose-500/30 bg-rose-500/10 text-rose-300';
+      return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]';
     default:
-      return 'border-slate-700/70 bg-slate-900/70 text-slate-300';
+      return 'border-[var(--border-default)]/70 bg-[var(--bg-surface)] text-[var(--text-secondary)]';
   }
 }
 

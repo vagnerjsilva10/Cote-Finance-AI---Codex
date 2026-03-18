@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Clock3, Sparkles } from 'lucide-react';
@@ -308,7 +308,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
                 </Link>
                 <Link
                   href="/app"
-                  className="rounded-xl border border-slate-300 px-4 py-3 text-center text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:border-slate-400 hover:text-[var(--text-primary)]"
+                  className="rounded-xl border border-[var(--border-default)] px-4 py-3 text-center text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                 >
                   Ver o produto
                 </Link>

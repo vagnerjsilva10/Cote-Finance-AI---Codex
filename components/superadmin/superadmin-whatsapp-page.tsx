@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { Loader2, RefreshCw, Search, ShieldCheck } from 'lucide-react';
@@ -76,24 +76,24 @@ export function SuperadminWhatsappPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Super Admin</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white">WhatsApp</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">Super Admin</p>
+            <h1 className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">WhatsApp</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-secondary)]">
               Audite integrações por workspace, identifique falhas de autenticação e acompanhe uso, alertas e ações do canal.
             </p>
           </div>
           <div className="w-full max-w-md">
-            <label className="block text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Busca</label>
+            <label className="block text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">Busca</label>
             <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar workspace, owner ou número"
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
+                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]"
               />
             </div>
           </div>
@@ -104,19 +104,19 @@ export function SuperadminWhatsappPage() {
       {error ? <Banner tone="error" message={error} /> : null}
 
       {showInitialLoading ? (
-        <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8">
-          <div className="flex min-h-[220px] items-center justify-center text-slate-300">
-            <Loader2 className="mr-3 h-5 w-5 animate-spin text-emerald-400" />
+        <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-8">
+          <div className="flex min-h-[220px] items-center justify-center text-[var(--text-secondary)]">
+            <Loader2 className="mr-3 h-5 w-5 animate-spin text-[var(--text-secondary)]" />
             Carregando painel de WhatsApp...
           </div>
         </section>
       ) : null}
 
       {showUnavailableState ? (
-        <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-5 text-sm text-rose-100">
-            <p className="font-semibold text-rose-50">O painel de WhatsApp não conseguiu carregar os dados agora.</p>
-            <p className="mt-2 text-rose-100/90">
+        <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-5 py-5 text-sm text-[var(--danger)]">
+            <p className="font-semibold text-[var(--danger)]">O painel de WhatsApp não conseguiu carregar os dados agora.</p>
+            <p className="mt-2 text-[var(--danger)]/90">
               Quando a requisição falha, o sistema não mostra mais estados falsos de configuração pendente ou métricas zeradas.
               Tente novamente para validar o estado real da integração.
             </p>
@@ -133,9 +133,9 @@ export function SuperadminWhatsappPage() {
       {data ? (
         <>
           {!isLoading && !data.environment.ready ? (
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-4 text-sm text-amber-100">
-              <p className="font-semibold text-amber-50">Configuração do WhatsApp ainda não foi concluída.</p>
-              <p className="mt-1 text-amber-100/90">
+            <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-4 text-sm text-[var(--text-secondary)]">
+              <p className="font-semibold text-[var(--text-secondary)]">Configuração do WhatsApp ainda não foi concluída.</p>
+              <p className="mt-1 text-[var(--text-secondary)]/90">
                 Revise as variáveis de ambiente, os templates e os números por workspace antes de usar o painel para testes e operações.
               </p>
             </div>
@@ -199,9 +199,9 @@ export function SuperadminWhatsappPage() {
             />
           </section>
 
-          <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+          <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
             {data.workspaces.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
+              <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">
                 Nenhum workspace com configuração ou atividade de WhatsApp foi encontrado para este filtro.
               </div>
             ) : (
@@ -209,40 +209,40 @@ export function SuperadminWhatsappPage() {
                 {data.workspaces.map((workspace) => {
                   const actionKeyPrefix = `${workspace.workspaceId}:`;
                   return (
-                    <div key={workspace.workspaceId} className="rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
+                    <div key={workspace.workspaceId} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
                       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+                            <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                               {formatPlanLabel(workspace.plan)}
                             </span>
                             <StateBadge state={workspace.lastConnectionState} />
-                            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-semibold text-slate-300">
+                            <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                               {workspace.whatsappStatus || 'DISCONNECTED'}
                             </span>
                             <span
                               className={`rounded-full px-3 py-1 text-xs font-semibold ${
                                 workspace.readiness.ready
-                                  ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
-                                  : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
+                                  ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                                  : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
                               }`}
                             >
                               {workspace.readiness.ready ? 'Pronto para teste' : `${workspace.readiness.issues.length} ajuste(s)`}
                             </span>
                           </div>
                           <div>
-                            <p className="text-base font-semibold text-white">{workspace.workspaceName}</p>
-                            <p className="text-sm text-slate-400">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
+                            <p className="text-base font-semibold text-[var(--text-primary)]">{workspace.workspaceName}</p>
+                            <p className="text-sm text-[var(--text-secondary)]">{workspace.ownerName || workspace.ownerEmail || 'Sem owner'}</p>
                           </div>
-                          <div className="grid gap-2 text-sm text-slate-300 md:grid-cols-2 xl:grid-cols-4">
+                          <div className="grid gap-2 text-sm text-[var(--text-secondary)] md:grid-cols-2 xl:grid-cols-4">
                             <Info label="Número do workspace" value={workspace.phoneNumber || 'Não configurado'} />
                             <Info label="Número de teste" value={workspace.testPhoneNumber || 'Não configurado'} />
                             <Info label="Última validação" value={formatAdminDateTime(workspace.lastValidatedAt)} />
                             <Info label="Último teste" value={formatAdminDateTime(workspace.lastTestSentAt)} />
                           </div>
                           {!workspace.readiness.ready ? (
-                            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                              <p className="font-semibold text-amber-50">Checklist de prontidão</p>
+                            <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                              <p className="font-semibold text-[var(--text-secondary)]">Checklist de prontidão</p>
                               <ul className="mt-2 space-y-1 text-sm">
                                 {workspace.readiness.issues.map((issue) => (
                                   <li key={issue}>• {issue}</li>
@@ -251,8 +251,8 @@ export function SuperadminWhatsappPage() {
                             </div>
                           ) : null}
                           {workspace.lastErrorMessage ? (
-                            <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                              <p className="font-semibold text-rose-50">{workspace.lastErrorCategory || 'Erro de conexão'}</p>
+                            <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger)]">
+                              <p className="font-semibold text-[var(--danger)]">{workspace.lastErrorCategory || 'Erro de conexão'}</p>
                               <p className="mt-1">{workspace.lastErrorMessage}</p>
                             </div>
                           ) : null}
@@ -327,34 +327,34 @@ export function SuperadminWhatsappPage() {
             )}
           </section>
 
-          <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+          <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-white">Atividade recente do canal</h2>
-                <p className="mt-1 text-sm text-slate-400">Eventos recentes de WhatsApp em todos os workspaces.</p>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Atividade recente do canal</h2>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">Eventos recentes de WhatsApp em todos os workspaces.</p>
               </div>
-              <span className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-300">
+              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                 {data.recentEvents.length} eventos
               </span>
             </div>
 
             <div className="mt-5 space-y-3">
               {!data.recentEvents.length ? (
-                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">
+                <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">
                   Nenhum evento recente de WhatsApp encontrado.
                 </div>
               ) : (
                 data.recentEvents.map((event) => (
-                  <div key={event.id} className="rounded-2xl border border-slate-800 bg-slate-950/55 px-4 py-3">
+                  <div key={event.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-white">{event.workspaceName}</p>
-                        <p className="mt-1 text-sm text-slate-400">
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">{event.workspaceName}</p>
+                        <p className="mt-1 text-sm text-[var(--text-secondary)]">
                           {event.type}
                           {event.type === 'ai.chat.used' && event.aiMode ? ` • modo ${event.aiMode}` : ''}
                         </p>
                       </div>
-                      <div className="text-sm text-slate-400">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         <p>{formatAdminDateTime(event.createdAt)}</p>
                         <p>{event.userEmail || 'Sem usuário vinculado'}</p>
                       </div>
@@ -372,19 +372,19 @@ export function SuperadminWhatsappPage() {
 
 function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3.5">
-      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-xl font-bold tracking-tight text-white">{value}</p>
-      {helper ? <p className="mt-1 text-xs leading-5 text-slate-400">{helper}</p> : null}
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3.5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
+      {helper ? <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{helper}</p> : null}
     </div>
   );
 }
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5">
-      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-1 text-sm text-white">{value}</p>
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2.5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-1 text-sm text-[var(--text-primary)]">{value}</p>
     </div>
   );
 }
@@ -394,8 +394,8 @@ function Banner({ tone, message }: { tone: 'success' | 'error'; message: string 
     <div
       className={`rounded-2xl px-4 py-4 text-sm ${
         tone === 'success'
-          ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100'
-          : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'
+          ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+          : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'
       }`}
     >
       {message}
@@ -418,12 +418,12 @@ function StateBadge({ state }: { state: SuperadminWhatsappResponse['workspaces']
               : 'Sem diagnóstico';
   const className =
     state === 'connected'
-      ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+      ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
       : state === 'error'
-        ? 'border border-rose-500/20 bg-rose-500/10 text-rose-200'
+        ? 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'
         : state === 'testing'
-          ? 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
-          : 'border border-slate-700 bg-slate-900/70 text-slate-300';
+          ? 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
+          : 'border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)]';
   return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${className}`}>{label}</span>;
 }
 
@@ -440,8 +440,8 @@ function ActionButton(props: {
       onClick={props.onClick}
       className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
         props.tone === 'danger'
-          ? 'border border-rose-500/20 bg-rose-500/10 text-rose-100 hover:bg-rose-500/20'
-          : 'border border-slate-700 bg-slate-900/70 text-slate-100 hover:border-emerald-500/40'
+          ? 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)] hover:bg-[color:var(--danger-soft)]'
+          : 'border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[var(--border-default)]'
       } disabled:cursor-not-allowed disabled:opacity-60`}
     >
       {props.children}
@@ -452,10 +452,10 @@ function ActionButton(props: {
 function ReadinessCard({ label, ok }: { label: string; ok: boolean }) {
   return (
     <div
-      className={`rounded-2xl border px-4 py-3.5 ${ok ? 'border-emerald-500/20 bg-emerald-500/10' : 'border-amber-500/20 bg-amber-500/10'}`}
+      className={`rounded-2xl border px-4 py-3.5 ${ok ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)]' : 'border-[var(--border-default)] bg-[color:var(--danger-soft)]'}`}
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{label}</p>
-      <p className={`mt-2 text-sm font-semibold ${ok ? 'text-emerald-100' : 'text-amber-100'}`}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">{label}</p>
+      <p className={`mt-2 text-sm font-semibold ${ok ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}>
         {ok ? 'Configurado' : 'Pendente'}
       </p>
     </div>
@@ -464,9 +464,9 @@ function ReadinessCard({ label, ok }: { label: string; ok: boolean }) {
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5">
-      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2.5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{value}</p>
     </div>
   );
 }

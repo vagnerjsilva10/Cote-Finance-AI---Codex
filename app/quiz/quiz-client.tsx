@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -193,39 +193,39 @@ export default function QuizClient() {
                   <button
                     type="button"
                     onClick={startQuiz}
-                    className="inline-flex min-h-[54px] w-full items-center justify-center rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 sm:w-auto"
+                    className="inline-flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3.5 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-[var(--primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] sm:w-auto"
                   >
                     Começar diagnóstico
                   </button>
                 }
               >
                 <div className="space-y-4">
-                  <p className="text-base leading-7 text-slate-300 sm:text-lg">
+                  <p className="text-base leading-7 text-[var(--text-secondary)] sm:text-lg">
                     Mais de 12.000 pessoas já fizeram esse diagnóstico financeiro.
                   </p>
-                  <div className="inline-flex max-w-full rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold leading-5 text-cyan-100">
+                  <div className="inline-flex max-w-full rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold leading-5 text-[var(--text-secondary)]">
                     8 em cada 10 pessoas descobrem gastos invisíveis ao finalizar este quiz.
                   </div>
 
-                  <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
+                  <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
                     <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar?" percentageLabel="Diagnóstico 0% concluído" />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
-                    <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-                      <div className="space-y-3 text-sm leading-6 text-slate-300 sm:text-base">
+                    <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
+                      <div className="space-y-3 text-sm leading-6 text-[var(--text-secondary)] sm:text-base">
                         <p>No fim do mês parece que tudo aconteceu rápido demais.</p>
                         <p>Esse quiz cruza padrões comuns de gastos invisíveis e mostra um pré-diagnóstico personalizado.</p>
-                        <p className="font-medium text-white">Seu resultado sai em menos de 40 segundos.</p>
+                        <p className="font-medium text-[var(--text-primary)]">Seu resultado sai em menos de 40 segundos.</p>
                       </div>
                     </div>
 
-                    <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-5">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+                    <div className="rounded-3xl border border-[var(--border-default)]/20 bg-[color:var(--primary-soft)] p-5">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
                         <Sparkles size={16} />
                         Experiência guiada
                       </div>
-                      <ul className="mt-4 space-y-3 text-sm leading-6 text-emerald-50">
+                      <ul className="mt-4 space-y-3 text-sm leading-6 text-[var(--text-secondary)]">
                         <li>5 perguntas rápidas</li>
                         <li>Diagnóstico com perfil financeiro</li>
                         <li>Estimativa de dinheiro perdido</li>
@@ -261,7 +261,7 @@ export default function QuizClient() {
               transition={{ duration: 0.32 }}
               className="space-y-4 sm:space-y-5"
             >
-              <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-4 sm:p-5">
+              <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 sm:p-5">
                 <ProgressBar
                   current={questionIndex + 1}
                   total={quizQuestions.length}
@@ -276,7 +276,7 @@ export default function QuizClient() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.22 }}
-                      className="mt-3 text-sm font-medium leading-6 text-cyan-200"
+                      className="mt-3 text-sm font-medium leading-6 text-[var(--text-secondary)]"
                     >
                       {progressMessage}
                     </motion.p>
@@ -290,7 +290,7 @@ export default function QuizClient() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.22, delay: 0.04 }}
-                      className="mt-2 text-sm font-medium leading-6 text-amber-200"
+                      className="mt-2 text-sm font-medium leading-6 text-[var(--text-secondary)]"
                     >
                       {psychologicalAlerts[questionIndex]}
                     </motion.p>
@@ -320,7 +320,7 @@ export default function QuizClient() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.2 }}
-                        className="text-sm font-medium text-emerald-200"
+                        className="text-sm font-medium text-[var(--text-secondary)]"
                       >
                         {feedback}
                       </motion.p>

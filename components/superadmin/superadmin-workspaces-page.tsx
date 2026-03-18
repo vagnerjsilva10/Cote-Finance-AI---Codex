@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -63,20 +63,20 @@ export function SuperadminWorkspacesPage() {
       {error ? <ErrorState message={error} /> : null}
       {message ? <FeedbackState message={message} success={message.includes('sucesso')} /> : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                 Workspaces
               </span>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+              <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                 Operação da base
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Workspaces, owners e estado operacional</h1>
-              <p className="mt-2 text-sm leading-7 text-slate-300">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] md:text-3xl">Workspaces, owners e estado operacional</h1>
+              <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                 Centralize criação, saúde da conta, plano, faturamento estimado e canais conectados sem inflar a página.
               </p>
             </div>
@@ -89,27 +89,27 @@ export function SuperadminWorkspacesPage() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Building2 className="h-4.5 w-4.5 text-emerald-300" />} />
+        <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Building2 className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Pagantes" value={formatAdminNumber(paidWorkspaces)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
-        <StatCard label="WhatsApp" value={formatAdminNumber(whatsappConnected)} icon={<MessageSquare className="h-4.5 w-4.5 text-emerald-300" />} />
-        <StatCard label="Suspensos" value={formatAdminNumber(suspended)} icon={<CreditCard className="h-4.5 w-4.5 text-amber-300" />} />
+        <StatCard label="WhatsApp" value={formatAdminNumber(whatsappConnected)} icon={<MessageSquare className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
+        <StatCard label="Suspensos" value={formatAdminNumber(suspended)} icon={<CreditCard className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
       </section>
 
       <section className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Operação de workspaces</h2>
-              <p className="mt-1 text-sm text-slate-400">Busque por nome, owner ou identificador para ir direto ao ambiente certo.</p>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Operação de workspaces</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">Busque por nome, owner ou identificador para ir direto ao ambiente certo.</p>
             </div>
-            <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+            <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
               {formatAdminCurrency(estimatedMrr)} MRR
             </span>
           </div>
           <label className="mt-4 block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Buscar</span>
             <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -120,14 +120,14 @@ export function SuperadminWorkspacesPage() {
           </label>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
-              <Wallet className="h-4.5 w-4.5 text-emerald-300" />
+            <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-2.5">
+              <Wallet className="h-4.5 w-4.5 text-[var(--text-secondary)]" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Pulso da base</h2>
-              <p className="text-sm text-slate-400">Resumo rápido do estado dos ambientes.</p>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Pulso da base</h2>
+              <p className="text-sm text-[var(--text-secondary)]">Resumo rápido do estado dos ambientes.</p>
             </div>
           </div>
           <div className="mt-4 space-y-2.5">
@@ -139,11 +139,11 @@ export function SuperadminWorkspacesPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white">Base de workspaces</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Base de workspaces</h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {data ? `${formatAdminNumber(data.total)} workspace(s) encontrados.` : 'Carregando base de workspaces.'}
             </p>
           </div>
@@ -158,7 +158,7 @@ export function SuperadminWorkspacesPage() {
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-[11px] uppercase tracking-[0.22em] text-slate-500">
+              <thead className="border-b border-[var(--border-default)] text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
                 <tr>
                   <th className="px-3 py-3 font-semibold">Workspace</th>
                   <th className="px-3 py-3 font-semibold">Owner</th>
@@ -171,12 +171,12 @@ export function SuperadminWorkspacesPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.workspaces.map((workspace) => (
-                  <tr key={workspace.id} className="hover:bg-slate-950/30">
+                  <tr key={workspace.id} className="hover:bg-[var(--bg-app)]/30">
                     <td className="px-3 py-3.5 align-top">
-                      <div className="font-semibold text-white">{workspace.name}</div>
-                      <div className="mt-0.5 text-[11px] text-slate-500">{workspace.id}</div>
+                      <div className="font-semibold text-[var(--text-primary)]">{workspace.name}</div>
+                      <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{workspace.id}</div>
                     </td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{workspace.ownerEmail || 'Sem owner'}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{workspace.ownerEmail || 'Sem owner'}</td>
                     <td className="px-3 py-3.5 align-top">
                       <div className="flex flex-wrap gap-2">
                         <PlanBadge label={formatPlanLabel(workspace.plan)} />
@@ -186,8 +186,8 @@ export function SuperadminWorkspacesPage() {
                     <td className="px-3 py-3.5 align-top">
                       <StatusBadge status={workspace.subscriptionStatus} />
                     </td>
-                    <td className="px-3 py-3.5 align-top font-semibold text-white">{formatAdminCurrency(getWorkspaceEstimatedMrr(workspace.plan))}</td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminDate(workspace.createdAt)}</td>
+                    <td className="px-3 py-3.5 align-top font-semibold text-[var(--text-primary)]">{formatAdminCurrency(getWorkspaceEstimatedMrr(workspace.plan))}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{formatAdminDate(workspace.createdAt)}</td>
                     <td className="px-3 py-3.5 text-right align-top">
                       <Link href={`/superadmin/workspaces/${workspace.id}`} className={secondaryActionClassName}>
                         Abrir
@@ -242,13 +242,13 @@ function CreateWorkspaceSheet({
   const [initialPlan, setInitialPlan] = React.useState<'FREE' | 'PRO' | 'PREMIUM'>('FREE');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 p-4 backdrop-blur-sm xl:items-center">
-      <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-950/98 p-6 shadow-2xl backdrop-blur-xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--bg-app)] p-4 backdrop-blur-sm xl:items-center">
+      <div className="w-full max-w-xl rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operação administrativa</p>
-            <h3 className="mt-2 text-xl font-black text-white">Criar workspace</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Crie um novo ambiente já com owner e plano inicial definidos.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Operação administrativa</p>
+            <h3 className="mt-2 text-xl font-black text-[var(--text-primary)]">Criar workspace</h3>
+            <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">Crie um novo ambiente já com owner e plano inicial definidos.</p>
           </div>
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>
             Fechar
@@ -256,15 +256,15 @@ function CreateWorkspaceSheet({
         </div>
         <div className="mt-6 space-y-4">
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Nome do workspace</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Nome do workspace</span>
             <input value={name} onChange={(event) => setName(event.target.value)} className={modalFieldClassName} />
           </label>
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Owner (e-mail)</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Owner (e-mail)</span>
             <input value={ownerEmail} onChange={(event) => setOwnerEmail(event.target.value)} placeholder="usuario@empresa.com" className={modalFieldClassName} />
           </label>
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano inicial</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Plano inicial</span>
             <select value={initialPlan} onChange={(event) => setInitialPlan(event.target.value as 'FREE' | 'PRO' | 'PREMIUM')} className={modalFieldClassName}>
               <option value="FREE">Free</option>
               <option value="PRO">Pro</option>
@@ -288,13 +288,13 @@ function CreateWorkspaceSheet({
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-4">
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-          <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+          <p className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">{icon}</div>
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-2.5">{icon}</div>
       </div>
     </div>
   );
@@ -302,20 +302,20 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
 
 function MetricPill({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'neutral' | 'danger' }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-3">
-      <span className="text-sm text-slate-400">{label}</span>
-      <span className={tone === 'danger' ? 'text-sm font-semibold text-rose-300' : 'text-sm font-semibold text-white'}>{value}</span>
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3.5 py-3">
+      <span className="text-sm text-[var(--text-secondary)]">{label}</span>
+      <span className={tone === 'danger' ? 'text-sm font-semibold text-[var(--danger)]' : 'text-sm font-semibold text-[var(--text-primary)]'}>{value}</span>
     </div>
   );
 }
 
 function PlanBadge({ label }: { label: string }) {
-  return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>;
+  return <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">{label}</span>;
 }
 
 function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' }) {
   return (
-    <span className={status === 'SUSPENDED' ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200' : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200'}>
+    <span className={status === 'SUSPENDED' ? 'rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]' : 'rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]'}>
       {status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}
     </span>
   );
@@ -328,8 +328,8 @@ function StatusBadge({ status }: { status: string | null }) {
 function LoadingState({ label }: { label: string }) {
   return (
     <div className="flex min-h-[220px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         {label}
       </div>
     </div>
@@ -337,28 +337,28 @@ function LoadingState({ label }: { label: string }) {
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>;
 }
 
 function FeedbackState({ message, success }: { message: string; success: boolean }) {
   return (
-    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100' : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'}`}>
+    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]' : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'}`}>
       {message}
     </div>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>;
+  return <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">{text}</div>;
 }
 
 const searchFieldClassName =
-  'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]';
 const modalFieldClassName =
-  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'mt-2 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]';
 const secondaryActionClassName =
-  'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
+  'inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]';
 const primaryActionClassName =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--primary-hover)] disabled:opacity-60';
 
 

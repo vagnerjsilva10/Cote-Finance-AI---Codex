@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { Loader2, Search, ShieldCheck } from 'lucide-react';
@@ -85,24 +85,24 @@ export function SuperadminAuditLogsPage() {
       <SuperadminSectionCard title="Filtro operacional" description="Busca rapida por workspace, usuario, categoria ou evento.">
         <div className="grid gap-3 lg:grid-cols-[1.2fr_0.5fr]">
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Buscar</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Buscar</span>
             <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar por tipo, workspace, usuário ou ID"
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-emerald-400"
+                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]"
               />
             </div>
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Categoria</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Categoria</span>
             <select
               value={category}
               onChange={(event) => setCategory(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400"
+              className="mt-2 w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]"
             >
               {CATEGORY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -124,33 +124,33 @@ export function SuperadminAuditLogsPage() {
         ) : (
           <div className="space-y-3">
             {data.events.map((event) => (
-              <article key={event.id} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+              <article key={event.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <p className="font-semibold text-white">{humanizeEventType(event.type)}</p>
-                      <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                      <p className="font-semibold text-[var(--text-primary)]">{humanizeEventType(event.type)}</p>
+                      <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)]/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                         {event.category}
                       </span>
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-400">
+                    <div className="mt-2 flex flex-wrap gap-4 text-xs text-[var(--text-secondary)]">
                       <span>Workspace: {event.workspaceName}</span>
                       <span>Usuário: {event.userEmail || 'Sistema'}</span>
                       <span>ID: {event.id}</span>
                     </div>
                   </div>
-                  <div className="inline-flex items-center gap-2 text-xs text-slate-500">
-                    <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                  <div className="inline-flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                    <ShieldCheck className="h-4 w-4 text-[var(--text-secondary)]" />
                     {formatAdminDateTime(event.createdAt)}
                   </div>
                 </div>
 
                 {event.payload ? (
-                  <details className="mt-3 rounded-2xl border border-white/10 bg-slate-900/60 p-4">
-                    <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <details className="mt-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4">
+                    <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                       Ver payload do evento
                     </summary>
-                    <pre className="mt-4 overflow-x-auto whitespace-pre-wrap text-xs leading-6 text-slate-300">{JSON.stringify(event.payload, null, 2)}</pre>
+                    <pre className="mt-4 overflow-x-auto whitespace-pre-wrap text-xs leading-6 text-[var(--text-secondary)]">{JSON.stringify(event.payload, null, 2)}</pre>
                   </details>
                 ) : null}
               </article>
@@ -165,8 +165,8 @@ export function SuperadminAuditLogsPage() {
 function LoadingState() {
   return (
     <div className="flex min-h-[260px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         Carregando auditoria...
       </div>
     </div>
@@ -174,10 +174,10 @@ function LoadingState() {
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>;
 }
 
 function EmptyState() {
-  return <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">Nenhum evento encontrado para os filtros atuais.</div>;
+  return <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">Nenhum evento encontrado para os filtros atuais.</div>;
 }
 

@@ -10,6 +10,7 @@
     "build": "node scripts/build-with-prisma.js",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
+    "check:theme": "node scripts/check-theme-hardcodes.js",
     "clean": "node scripts/clean-next.js"
   },
   "dependencies": {

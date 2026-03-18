@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -85,20 +85,20 @@ export function SuperadminUsersPage() {
       {error ? <ErrorState message={error} /> : null}
       {message ? <FeedbackState message={message} success={message.includes('sucesso')} /> : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                 Usuários
               </span>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+              <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                 Governança de acesso
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base de usuários e suporte administrativo</h1>
-              <p className="mt-2 text-sm leading-7 text-slate-300">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] md:text-3xl">Base de usuários e suporte administrativo</h1>
+              <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                 Controle ciclo de vida, planos, roles e provisionamento de contas em uma superfície única e mais compacta.
               </p>
             </div>
@@ -107,27 +107,27 @@ export function SuperadminUsersPage() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Users2 className="h-4.5 w-4.5 text-emerald-300" />} />
+        <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Users2 className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Pagantes" value={formatAdminNumber(paidUsers)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
-        <StatCard label="Super admins" value={formatAdminNumber(superadmins)} icon={<ShieldCheck className="h-4.5 w-4.5 text-amber-300" />} />
-        <StatCard label="Bloqueados" value={formatAdminNumber(blockedUsers)} icon={<ShieldCheck className="h-4.5 w-4.5 text-rose-300" />} />
+        <StatCard label="Super admins" value={formatAdminNumber(superadmins)} icon={<ShieldCheck className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
+        <StatCard label="Bloqueados" value={formatAdminNumber(blockedUsers)} icon={<ShieldCheck className="h-4.5 w-4.5 text-[var(--danger)]" />} />
       </section>
 
       <section className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Operação de usuários</h2>
-              <p className="mt-1 text-sm text-slate-400">Busque por nome, e-mail ou ID para chegar rápido na conta certa.</p>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Operação de usuários</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">Busque por nome, e-mail ou ID para chegar rápido na conta certa.</p>
             </div>
-            <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+            <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
               {formatAdminNumber(users.length)} visíveis
             </span>
           </div>
           <label className="mt-4 block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Buscar</span>
             <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -138,17 +138,17 @@ export function SuperadminUsersPage() {
           </label>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Provisionar usuario</h2>
-              <p className="mt-1 text-sm text-slate-400">Crie acesso real com suporte ao Auth Admin.</p>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Provisionar usuario</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">Crie acesso real com suporte ao Auth Admin.</p>
             </div>
             <span
               className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
                 data?.capabilities.authAdminConfigured
-                  ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
-                  : 'border border-amber-500/20 bg-amber-500/10 text-amber-200'
+                  ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                  : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
               }`}
             >
               {data?.capabilities.authAdminConfigured ? 'Ativo' : 'Pendente'}
@@ -199,11 +199,11 @@ export function SuperadminUsersPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white">Base de usuários</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Base de usuários</h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {data ? `${formatAdminNumber(data.total)} usuario(s) encontrados.` : 'Carregando base de usuários.'}
             </p>
           </div>
@@ -218,7 +218,7 @@ export function SuperadminUsersPage() {
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-[11px] uppercase tracking-[0.22em] text-slate-500">
+              <thead className="border-b border-[var(--border-default)] text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
                 <tr>
                   <th className="px-3 py-3 font-semibold">Usuário</th>
                   <th className="px-3 py-3 font-semibold">Plano</th>
@@ -232,11 +232,11 @@ export function SuperadminUsersPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-950/30">
+                  <tr key={user.id} className="hover:bg-[var(--bg-app)]/30">
                     <td className="px-3 py-3.5 align-top">
-                      <div className="font-semibold text-white">{user.name || 'Sem nome'}</div>
-                      <div className="mt-0.5 text-xs text-slate-400">{user.email}</div>
-                      <div className="mt-0.5 text-[11px] text-slate-500">{user.id}</div>
+                      <div className="font-semibold text-[var(--text-primary)]">{user.name || 'Sem nome'}</div>
+                      <div className="mt-0.5 text-xs text-[var(--text-secondary)]">{user.email}</div>
+                      <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{user.id}</div>
                     </td>
                     <td className="px-3 py-3.5 align-top">
                       <PlanBadge label={formatPlanLabel(user.currentPlan)} />
@@ -247,10 +247,10 @@ export function SuperadminUsersPage() {
                         <LifecycleBadge status={user.lifecycleStatus} />
                       </div>
                     </td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{formatPlatformRole(user.platformRole)}</td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminNumber(user.workspaceCount)}</td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}</td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminDate(user.createdAt)}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{formatPlatformRole(user.platformRole)}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{formatAdminNumber(user.workspaceCount)}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{user.lastAccessAt ? formatAdminDateTime(user.lastAccessAt) : 'Sem registro'}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{formatAdminDate(user.createdAt)}</td>
                     <td className="px-3 py-3.5 text-right align-top">
                       <Link href={`/superadmin/users/${user.id}`} className={secondaryActionClassName}>
                         Abrir
@@ -269,20 +269,20 @@ export function SuperadminUsersPage() {
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-4">
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-          <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+          <p className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">{icon}</div>
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-2.5">{icon}</div>
       </div>
     </div>
   );
 }
 
 function PlanBadge({ label }: { label: string }) {
-  return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{label}</span>;
+  return <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">{label}</span>;
 }
 
 function StatusBadge({ status }: { status: string | null }) {
@@ -294,10 +294,10 @@ function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED'
     <span
       className={
         status === 'BLOCKED'
-          ? 'rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-200'
+          ? 'rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--danger)]'
           : status === 'SUSPENDED'
-            ? 'rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-200'
-            : 'rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-200'
+            ? 'rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)]'
+            : 'rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)]'
       }
     >
       {status === 'BLOCKED' ? 'Bloqueado' : status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}
@@ -308,8 +308,8 @@ function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED'
 function LoadingState({ label }: { label: string }) {
   return (
     <div className="flex min-h-[220px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         {label}
       </div>
     </div>
@@ -317,28 +317,28 @@ function LoadingState({ label }: { label: string }) {
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>;
 }
 
 function FeedbackState({ message, success }: { message: string; success: boolean }) {
   return (
-    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100' : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'}`}>
+    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]' : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'}`}>
       {message}
     </div>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">{text}</div>;
+  return <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">{text}</div>;
 }
 
 const searchFieldClassName =
-  'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]';
 const compactFieldClassName =
-  'w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]';
 const secondaryActionClassName =
-  'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
+  'inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]';
 const primaryActionClassName =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--primary-hover)] disabled:opacity-60';
 
 

@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
 
 const benefits = [
@@ -10,33 +10,27 @@ const benefits = [
 
 export function BlogArticleCta() {
   return (
-    <section className="rounded-[2rem] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff_0%,#f0fdf4_100%)] p-6 shadow-[0_24px_80px_-50px_rgba(16,185,129,0.30)] sm:p-8">
-      <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+    <section className="card-premium rounded-[2rem] bg-[linear-gradient(180deg,var(--bg-surface)_0%,var(--bg-surface-elevated)_100%)] p-6 shadow-[var(--shadow-card)] sm:p-8">
+      <div className="badge-premium inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
         <Sparkles size={14} /> Como o Cote Finance AI pode ajudar
       </div>
-      <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950">Comece a organizar suas finanças hoje</h2>
-      <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
+      <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-primary)]">Comece a organizar suas finanças hoje</h2>
+      <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--text-secondary)]">
         Entenda seus gastos, acompanhe seu dinheiro e receba insights financeiros com inteligência artificial.
       </p>
-      <ul className="mt-6 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
+      <ul className="mt-6 grid gap-3 text-sm text-[var(--text-secondary)] md:grid-cols-2">
         {benefits.map((benefit) => (
-          <li key={benefit} className="flex items-start gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-            <Check size={16} className="mt-0.5 text-emerald-600" />
+          <li key={benefit} className="card-premium flex items-start gap-2 rounded-2xl bg-[var(--bg-surface)] px-4 py-3">
+            <Check size={16} className="mt-0.5 text-[var(--primary)]" />
             <span>{benefit}</span>
           </li>
         ))}
       </ul>
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Link
-          href="/signup"
-          className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
-        >
+        <Link href="/signup" className="button-primary px-5 py-3 text-sm font-bold">
           Começar grátis
         </Link>
-        <Link
-          href="/app"
-          className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-950"
-        >
+        <Link href="/app" className="button-secondary px-5 py-3 text-sm font-semibold">
           Ver o produto
         </Link>
       </div>

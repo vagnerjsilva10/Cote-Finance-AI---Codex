@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -76,20 +76,20 @@ export function SuperadminSubscriptionsPage() {
       {message ? <FeedbackState message={message} success /> : null}
       {error ? <ErrorState message={error} /> : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                 Assinaturas
               </span>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+              <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
                 Billing operacional
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Base pagante, pendencias e ação administrativa</h1>
-              <p className="mt-2 text-sm leading-7 text-slate-300">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] md:text-3xl">Base pagante, pendencias e ação administrativa</h1>
+              <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                 Consolide busca, filtro e ajuste manual de billing em uma camada compacta e direta para operação.
               </p>
             </div>
@@ -102,28 +102,28 @@ export function SuperadminSubscriptionsPage() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Base total" value={formatAdminNumber(metrics?.total || 0)} icon={<CreditCard className="h-4.5 w-4.5 text-emerald-300" />} />
+        <StatCard label="Base total" value={formatAdminNumber(metrics?.total || 0)} icon={<CreditCard className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
-        <StatCard label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} icon={<ShieldCheck className="h-4.5 w-4.5 text-amber-300" />} />
-        <StatCard label="MRR" value={formatAdminCurrency(metrics?.estimatedMrr || 0)} icon={<TrendingUp className="h-4.5 w-4.5 text-emerald-300" />} />
+        <StatCard label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} icon={<ShieldCheck className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
+        <StatCard label="MRR" value={formatAdminCurrency(metrics?.estimatedMrr || 0)} icon={<TrendingUp className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
       </section>
 
       <section className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white">Operação de billing</h2>
-              <p className="mt-1 text-sm text-slate-400">Busque por workspace, owner ou ID e filtre a fila real de trabalho.</p>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Operação de billing</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">Busque por workspace, owner ou ID e filtre a fila real de trabalho.</p>
             </div>
-            <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+            <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
               {formatAdminNumber(data?.subscriptions.length || 0)} visíveis
             </span>
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_0.4fr_0.4fr]">
             <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Buscar</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Buscar</span>
               <div className="relative mt-2">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -133,7 +133,7 @@ export function SuperadminSubscriptionsPage() {
               </div>
             </label>
             <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Plano</span>
               <select value={plan} onChange={(event) => setPlan(event.target.value)} className={compactFieldClassName}>
                 {PLAN_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -143,7 +143,7 @@ export function SuperadminSubscriptionsPage() {
               </select>
             </label>
             <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Status</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Status</span>
               <select value={status} onChange={(event) => setStatus(event.target.value)} className={compactFieldClassName}>
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -155,9 +155,9 @@ export function SuperadminSubscriptionsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-          <h2 className="text-lg font-bold text-white">Pulso de receita</h2>
-          <p className="mt-1 text-sm text-slate-400">Leitura rapida do estado da base pagante.</p>
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Pulso de receita</h2>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Leitura rapida do estado da base pagante.</p>
           <div className="mt-4 space-y-2.5">
             <MetricPill label="Ativas" value={formatAdminNumber(metrics?.active || 0)} />
             <MetricPill label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} tone={(metrics?.pending || 0) > 0 ? 'danger' : 'neutral'} />
@@ -167,11 +167,11 @@ export function SuperadminSubscriptionsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white">Base de assinaturas</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Base de assinaturas</h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {data ? `${formatAdminNumber(data.total)} assinatura(s) encontradas.` : 'Carregando base de assinaturas.'}
             </p>
           </div>
@@ -186,7 +186,7 @@ export function SuperadminSubscriptionsPage() {
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-[11px] uppercase tracking-[0.22em] text-slate-500">
+              <thead className="border-b border-[var(--border-default)] text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
                 <tr>
                   <th className="px-3 py-3 font-semibold">Workspace</th>
                   <th className="px-3 py-3 font-semibold">Owner</th>
@@ -200,23 +200,23 @@ export function SuperadminSubscriptionsPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.subscriptions.map((item) => (
-                  <tr key={item.workspaceId} className="hover:bg-slate-950/30">
+                  <tr key={item.workspaceId} className="hover:bg-[var(--bg-app)]/30">
                     <td className="px-3 py-3.5 align-top">
-                      <div className="font-semibold text-white">{item.workspaceName}</div>
-                      <div className="mt-0.5 text-[11px] text-slate-500">{item.workspaceId}</div>
+                      <div className="font-semibold text-[var(--text-primary)]">{item.workspaceName}</div>
+                      <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{item.workspaceId}</div>
                     </td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{item.ownerEmail || 'Sem owner'}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{item.ownerEmail || 'Sem owner'}</td>
                     <td className="px-3 py-3.5 align-top">
                       <PlanBadge plan={item.plan} />
                     </td>
                     <td className="px-3 py-3.5 align-top">
                       <StatusBadge status={item.status} />
                     </td>
-                    <td className="px-3 py-3.5 align-top text-slate-300">{formatAdminDate(item.currentPeriodEnd)}</td>
-                    <td className="px-3 py-3.5 align-top text-slate-400">
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">{formatAdminDate(item.currentPeriodEnd)}</td>
+                    <td className="px-3 py-3.5 align-top text-[var(--text-secondary)]">
                       {item.hasStripeSubscription ? 'Assinatura Stripe' : item.hasStripeCustomer ? 'Cliente Stripe' : 'Sem vínculo'}
                     </td>
-                    <td className="px-3 py-3.5 align-top font-semibold text-white">{formatAdminCurrency(item.estimatedMrr)}</td>
+                    <td className="px-3 py-3.5 align-top font-semibold text-[var(--text-primary)]">{formatAdminCurrency(item.estimatedMrr)}</td>
                     <td className="px-3 py-3.5 text-right align-top">
                       <div className="flex justify-end gap-2">
                         <button type="button" onClick={() => setSelectedSubscription(item)} className={secondaryActionClassName}>
@@ -317,13 +317,13 @@ function SubscriptionActionSheet({
   const [clearStripeLinks, setClearStripeLinks] = React.useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 p-4 backdrop-blur-sm xl:items-center">
-      <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-950/98 p-6 shadow-2xl backdrop-blur-xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--bg-app)] p-4 backdrop-blur-sm xl:items-center">
+      <div className="w-full max-w-xl rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Operação administrativa</p>
-            <h3 className="mt-2 text-xl font-black text-white">{subscription.workspaceName}</h3>
-            <p className="mt-2 text-sm leading-7 text-slate-400">Ajuste billing, vínculo Stripe e observações administrativas.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Operação administrativa</p>
+            <h3 className="mt-2 text-xl font-black text-[var(--text-primary)]">{subscription.workspaceName}</h3>
+            <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">Ajuste billing, vínculo Stripe e observações administrativas.</p>
           </div>
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryActionClassName}>
             Fechar
@@ -332,7 +332,7 @@ function SubscriptionActionSheet({
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Plano</span>
             <select value={plan} onChange={(event) => setPlan(event.target.value)} className={compactFieldClassName}>
               {PLAN_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                 <option key={option.value} value={option.value}>
@@ -342,7 +342,7 @@ function SubscriptionActionSheet({
             </select>
           </label>
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Status</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Status</span>
             <select value={status} onChange={(event) => setStatus(event.target.value)} className={compactFieldClassName}>
               {STATUS_OPTIONS.filter((option) => option.value !== 'ALL').map((option) => (
                 <option key={option.value} value={option.value}>
@@ -352,24 +352,24 @@ function SubscriptionActionSheet({
             </select>
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Período atual</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Período atual</span>
             <input type="date" value={currentPeriodEnd} onChange={(event) => setCurrentPeriodEnd(event.target.value)} className={compactFieldClassName} />
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Customer ID</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Stripe Customer ID</span>
             <input value={stripeCustomerId} onChange={(event) => setStripeCustomerId(event.target.value)} className={compactFieldClassName} placeholder="cus_..." />
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Stripe Subscription ID</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Stripe Subscription ID</span>
             <input value={stripeSubscriptionId} onChange={(event) => setStripeSubscriptionId(event.target.value)} className={compactFieldClassName} placeholder="sub_..." />
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Observação administrativa</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Observação administrativa</span>
             <textarea value={adminNote} onChange={(event) => setAdminNote(event.target.value)} rows={4} className={compactFieldClassName} placeholder="Ex: cobranca conciliada, upgrade manual, revisão interna." />
           </label>
-          <label className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white sm:col-span-2">
+          <label className="flex items-center justify-between rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] sm:col-span-2">
             <span>Desvincular referencias Stripe</span>
-            <input type="checkbox" checked={clearStripeLinks} onChange={(event) => setClearStripeLinks(event.target.checked)} className="h-4 w-4 rounded border-white/20 bg-slate-900 text-emerald-400" />
+            <input type="checkbox" checked={clearStripeLinks} onChange={(event) => setClearStripeLinks(event.target.checked)} className="h-4 w-4 rounded border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-secondary)]" />
           </label>
         </div>
 
@@ -405,13 +405,13 @@ function SubscriptionActionSheet({
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-4">
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">{label}</p>
-          <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</p>
+          <p className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">{icon}</div>
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-2.5">{icon}</div>
       </div>
     </div>
   );
@@ -419,15 +419,15 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
 
 function MetricPill({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'neutral' | 'danger' }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-3">
-      <span className="text-sm text-slate-400">{label}</span>
-      <span className={tone === 'danger' ? 'text-sm font-semibold text-rose-300' : 'text-sm font-semibold text-white'}>{value}</span>
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3.5 py-3">
+      <span className="text-sm text-[var(--text-secondary)]">{label}</span>
+      <span className={tone === 'danger' ? 'text-sm font-semibold text-[var(--danger)]' : 'text-sm font-semibold text-[var(--text-primary)]'}>{value}</span>
     </div>
   );
 }
 
 function PlanBadge({ plan }: { plan: string }) {
-  return <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">{formatPlanLabel(plan)}</span>;
+  return <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">{formatPlanLabel(plan)}</span>;
 }
 
 function StatusBadge({ status }: { status: string | null }) {
@@ -437,8 +437,8 @@ function StatusBadge({ status }: { status: string | null }) {
 function LoadingState({ label }: { label: string }) {
   return (
     <div className="flex min-h-[220px] items-center justify-center">
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4 text-slate-200">
-        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+      <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]">
+        <Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />
         {label}
       </div>
     </div>
@@ -447,27 +447,27 @@ function LoadingState({ label }: { label: string }) {
 
 function FeedbackState({ message, success }: { message: string; success: boolean }) {
   return (
-    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-100' : 'border border-rose-500/20 bg-rose-500/10 text-rose-100'}`}>
+    <div className={`rounded-2xl px-4 py-4 text-sm ${success ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]' : 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'}`}>
       {message}
     </div>
   );
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-5 text-sm text-rose-100">{message}</div>;
+  return <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-5 text-sm text-[var(--danger)]">{message}</div>;
 }
 
 function EmptyState() {
-  return <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-sm text-slate-400">Nenhuma assinatura encontrada com os filtros atuais.</div>;
+  return <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-6 text-sm text-[var(--text-secondary)]">Nenhuma assinatura encontrada com os filtros atuais.</div>;
 }
 
 const searchFieldClassName =
-  'w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-500';
+  'w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] py-3 pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]';
 const compactFieldClassName =
-  'mt-2 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-500';
+  'mt-2 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--primary)]';
 const secondaryActionClassName =
-  'inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-all hover:border-emerald-500 hover:text-white';
+  'inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-all hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]';
 const primaryActionClassName =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--primary-hover)] disabled:opacity-60';
 
 

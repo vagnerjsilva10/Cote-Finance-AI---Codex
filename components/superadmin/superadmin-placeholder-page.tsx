@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react';
+﻿import { Sparkles } from 'lucide-react';
 
 import {
   SuperadminActionLink,
@@ -34,14 +34,14 @@ export function SuperadminPlaceholderPage({
         description="A rota, a proteção server-side e a arquitetura visual já estão prontas. O próximo passo é conectar dados, filtros, ações operacionais e histórico administrativo."
       >
         <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
             <div className="flex items-start gap-3">
-              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-emerald-200">
+              <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3 text-[var(--text-secondary)]">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">Estrutura já conectada ao painel</p>
-                <p className="mt-2 text-sm leading-7 text-slate-400">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Estrutura já conectada ao painel</p>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                   Quando este módulo evoluir, ele já herda o shell administrativo, o padrão visual, os estados de
                   carregamento e a governança de acesso da plataforma.
                 </p>
@@ -49,9 +49,9 @@ export function SuperadminPlaceholderPage({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Checklist</p>
-            <ul className="mt-4 space-y-3 text-sm text-slate-300">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">Checklist</p>
+            <ul className="mt-4 space-y-3 text-sm text-[var(--text-secondary)]">
               <li>Layout administrativo ativo</li>
               <li>Rota protegida por superadmin</li>
               <li>Espaço pronto para métricas e ações</li>

@@ -172,7 +172,7 @@ type Goal = {
   category: string;
   deadline?: string | null;
   icon: LucideIcon;
-  color: string; // className ex: 'text-[#3FB68B]'
+  color: string; // className ex: 'text-[var(--success)]'
 };
 
 type Investment = {
@@ -185,7 +185,7 @@ type Investment = {
   value: number; // valor atual
   invested: number; // valor total investido
   expectedReturnAnnual: number;
-  color: string; // className ex: 'bg-[#4C8DFF]'
+  color: string; // className ex: 'bg-[var(--primary)]'
 };
 
 type WalletAccount = {
@@ -730,7 +730,7 @@ const optimizeAvatarFile = (file: File) =>
         const offsetX = (image.naturalWidth - cropSize) / 2;
         const offsetY = (image.naturalHeight - cropSize) / 2;
 
-        context.fillStyle = '#020617';
+        context.fillStyle = 'var(--bg-surface)';
         context.fillRect(0, 0, AVATAR_OUTPUT_SIZE, AVATAR_OUTPUT_SIZE);
         context.drawImage(
           image,
@@ -904,18 +904,18 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
 
 const getInvestmentColor = (type: string) => {
   const colorMap: Record<string, string> = {
-    'Renda fixa': 'bg-[#4C8DFF]',
-    'Renda variÃ¡vel': 'bg-blue-500',
-    Tesouro: 'bg-cyan-500',
-    CDB: 'bg-blue-500',
-    'LCI/LCA': 'bg-lime-500',
-    'AÃ§Ãµes': 'bg-amber-500',
-    Fundos: 'bg-violet-500',
-    Cripto: 'bg-rose-500',
-    Outros: 'bg-slate-500',
+    'Renda fixa': 'bg-[var(--primary)]',
+    'Renda variÃ¡vel': 'bg-[var(--primary)]',
+    Tesouro: 'bg-[var(--primary)]',
+    CDB: 'bg-[var(--primary)]',
+    'LCI/LCA': 'bg-[var(--primary)]',
+    'AÃ§Ãµes': 'bg-[color:var(--danger-soft)]',
+    Fundos: 'bg-[var(--primary)]',
+    Cripto: 'bg-[color:var(--danger-soft)]',
+    Outros: 'bg-[var(--bg-surface-elevated)]',
   };
 
-  return colorMap[type] || 'bg-slate-500';
+  return colorMap[type] || 'bg-[var(--bg-surface-elevated)]';
 };
 
 const mapFlowTypeToBaseType = (flowType: TransactionFlowType): 'income' | 'expense' | 'transfer' => {
@@ -1295,7 +1295,7 @@ const renderInlineAssistantText = (text: string) => {
     .map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong key={`assistant-strong-${index}`} className="font-semibold text-white">
+          <strong key={`assistant-strong-${index}`} className="font-semibold text-[var(--text-primary)]">
             {part.slice(2, -2)}
           </strong>
         );
@@ -1324,8 +1324,8 @@ const renderAssistantMessageText = (rawText: string) => {
         if (orderedItem) {
           return (
             <div key={`assistant-item-${lineIndex}`} className="flex items-start gap-2">
-              <span className="text-[#86B7FF] font-bold">{orderedItem[1]}.</span>
-              <p className="text-sm text-slate-200 leading-relaxed break-words">
+              <span className="text-[var(--text-secondary)] font-bold">{orderedItem[1]}.</span>
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed break-words">
                 {renderInlineAssistantText(orderedItem[2])}
               </p>
             </div>
@@ -1333,7 +1333,7 @@ const renderAssistantMessageText = (rawText: string) => {
         }
 
         return (
-          <p key={`assistant-line-${lineIndex}`} className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap break-words">
+          <p key={`assistant-line-${lineIndex}`} className="text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap break-words">
             {renderInlineAssistantText(trimmed)}
           </p>
         );
@@ -1362,15 +1362,15 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
-            <h2 className="page-title-premium mb-2 text-white">Erro na interface</h2>
-            <p className="text-sm text-slate-400 mb-5">
+        <div className="min-h-screen bg-[var(--bg-app)] flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6 text-center">
+            <h2 className="page-title-premium mb-2 text-[var(--text-primary)]">Erro na interface</h2>
+            <p className="text-sm text-[var(--text-secondary)] mb-5">
               Ocorreu uma falha inesperada de renderizaÃ§Ã£o. Recarregue a pÃ¡gina para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-lg bg-[#4C8DFF] text-white text-sm font-bold hover:bg-[#3B7DF5] transition-colors"
+              className="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--text-primary)] text-sm font-bold hover:bg-[var(--primary-hover)] transition-colors"
             >
               Recarregar pÃ¡gina
             </button>
@@ -1451,7 +1451,7 @@ const UserAvatar = ({
       ) : (
         <div
           className={cn(
-            'flex h-full w-full items-center justify-center bg-[#4C8DFF]/16 font-bold text-[#86B7FF]',
+            'flex h-full w-full items-center justify-center bg-[color:var(--primary-soft)] font-bold text-[var(--text-secondary)]',
             fallbackClassName,
             textClassName
           )}
@@ -1479,13 +1479,13 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
       'group flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-left transition-all duration-200',
       collapsed && 'justify-center px-2',
       active
-        ? 'border-[#4C8DFF]/20 bg-[linear-gradient(180deg,rgba(76,141,255,0.14)_0%,rgba(76,141,255,0.08)_100%)] text-[#E8EEF5] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
-        : 'text-slate-400 hover:border-white/[0.04] hover:bg-[#121A24] hover:text-[#E8EEF5]'
+        ? 'border-[color:var(--border-default)] bg-[linear-gradient(180deg,rgba(76,141,255,0.14)_0%,rgba(76,141,255,0.08)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
+        : 'text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)]'
     )}
   >
     <Icon
       size={20}
-      className={cn(active ? 'text-[#6BA7FF]' : 'text-slate-500 group-hover:text-slate-300')}
+      className={cn(active ? 'text-[var(--primary-hover)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]')}
     />
     {!collapsed && <span className="text-sm">{label}</span>}
   </button>
@@ -1508,30 +1508,30 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="group relative overflow-hidden app-surface-subtle rounded-2xl p-6 transition-all duration-200 hover:border-white/[0.08] hover:bg-[#16202B]">
+  <div className="group relative overflow-hidden app-surface-subtle rounded-2xl p-6 transition-all duration-200 hover:border-[var(--border-default)] hover:bg-[var(--bg-surface-elevated)]">
     <div className="flex items-center justify-between mb-4">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</span>
       <div
         className={cn(
           'rounded-full border p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]',
           trendType === 'up'
-            ? 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]'
-            : 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
+            ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+            : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]'
         )}
       >
         <Icon size={18} />
       </div>
     </div>
     <div className="flex flex-col gap-2">
-      <p className="text-[2rem] font-bold tracking-[-0.03em] text-[#F8FBFF]">{value}</p>
+      <p className="text-[2rem] font-bold tracking-[-0.03em] text-[var(--text-primary)]">{value}</p>
       <div
         className={cn(
           'text-sm font-semibold flex items-center gap-1',
-          trendType === 'up' ? 'text-[#3FB68B]' : 'text-[#E05A5A]'
+          trendType === 'up' ? 'text-[var(--success)]' : 'text-[var(--danger)]'
         )}
       >
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-        {trendValue} <span className="ml-1 font-normal text-slate-500">{trend}</span>
+        {trendValue} <span className="ml-1 font-normal text-[var(--text-muted)]">{trend}</span>
       </div>
     </div>
     <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
@@ -1569,24 +1569,24 @@ const SubscriptionView = ({
 }: SubscriptionViewProps) => {
   const statusTone =
     summary?.status === 'PENDING'
-      ? 'border-amber-400/20 bg-amber-500/10 text-amber-100'
+      ? 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
       : summary?.status === 'CANCELED'
-        ? 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
+        ? 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]'
         : summary?.status === 'TRIALING'
-          ? 'border-cyan-400/20 bg-cyan-500/10 text-cyan-100'
-          : 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#D8E7FF]';
+          ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+          : 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
 
   return (
     <div className="max-w-6xl space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[#D8E7FF]">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-secondary)]">
             <Sparkles size={14} />
             Billing interno
           </span>
           <div>
-            <h3 className="text-2xl font-black text-white">Minha assinatura</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-2xl font-black text-[var(--text-primary)]">Minha assinatura</h3>
+            <p className="text-sm text-[var(--text-secondary)]">
               Gerencie seu plano, cobranÃ§a e status da assinatura sem sair do Cote Finance AI.
             </p>
           </div>
@@ -1602,18 +1602,18 @@ const SubscriptionView = ({
 
       {isLoading ? (
         <div className="app-surface-card rounded-[1.75rem] p-8 text-center">
-          <p className="text-base font-semibold text-white">Carregando assinatura...</p>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="text-base font-semibold text-[var(--text-primary)]">Carregando assinatura...</p>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
             Estamos sincronizando o status do workspace e a cobranÃ§a atual.
           </p>
         </div>
       ) : error ? (
-        <div className="rounded-[1.75rem] border border-white/[0.06] bg-slate-950/70 p-6">
-          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#E05A5A]">Falha ao carregar</p>
-          <p className="mt-3 text-sm text-slate-100">{error}</p>
+        <div className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-app)] p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[var(--danger)]">Falha ao carregar</p>
+          <p className="mt-3 text-sm text-[var(--text-primary)]">{error}</p>
           <button
             onClick={onRetry}
-            className="mt-4 inline-flex items-center justify-center rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/5"
+            className="mt-4 inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]/5"
           >
             Tentar novamente
           </button>
@@ -1628,58 +1628,58 @@ const SubscriptionView = ({
                     {summary.statusLabel}
                   </span>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Plano atual</p>
-                    <h4 className="mt-2 text-3xl font-black text-white">{summary.planLabel}</h4>
-                    <p className="mt-2 max-w-2xl text-sm text-slate-300">{summary.statusMessage}</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Plano atual</p>
+                    <h4 className="mt-2 text-3xl font-black text-[var(--text-primary)]">{summary.planLabel}</h4>
+                    <p className="mt-2 max-w-2xl text-sm text-[var(--text-secondary)]">{summary.statusMessage}</p>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Próxima cobrança</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{formatSubscriptionDate(summary.nextBillingDate)}</p>
+                <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Próxima cobrança</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{formatSubscriptionDate(summary.nextBillingDate)}</p>
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Status da assinatura</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{summary.statusLabel}</p>
+                <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">Status da assinatura</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.statusLabel}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">CobranÃ§a</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{summary.billingLabel}</p>
+                <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">CobranÃ§a</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.billingLabel}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Workspace vinculado</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{summary.workspaceName}</p>
+                <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">Workspace vinculado</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.workspaceName}</p>
                 </div>
               </div>
             </div>
 
             <div className="app-surface-card space-y-4 rounded-[1.9rem] p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rÃ¡pido</p>
-                <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Resumo rÃ¡pido</p>
+                <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">Central de assinatura</h4>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   Tudo o que importa para este workspace fica visÃ­vel aqui. Quando uma aÃ§Ã£o exigir a Stripe,
                   abrimos apenas a etapa necessÃ¡ria.
                 </p>
               </div>
 
-              <div className="space-y-3 rounded-[1.4rem] border border-[#4C8DFF]/15 bg-[#4C8DFF]/7 p-4">
+              <div className="space-y-3 rounded-[1.4rem] border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-4">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="mt-0.5 text-[#86B7FF]" />
+                  <CheckCircle2 size={18} className="mt-0.5 text-[var(--text-secondary)]" />
                   <div>
-                    <p className="text-sm font-semibold text-white">Pagamento seguro</p>
-                    <p className="mt-1 text-sm text-slate-300">
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Pagamento seguro</p>
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       Seus dados continuam protegidos pela Stripe e sincronizados com o billing do workspace.
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <CreditCard size={18} className="mt-0.5 text-[#86B7FF]" />
+                  <CreditCard size={18} className="mt-0.5 text-[var(--text-secondary)]" />
                   <div>
-                    <p className="text-sm font-semibold text-white">GestÃ¡o sem sair do app</p>
-                    <p className="mt-1 text-sm text-slate-300">
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">GestÃ¡o sem sair do app</p>
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       Status, plano e prÃ³ximas cobranÃ§as aparecem dentro do SaaS. Portal externo sÃ³ quando preciso.
                     </p>
                   </div>
@@ -1692,16 +1692,16 @@ const SubscriptionView = ({
             <div className="app-surface-card rounded-[1.75rem] p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Recursos do plano</p>
-                  <h4 className="mt-2 text-xl font-black text-white">BenefÃ­cios ativos</h4>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Recursos do plano</p>
+                  <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">BenefÃ­cios ativos</h4>
                 </div>
-                <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+                <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                   {summary.planLabel}
                 </span>
               </div>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {summary.features.map((feature) => (
-                  <div key={feature} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-sm text-slate-200">
+                  <div key={feature} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 text-sm text-[var(--text-primary)]">
                     {feature}
                   </div>
                 ))}
@@ -1709,50 +1709,50 @@ const SubscriptionView = ({
             </div>
 
             <div className="app-surface-card rounded-[1.75rem] p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">AÃ§Ãµes disponÃ­veis</p>
-              <h4 className="mt-2 text-xl font-black text-white">Gerenciar assinatura</h4>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">AÃ§Ãµes disponÃ­veis</p>
+              <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">Gerenciar assinatura</h4>
               <div className="mt-5 space-y-3">
                 <button
                   onClick={onChangePlan}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-[#4C8DFF]/30 hover:bg-slate-900"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-left text-sm font-semibold text-[var(--text-primary)] transition hover:border-[color:var(--border-default)] hover:bg-[var(--bg-surface)]"
                 >
                   <span>{summary.primaryActionLabel || 'Alterar plano'}</span>
-                  <ArrowUpRight size={16} className="text-[#86B7FF]" />
+                  <ArrowUpRight size={16} className="text-[var(--text-secondary)]" />
                 </button>
                 <button
                   onClick={onCancel}
                   disabled={!summary.canCancel || actionLoading !== null}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/15 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-left text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span>{actionLoading === 'cancel' ? 'Cancelando...' : 'Cancelar assinatura'}</span>
                 </button>
                 <button
                   onClick={onReactivate}
                   disabled={!summary.canReactivate || actionLoading !== null}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-[#4C8DFF]/30 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-left text-sm font-semibold text-[var(--text-primary)] transition hover:border-[color:var(--border-default)] hover:bg-[var(--bg-surface)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span>{actionLoading === 'reactivate' ? 'Reativando...' : 'Reativar assinatura'}</span>
                 </button>
                 <button
                   onClick={onOpenPaymentMethod}
                   disabled={!summary.canManageBilling || actionLoading !== null}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-left text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span>{actionLoading === 'payment' ? 'Abrindo...' : 'Atualizar forma de pagamento'}</span>
-                  <ExternalLink size={16} className="text-slate-400" />
+                  <ExternalLink size={16} className="text-[var(--text-secondary)]" />
                 </button>
                 <button
                   onClick={onOpenBillingHistory}
                   disabled={!summary.canManageBilling || actionLoading !== null}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/20 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-left text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histÃ³rico de cobranÃ§a'}</span>
-                  <ExternalLink size={16} className="text-slate-400" />
+                  <ExternalLink size={16} className="text-[var(--text-secondary)]" />
                 </button>
               </div>
 
               {summary.cancelAtPeriodEnd ? (
-                <p className="mt-4 text-sm text-amber-200">
+                <p className="mt-4 text-sm text-[var(--text-secondary)]">
                   O cancelamento estÃ¡ agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
                   da data de encerramento.
                 </p>
@@ -1860,12 +1860,12 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="page-title-premium text-white">Visão Geral</h3>
-          <p className="text-sm text-slate-400 capitalize">Resumo de {monthLabel}</p>
+          <h3 className="page-title-premium text-[var(--text-primary)]">Visão Geral</h3>
+          <p className="text-sm text-[var(--text-secondary)] capitalize">Resumo de {monthLabel}</p>
         </div>
         <button
           onClick={onAddTransaction}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-4 py-2 text-sm font-bold text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
         >
           <Plus size={16} /> Nova Transação
         </button>
@@ -1908,17 +1908,17 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="app-surface-card lg:col-span-2 rounded-2xl p-6">
           <div className="mb-6">
-            <h3 className="card-title-premium text-white">Receitas vs Despesas</h3>
-            <p className="text-sm text-slate-400">Ãšltimos 6 meses</p>
+            <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
+            <p className="text-sm text-[var(--text-secondary)]">Ãšltimos 6 meses</p>
           </div>
 
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                <XAxis dataKey="name" stroke="#7D8A9A" fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis
-                  stroke="#7D8A9A"
+                  stroke="var(--text-muted)"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -1926,7 +1926,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#101924',
+                    backgroundColor: 'var(--bg-surface)',
                     border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: '12px',
                     boxShadow: '0 18px 40px rgba(0,0,0,0.32)',
@@ -1940,7 +1940,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="income"
                   name="income"
-                  stroke="#4C8DFF"
+                  stroke="var(--primary)"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -1949,7 +1949,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="expense"
                   name="expense"
-                  stroke="#f43f5e"
+                  stroke="var(--danger)"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -1960,13 +1960,13 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
 
         <div className="app-surface-card rounded-2xl p-6">
-          <h3 className="card-title-premium mb-6 text-white">Insights do mÃªs</h3>
+          <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mÃªs</h3>
           <div className="space-y-4">
             <div className="app-surface-subtle rounded-xl p-4">
-              <p className="label-premium mb-2 text-slate-500">
+              <p className="label-premium mb-2 text-[var(--text-muted)]">
                 Maior gasto do mÃªs
               </p>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">
                 {largestExpenseEntry
                   ? `${largestExpenseEntry[0]} (${formatCurrency(largestExpenseEntry[1])})`
                   : 'Sem despesas no mês atual'}
@@ -1974,13 +1974,13 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
             </div>
 
             <div className="app-surface-subtle rounded-xl p-4">
-              <p className="label-premium mb-2 text-slate-500">
+              <p className="label-premium mb-2 text-[var(--text-muted)]">
                 Resumo do mÃªs
               </p>
-              <p className="text-sm text-slate-200">
-                VocÃª gastou <span className="font-bold text-[#E05A5A]">{formatCurrency(monthExpenses)}</span>{' '}
+              <p className="text-sm text-[var(--text-primary)]">
+                VocÃª gastou <span className="font-bold text-[var(--danger)]">{formatCurrency(monthExpenses)}</span>{' '}
                 em{' '}
-                <span className="font-bold text-white">
+                <span className="font-bold text-[var(--text-primary)]">
                   {currentMonthTransactions.filter((tx) => tx.type === 'expense').length}
                 </span>{' '}
                 transaÃ§Ãµes.
@@ -1989,17 +1989,17 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
 
             {currentPlan === 'FREE' ? (
               <div className="app-surface-subtle rounded-xl p-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] mb-2">
+                <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
                   DisponÃ­vel no Pro
                 </p>
-                <p className="text-sm leading-relaxed text-slate-200">
+                <p className="text-sm leading-relaxed text-[var(--text-primary)]">
                   Receba insights financeiros automÃ¡ticos com base no seu histÃ³rico para identificar padrÃµes,
                   desperdÃ­cios e oportunidades de ajuste.
                 </p>
                 <button
                   type="button"
                   onClick={onUpgrade}
-                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-white/[0.08] bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-4 py-2 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,141,255,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] shadow-[0_10px_24px_rgba(76,141,255,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
                 >
                   Liberar insights automÃ¡ticos
                 </button>
@@ -2010,10 +2010,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   key={`${index}-${insight.slice(0, 24)}`}
                   className="app-surface-subtle rounded-xl p-4"
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] mb-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
                     Insight automÃ¡tico
                   </p>
-                  <p className="text-sm text-slate-200">{insight}</p>
+                  <p className="text-sm text-[var(--text-primary)]">{insight}</p>
                 </div>
               ))
             )}
@@ -2022,9 +2022,9 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
       </div>
 
       <div className="app-table-shell overflow-hidden rounded-2xl">
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
-          <h3 className="card-title-premium text-white">Ãšltimas transaÃ§Ãµes</h3>
-          <span className="text-xs text-slate-500 uppercase tracking-widest">
+        <div className="flex items-center justify-between border-b border-[var(--border-default)] px-6 py-4">
+          <h3 className="card-title-premium text-[var(--text-primary)]">Ãšltimas transaÃ§Ãµes</h3>
+          <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
         </div>
@@ -2032,17 +2032,17 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-left">
             <thead>
-              <tr className="border-b border-white/[0.06] bg-[#111827]">
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+              <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface)]">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                   Categoria
                 </th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                   DescriÃ§Ã£o
                 </th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                   Data
                 </th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500 text-right">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] text-right">
                   Valor
                 </th>
               </tr>
@@ -2050,24 +2050,24 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
             <tbody className="divide-y divide-white/[0.06]">
               {recentTransactions.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-slate-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
                     Nenhuma transaÃ§Ã£o encontrada.
                   </td>
                 </tr>
               )}
               {recentTransactions.map((tx) => (
-                <tr key={tx.id} className="transition-colors hover:bg-slate-800/40">
-                  <td className="px-6 py-4 text-sm text-slate-300">{tx.cat || 'Sem categoria'}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-white">{tx.desc}</td>
-                  <td className="px-6 py-4 text-sm text-slate-400">{tx.date}</td>
+                <tr key={tx.id} className="transition-colors hover:bg-[var(--bg-surface-elevated)]/40">
+                  <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.cat || 'Sem categoria'}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{tx.desc}</td>
+                  <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.date}</td>
                   <td
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
                       tx.type === 'income'
-                        ? 'text-[#3FB68B]'
+                        ? 'text-[var(--success)]'
                         : tx.type === 'expense'
-                          ? 'text-[#E05A5A]'
-                          : 'text-cyan-400'
+                          ? 'text-[var(--danger)]'
+                          : 'text-[var(--text-secondary)]'
                     )}
                   >
                     {tx.amount}
@@ -2125,7 +2125,7 @@ const TransactionsView = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-white">Transações</h3>
+        <h3 className="page-title-premium text-[var(--text-primary)]">Transações</h3>
         <button
           onClick={onAddTransaction}
           className="app-button-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
@@ -2136,16 +2136,16 @@ const TransactionsView = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Entradas totais</p>
-          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalIncome)}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Entradas totais</p>
+          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">SaÃ­das totais</p>
-          <p className="text-2xl font-black text-[#E05A5A]">{formatCurrency(totalExpenses)}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">SaÃ­das totais</p>
+          <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Saldo</p>
-          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Saldo</p>
+          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
             {formatCurrency(balance)}
           </p>
         </div>
@@ -2154,7 +2154,7 @@ const TransactionsView = ({
       <div className="app-surface-card rounded-2xl p-4 lg:p-5">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="lg:col-span-2 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -2180,7 +2180,7 @@ const TransactionsView = ({
 
       <div className="lg:hidden space-y-4">
         {filteredTransactions.length === 0 && (
-          <div className="app-surface-card rounded-2xl p-6 text-center text-slate-500 text-sm">
+          <div className="app-surface-card rounded-2xl p-6 text-center text-[var(--text-muted)] text-sm">
             Nenhuma transaÃ§Ã£o encontrada para os filtros atuais.
           </div>
         )}
@@ -2192,17 +2192,17 @@ const TransactionsView = ({
             <div key={tx.id} className="app-surface-card rounded-2xl p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-white">{tx.desc}</p>
-                  <p className="text-xs text-slate-500">{tx.date}</p>
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">{tx.desc}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{tx.date}</p>
                 </div>
                 <p
                   className={cn(
                     'text-sm font-bold',
                     baseType === 'income'
-                      ? 'text-[#3FB68B]'
+                      ? 'text-[var(--success)]'
                       : baseType === 'expense'
-                        ? 'text-[#E05A5A]'
-                        : 'text-cyan-400'
+                        ? 'text-[var(--danger)]'
+                        : 'text-[var(--text-secondary)]'
                   )}
                 >
                   {tx.amount}
@@ -2210,20 +2210,20 @@ const TransactionsView = ({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
                   {tx.flowType}
                 </span>
-                <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
                   {tx.cat || 'Sem categoria'}
                 </span>
-                <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
+                <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
                   {getPaymentMethodIconLabel(tx.paymentMethod)}
                 </span>
-                <span className="text-[10px] text-[#3FB68B]/80 font-bold uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] text-[var(--success)]/80 font-bold uppercase tracking-widest flex items-center gap-1">
                   <Wallet size={10} /> {tx.wallet}
                 </span>
                 {tx.flowType === 'TransferÃªncia' && tx.destinationWallet && (
-                  <span className="text-[10px] text-cyan-400/80 font-bold uppercase tracking-widest">
+                  <span className="text-[10px] text-[var(--text-secondary)]/80 font-bold uppercase tracking-widest">
                     ? {tx.destinationWallet}
                   </span>
                 )}
@@ -2232,13 +2232,13 @@ const TransactionsView = ({
               <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={() => onEditTransaction(tx.id)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <Pencil size={12} /> Editar
                 </button>
                 <button
                   onClick={() => onDeleteTransaction(tx.id)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-slate-950/70 text-[#E05A5A] hover:bg-slate-900 transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--bg-app)] text-[var(--danger)] hover:bg-[var(--bg-surface)] transition-colors"
                 >
                   <Trash2 size={12} /> Excluir
                 </button>
@@ -2251,21 +2251,21 @@ const TransactionsView = ({
       <div className="app-table-shell hidden lg:block rounded-2xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-800/30">
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Data</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">DescriÃ§Ã£o</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Tipo</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Categoria</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">MÃ©todo</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Carteira</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Valor</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">AÃ§Ãµes</th>
+            <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30">
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Data</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">DescriÃ§Ã£o</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Tipo</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Categoria</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">MÃ©todo</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Carteira</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Valor</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filteredTransactions.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">
+                <td colSpan={8} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
                   Nenhuma transaÃ§Ã£o encontrada para os filtros atuais.
                 </td>
               </tr>
@@ -2275,17 +2275,17 @@ const TransactionsView = ({
               const baseType = mapFlowTypeToBaseType(tx.flowType);
 
               return (
-                <tr key={tx.id} className="hover:bg-slate-800/30 transition-colors group">
-                  <td className="px-6 py-4 text-sm text-slate-400">{tx.date}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-white">{tx.desc}</td>
+                <tr key={tx.id} className="hover:bg-[var(--bg-surface-elevated)]/30 transition-colors group">
+                  <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.date}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{tx.desc}</td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
                       {tx.flowType}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{tx.cat || 'Sem categoria'}</td>
-                  <td className="px-6 py-4 text-xs text-slate-300">{tx.paymentMethod}</td>
-                  <td className="px-6 py-4 text-xs text-slate-400">
+                  <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.cat || 'Sem categoria'}</td>
+                  <td className="px-6 py-4 text-xs text-[var(--text-secondary)]">{tx.paymentMethod}</td>
+                  <td className="px-6 py-4 text-xs text-[var(--text-secondary)]">
                     {tx.wallet}
                     {tx.flowType === 'TransferÃªncia' && tx.destinationWallet ? ` -> ${tx.destinationWallet}` : ''}
                   </td>
@@ -2293,10 +2293,10 @@ const TransactionsView = ({
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
                       baseType === 'income'
-                        ? 'text-[#3FB68B]'
+                        ? 'text-[var(--success)]'
                         : baseType === 'expense'
-                          ? 'text-[#E05A5A]'
-                          : 'text-cyan-400'
+                          ? 'text-[var(--danger)]'
+                          : 'text-[var(--text-secondary)]'
                     )}
                   >
                     {tx.amount}
@@ -2305,14 +2305,14 @@ const TransactionsView = ({
                     <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => onEditTransaction(tx.id)}
-                        className="p-2 text-slate-400 hover:text-white transition-colors"
+                        className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                         title="Editar"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
                         onClick={() => onDeleteTransaction(tx.id)}
-                        className="p-2 text-slate-500 hover:text-[#E05A5A] transition-colors"
+                        className="p-2 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors"
                         title="Excluir"
                       >
                         <Trash2 size={14} />
@@ -2432,10 +2432,10 @@ const IntegrationsView = ({
 
   const feedbackToneClass =
     whatsAppFeedback?.tone === 'success'
-      ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#DCEAFF]'
+      ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
       : whatsAppFeedback?.tone === 'error'
-      ? 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
-      : 'border-slate-700 bg-slate-900/80 text-slate-200';
+      ? 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]'
+      : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)]';
 
   return (
     <div
@@ -2449,7 +2449,7 @@ const IntegrationsView = ({
             onClick={() => setBillingCycle('monthly')}
             className={cn(
               'rounded-lg px-6 py-2 text-sm font-bold transition-all',
-              billingCycle === 'monthly' ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-lg shadow-[#4C8DFF]/20' : 'text-slate-400'
+              billingCycle === 'monthly' ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
             )}
           >
             Mensal
@@ -2458,7 +2458,7 @@ const IntegrationsView = ({
             onClick={() => setBillingCycle('annually')}
             className={cn(
               'rounded-lg px-6 py-2 text-sm font-bold transition-all',
-              billingCycle === 'annually' ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-lg shadow-[#4C8DFF]/20' : 'text-slate-400'
+              billingCycle === 'annually' ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
             )}
           >
             Anual <span className="ml-1 text-[10px] opacity-70">(2 meses grÃ¡tis)</span>
@@ -2469,14 +2469,14 @@ const IntegrationsView = ({
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className="app-surface-card relative rounded-3xl p-8 transition-all duration-300 hover:border-white/[0.08]"
+              className="app-surface-card relative rounded-3xl p-8 transition-all duration-300 hover:border-[var(--border-default)]"
             >
-              <h3 className="mb-2 page-title-premium text-white">{plan.name}</h3>
+              <h3 className="mb-2 page-title-premium text-[var(--text-primary)]">{plan.name}</h3>
               <div className="mb-6 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">
+                <span className="text-4xl font-black text-[var(--text-primary)]">
                   R$ {billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice}
                 </span>
-                <span className="text-sm text-slate-500">/{billingCycle === 'monthly' ? 'mÃªs' : 'ano'}</span>
+                <span className="text-sm text-[var(--text-muted)]">/{billingCycle === 'monthly' ? 'mÃªs' : 'ano'}</span>
               </div>
               <button
                 onClick={() => onUpgrade(`${plan.name} ${billingCycle === 'monthly' ? 'Mensal' : 'Anual'}`)}
@@ -2486,8 +2486,8 @@ const IntegrationsView = ({
               </button>
               <ul className="space-y-4">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-sm text-slate-400">
-                    <CheckCircle2 size={16} className="text-[#86B7FF]" />
+                  <li key={feature} className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+                    <CheckCircle2 size={16} className="text-[var(--text-secondary)]" />
                     {feature}
                   </li>
                 ))}
@@ -2502,12 +2502,12 @@ const IntegrationsView = ({
       <div className="app-surface-card rounded-3xl p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#4C8DFF]/10 p-3 text-[#86B7FF]">
+            <div className="rounded-xl bg-[color:var(--primary-soft)] p-3 text-[var(--text-secondary)]">
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="page-title-premium text-white">IntegraÃ§Ã£o com WhatsApp</h3>
-              <p className="text-sm text-slate-500">Alertas e resumos automÃ¡ticos direto no celular do workspace</p>
+              <h3 className="page-title-premium text-[var(--text-primary)]">IntegraÃ§Ã£o com WhatsApp</h3>
+              <p className="text-sm text-[var(--text-muted)]">Alertas e resumos automÃ¡ticos direto no celular do workspace</p>
             </div>
           </div>
           <div
@@ -2515,13 +2515,13 @@ const IntegrationsView = ({
               'flex items-center gap-2 self-start rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest lg:self-center',
               hasWhatsAppAccess
                 ? connectionTone === 'success'
-                  ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
+                  ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
                   : connectionTone === 'warning'
-                    ? 'bg-amber-500/10 text-amber-300'
+                    ? 'bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
                     : connectionTone === 'error'
-                      ? 'bg-slate-950/70 text-[#E05A5A]'
-                      : 'bg-slate-800 text-slate-400'
-                : 'bg-amber-500/10 text-amber-300'
+                      ? 'bg-[var(--bg-app)] text-[var(--danger)]'
+                      : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
+                : 'bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
             )}
           >
             <div
@@ -2529,13 +2529,13 @@ const IntegrationsView = ({
                 'size-1.5 rounded-full animate-pulse',
                 hasWhatsAppAccess
                   ? connectionTone === 'success'
-                    ? 'bg-[#4C8DFF]'
+                    ? 'bg-[var(--primary)]'
                     : connectionTone === 'warning'
-                      ? 'bg-amber-300'
+                      ? 'bg-[color:var(--danger-soft)]'
                       : connectionTone === 'error'
-                        ? 'bg-rose-500'
-                        : 'bg-slate-500'
-                  : 'bg-amber-300'
+                        ? 'bg-[color:var(--danger-soft)]'
+                        : 'bg-[var(--bg-surface-elevated)]'
+                  : 'bg-[color:var(--danger-soft)]'
               )}
             />
             {hasWhatsAppAccess ? connectionLabel : 'DisponÃ­vel no Pro'}
@@ -2546,21 +2546,21 @@ const IntegrationsView = ({
           <div className="space-y-6">
             {!hasWhatsAppAccess ? (
               <div className="app-surface-subtle space-y-5 rounded-3xl p-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#86B7FF]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                   Recurso Pro
                 </div>
-                <p className="leading-relaxed text-slate-300">
+                <p className="leading-relaxed text-[var(--text-secondary)]">
                   Alertas e resumos no WhatsApp ficam disponÃ­veis a partir do plano Pro. Use esse canal para receber
                   lembretes financeiros e acompanhar o que merece atenÃ§Ã£o sem abrir o app.
                 </p>
-                <ul className="space-y-3 text-sm text-slate-300">
+                <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                   {[
                     'Resumo diÃ¡rio com saldo, entradas e saÃ­das',
                     'Alertas de vencimentos e compromissos prÃ³ximos',
                     'Teste de envio e configuraÃ§Ã£o por workspace',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <CheckCircle2 size={16} className="mt-0.5 text-[#86B7FF]" />
+                      <CheckCircle2 size={16} className="mt-0.5 text-[var(--text-secondary)]" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -2574,7 +2574,7 @@ const IntegrationsView = ({
               </div>
             ) : (
               <>
-                <p className="leading-relaxed text-slate-400">
+                <p className="leading-relaxed text-[var(--text-secondary)]">
                   Configure o WhatsApp deste workspace para receber resumos, alertas e confirmaÃ§Ãµes em um canal rÃ¡pido e confiÃ¡vel.
                 </p>
 
@@ -2585,17 +2585,17 @@ const IntegrationsView = ({
                     'Envie um teste e confirme que a mensagem chegou',
                   ].map((step, index) => (
                     <div key={index} className="flex items-start gap-4">
-                      <div className="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-500">
+                      <div className="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--bg-surface-elevated)] text-xs font-bold text-[var(--text-muted)]">
                         {index + 1}
                       </div>
-                      <p className="text-sm text-slate-300">{step}</p>
+                      <p className="text-sm text-[var(--text-secondary)]">{step}</p>
                     </div>
                   ))}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                       Número do WhatsApp do workspace
                     </label>
                     <input
@@ -2608,7 +2608,7 @@ const IntegrationsView = ({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                       Número para teste
                     </label>
                     <input
@@ -2621,10 +2621,10 @@ const IntegrationsView = ({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                       Status da configuraÃ§Ã£o
                     </label>
-                    <div className="flex min-h-[52px] items-center rounded-xl border border-slate-800 bg-slate-950/60 px-4 text-sm text-slate-300">
+                    <div className="flex min-h-[52px] items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 text-sm text-[var(--text-secondary)]">
                       {connectionDescription}
                     </div>
                   </div>
@@ -2639,8 +2639,8 @@ const IntegrationsView = ({
 
                 {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
                   <div className="app-surface-subtle rounded-2xl px-4 py-3">
-                    <p className="text-sm font-bold text-white">Revis?o necess?ria</p>
-                    <ul className="mt-2 space-y-2 text-sm text-slate-300">
+                    <p className="text-sm font-bold text-[var(--text-primary)]">Revis?o necess?ria</p>
+                    <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
                         <li key={issue}>{issue}</li>
                       ))}
@@ -2656,8 +2656,8 @@ const IntegrationsView = ({
                       className={cn(
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
                         isSavingWhatsAppConfig
-                          ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-[#4C8DFF]/50 hover:text-white'
+                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
+                          : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]'
                       )}
                     >
                       {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar nÃºmeros'}
@@ -2669,8 +2669,8 @@ const IntegrationsView = ({
                       className={cn(
                         'flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all shadow-lg',
                         !canConnectWhatsApp
-                          ? 'cursor-not-allowed bg-slate-800 text-slate-500'
-                          : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
+                          ? 'cursor-not-allowed bg-[var(--bg-surface-elevated)] text-[var(--text-muted)]'
+                          : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
                       )}
                     >
                       {isConnectingWhatsApp ? 'Conectando...' : isWhatsAppConnected ? 'Reconectar' : 'Conectar'}
@@ -2682,8 +2682,8 @@ const IntegrationsView = ({
                       className={cn(
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
                         !canSendWhatsAppTest
-                          ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-[#4C8DFF]/50 hover:text-white'
+                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
+                          : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]'
                       )}
                     >
                       {isSendingWhatsAppTest ? 'Enviando teste...' : 'Testar envio'}
@@ -2695,8 +2695,8 @@ const IntegrationsView = ({
                       className={cn(
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
                         !isWhatsAppConnected
-                          ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                          : 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A] hover:bg-slate-900 hover:text-white'
+                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
+                          : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)]'
                       )}
                     >
                       Desconectar
@@ -2707,7 +2707,7 @@ const IntegrationsView = ({
                     <button
                       type="button"
                       onClick={() => setShowAdvancedWhatsAppSettings((current) => !current)}
-                      className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
+                      className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
                     >
                       {showAdvancedWhatsAppSettings ? 'Ocultar ajustes avanÃ§ados' : 'Mostrar ajustes avanÃ§ados'}
                     </button>
@@ -2719,7 +2719,7 @@ const IntegrationsView = ({
                       <button
                         type="button"
                         onClick={() => setShowWhatsAppConnectionDetails((current) => !current)}
-                        className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-300"
+                        className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
                       >
                         {showWhatsAppConnectionDetails ? 'Ocultar detalhes da validaÃ§Ã£o' : 'Ver detalhes da validaÃ§Ã£o'}
                       </button>
@@ -2728,16 +2728,16 @@ const IntegrationsView = ({
                 </div>
 
                 {showAdvancedWhatsAppSettings && (
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
                     <div className="mb-4">
-                      <p className="text-sm font-bold text-slate-200">Ajustes avanÃ§ados</p>
-                      <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                      <p className="text-sm font-bold text-[var(--text-primary)]">Ajustes avanÃ§ados</p>
+                      <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">
                         Use este bloco apenas se vocÃª precisar revisar templates ou idioma do WhatsApp.
                       </p>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                        <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                           Template de conexÃ£o
                         </label>
                         <input
@@ -2750,7 +2750,7 @@ const IntegrationsView = ({
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                        <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                           Idioma do template
                         </label>
                         <input
@@ -2763,7 +2763,7 @@ const IntegrationsView = ({
                       </div>
 
                       <div className="space-y-2 sm:col-span-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                        <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                           Template de resumo
                         </label>
                         <input
@@ -2781,8 +2781,8 @@ const IntegrationsView = ({
                         className={cn(
                           'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all sm:col-span-1',
                           isSavingWhatsAppConfig
-                            ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                            : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-[#4C8DFF]/50 hover:text-white'
+                            ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
+                            : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]'
                         )}
                       >
                         {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar ajustes'}
@@ -2790,7 +2790,7 @@ const IntegrationsView = ({
 
                       <button
                         onClick={onRunWhatsAppDiagnostic}
-                        className="app-surface-subtle flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-[#4C8DFF]/30 hover:text-white sm:col-span-1"
+                        className="app-surface-subtle flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-[var(--text-primary)] transition-all hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)] sm:col-span-1"
                       >
                         Validar configuraÃ§Ã£o
                       </button>
@@ -2804,19 +2804,19 @@ const IntegrationsView = ({
           <div className="app-surface-card rounded-3xl p-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">WhatsApp</p>
-                <h4 className="mt-2 card-title-premium text-white">Como o resumo aparece no celular</h4>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">WhatsApp</p>
+                <h4 className="mt-2 card-title-premium text-[var(--text-primary)]">Como o resumo aparece no celular</h4>
               </div>
               <span
                 className={cn(
                   'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                   connectionTone === 'success'
-                    ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
+                    ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
                     : connectionTone === 'warning'
-                    ? 'bg-amber-500/10 text-amber-300'
+                    ? 'bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
                     : connectionTone === 'error'
-                    ? 'bg-slate-950/70 text-[#E05A5A]'
-                    : 'bg-slate-800 text-slate-400'
+                    ? 'bg-[var(--bg-app)] text-[var(--danger)]'
+                    : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
                 )}
               >
                 {connectionLabel}
@@ -2824,42 +2824,42 @@ const IntegrationsView = ({
             </div>
 
             <div className="app-surface-subtle space-y-4 rounded-3xl p-4">
-              <div className="ml-auto max-w-[90%] rounded-2xl bg-[#4C8DFF] px-4 py-3 text-sm leading-relaxed text-white shadow-lg shadow-black/10">
+              <div className="ml-auto max-w-[90%] rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-lg shadow-black/10">
                 Quais alertas vou receber no WhatsApp?
               </div>
-              <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
+              <div className="max-w-[90%] rounded-2xl bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-lg shadow-black/10">
                 Resumo diÃ¡rio com saldo, entradas, saÃ­das, prÃ³ximos vencimentos e insights prÃ¡ticos para agir mais rÃ¡pido.
               </div>
-              <div className="max-w-[90%] rounded-2xl bg-[#202c33] px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-lg shadow-black/10">
-                Exemplo: <span className="font-semibold text-white">Maior gasto do mÃªs</span>, contas pr?ximas do vencimento e um resumo do que merece atenÃ§Ã£o no caixa.
+              <div className="max-w-[90%] rounded-2xl bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-lg shadow-black/10">
+                Exemplo: <span className="font-semibold text-[var(--text-primary)]">Maior gasto do mÃªs</span>, contas pr?ximas do vencimento e um resumo do que merece atenÃ§Ã£o no caixa.
               </div>
             </div>
 
             {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
               <div className="app-surface-card mt-5 rounded-2xl">
-                <div className="border-b border-slate-800 px-4 py-3 text-sm font-bold text-slate-200">
+                <div className="border-b border-[var(--border-default)] px-4 py-3 text-sm font-bold text-[var(--text-primary)]">
                   Detalhes da validaÃ§Ã£o
                 </div>
                 <div className="p-4">
-                  <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
+                  <div className="grid gap-3 text-sm text-[var(--text-secondary)] sm:grid-cols-2">
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Template conexÃ£o</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Template conexÃ£o</p>
                       <p className="mt-1 break-all">{whatsAppDiagnostic.connectTemplateConfigured || 'NÃ£o configurado'}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Template resumo</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Template resumo</p>
                       <p className="mt-1 break-all">{whatsAppDiagnostic.templateConfigured || 'NÃ£o configurado'}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Idioma</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Idioma</p>
                       <p className="mt-1">{whatsAppDiagnostic.idiomaConfigurado}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Destino de teste</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Destino de teste</p>
                       <p className="mt-1 break-all">{whatsAppDiagnostic.destinoTeste || 'NÃ£o configurado'}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">NÃºmero conectado</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">NÃºmero conectado</p>
                       <p className="mt-1 break-all">{whatsAppDiagnostic.numeroConectado || 'NÃ£o configurado'}</p>
                     </div>
                   </div>
@@ -2869,8 +2869,8 @@ const IntegrationsView = ({
                       className={cn(
                         'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                         whatsAppDiagnostic.validationResult === 'OK'
-                          ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
-                          : 'bg-slate-950/70 text-[#E05A5A]'
+                          ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                          : 'bg-[var(--bg-app)] text-[var(--danger)]'
                       )}
                     >
                       {whatsAppDiagnostic.validationResult}
@@ -2880,7 +2880,7 @@ const IntegrationsView = ({
                   {whatsAppDiagnostic.validationIssues.length > 0 && (
                     <ul className="mt-4 space-y-2">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
-                        <li key={issue} className="rounded-xl border border-white/[0.06] bg-slate-950/60 px-3 py-2 text-sm text-[#E05A5A]">
+                        <li key={issue} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--danger)]">
                           {issue}
                         </li>
                       ))}
@@ -2888,9 +2888,9 @@ const IntegrationsView = ({
                   )}
 
                   {whatsAppDiagnostic.metaResult && (
-                    <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs text-slate-400">
-                      <p className="font-bold uppercase tracking-[0.18em] text-slate-500">Resultado da validaÃ§Ã£o</p>
-                      <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-slate-300">
+                    <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-xs text-[var(--text-secondary)]">
+                      <p className="font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Resultado da validaÃ§Ã£o</p>
+                      <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-[var(--text-secondary)]">
                         {typeof whatsAppDiagnostic.metaResult === 'string'
                           ? whatsAppDiagnostic.metaResult
                           : JSON.stringify(whatsAppDiagnostic.metaResult, null, 2)}
@@ -2901,7 +2901,7 @@ const IntegrationsView = ({
               </div>
             )}
 
-            <p className="mt-4 text-xs leading-relaxed text-slate-500">
+            <p className="mt-4 text-xs leading-relaxed text-[var(--text-muted)]">
               Depois de conectar, o workspace passa a receber um resumo automÃ¡tico por dia e vocÃª ainda pode disparar um teste manual imediatamente.
             </p>
           </div>
@@ -2921,37 +2921,34 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
   const nextSevenDays = upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7);
   const totalScheduled = upcomingBills.reduce((acc, bill) => acc + bill.amount, 0);
 
-  const groupedBills = React.useMemo(
-    () => [
-      {
-        key: 'urgent',
-        title: 'Mais prÃ³ximos',
-        items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7),
-      },
-      {
-        key: 'later',
-        title: 'PrÃ³ximos 30 dias',
-        items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) > 7),
-      },
-    ].filter((group) => group.items.length > 0),
-    [upcomingBills]
-  );
+  const groupedBills = [
+    {
+      key: 'urgent',
+      title: 'Mais prÃ³ximos',
+      items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7),
+    },
+    {
+      key: 'later',
+      title: 'PrÃ³ximos 30 dias',
+      items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) > 7),
+    },
+  ].filter((group) => group.items.length > 0);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#86B7FF]/80">
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">
             Agenda financeira
           </p>
-          <h3 className="text-2xl font-black text-white">PrÃ³ximos compromissos do seu caixa</h3>
-          <p className="max-w-2xl text-sm leading-relaxed text-slate-400">
+          <h3 className="text-2xl font-black text-[var(--text-primary)]">PrÃ³ximos compromissos do seu caixa</h3>
+          <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
             Veja o que vence primeiro, o que merece atenÃ§Ã£o nesta semana e quanto do seu
             caixa jÃ¡ estÃ¡ comprometido nos prÃ³ximos 30 dias.
           </p>
         </div>
-        <div className="app-surface-subtle inline-flex items-center gap-2 self-start rounded-2xl px-4 py-2 text-sm font-semibold text-slate-300">
-          <Calendar size={16} className="text-[#86B7FF]" />
+        <div className="app-surface-subtle inline-flex items-center gap-2 self-start rounded-2xl px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">
+          <Calendar size={16} className="text-[var(--text-secondary)]" />
           PrÃ³ximos 30 dias
         </div>
       </div>
@@ -2981,20 +2978,20 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
             key={card.label}
             className="app-surface-card rounded-3xl p-5"
           >
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">{card.label}</p>
-            <p className="mt-3 text-2xl font-black text-white">{card.value}</p>
-            <p className="mt-2 text-sm text-slate-400">{card.helper}</p>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">{card.label}</p>
+            <p className="mt-3 text-2xl font-black text-[var(--text-primary)]">{card.value}</p>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">{card.helper}</p>
           </div>
         ))}
       </div>
 
       {upcomingBills.length === 0 ? (
-        <div className="app-surface-card rounded-3xl border-dashed border-white/[0.08] p-10 text-center">
-          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
+        <div className="app-surface-card rounded-3xl border-dashed border-[var(--border-default)] p-10 text-center">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
             <Calendar size={26} />
           </div>
-          <h4 className="card-title-premium text-white">Sua agenda estÃ¡ limpa por enquanto</h4>
-          <p className="mt-2 text-sm leading-relaxed text-slate-400">
+          <h4 className="card-title-premium text-[var(--text-primary)]">Sua agenda estÃ¡ limpa por enquanto</h4>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
             Adicione dÃ­vidas com vencimento ou metas com prazo para acompanhar compromissos sem
             perder o timing do seu caixa.
           </p>
@@ -3005,8 +3002,8 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
             <section key={group.key} className="app-surface-card rounded-3xl p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <h4 className="card-title-premium text-white">{group.title}</h4>
-                  <p className="text-sm text-slate-400">
+                  <h4 className="card-title-premium text-[var(--text-primary)]">{group.title}</h4>
+                  <p className="text-sm text-[var(--text-secondary)]">
                     {group.items.length} {group.items.length === 1 ? 'item' : 'itens'} programados
                   </p>
                 </div>
@@ -3016,7 +3013,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                 {group.items.map((bill) => (
                   <article
                     key={bill.id}
-                    className="app-surface-subtle rounded-2xl p-4 transition-all hover:border-white/[0.08] hover:bg-[#121A24]"
+                    className="app-surface-subtle rounded-2xl p-4 transition-all hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
@@ -3030,18 +3027,18 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                           <bill.icon size={18} />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-base font-bold text-white">{bill.label}</p>
-                          <p className="text-sm text-slate-400">{bill.helperText}</p>
-                          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-semibold text-slate-400">
-                            <span className="rounded-full border border-slate-700 px-2.5 py-1">
+                          <p className="text-base font-bold text-[var(--text-primary)]">{bill.label}</p>
+                          <p className="text-sm text-[var(--text-secondary)]">{bill.helperText}</p>
+                          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-semibold text-[var(--text-secondary)]">
+                            <span className="rounded-full border border-[var(--border-default)] px-2.5 py-1">
                               {bill.date}
                             </span>
                             <span
                               className={cn(
                                 'rounded-full px-2.5 py-1 font-black uppercase tracking-[0.14em]',
                                 bill.status === 'overdue'
-                                  ? 'bg-slate-950/70 text-[#E05A5A]'
-                                  : 'bg-amber-500/10 text-amber-300'
+                                  ? 'bg-[var(--bg-app)] text-[var(--danger)]'
+                                  : 'bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
                               )}
                             >
                               {bill.status === 'overdue'
@@ -3055,8 +3052,8 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                       </div>
 
                       <div className="text-right">
-                        <p className="card-title-premium text-white">{formatCurrency(bill.amount)}</p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                        <p className="card-title-premium text-[var(--text-primary)]">{formatCurrency(bill.amount)}</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
                           {bill.kind === 'goal' ? 'Meta' : 'Conta'}
                         </p>
                       </div>
@@ -3113,15 +3110,15 @@ const DebtsView = ({
   )[0] ?? null;
   const totalRegisteredItems = debts.length + recurringDebts.length;
   const getDebtStatusTone = (status: Debt['status']) => {
-    if (status === 'Quitada') return 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]';
-    if (status === 'Atrasada') return 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]';
-    if (status === 'Parcelada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-    return 'border-slate-700 bg-slate-800/70 text-slate-200';
+    if (status === 'Quitada') return 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
+    if (status === 'Atrasada') return 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]';
+    if (status === 'Parcelada') return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]';
+    return 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/70 text-[var(--text-primary)]';
   };
   const getRecurringStatusTone = (status: RecurringDebt['status']) => {
-    if (status === 'Ativa') return 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]';
-    if (status === 'Pausada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-    return 'border-slate-700 bg-slate-800/70 text-slate-300';
+    if (status === 'Ativa') return 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
+    if (status === 'Pausada') return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]';
+    return 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/70 text-[var(--text-secondary)]';
   };
   const openSingleDebtFlow = () => {
     setIsCreateChooserOpen(false);
@@ -3133,38 +3130,38 @@ const DebtsView = ({
   };
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <section className="rounded-3xl border border-slate-800 bg-slate-900/55 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)] lg:p-7">
+      <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)] lg:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#86B7FF]/80">Dívidas</p>
-              <h3 className="mt-2 text-3xl font-black tracking-tight text-white">Dívidas</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">Dívidas</p>
+              <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">Dívidas</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
                 Separe dívidas pontuais de contas recorrentes para ter mais clareza financeira.
 
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
-                <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining + recurringMonthlyTotal)}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Total em aberto</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining + recurringMonthlyTotal)}</p>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                   {recurringMonthlyTotal > 0
                     ? `${formatCurrency(recurringMonthlyTotal)} em recorrências ativas`
                     : 'Sem recorrências ativas no momento'}
                 </p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-[#86B7FF]">{formatCurrency(totalPaid)}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor quitado</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalPaid)}</p>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                   {paidDebts > 0 ? `${paidDebts} dívida(s) já quitadas` : 'Ainda não há dívidas quitadas'}
                 </p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Itens cadastrados</p>
-                <p className="mt-2 text-2xl font-black text-white">{totalRegisteredItems}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Itens cadastrados</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{totalRegisteredItems}</p>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                   {debts.length} dívida(s) única(s) e {recurringDebts.length} recorrência(s)
                 </p>
               </div>
@@ -3181,27 +3178,27 @@ const DebtsView = ({
         </div>
       </section>
       {feedbackMessage ? (
-        <div className="flex items-start justify-between gap-3 rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-4 py-3 text-sm text-[#D8E7FF]">
+        <div className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
           <div>
             <p className="font-bold">{feedbackMessage}</p>
-            <p className="mt-1 text-[#B9D3FF]/80">Sua área de dívidas foi atualizada com sucesso.</p>
+            <p className="mt-1 text-[var(--text-secondary)]/80">Sua área de dívidas foi atualizada com sucesso.</p>
           </div>
           {onDismissFeedback ? (
-            <button onClick={onDismissFeedback} className="text-[#B9D3FF] transition-colors hover:text-white">
+            <button onClick={onDismissFeedback} className="text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
               <X size={16} />
             </button>
           ) : null}
         </div>
       ) : null}
-      <div className="inline-flex w-full rounded-2xl border border-slate-800 bg-slate-900/55 p-1 sm:w-auto">
+      <div className="inline-flex w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-1 sm:w-auto">
         <button
           type="button"
           onClick={() => setActiveDebtTab('single')}
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'single'
-              ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
           Dívidas
@@ -3212,55 +3209,55 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'recurring'
-              ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
           Contas fixas
         </button>
       </div>
       {activeDebtTab === 'single' ? (
-        <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
+        <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Dívidas</p>
-              <h4 className="mt-2 text-2xl font-black text-white">Obrigações com começo, meio e fim</h4>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dívidas</p>
+              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Obrigações com começo, meio e fim</h4>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
                 Use para empr?stimos, acordos, cart?o atrasado e qualquer compromisso com valor total definido.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
-                <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining)}</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Total em aberto</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining)}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-[#86B7FF]">{formatCurrency(totalPaid)}</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor quitado</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalPaid)}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Progresso</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Progresso</p>
                   {overdueDebts.length > 0 ? (
-                    <span className="rounded-full border border-white/[0.06] bg-slate-950/70 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#E05A5A]">
+                    <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--danger)]">
                       {overdueDebts.length} vencida(s)
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-2 text-2xl font-black text-white">{progress.toFixed(1)}%</p>
-                <div className="mt-3 h-2 rounded-full bg-slate-800">
-                  <div className="h-2 rounded-full bg-[#4C8DFF] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{progress.toFixed(1)}%</p>
+                <div className="mt-3 h-2 rounded-full bg-[var(--bg-surface-elevated)]">
+                  <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
                 </div>
               </div>
             </div>
           </div>
           {debts.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
+            <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-10 text-center">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                 <Wallet size={26} />
               </div>
-              <h5 className="text-xl font-black text-white">Você ainda não cadastrou nenhuma dívida.</h5>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">
+              <h5 className="text-xl font-black text-[var(--text-primary)]">Você ainda não cadastrou nenhuma dívida.</h5>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
                 Adicione uma dívida para começar a ter controle completo do seu dinheiro. Sem cadastrar suas dívidas, você não consegue ver para onde seu dinheiro está indo.
               </p>
               <button
@@ -3278,39 +3275,39 @@ const DebtsView = ({
                   <article
                     key={debt.id}
                     className={cn(
-                      'rounded-2xl border bg-slate-950/60 p-5 transition-colors hover:border-slate-700',
-                      debt.status === 'Atrasada' ? 'border-white/[0.08]' : 'border-slate-800'
+                      'rounded-2xl border bg-[var(--bg-app)] p-5 transition-colors hover:border-[var(--border-default)]',
+                      debt.status === 'Atrasada' ? 'border-[var(--border-default)]' : 'border-[var(--border-default)]'
                     )}
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="card-title-premium text-white">{debt.creditor}</h5>
+                          <h5 className="card-title-premium text-[var(--text-primary)]">{debt.creditor}</h5>
                           <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtStatusTone(debt.status))}>
                             {debt.status}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-400">{debt.category} ? vence no dia {debt.dueDay}</p>
+                        <p className="text-sm text-[var(--text-secondary)]">{debt.category} ? vence no dia {debt.dueDay}</p>
                         <div className="grid gap-3 sm:grid-cols-3">
                           <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Em aberto</p>
-                            <p className="mt-1 text-base font-bold text-white">{formatCurrency(debt.remainingAmount)}</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Em aberto</p>
+                            <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.remainingAmount)}</p>
                           </div>
                           <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor total</p>
-                            <p className="mt-1 text-base font-bold text-slate-200">{formatCurrency(debt.originalAmount)}</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor total</p>
+                            <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.originalAmount)}</p>
                           </div>
                           <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Quitado</p>
-                            <p className="mt-1 text-base font-bold text-[#86B7FF]">{formatCurrency(paidAmount)}</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Quitado</p>
+                            <p className="mt-1 text-base font-bold text-[var(--text-secondary)]">{formatCurrency(paidAmount)}</p>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                        <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
+                        <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
                           <Pencil size={12} /> Editar
                         </button>
-                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-white/[0.06] bg-slate-950/70 px-3 py-2 text-xs font-bold text-[#E05A5A] transition-colors hover:bg-slate-900">
+                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                           <Trash2 size={12} /> Excluir
                         </button>
                       </div>
@@ -3322,27 +3319,27 @@ const DebtsView = ({
           )}
         </section>
       ) : (
-        <section className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900/50 p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
+        <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Contas fixas</p>
-              <h4 className="mt-2 text-2xl font-black text-white">Contas que se repetem automaticamente</h4>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Contas fixas</p>
+              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Contas que se repetem automaticamente</h4>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
                 Use para mensalidades, aluguel, assinaturas e qualquer compromisso fixo com frequência definida.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Compromisso mensal</p>
-                <p className="mt-2 text-2xl font-black text-white">{formatCurrency(recurringMonthlyTotal)}</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Compromisso mensal</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(recurringMonthlyTotal)}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Recorrências ativas</p>
-                <p className="mt-2 text-2xl font-black text-white">{activeRecurringDebts.length}</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Recorrências ativas</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{activeRecurringDebts.length}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próxima cobrança</p>
-                <p className="mt-2 text-base font-black text-[#86B7FF]">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Próxima cobrança</p>
+                <p className="mt-2 text-base font-black text-[var(--text-secondary)]">
                   {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previs?o'}
                 </p>
               </div>
@@ -3351,12 +3348,12 @@ const DebtsView = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Atalhos rápidos</p>
-                <p className="mt-1 text-sm text-slate-400">Escolha uma conta fixa comum e acelere seu cadastro.</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Atalhos rápidos</p>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">Escolha uma conta fixa comum e acelere seu cadastro.</p>
               </div>
               <button
                 onClick={() => openRecurringDebtFlow()}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-xs font-black text-white transition-colors hover:border-slate-500"
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-2 text-xs font-black text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]"
               >
                 <Plus size={14} /> Nova conta fixa
               </button>
@@ -3367,14 +3364,14 @@ const DebtsView = ({
                   key={preset.category}
                   type="button"
                   onClick={() => openRecurringDebtFlow(preset.category)}
-                  className="app-surface-subtle rounded-2xl p-4 text-left transition-all hover:border-[#4C8DFF]/40 hover:bg-slate-900"
+                  className="app-surface-subtle rounded-2xl p-4 text-left transition-all hover:border-[color:var(--border-default)] hover:bg-[var(--bg-surface)]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-black text-white">{preset.title}</p>
-                      <p className="mt-2 text-xs leading-6 text-slate-400">{preset.description}</p>
+                      <p className="text-sm font-black text-[var(--text-primary)]">{preset.title}</p>
+                      <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)]">{preset.description}</p>
                     </div>
-                    <span className="rounded-full bg-[#4C8DFF]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#86B7FF]">
+                    <span className="rounded-full bg-[color:var(--primary-soft)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                       Dia {preset.dueDay}
                     </span>
                   </div>
@@ -3383,12 +3380,12 @@ const DebtsView = ({
             </div>
           </div>
           {recurringDebts.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-950/45 p-10 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
+            <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-10 text-center">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                 <Calendar size={26} />
               </div>
-              <h5 className="text-xl font-black text-white">Você ainda não cadastrou contas fixas.</h5>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-400">
+              <h5 className="text-xl font-black text-[var(--text-primary)]">Você ainda não cadastrou contas fixas.</h5>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
                 Cadastre contas fixas para enxergar seu compromisso mensal e saber o que vence primeiro.
               </p>
               <button
@@ -3401,15 +3398,15 @@ const DebtsView = ({
           ) : (
             <div className="grid gap-4 xl:grid-cols-2">
               {recurringDebts.map((debt) => (
-                <article key={debt.id} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-colors hover:border-slate-700">
+                <article key={debt.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 transition-colors hover:border-[var(--border-default)]">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h5 className="card-title-premium text-white">{debt.creditor}</h5>
-                        <span className="rounded-full border border-slate-700 bg-slate-800/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-200">
+                        <h5 className="card-title-premium text-[var(--text-primary)]">{debt.creditor}</h5>
+                        <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-primary)]">
                           {debt.category}
                         </span>
-                        <span className="rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#86B7FF]">
+                        <span className="rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                           {getRecurringDebtFrequencyLabel(debt.frequency)}
                         </span>
                         <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getRecurringStatusTone(debt.status))}>
@@ -3418,30 +3415,30 @@ const DebtsView = ({
                       </div>
                       <div className="grid gap-3 sm:grid-cols-3">
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor</p>
-                          <p className="mt-1 text-base font-bold text-white">{formatCurrency(debt.amount)}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor</p>
+                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.amount)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Frequência</p>
-                          <p className="mt-1 text-base font-bold text-slate-200">{getRecurringDebtFrequencyLabel(debt.frequency)}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Frequência</p>
+                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{getRecurringDebtFrequencyLabel(debt.frequency)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próximo vencimento</p>
-                          <p className="mt-1 text-base font-bold text-slate-200">{new Date(debt.nextDueDate).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Próximo vencimento</p>
+                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{new Date(debt.nextDueDate).toLocaleDateString('pt-BR')}</p>
                         </div>
                       </div>
-                      {debt.notes ? <p className="text-sm leading-7 text-slate-400">{debt.notes}</p> : null}
+                      {debt.notes ? <p className="text-sm leading-7 text-[var(--text-secondary)]">{debt.notes}</p> : null}
                       {debt.source === 'legacy_debt' ? (
-                        <p className="text-[11px] leading-5 text-amber-300">
+                        <p className="text-[11px] leading-5 text-[var(--text-secondary)]">
                           Registro legado mantido por compatibilidade. Você pode editar normalmente sem perder histórico.
                         </p>
                       ) : null}
                     </div>
                     <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                      <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
+                      <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
                         <Pencil size={12} /> Editar
                       </button>
-                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-white/[0.06] bg-slate-950/70 px-3 py-2 text-xs font-bold text-[#E05A5A] transition-colors hover:bg-slate-900">
+                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                         <Trash2 size={12} /> Excluir
                       </button>
                     </div>
@@ -3458,21 +3455,21 @@ const DebtsView = ({
             type="button"
             aria-label="Fechar escolha de tipo de dívida"
             onClick={() => setIsCreateChooserOpen(false)}
-            className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
+            className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
           />
-          <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">Nova dívida</p>
-                <h4 className="mt-2 text-2xl font-black text-white">Como essa dívida funciona?</h4>
-                <p className="mt-2 text-sm leading-7 text-slate-400">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Nova dívida</p>
+                <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Como essa dívida funciona?</h4>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                   Escolha o tipo para organizar melhor suas finanças.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreateChooserOpen(false)}
-                className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
                 Fechar
               </button>
@@ -3481,26 +3478,26 @@ const DebtsView = ({
               <button
                 type="button"
                 onClick={openSingleDebtFlow}
-                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-[#4C8DFF]/40 hover:bg-slate-950"
+                className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 text-left transition-all hover:border-[color:var(--border-default)] hover:bg-[var(--bg-app)]"
               >
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                   <Wallet size={22} />
                 </div>
-                <h5 className="mt-5 text-xl font-black text-white">Dívida única</h5>
-                <p className="mt-2 text-sm leading-7 text-slate-400">
+                <h5 className="mt-5 text-xl font-black text-[var(--text-primary)]">Dívida única</h5>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                   Tem valor total definido e termina quando for quitada.
                 </p>
               </button>
               <button
                 type="button"
                 onClick={() => openRecurringDebtFlow()}
-                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-[#4C8DFF]/40 hover:bg-slate-950"
+                className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 text-left transition-all hover:border-[color:var(--border-default)] hover:bg-[var(--bg-app)]"
               >
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                   <Calendar size={22} />
                 </div>
-                <h5 className="mt-5 text-xl font-black text-white">Conta recorrente</h5>
-                <p className="mt-2 text-sm leading-7 text-slate-400">
+                <h5 className="mt-5 text-xl font-black text-[var(--text-primary)]">Conta recorrente</h5>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                   Se repete automaticamente todo mês.
                 </p>
               </button>
@@ -3525,7 +3522,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-white">Metas</h3>
+        <h3 className="page-title-premium text-[var(--text-primary)]">Metas</h3>
         <button
           onClick={onAddGoal}
           className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
@@ -3536,22 +3533,22 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Total de metas</p>
-          <p className="text-2xl font-black text-white">{totalGoals}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Total de metas</p>
+          <p className="text-2xl font-black text-[var(--text-primary)]">{totalGoals}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Meta total</p>
-          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(targetTotal)}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Meta total</p>
+          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(targetTotal)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Valor acumulado</p>
-          <p className="text-2xl font-black text-blue-400">{formatCurrency(accumulatedTotal)}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Valor acumulado</p>
+          <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(accumulatedTotal)}</p>
         </div>
       </div>
 
       <div className="space-y-4">
         {goals.length === 0 && (
-          <div className="app-surface-card rounded-2xl p-6 text-center text-slate-500 text-sm">
+          <div className="app-surface-card rounded-2xl p-6 text-center text-[var(--text-muted)] text-sm">
             Nenhuma meta cadastrada.
           </div>
         )}
@@ -3565,12 +3562,12 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-white">{goal.name}</h4>
-                    <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                    <h4 className="font-bold text-[var(--text-primary)]">{goal.name}</h4>
+                    <span className="px-2 py-0.5 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest">
                       {goal.category}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--text-muted)]">
                     {goal.deadline ? `Prazo: ${new Date(goal.deadline).toLocaleDateString('pt-BR')}` : 'Sem prazo definido'}
                   </p>
                 </div>
@@ -3578,13 +3575,13 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onEditGoal(goal.id)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                   >
                     <Pencil size={12} /> Editar
                   </button>
                   <button
                     onClick={() => onDeleteGoal(goal.id)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-slate-950/70 text-[#E05A5A] hover:bg-slate-900 transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--bg-app)] text-[var(--danger)] hover:bg-[var(--bg-surface)] transition-colors"
                   >
                     <Trash2 size={12} /> Excluir
                   </button>
@@ -3592,17 +3589,17 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
               </div>
 
               <div className="space-y-2">
-                <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#4C8DFF] rounded-full transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-2.5 w-full bg-[var(--bg-surface-elevated)] rounded-full overflow-hidden">
+                  <div className="h-full bg-[var(--primary)] rounded-full transition-all" style={{ width: `${progress}%` }} />
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="text-slate-300">{formatCurrency(goal.current)} acumulado</span>
-                  <span className="text-slate-500">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-[#3FB68B] font-bold">{progress.toFixed(1)}%</span>
+                  <span className="text-[var(--text-secondary)]">{formatCurrency(goal.current)} acumulado</span>
+                  <span className="text-[var(--text-muted)]">Meta: {formatCurrency(goal.target)}</span>
+                  <span className="text-[var(--success)] font-bold">{progress.toFixed(1)}%</span>
                 </div>
 
-                <p className="text-xs text-slate-500">Faltam {formatCurrency(remaining)} para concluir.</p>
+                <p className="text-xs text-[var(--text-muted)]">Faltam {formatCurrency(remaining)} para concluir.</p>
               </div>
             </div>
           );
@@ -3720,9 +3717,9 @@ const PortfolioView = ({
   const assetMix = React.useMemo(
     () =>
       [
-        { name: 'Caixa', value: Math.max(totalBalance, 0), color: '#10b981' },
-        { name: 'Investimentos', value: Math.max(totalInvested, 0), color: '#3b82f6' },
-        { name: 'Dívidas', value: Math.max(totalDebt, 0), color: '#f59e0b' },
+        { name: 'Caixa', value: Math.max(totalBalance, 0), color: 'var(--success)' },
+        { name: 'Investimentos', value: Math.max(totalInvested, 0), color: 'var(--primary)' },
+        { name: 'Dívidas', value: Math.max(totalDebt, 0), color: 'var(--danger)' },
       ],
     [totalBalance, totalInvested, totalDebt]
   );
@@ -3786,8 +3783,8 @@ const PortfolioView = ({
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
-            <h3 className="page-title-premium text-white">Carteira</h3>
-            <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
+            <h3 className="page-title-premium text-[var(--text-primary)]">Carteira</h3>
+            <p className="max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
               Veja seu patrimÃ´nio total e onde seu dinheiro estÃ¡ distribuÃ­do.
             </p>
           </div>
@@ -3795,7 +3792,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={onAddWallet}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#4C8DFF]/30 bg-[#4C8DFF]/10 px-4 py-3 text-sm font-bold text-[#B8D3FF] transition-colors hover:border-[#4C8DFF]/50 hover:bg-[#4C8DFF]/15 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:border-[color:var(--border-default)] hover:bg-[color:var(--primary-soft)] hover:text-[var(--text-primary)]"
             >
               <Plus size={16} />
               Criar carteira
@@ -3803,7 +3800,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={() => onTransferBalance()}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
             >
               <Workflow size={16} />
               Transferir saldo
@@ -3811,7 +3808,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={onAddInvestment}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
             >
               <TrendingUp size={16} />
               Registrar investimento
@@ -3819,7 +3816,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={onAddDebt}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
             >
               <CreditCard size={16} />
               Registrar dÃ­vida
@@ -3828,9 +3825,9 @@ const PortfolioView = ({
         </div>
 
         {!hasAnyPortfolioData && (
-          <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-900/40 px-6 py-8 text-center">
-            <h4 className="card-title-premium text-white">Crie sua primeira carteira</h4>
-            <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+          <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-surface)]/40 px-6 py-8 text-center">
+            <h4 className="card-title-premium text-[var(--text-primary)]">Crie sua primeira carteira</h4>
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
               Adicione contas bancÃ¡rias, dinheiro em espÃ©cie ou carteiras digitais para comeÃ§ar a organizar suas finanÃ§as.
             </p>
             <button
@@ -3849,40 +3846,40 @@ const PortfolioView = ({
         <button
           type="button"
           onClick={onOpenReports}
-          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">PatrimÃ´nio lÃ­quido</p>
-          <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-white' : 'text-[#E05A5A]')}>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">PatrimÃ´nio lÃ­quido</p>
+          <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
             {formatCurrency(netWorth)}
           </p>
-          <p className="mt-3 text-xs text-slate-500">Saldo em contas + investimentos - dÃ­vidas</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Saldo em contas + investimentos - dÃ­vidas</p>
         </button>
         <button
           type="button"
           onClick={() => onViewWalletHistory()}
-          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Saldo em contas</p>
-          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalBalance)}</p>
-          <p className="mt-3 text-xs text-slate-500">Veja o histÃ³rico e movimente saldo entre carteiras</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Saldo em contas</p>
+          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalBalance)}</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Veja o histÃ³rico e movimente saldo entre carteiras</p>
         </button>
         <button
           type="button"
           onClick={onOpenInvestments}
-          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Investimentos</p>
-          <p className="text-2xl font-black text-blue-400">{formatCurrency(totalInvested)}</p>
-          <p className="mt-3 text-xs text-slate-500">Abra a Ã¡rea de investimentos e registre novas posiÃ§Ãµes</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Investimentos</p>
+          <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalInvested)}</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Abra a Ã¡rea de investimentos e registre novas posiÃ§Ãµes</p>
         </button>
         <button
           type="button"
           onClick={onOpenDebts}
-          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Dívidas</p>
-          <p className="text-2xl font-black text-amber-400">{formatCurrency(totalDebt)}</p>
-          <p className="mt-3 text-xs text-slate-500">Acompanhe o valor em aberto e os prÃ³ximos vencimentos</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Dívidas</p>
+          <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalDebt)}</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Acompanhe o valor em aberto e os prÃ³ximos vencimentos</p>
         </button>
       </div>
 
@@ -3890,8 +3887,8 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h4 className="card-title-premium text-white">DistribuiÃ§Ã£o do patrimÃ´nio</h4>
-              <p className="text-sm text-slate-500">Entenda rapidamente quanto do seu patrimÃ´nio estÃ¡ em contas, investimentos e dÃ­vidas.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">DistribuiÃ§Ã£o do patrimÃ´nio</h4>
+              <p className="text-sm text-[var(--text-muted)]">Entenda rapidamente quanto do seu patrimÃ´nio estÃ¡ em contas, investimentos e dÃ­vidas.</p>
             </div>
           </div>
 
@@ -3916,16 +3913,16 @@ const PortfolioView = ({
                     <Tooltip
                       formatter={(value) => formatCurrency(Number(value ?? 0))}
                       contentStyle={{
-                        backgroundColor: '#0f172a',
-                        borderColor: '#1e293b',
+                        backgroundColor: 'var(--bg-surface)',
+                        borderColor: 'var(--border-strong)',
                         borderRadius: 16,
-                        color: '#e2e8f0',
+                        color: 'var(--text-primary)',
                       }}
                     />
                   </RePieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-800 text-sm text-slate-500">
+                <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-[var(--border-default)] text-sm text-[var(--text-muted)]">
                   Assim que vocÃª registrar contas, investimentos ou dÃ­vidas, a distribuiÃ§Ã£o aparecer? aqui.
                 </div>
               )}
@@ -3942,13 +3939,13 @@ const PortfolioView = ({
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
                         <span className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                        <span className="text-sm font-semibold text-white">{entry.name}</span>
+                        <span className="text-sm font-semibold text-[var(--text-primary)]">{entry.name}</span>
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                      <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                         {share.toFixed(1)}%
                       </span>
                     </div>
-                    <p className="text-base font-bold text-slate-100">{formatCurrency(entry.value)}</p>
+                    <p className="text-base font-bold text-[var(--text-primary)]">{formatCurrency(entry.value)}</p>
                   </div>
                 );
               })}
@@ -3959,14 +3956,14 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="card-title-premium text-white">Onde estÃ¡ meu dinheiro</h4>
-              <p className="text-sm text-slate-500">Veja as principais carteiras, participaÃ§Ã£o no saldo total e aÃ§Ãµes rÃ¡pidas.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">Onde estÃ¡ meu dinheiro</h4>
+              <p className="text-sm text-[var(--text-muted)]">Veja as principais carteiras, participaÃ§Ã£o no saldo total e aÃ§Ãµes rÃ¡pidas.</p>
             </div>
             {walletAllocation.length > 4 && (
               <button
                 type="button"
                 onClick={() => setShowAllWallets((current) => !current)}
-                className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] transition-colors hover:text-white"
+                className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
                 {showAllWallets ? 'Mostrar menos' : 'Ver todas as carteiras'}
               </button>
@@ -3975,7 +3972,7 @@ const PortfolioView = ({
 
           <div className="space-y-3">
             {walletAllocation.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6 text-sm text-[var(--text-muted)]">
                 Nenhuma carteira cadastrada ainda. Crie uma conta financeira para comeÃ§ar a organizar o saldo do workspace.
               </div>
             )}
@@ -3983,18 +3980,18 @@ const PortfolioView = ({
             {visibleWallets.map((wallet) => (
               <div key={wallet.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
-                  <span className="text-sm font-semibold text-white">{wallet.name}</span>
-                  <span className="text-sm font-bold text-[#86B7FF]">{formatCurrency(wallet.balance)}</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{wallet.name}</span>
+                  <span className="text-sm font-bold text-[var(--text-secondary)]">{formatCurrency(wallet.balance)}</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full rounded-full bg-[#4C8DFF]" style={{ width: `${wallet.share}%` }} />
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--bg-surface-elevated)]">
+                  <div className="h-full rounded-full bg-[var(--primary)]" style={{ width: `${wallet.share}%` }} />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">{wallet.share.toFixed(1)}% do saldo em contas</p>
+                <p className="mt-2 text-xs text-[var(--text-muted)]">{wallet.share.toFixed(1)}% do saldo em contas</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => onViewWalletHistory(wallet.name)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   >
                     <ReceiptText size={14} />
                     Ver histÃ³rico
@@ -4002,7 +3999,7 @@ const PortfolioView = ({
                   <button
                     type="button"
                     onClick={() => onTransferBalance(wallet.name)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   >
                     <Workflow size={14} />
                     Transferir
@@ -4010,7 +4007,7 @@ const PortfolioView = ({
                   <button
                     type="button"
                     onClick={() => onAdjustWalletBalance(wallet.name)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   >
                     <Pencil size={14} />
                     Ajustar saldo
@@ -4026,14 +4023,14 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="card-title-premium text-white">Resumo de investimentos</h4>
-              <p className="text-sm text-slate-500">Veja os ativos que mais representam seu patrimÃ´nio.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">Resumo de investimentos</h4>
+              <p className="text-sm text-[var(--text-muted)]">Veja os ativos que mais representam seu patrimÃ´nio.</p>
             </div>
             {topInvestments.length > 0 && (
               <button
                 type="button"
                 onClick={onOpenInvestments}
-                className="text-xs font-bold uppercase tracking-widest text-blue-300 transition-colors hover:text-white"
+                className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
                 Abrir investimentos
               </button>
@@ -4042,15 +4039,15 @@ const PortfolioView = ({
 
           <div className="space-y-3">
             {topInvestments.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
-                <p className="text-sm font-semibold text-white">VocÃª ainda nÃ£o registrou investimentos.</p>
-                <p className="mt-2 text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">VocÃª ainda nÃ£o registrou investimentos.</p>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">
                   Adicione seus principais ativos para ver a participaÃ§Ã£o deles no patrimÃ´nio total.
                 </p>
                 <button
                   type="button"
                   onClick={onAddInvestment}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 transition-colors hover:border-blue-400/50 hover:text-white"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--primary)]/10 px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                 >
                   <Plus size={14} />
                   Adicionar investimento
@@ -4062,20 +4059,20 @@ const PortfolioView = ({
               <div key={investment.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-white">{investment.label}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{investment.label}</p>
+                    <p className="text-xs text-[var(--text-muted)]">
                       {investment.type} Â· {investment.walletName}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-blue-400">{formatCurrency(investment.value)}</p>
-                    <p className="text-[11px] uppercase tracking-widest text-slate-500">
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">{formatCurrency(investment.value)}</p>
+                    <p className="text-[11px] uppercase tracking-widest text-[var(--text-muted)]">
                       {investment.portfolioShare.toFixed(1)}% do patrimÃ´nio
                     </p>
                     <p
                       className={cn(
                         'text-xs font-semibold',
-                        investment.profit >= 0 ? 'text-[#86B7FF]' : 'text-[#E05A5A]'
+                        investment.profit >= 0 ? 'text-[var(--text-secondary)]' : 'text-[var(--danger)]'
                       )}
                     >
                       {investment.profit >= 0 ? '+' : ''}
@@ -4091,14 +4088,14 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="card-title-premium text-white">Resumo de dÃ­vidas</h4>
-              <p className="text-sm text-slate-500">Entenda o que estÃ¡ em aberto e o peso disso no seu patrimÃ´nio.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">Resumo de dÃ­vidas</h4>
+              <p className="text-sm text-[var(--text-muted)]">Entenda o que estÃ¡ em aberto e o peso disso no seu patrimÃ´nio.</p>
             </div>
             {topDebts.length > 0 && (
               <button
                 type="button"
                 onClick={onOpenDebts}
-                className="text-xs font-bold uppercase tracking-widest text-amber-300 transition-colors hover:text-white"
+                className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
                 Abrir dÃ­vidas
               </button>
@@ -4107,15 +4104,15 @@ const PortfolioView = ({
 
           <div className="space-y-3">
             {topDebts.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6">
-                <p className="text-sm font-semibold text-white">VocÃª nÃ£o possui dÃ­vidas registradas.</p>
-                <p className="mt-2 text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">VocÃª nÃ£o possui dÃ­vidas registradas.</p>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">
                   Registre dÃ­vidas para acompanhar o valor em aberto e o impacto delas no seu patrimÃ´nio.
                 </p>
                 <button
                   type="button"
                   onClick={onAddDebt}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-[#4C8DFF]/30 bg-[#4C8DFF]/10 px-4 py-2 text-sm font-semibold text-[#D8E7FF] transition-colors hover:border-[#4C8DFF]/50 hover:text-white"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                 >
                   <Plus size={14} />
                   Registrar dÃ­vida
@@ -4127,12 +4124,12 @@ const PortfolioView = ({
               <div key={debt.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                   <div>
-                    <p className="text-sm font-semibold text-white">{debt.creditor}</p>
-                    <p className="mt-1 text-xs text-slate-500">{debt.category}</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{debt.creditor}</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">{debt.category}</p>
                   </div>
-                  <span className="text-sm font-bold text-[#E05A5A]">{formatCurrency(debt.remainingAmount)}</span>
+                  <span className="text-sm font-bold text-[var(--danger)]">{formatCurrency(debt.remainingAmount)}</span>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-muted)]">
                   <span>Vence no dia {debt.dueDay}</span>
                   <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimÃ´nio</span>
                 </div>
@@ -4144,8 +4141,8 @@ const PortfolioView = ({
 
       <div className="app-surface-card rounded-2xl p-6">
         <div className="mb-4">
-          <h4 className="card-title-premium text-white">Insights da IA</h4>
-          <p className="text-sm text-slate-500">
+          <h4 className="card-title-premium text-[var(--text-primary)]">Insights da IA</h4>
+          <p className="text-sm text-[var(--text-muted)]">
             {hasPortfolioAiInsights
               ? 'Mensagens rÃ¡pidas para ajudar vocÃª a entender a composiÃ§Ã£o da sua carteira.'
               : 'Descubra para onde seu dinheiro estÃ¡ indo com os Insights automÃ¡ticos da IA.'}
@@ -4156,23 +4153,23 @@ const PortfolioView = ({
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             {portfolioInsights.map((insight, index) => (
               <div key={`${index}-${insight}`} className="app-surface-subtle rounded-2xl p-4">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#86B7FF]">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                   <Sparkles size={12} />
                   Insight
                 </div>
-                <p className="text-sm leading-relaxed text-slate-200">{insight}</p>
+                <p className="text-sm leading-relaxed text-[var(--text-primary)]">{insight}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-[#4C8DFF]/20 bg-gradient-to-br from-slate-950/90 via-slate-950/70 to-[#0F213D]/60 p-5">
+          <div className="rounded-3xl border border-[color:var(--border-default)] bg-gradient-to-br from-[var(--bg-app)]/90 via-[var(--bg-surface)]/70 to-[var(--bg-surface-elevated)]/60 p-5">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#86B7FF]">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                   <Lock size={12} />
                   DisponÃ­vel no plano Pro
                 </div>
-                <p className="text-sm leading-relaxed text-slate-200">
+                <p className="text-sm leading-relaxed text-[var(--text-primary)]">
                   Receba anÃ¡lises automÃ¡ticas da sua vida financeira com inteligÃªncia artificial e veja rapidamente onde seu
                   patrimÃ´nio estÃ¡ concentrado, quais pontos exigem atenÃ§Ã£o e quais oportunidades merecem prioridade.
                 </p>
@@ -4207,7 +4204,7 @@ const InvestmentsView = ({
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-white">Investimentos</h3>
+        <h3 className="page-title-premium text-[var(--text-primary)]">Investimentos</h3>
         <button
           onClick={onAddInvestment}
           className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
@@ -4218,22 +4215,22 @@ const InvestmentsView = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Total investido</p>
-          <p className="text-2xl font-black text-white">{formatCurrency(totalInvested)}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Total investido</p>
+          <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalInvested)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Valor atual</p>
-          <p className="text-2xl font-black text-blue-400">{formatCurrency(currentValue)}</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Valor atual</p>
+          <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(currentValue)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Rendimento</p>
-          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Rendimento</p>
+          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
             {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
           </p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-slate-500">Rentabilidade %</p>
-          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Rentabilidade %</p>
+          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
             {profitPercentage.toFixed(2)}%
           </p>
         </div>
@@ -4243,22 +4240,22 @@ const InvestmentsView = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/50">
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Nome</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Tipo</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Carteira</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Investido</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Valor atual</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rendimento</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rentab. %</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Ret. esp. % a.a.</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">AÃ§Ãµes</th>
+              <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface)]">
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Nome</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Tipo</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Carteira</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Investido</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Valor atual</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Rendimento</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Rentab. %</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Ret. esp. % a.a.</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {investments.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-slate-500">
+                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
                     Nenhum investimento cadastrado.
                   </td>
                 </tr>
@@ -4269,34 +4266,34 @@ const InvestmentsView = ({
                 const itemProfitPct = item.invested > 0 ? (itemProfit / item.invested) * 100 : 0;
 
                 return (
-                  <tr key={item.id} className="hover:bg-slate-800/30 transition-colors group">
-                    <td className="px-6 py-4 text-sm font-semibold text-white">{item.label}</td>
+                  <tr key={item.id} className="hover:bg-[var(--bg-surface-elevated)]/30 transition-colors group">
+                    <td className="px-6 py-4 text-sm font-semibold text-[var(--text-primary)]">{item.label}</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
+                      <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
                         {item.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{item.walletName}</td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{formatCurrency(item.invested)}</td>
-                    <td className="px-6 py-4 text-sm text-white">{formatCurrency(item.value)}</td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
+                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{item.walletName}</td>
+                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{formatCurrency(item.invested)}</td>
+                    <td className="px-6 py-4 text-sm text-[var(--text-primary)]">{formatCurrency(item.value)}</td>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
                       {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
                     </td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
                       {itemProfitPct.toFixed(2)}%
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{item.expectedReturnAnnual.toFixed(2)}%</td>
+                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{item.expectedReturnAnnual.toFixed(2)}%</td>
                     <td className="px-6 py-4 text-right">
                       <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => onEditInvestment(item.id)}
-                          className="p-2 text-slate-400 hover:text-white transition-colors"
+                          className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
                         <button
                           onClick={() => onDeleteInvestment(item.id)}
-                          className="p-2 text-slate-500 hover:text-[#E05A5A] transition-colors"
+                          className="p-2 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -4430,7 +4427,7 @@ const ReportsView = ({
       expenseByCategory.set(key, (expenseByCategory.get(key) || 0) + parseCurrency(tx.amount));
     }
 
-    const palette = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4', '#ef4444', '#84cc16'];
+    const palette = ['var(--primary)', 'var(--text-secondary)', 'var(--success)', 'var(--danger)', 'var(--text-muted)'];
     return Array.from(expenseByCategory.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([name, value], index) => ({
@@ -4440,7 +4437,7 @@ const ReportsView = ({
       }));
   }, [transactions]);
 
-  const pieData = categoryData.length > 0 ? categoryData : [{ name: 'Sem dados', value: 1, color: '#334155' }];
+  const pieData = categoryData.length > 0 ? categoryData : [{ name: 'Sem dados', value: 1, color: 'var(--text-muted)' }];
 
   const expenseDeepDive = React.useMemo(() => {
     const currentMonthReference = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -4622,8 +4619,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="page-title-premium text-white">Relatórios</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="page-title-premium text-[var(--text-primary)]">Relatórios</h3>
+            <p className="text-sm text-[var(--text-secondary)]">
               VisÃ£o bÃ¡sica da sua movimentaÃ§Ã£o financeira atual.
             </p>
           </div>
@@ -4639,25 +4636,25 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="label-premium mb-1 text-slate-500">Receitas</p>
-            <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalIncome)}</p>
+            <p className="label-premium mb-1 text-[var(--text-muted)]">Receitas</p>
+            <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="label-premium mb-1 text-slate-500">Despesas</p>
-            <p className="text-2xl font-black text-[#E05A5A]">{formatCurrency(totalExpenses)}</p>
+            <p className="label-premium mb-1 text-[var(--text-muted)]">Despesas</p>
+            <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="label-premium mb-1 text-slate-500">Saldo lÃ­quido</p>
-            <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
+            <p className="label-premium mb-1 text-[var(--text-muted)]">Saldo lÃ­quido</p>
+            <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(balance)}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
-            <h4 className="label-premium text-white mb-4">Resumo por categoria</h4>
+            <h4 className="label-premium text-[var(--text-primary)] mb-4">Resumo por categoria</h4>
             <div className="space-y-3">
               {categoryData.length === 0 ? (
-                <p className="text-sm text-slate-500">Registre despesas para visualizar um resumo por categoria.</p>
+                <p className="text-sm text-[var(--text-muted)]">Registre despesas para visualizar um resumo por categoria.</p>
               ) : (
                 categoryData.slice(0, 5).map((item) => (
                   <div
@@ -4666,9 +4663,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                      <span className="text-sm text-slate-200 truncate">{item.name}</span>
+                      <span className="text-sm text-[var(--text-primary)] truncate">{item.name}</span>
                     </div>
-                    <span className="text-sm font-bold text-white">{formatCurrency(item.value)}</span>
+                    <span className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(item.value)}</span>
                   </div>
                 ))
               )}
@@ -4676,7 +4673,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
 
           <div className="app-surface-card rounded-2xl p-6">
-            <h4 className="label-premium text-white mb-4">DisponÃ­vel no Pro</h4>
+            <h4 className="label-premium text-[var(--text-primary)] mb-4">DisponÃ­vel no Pro</h4>
             <div className="space-y-3">
               {[
                 'GrÃ¡ficos comparativos completos',
@@ -4686,7 +4683,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               ].map((feature) => (
                 <div
                   key={feature}
-                  className="rounded-xl border border-[#4C8DFF]/15 bg-[#4C8DFF]/5 px-4 py-3 text-sm text-[#D8E7FF]/90"
+                  className="rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]/90"
                 >
                   {feature}
                 </div>
@@ -4709,17 +4706,17 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-white">Relatórios e Insights</h3>
+        <h3 className="page-title-premium text-[var(--text-primary)]">Relatórios e Insights</h3>
         <div className="flex gap-2">
           <button
             onClick={onExportPDF}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors text-sm font-bold"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm font-bold"
           >
             <Download size={18} /> PDF
           </button>
           <button
             onClick={onExportCSV}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors text-sm font-bold"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm font-bold"
           >
             <FileText size={18} /> CSV
           </button>
@@ -4728,16 +4725,16 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="label-premium mb-1 text-slate-500">Receitas</p>
-          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalIncome)}</p>
+          <p className="label-premium mb-1 text-[var(--text-muted)]">Receitas</p>
+          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="label-premium mb-1 text-slate-500">Despesas</p>
-          <p className="text-2xl font-black text-[#E05A5A]">{formatCurrency(totalExpenses)}</p>
+          <p className="label-premium mb-1 text-[var(--text-muted)]">Despesas</p>
+          <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="label-premium mb-1 text-slate-500">Saldo lÃ­quido</p>
-          <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
+          <p className="label-premium mb-1 text-[var(--text-muted)]">Saldo lÃ­quido</p>
+          <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(balance)}</p>
         </div>
       </div>
 
@@ -4746,18 +4743,18 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="app-surface-card rounded-2xl p-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
-                <h4 className="label-premium text-white">Previs?o de saldo</h4>
-                <p className="text-sm text-slate-400 mt-2">
+                <h4 className="label-premium text-[var(--text-primary)]">Previs?o de saldo</h4>
+                <p className="text-sm text-[var(--text-secondary)] mt-2">
                   ProjeÃ§Ã£o baseada no ritmo mÃ©dio das suas movimentaÃ§Ãµes dos Ãºltimos 60 dias.
                 </p>
               </div>
               <div
                 className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${
                   balanceForecast.trend === 'positive'
-                    ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
+                    ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
                     : balanceForecast.trend === 'negative'
-                      ? 'bg-slate-950/70 text-[#E05A5A]'
-                      : 'bg-slate-800 text-slate-300'
+                      ? 'bg-[var(--bg-app)] text-[var(--danger)]'
+                      : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
                 }`}
               >
                 {balanceForecast.trend === 'positive'
@@ -4774,17 +4771,17 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   key={item.days}
                   className="app-surface-subtle rounded-2xl p-5"
                 >
-                  <p className="label-premium mb-2 text-slate-500">
+                  <p className="label-premium mb-2 text-[var(--text-muted)]">
                     Em {item.days} dias
                   </p>
                   <p
                     className={`text-2xl font-black ${
-                      item.projectedBalance >= 0 ? 'text-white' : 'text-[#E05A5A]'
+                      item.projectedBalance >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]'
                     }`}
                   >
                     {formatCurrency(item.projectedBalance)}
                   </p>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-xs text-[var(--text-secondary)] mt-2">
                     {item.projectedBalance >= 0
                       ? 'Mantendo o ritmo atual, seu caixa permanece saudÃ¡vel.'
                       : 'Se nada mudar, o saldo projetado fica negativo.'}
@@ -4795,10 +4792,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="mt-5 app-surface-subtle rounded-2xl p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                   Alertas inteligentes
                 </p>
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                   Premium
                 </span>
               </div>
@@ -4809,25 +4806,25 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     className={cn(
                       'rounded-2xl border p-4',
                       alert.tone === 'error'
-                        ? 'border-white/[0.06] bg-slate-950/70'
+                        ? 'border-[var(--border-default)] bg-[var(--bg-app)]'
                         : alert.tone === 'warning'
-                          ? 'border-amber-400/30 bg-amber-400/10'
-                          : 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10'
+                          ? 'border-[var(--border-default)] bg-[color:var(--danger-soft)]/10'
+                          : 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)]'
                     )}
                   >
                     <p
                       className={cn(
                         'text-xs font-bold uppercase tracking-widest',
                         alert.tone === 'error'
-                          ? 'text-[#E05A5A]'
+                          ? 'text-[var(--danger)]'
                           : alert.tone === 'warning'
-                            ? 'text-amber-200'
-                            : 'text-[#86B7FF]'
+                            ? 'text-[var(--text-secondary)]'
+                            : 'text-[var(--text-secondary)]'
                       )}
                     >
                       {alert.title}
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-200">{alert.message}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--text-primary)]">{alert.message}</p>
                   </div>
                 ))}
               </div>
@@ -4837,21 +4834,21 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="app-surface-card rounded-2xl p-6">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h4 className="label-premium text-white">AnÃ¡lises profundas de despesas</h4>
-                <p className="mt-2 max-w-3xl text-sm text-slate-400">
+                <h4 className="label-premium text-[var(--text-primary)]">AnÃ¡lises profundas de despesas</h4>
+                <p className="mt-2 max-w-3xl text-sm text-[var(--text-secondary)]">
                   Veja quais categorias mais cresceram, onde estÃ¡o os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mÃªs.
                 </p>
               </div>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                 Premium
               </span>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-slate-500">Despesas do mês</p>
-                <p className="text-2xl font-black text-white">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Despesas do mês</p>
+                <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
+                <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.previousMonthTotal > 0
                     ? `MÃªs anterior: ${formatCurrency(expenseDeepDive.previousMonthTotal)}`
                     : 'Sem comparaÃ§Ã£o vÃ¡lida com o mÃªs anterior.'}
@@ -4859,32 +4856,32 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-slate-500">VariaÃ§Ã£o mensal</p>
+                <p className="label-premium mb-2 text-[var(--text-muted)]">VariaÃ§Ã£o mensal</p>
                 <p
                   className={cn(
                     'text-2xl font-black',
                     expenseDeepDive.monthOverMonthVariation === null
-                      ? 'text-white'
+                      ? 'text-[var(--text-primary)]'
                       : expenseDeepDive.monthOverMonthVariation > 0
-                        ? 'text-amber-300'
-                        : 'text-[#86B7FF]'
+                        ? 'text-[var(--text-secondary)]'
+                        : 'text-[var(--text-secondary)]'
                   )}
                 >
                   {expenseDeepDive.monthOverMonthVariation === null
                     ? 'Sem base'
                     : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   ComparaÃ§Ã£o entre as despesas do mês atual e do mÃªs anterior.
                 </p>
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-slate-500">Categoria mais pesada</p>
-                <p className="card-title-premium text-white">
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Categoria mais pesada</p>
+                <p className="card-title-premium text-[var(--text-primary)]">
                   {expenseDeepDive.topCurrentCategory?.name || 'Sem dados'}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.topCurrentCategory
                     ? formatCurrency(expenseDeepDive.topCurrentCategory.value)
                     : 'Registre mais despesas para gerar a anÃ¡lise.'}
@@ -4892,11 +4889,11 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-slate-500">Maior despesa individual</p>
-                <p className="card-title-premium text-white">
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Maior despesa individual</p>
+                <p className="card-title-premium text-[var(--text-primary)]">
                   {expenseDeepDive.largestExpense?.description || 'Sem dados'}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.largestExpense
                     ? `${formatCurrency(expenseDeepDive.largestExpense.amount)} em ${expenseDeepDive.largestExpense.category}`
                     : 'Ainda nÃ£o hÃ¡ lanÃ§amentos suficientes neste mÃªs.'}
@@ -4906,26 +4903,26 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-4 text-slate-500">Categorias que mais cresceram</p>
+                <p className="label-premium mb-4 text-[var(--text-muted)]">Categorias que mais cresceram</p>
                 <div className="space-y-3">
                   {expenseDeepDive.growingCategories.length === 0 ? (
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Nenhuma categoria apresentou crescimento relevante em relaÃ§Ã£o ao mÃªs anterior.
                     </p>
                   ) : (
                     expenseDeepDive.growingCategories.map((item) => (
                       <div key={item.name} className="app-surface-subtle rounded-2xl p-4">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-bold text-white">{item.name}</p>
-                          <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
+                          <p className="text-sm font-bold text-[var(--text-primary)]">{item.name}</p>
+                          <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                             +{item.variation.toFixed(0)}%
                           </span>
                         </div>
-                        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-400">
+                        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-[var(--text-secondary)]">
                           <span>MÃªs atual: {formatCurrency(item.currentValue)}</span>
                           <span>MÃªs anterior: {formatCurrency(item.previousValue)}</span>
                         </div>
-                        <p className="mt-2 text-xs text-slate-500">
+                        <p className="mt-2 text-xs text-[var(--text-muted)]">
                           Crescimento absoluto de {formatCurrency(item.diff)} nesta categoria.
                         </p>
                       </div>
@@ -4935,23 +4932,23 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-4 text-slate-500">Categorias recorrentes que mais pesam</p>
+                <p className="label-premium mb-4 text-[var(--text-muted)]">Categorias recorrentes que mais pesam</p>
                 <div className="space-y-3">
                   {expenseDeepDive.recurringHeavyCategories.length === 0 ? (
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Ainda nÃ£o hÃ¡ categorias recorrentes suficientes neste mÃªs para uma anÃ¡lise mais profunda.
                     </p>
                   ) : (
                     expenseDeepDive.recurringHeavyCategories.map((item) => (
                       <div key={item.name} className="app-surface-subtle rounded-2xl p-4">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-bold text-white">{item.name}</p>
-                          <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
+                          <p className="text-sm font-bold text-[var(--text-primary)]">{item.name}</p>
+                          <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                             {item.count} lanÃ§amentos
                           </span>
                         </div>
-                        <p className="mt-2 text-sm text-slate-300">{formatCurrency(item.total)}</p>
-                        <p className="mt-2 text-xs text-slate-500">
+                        <p className="mt-2 text-sm text-[var(--text-secondary)]">{formatCurrency(item.total)}</p>
+                        <p className="mt-2 text-xs text-[var(--text-muted)]">
                           Vale revisar frequ?ncia, assinatura recorrente ou padr?o de consumo nesta categoria.
                         </p>
                       </div>
@@ -4966,8 +4963,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         <div className="app-surface-card rounded-2xl p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h4 className="label-premium text-white">DisponÃ­vel no Premium</h4>
-              <p className="text-sm text-slate-400 mt-2 max-w-2xl">
+              <h4 className="label-premium text-[var(--text-primary)]">DisponÃ­vel no Premium</h4>
+              <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-2xl">
                 Desbloqueie previsÃµes de saldo em 7, 15 e 30 dias, alertas inteligentes e anÃ¡lises profundas de despesas para identificar crescimento por categoria e padrÃµes que pressionam seu caixa.
               </p>
             </div>
@@ -4983,15 +4980,15 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="app-surface-card rounded-2xl p-6">
         <div className="mb-5">
-          <h4 className="label-premium text-white">Receita x Despesa (12 meses)</h4>
+          <h4 className="label-premium text-[var(--text-primary)]">Receita x Despesa (12 meses)</h4>
         </div>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={revenueExpense12Months}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-              <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-strong)" vertical={false} />
+              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis
-                stroke="#64748b"
+                stroke="var(--text-muted)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -4999,8 +4996,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #1e293b',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-strong)',
                   borderRadius: '12px',
                 }}
                 formatter={(value, name) => [
@@ -5008,8 +5005,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   name === 'income' ? 'Receitas' : 'Despesas',
                 ]}
               />
-              <Line type="monotone" dataKey="income" name="income" stroke="#10b981" strokeWidth={3} dot={{ r: 2 }} />
-              <Line type="monotone" dataKey="expense" name="expense" stroke="#f43f5e" strokeWidth={3} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="income" name="income" stroke="var(--success)" strokeWidth={3} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="expense" name="expense" stroke="var(--danger)" strokeWidth={3} dot={{ r: 2 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -5017,7 +5014,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
-          <h4 className="label-premium text-white mb-6">Gastos por categoria</h4>
+          <h4 className="label-premium text-[var(--text-primary)] mb-6">Gastos por categoria</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RePieChart>
@@ -5036,8 +5033,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0f172a',
-                    border: '1px solid #1e293b',
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid var(--border-strong)',
                     borderRadius: '12px',
                   }}
                   formatter={(value: number | string | undefined) =>
@@ -5049,13 +5046,13 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
             {categoryData.length === 0 ? (
-              <p className="text-xs text-slate-500">Sem despesas para exibir por categoria.</p>
+              <p className="text-xs text-[var(--text-muted)]">Sem despesas para exibir por categoria.</p>
             ) : (
               categoryData.map((item) => (
                 <div key={item.name} className="flex items-center gap-2 text-xs">
                   <div className="size-2 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-400">{item.name}:</span>
-                  <span className="text-white font-bold">{formatCurrency(item.value)}</span>
+                  <span className="text-[var(--text-secondary)]">{item.name}:</span>
+                  <span className="text-[var(--text-primary)] font-bold">{formatCurrency(item.value)}</span>
                 </div>
               ))
             )}
@@ -5063,14 +5060,14 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
 
         <div className="app-surface-card rounded-2xl p-6">
-          <h4 className="label-premium text-white mb-6">Taxa de economia (6 meses)</h4>
+          <h4 className="label-premium text-[var(--text-primary)] mb-6">Taxa de economia (6 meses)</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={savingsRate6Months}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-strong)" vertical={false} />
+                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis
-                  stroke="#64748b"
+                  stroke="var(--text-muted)"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -5078,8 +5075,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0f172a',
-                    border: '1px solid #1e293b',
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid var(--border-strong)',
                     borderRadius: '12px',
                   }}
                   formatter={(value) => [`${Number(value || 0).toFixed(2)}%`, 'Taxa de economia']}
@@ -5087,7 +5084,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <Line
                   type="monotone"
                   dataKey="savingsRate"
-                  stroke="#4C8DFF"
+                  stroke="var(--primary)"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -5100,30 +5097,30 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="app-surface-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
-          <h4 className="label-premium text-white">Insights da IA</h4>
+          <h4 className="label-premium text-[var(--text-primary)]">Insights da IA</h4>
           <button
             onClick={generateAIInsight}
             disabled={isGeneratingInsight}
-            className="text-[10px] font-black text-[#86B7FF] uppercase tracking-widest hover:underline disabled:opacity-50"
+            className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest hover:underline disabled:opacity-50"
           >
             {isGeneratingInsight ? 'Gerando...' : 'Atualizar Insights'}
           </button>
         </div>
         <div className="space-y-4">
           {aiInsight ? (
-            <div className="p-4 rounded-xl bg-[#4C8DFF]/5 border border-[#4C8DFF]/10">
+            <div className="p-4 rounded-xl bg-[color:var(--primary-soft)] border border-[color:var(--border-default)]">
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={16} className="text-[#86B7FF]" />
-                <span className="text-xs font-bold text-[#86B7FF] uppercase">AnÃ¡lise personalizada</span>
+                <Sparkles size={16} className="text-[var(--text-secondary)]" />
+                <span className="text-xs font-bold text-[var(--text-secondary)] uppercase">AnÃ¡lise personalizada</span>
               </div>
-              <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+              <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
                 {aiInsight}
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-center p-8">
-              <Sparkles size={32} className="text-slate-700 mb-4" />
-              <p className="text-sm text-slate-500">
+              <Sparkles size={32} className="text-[var(--text-secondary)] mb-4" />
+              <p className="text-sm text-[var(--text-muted)]">
                 Clique em &quot;Atualizar Insights&quot; para a IA analisar seus dados financeiros.
               </p>
             </div>
@@ -5141,8 +5138,8 @@ type AssistantTabViewProps = {
 const AssistantTabView = ({ onOpenAssistant }: AssistantTabViewProps) => (
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="app-surface-card rounded-2xl p-6">
-      <h3 className="page-title-premium text-white mb-2">Assistente IA</h3>
-      <p className="text-slate-400 text-sm mb-6">
+      <h3 className="page-title-premium text-[var(--text-primary)] mb-2">Assistente IA</h3>
+      <p className="text-[var(--text-secondary)] text-sm mb-6">
         Converse com o Cote para analisar gastos, metas e investimentos com base nos seus dados atuais.
       </p>
       <button
@@ -5221,22 +5218,22 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="theme-modal-surface p-6 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-white">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
-          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
+          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
+          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Titulo</label>
+            <label className="label-premium text-[var(--text-muted)]">Titulo</label>
             <input
               type="text"
               value={formData.title}
@@ -5248,7 +5245,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Meta (R$)</label>
+              <label className="label-premium text-[var(--text-muted)]">Meta (R$)</label>
               <MoneyInput
                 value={formData.target}
                 onChange={(value) => setFormData((prev) => ({ ...prev, target: value }))}
@@ -5258,7 +5255,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
             </div>
 
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Acumulado (R$)</label>
+              <label className="label-premium text-[var(--text-muted)]">Acumulado (R$)</label>
               <MoneyInput
                 value={formData.accumulated}
                 onChange={(value) => setFormData((prev) => ({ ...prev, accumulated: value }))}
@@ -5270,7 +5267,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Categoria</label>
+              <label className="label-premium text-[var(--text-muted)]">Categoria</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
@@ -5285,7 +5282,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
             </div>
 
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Prazo</label>
+              <label className="label-premium text-[var(--text-muted)]">Prazo</label>
               <input
                 type="date"
                 value={formData.deadline}
@@ -5301,8 +5298,8 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
             className={cn(
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
+                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar meta'}
@@ -5382,22 +5379,22 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-white">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
-          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
+          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
+          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Nome</label>
+            <label className="label-premium text-[var(--text-muted)]">Nome</label>
             <input
               type="text"
               value={formData.name}
@@ -5408,7 +5405,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Tipo</label>
+            <label className="label-premium text-[var(--text-muted)]">Tipo</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
@@ -5423,7 +5420,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Carteira</label>
+            <label className="label-premium text-[var(--text-muted)]">Carteira</label>
             <select
               value={formData.walletId}
               onChange={(e) => setFormData((prev) => ({ ...prev, walletId: e.target.value }))}
@@ -5440,7 +5437,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Valor investido (R$)</label>
+              <label className="label-premium text-[var(--text-muted)]">Valor investido (R$)</label>
               <MoneyInput
                 value={formData.invested}
                 onChange={(value) => setFormData((prev) => ({ ...prev, invested: value }))}
@@ -5449,7 +5446,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               />
             </div>
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Valor atual (R$)</label>
+              <label className="label-premium text-[var(--text-muted)]">Valor atual (R$)</label>
               <MoneyInput
                 value={formData.current}
                 onChange={(value) => setFormData((prev) => ({ ...prev, current: value }))}
@@ -5460,7 +5457,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Retorno esperado (% a.a.)</label>
+            <label className="label-premium text-[var(--text-muted)]">Retorno esperado (% a.a.)</label>
             <input
               type="number"
               min="0"
@@ -5478,8 +5475,8 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
             className={cn(
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
+                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Adicionar investimento'}
@@ -5562,7 +5559,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -5570,17 +5567,17 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h3 className="page-title-premium text-white">{initialData ? 'Editar dÃ­vida Ãºnica' : 'Nova dívida Ãºnica'}</h3>
-            <p className="mt-1 text-sm text-slate-400">Use para obrigaÃ§Ãµes especÃ­ficas com valor total definido.</p>
+            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar dÃ­vida Ãºnica' : 'Nova dívida Ãºnica'}</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para obrigaÃ§Ãµes especÃ­ficas com valor total definido.</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Credor</label>
+            <label className="label-premium text-[var(--text-muted)]">Credor</label>
             <input
               type="text"
               value={formData.creditor}
@@ -5592,7 +5589,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Valor total</label>
+              <label className="label-premium text-[var(--text-muted)]">Valor total</label>
               <MoneyInput
                 value={formData.originalAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, originalAmount: value }))}
@@ -5601,7 +5598,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </div>
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Saldo em aberto</label>
+              <label className="label-premium text-[var(--text-muted)]">Saldo em aberto</label>
               <MoneyInput
                 value={formData.remainingAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
@@ -5613,7 +5610,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Juros (% mÃªs)</label>
+              <label className="label-premium text-[var(--text-muted)]">Juros (% mÃªs)</label>
               <input
                 type="number"
                 min="0"
@@ -5624,7 +5621,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </div>
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Dia do vencimento</label>
+              <label className="label-premium text-[var(--text-muted)]">Dia do vencimento</label>
               <input
                 type="number"
                 min={1}
@@ -5638,7 +5635,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Categoria</label>
+              <label className="label-premium text-[var(--text-muted)]">Categoria</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
@@ -5652,7 +5649,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               </select>
             </div>
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Status</label>
+              <label className="label-premium text-[var(--text-muted)]">Status</label>
               <select
                 value={formData.status}
                 onChange={(e) =>
@@ -5677,8 +5674,8 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
             className={cn(
               'w-full mt-4 rounded-xl py-3 font-bold transition-all shadow-lg',
               !isValid || isSubmitting
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
+                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar dÃ­vida Ãºnica'}
@@ -5776,7 +5773,7 @@ const RecurringDebtModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -5784,17 +5781,17 @@ const RecurringDebtModal = ({
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h3 className="page-title-premium text-white">{initialData ? 'Editar recorrÃªncia' : 'Nova dívida recorrente'}</h3>
-            <p className="mt-1 text-sm text-slate-400">Use para cobranÃ§as repetidas com frequÃªncia e prÃ³xima cobranÃ§a definidas.</p>
+            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar recorrÃªncia' : 'Nova dívida recorrente'}</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para cobranÃ§as repetidas com frequÃªncia e prÃ³xima cobranÃ§a definidas.</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">DescriÃ§Ã£o</label>
+            <label className="label-premium text-[var(--text-muted)]">DescriÃ§Ã£o</label>
             <input
               type="text"
               value={formData.creditor}
@@ -5804,7 +5801,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Valor da cobranÃ§a</label>
+            <label className="label-premium text-[var(--text-muted)]">Valor da cobranÃ§a</label>
             <MoneyInput
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
@@ -5813,7 +5810,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Categoria</label>
+            <label className="label-premium text-[var(--text-muted)]">Categoria</label>
             <select
               value={formData.category}
               onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))}
@@ -5829,7 +5826,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Status</label>
+            <label className="label-premium text-[var(--text-muted)]">Status</label>
             <select
               value={formData.status}
               onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
@@ -5841,7 +5838,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">FrequÃªncia</label>
+            <label className="label-premium text-[var(--text-muted)]">FrequÃªncia</label>
             <select
               value={formData.frequency}
               onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
@@ -5855,7 +5852,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Repetir a cada</label>
+            <label className="label-premium text-[var(--text-muted)]">Repetir a cada</label>
             <input
               type="number"
               min={1}
@@ -5865,7 +5862,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Data inicial</label>
+            <label className="label-premium text-[var(--text-muted)]">Data inicial</label>
             <input
               type="date"
               value={formData.startDate}
@@ -5874,7 +5871,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Data final (opcional)</label>
+            <label className="label-premium text-[var(--text-muted)]">Data final (opcional)</label>
             <input
               type="date"
               value={formData.endDate}
@@ -5884,7 +5881,7 @@ const RecurringDebtModal = ({
           </div>
           {isMonthlyFamily ? (
             <div className="space-y-2 md:col-span-2">
-              <label className="label-premium text-slate-500">Dia da cobranÃ§a</label>
+              <label className="label-premium text-[var(--text-muted)]">Dia da cobranÃ§a</label>
               <input
                 type="number"
                 min={1}
@@ -5896,7 +5893,7 @@ const RecurringDebtModal = ({
             </div>
           ) : null}
           <div className="space-y-2 md:col-span-2">
-            <label className="label-premium text-slate-500">ObservaÃ§Ãµes</label>
+            <label className="label-premium text-[var(--text-muted)]">ObservaÃ§Ãµes</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
@@ -5913,8 +5910,8 @@ const RecurringDebtModal = ({
           className={cn(
             'mt-6 w-full rounded-xl py-3 font-bold transition-all shadow-lg',
             !isValid || isSubmitting
-              ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-              : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
+              ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+              : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
           )}
         >
           {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrÃªncia' : 'Criar recorrÃªncia'}
@@ -6178,7 +6175,7 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-slate-950/96 p-0 sm:overflow-y-auto sm:items-center sm:p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-[var(--bg-app)] p-0 sm:overflow-y-auto sm:items-center sm:p-4">
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -6190,18 +6187,18 @@ const TransactionModal = ({
         }}
       >
         <div className="mb-4 flex justify-center sm:hidden">
-          <div className="h-1.5 w-12 rounded-full bg-slate-700" />
+          <div className="h-1.5 w-12 rounded-full bg-[var(--bg-surface-elevated)]" />
         </div>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-white">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova Transação'}</h3>
-          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
+          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova Transação'}</h3>
+          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Tipo</label>
+            <label className="label-premium text-[var(--text-muted)]">Tipo</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {TRANSACTION_FLOW_TYPES.map((flowType) => (
                 <button
@@ -6225,8 +6222,8 @@ const TransactionModal = ({
                   className={cn(
                     'flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-bold transition-colors sm:px-4 sm:py-3.5',
                     formData.flowType === flowType
-                      ? 'bg-[#4C8DFF]/20 border-[#4C8DFF] text-[#86B7FF]'
-                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
+                      ? 'bg-[color:var(--primary-soft)] border-[var(--primary)] text-[var(--text-secondary)]'
+                      : 'bg-[var(--bg-surface-elevated)] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                   )}
                 >
                   {React.createElement(getFlowTypeIcon(flowType), { size: 16 })}
@@ -6237,7 +6234,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Valor (R$)</label>
+            <label className="label-premium text-[var(--text-muted)]">Valor (R$)</label>
             <MoneyInput
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
@@ -6247,7 +6244,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">DescriÃ§Ã£o</label>
+            <label className="label-premium text-[var(--text-muted)]">DescriÃ§Ã£o</label>
             <input
               type="text"
               value={formData.description}
@@ -6258,18 +6255,18 @@ const TransactionModal = ({
           </div>
 
           {(isLoadingSuggestion || suggestedCategory) && (
-            <div className="app-surface-subtle rounded-xl p-3 text-xs text-slate-300">
+            <div className="app-surface-subtle rounded-xl p-3 text-xs text-[var(--text-secondary)]">
               {isLoadingSuggestion ? (
                 <span>Buscando sugestÃ¡o de categoria...</span>
               ) : suggestedCategory ? (
                 <div className="flex items-center justify-between gap-2">
                   <span>
-                    SugestÃ£o: <span className="font-bold text-[#86B7FF]">{suggestedCategory}</span>
+                    SugestÃ£o: <span className="font-bold text-[var(--text-secondary)]">{suggestedCategory}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
-                    className="rounded-md bg-[#4C8DFF]/20 px-2 py-1 text-[#B8D3FF] transition-colors hover:bg-[#4C8DFF]/30"
+                    className="rounded-md bg-[color:var(--primary-soft)] px-2 py-1 text-[var(--text-secondary)] transition-colors hover:bg-[color:var(--primary-soft)]"
                   >
                     Usar sugestÃ¡o
                   </button>
@@ -6280,24 +6277,24 @@ const TransactionModal = ({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="min-w-0 overflow-hidden space-y-2">
-              <label className="label-premium text-slate-500">Data</label>
-              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+              <label className="label-premium text-[var(--text-muted)]">Data</label>
+              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-white [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
+                  className="block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-[var(--text-primary)] [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
                 />
               </div>
             </div>
 
             <div className="min-w-0 overflow-hidden space-y-2">
-              <label className="label-premium text-slate-500">Categoria</label>
-              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+              <label className="label-premium text-[var(--text-muted)]">Categoria</label>
+              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
+                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
                 >
                   {availableCategories.map((category) => (
                     <option key={category} value={category}>
@@ -6310,16 +6307,16 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">
+            <label className="label-premium text-[var(--text-muted)]">
               MÃ©todo de pagamento
             </label>
-            <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+            <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
               <select
                 value={formData.paymentMethod}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
                 }
-                className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
+                className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
               >
                 {PAYMENT_METHODS.map((method) => (
                   <option key={method} value={method}>
@@ -6331,19 +6328,19 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">
+            <label className="label-premium text-[var(--text-muted)]">
               Comprovante (JPG, PNG, PDF)
             </label>
-            <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-3 sm:flex-row sm:items-center">
+            <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] p-3 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => receiptInputRef.current?.click()}
                 disabled={isParsingReceipt || isSubmitting}
-                className="shrink-0 rounded-lg bg-slate-700 px-3 py-2 text-xs font-bold text-slate-100 transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="shrink-0 rounded-lg bg-[var(--bg-surface-elevated)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-surface-elevated)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {selectedReceiptName ? 'Trocar arquivo' : 'Escolher arquivo'}
               </button>
-              <span className="min-w-0 flex-1 truncate text-left text-sm text-slate-300">
+              <span className="min-w-0 flex-1 truncate text-left text-sm text-[var(--text-secondary)]">
                 {selectedReceiptName ?? 'Nenhum arquivo selecionado'}
               </span>
               <input
@@ -6355,11 +6352,11 @@ const TransactionModal = ({
                 className="hidden"
               />
             </div>
-            {receiptStatus && <p className="text-[11px] text-slate-400">{receiptStatus}</p>}
+            {receiptStatus && <p className="text-[11px] text-[var(--text-secondary)]">{receiptStatus}</p>}
           </div>
 
           {formData.category === 'Auto (IA)' && (
-            <div className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/5 p-3 text-xs text-[#86B7FF]">
+            <div className="rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-3 text-xs text-[var(--text-secondary)]">
               A categoria serÃ¡ classificada automaticamente com base na descriÃ§Ã£o.
             </div>
           )}
@@ -6367,12 +6364,12 @@ const TransactionModal = ({
           {formData.flowType === 'TransferÃªncia' ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="min-w-0 overflow-hidden space-y-2">
-                <label className="label-premium text-slate-500">Conta origem</label>
-                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <label className="label-premium text-[var(--text-muted)]">Conta origem</label>
+                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                   <select
                     value={formData.wallet}
                     onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
+                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
                   >
                     {walletChoices.map((wallet) => (
                       <option key={wallet} value={wallet}>
@@ -6383,12 +6380,12 @@ const TransactionModal = ({
                 </div>
               </div>
               <div className="min-w-0 overflow-hidden space-y-2">
-                <label className="label-premium text-slate-500">Conta destino</label>
-                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <label className="label-premium text-[var(--text-muted)]">Conta destino</label>
+                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                   <select
                     value={formData.destinationWallet}
                     onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
-                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
+                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
                   >
                     <option value="">Selecione</option>
                     {walletChoices.map((wallet) => (
@@ -6402,12 +6399,12 @@ const TransactionModal = ({
             </div>
           ) : (
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Conta / Carteira</label>
-              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+              <label className="label-premium text-[var(--text-muted)]">Conta / Carteira</label>
+              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                 <select
                   value={formData.wallet}
                   onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
+                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
                 >
                   {walletChoices.map((wallet) => (
                     <option key={wallet} value={wallet}>
@@ -6420,7 +6417,7 @@ const TransactionModal = ({
           )}
 
           {formData.flowType === 'TransferÃªncia' && formData.destinationWallet === formData.wallet && (
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
+            <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3 text-xs text-[var(--text-secondary)]">
               Conta origem e destino nÃ£o podem ser iguais.
             </div>
           )}
@@ -6431,8 +6428,8 @@ const TransactionModal = ({
             className={cn(
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
+                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar transaÃ§Ã£o'}
@@ -6493,31 +6490,31 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+    <div className="theme-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <span className="text-xs font-black text-[#86B7FF] uppercase tracking-widest">
+          <span className="text-xs font-black text-[var(--text-secondary)] uppercase tracking-widest">
             Passo {step + 1} de {steps.length}
           </span>
           <div className="flex gap-1">
             {steps.map((_, i) => (
               <div
                 key={i}
-                className={cn('h-1 w-4 rounded-full transition-all', i === step ? 'bg-[#4C8DFF]' : 'bg-slate-800')}
+                className={cn('h-1 w-4 rounded-full transition-all', i === step ? 'bg-[var(--primary)]' : 'bg-[var(--bg-surface-elevated)]')}
               />
             ))}
           </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-white mb-3">{steps[step].title}</h3>
-        <p className="text-slate-400 mb-8 leading-relaxed">{steps[step].description}</p>
+        <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-3">{steps[step].title}</h3>
+        <p className="text-[var(--text-secondary)] mb-8 leading-relaxed">{steps[step].description}</p>
 
         <div className="flex items-center justify-between">
-          <button onClick={onComplete} className="text-slate-500 hover:text-white text-sm font-bold transition-colors">
+          <button onClick={onComplete} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-sm font-bold transition-colors">
             Pular Tutorial
           </button>
 
@@ -6525,14 +6522,14 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             {step > 0 && (
               <button
                 onClick={prevStep}
-                className="px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition-all"
+                className="px-4 py-2 rounded-xl border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
               >
                 Voltar
               </button>
             )}
             <button
               onClick={nextStep}
-              className="px-6 py-2 rounded-xl bg-[#4C8DFF] text-white font-bold hover:bg-[#3B7DF5] transition-all shadow-lg shadow-[#4C8DFF]/20"
+              className="px-6 py-2 rounded-xl bg-[var(--primary)] text-[var(--text-primary)] font-bold hover:bg-[var(--primary-hover)] transition-all shadow-lg shadow-[color:var(--primary-soft)]"
             >
               {step === steps.length - 1 ? 'ComeÃ§ar agora' : 'PrÃ³ximo'}
             </button>
@@ -6814,10 +6811,10 @@ const LoginView = ({
             className="mb-3 h-auto w-full max-w-[380px]"
           />
           <div className="space-y-2 text-center">
-            <h1 className="text-2xl font-black text-white">
+            <h1 className="text-2xl font-black text-[var(--text-primary)]">
               {isLogin ? 'Entre na sua conta' : 'Crie sua conta gratuita'}
             </h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-[var(--text-secondary)]">
               {isLogin
                 ? loginMethod === 'otp'
                   ? 'Receba um cÃ³digo no e-mail e valide sua entrada sem depender da senha.'
@@ -6830,7 +6827,7 @@ const LoginView = ({
 
         <form onSubmit={handleAuth} className="space-y-4">
           {isLogin ? (
-            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-800 bg-slate-950/50 p-1">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-1">
               <button
                 type="button"
                 onClick={() => {
@@ -6843,8 +6840,8 @@ const LoginView = ({
                 className={cn(
                   'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
                   loginMethod === 'password'
-                    ? 'bg-[#4C8DFF] text-white'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[var(--primary)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 )}
               >
                 Senha
@@ -6860,8 +6857,8 @@ const LoginView = ({
                 className={cn(
                   'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
                   loginMethod === 'otp'
-                    ? 'bg-[#4C8DFF] text-white'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[var(--primary)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 )}
               >
                 CÃ³digo por e-mail
@@ -6872,24 +6869,24 @@ const LoginView = ({
           {!isLogin && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="label-premium text-slate-500">Nome</label>
+                <label className="label-premium text-[var(--text-muted)]">Nome</label>
                 <input
                   type="text"
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 px-4 text-[var(--text-primary)] transition-all focus:outline-none focus:border-[var(--primary)]"
                   placeholder="Seu nome"
                 />
               </div>
               <div className="space-y-2">
-                <label className="label-premium text-slate-500">Sobrenome</label>
+                <label className="label-premium text-[var(--text-muted)]">Sobrenome</label>
                 <input
                   type="text"
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 px-4 text-[var(--text-primary)] transition-all focus:outline-none focus:border-[var(--primary)]"
                   placeholder="Seu sobrenome"
                 />
               </div>
@@ -6897,45 +6894,45 @@ const LoginView = ({
           )}
 
           <div className="space-y-2">
-            <label className="label-premium text-slate-500">Email</label>
+            <label className="label-premium text-[var(--text-muted)]">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
+              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 px-4 text-[var(--text-primary)] transition-all focus:outline-none focus:border-[var(--primary)]"
               placeholder="seuemail@exemplo.com"
             />
           </div>
           {!isLogin || loginMethod === 'password' ? (
             <div className="space-y-2">
-              <label className="label-premium text-slate-500">Senha</label>
+              <label className="label-premium text-[var(--text-muted)]">Senha</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
+                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 px-4 text-[var(--text-primary)] transition-all focus:outline-none focus:border-[var(--primary)]"
                 placeholder={isLogin ? 'Digite sua senha' : 'Crie uma senha segura'}
               />
               {isLogin ? (
-                <p className="text-xs leading-relaxed text-slate-500">
+                <p className="text-xs leading-relaxed text-[var(--text-muted)]">
                   Entre com a senha que vocÃª criou para acessar sua conta.
                 </p>
               ) : (
-                <div className="rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                     CritÃ©rios da senha
                   </p>
-                  <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                  <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
                     {passwordChecks.map((rule) => (
                       <li key={rule.label} className="flex items-center gap-2">
                         <span
                           className={cn(
                             'inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold',
                             rule.valid
-                              ? 'bg-[#4C8DFF]/20 text-[#86B7FF]'
-                              : 'bg-slate-700 text-slate-400'
+                              ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                              : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
                           )}
                         >
                           {rule.valid ? 'OK' : '?'}
@@ -6948,12 +6945,12 @@ const LoginView = ({
               )}
             </div>
           ) : (
-            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-800/30 p-4">
+            <div className="space-y-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30 p-4">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">
                   {otpRequestedEmail ? 'Digite o cÃ³digo recebido' : 'Receba um cÃ³digo de acesso'}
                 </p>
-                <p className="text-xs leading-relaxed text-slate-400">
+                <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
                   {otpRequestedEmail
                     ? `Enviamos o cÃ³digo para ${otpRequestedEmail}. Digite esse cÃ³digo abaixo para entrar.`
                     : 'Vamos enviar um cÃ³digo real para o seu e-mail para validar sua entrada no app.'}
@@ -6962,7 +6959,7 @@ const LoginView = ({
 
               {otpRequestedEmail ? (
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
                     CÃ³digo
                   </label>
                   <input
@@ -6971,7 +6968,7 @@ const LoginView = ({
                     autoComplete="one-time-code"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 px-4 text-white transition-all focus:outline-none focus:border-[#4C8DFF]"
+                    className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 px-4 text-[var(--text-primary)] transition-all focus:outline-none focus:border-[var(--primary)]"
                     placeholder="Digite o cÃ³digo recebido"
                   />
                 </div>
@@ -6981,23 +6978,23 @@ const LoginView = ({
 
           {!isLogin && (
             <>
-              <p className="rounded-xl border border-slate-800 bg-slate-800/40 px-4 py-3 text-xs text-slate-400">
+              <p className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/40 px-4 py-3 text-xs text-[var(--text-secondary)]">
                 Empresa, telefone, segmento, quantidade de contas e objetivo financeiro podem ser definidos depois, no onboarding.
               </p>
 
-              <div className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3 text-xs text-slate-300">
+              <div className="flex items-start gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30 px-4 py-3 text-xs text-[var(--text-secondary)]">
                 <input
                   id="accepted-terms"
                   type="checkbox"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-600 bg-slate-900"
+                  className="mt-0.5 rounded border-[var(--border-strong)] bg-[var(--bg-surface)]"
                 />
                 <div className="leading-relaxed">
                   <label htmlFor="accepted-terms" className="cursor-pointer">
                     Aceito os{' '}
                   </label>
-                  <Link href="/termos-de-uso" target="_blank" rel="noreferrer" className="font-semibold text-[#86B7FF] hover:text-[#B9D3FF]">
+                  <Link href="/termos-de-uso" target="_blank" rel="noreferrer" className="font-semibold text-[var(--text-secondary)] hover:text-[var(--text-secondary)]">
                     termos de uso
                   </Link>
                   <span>{' '}e{' '}</span>
@@ -7005,7 +7002,7 @@ const LoginView = ({
                     href="/politica-de-privacidade"
                     target="_blank"
                     rel="noreferrer"
-                    className="font-semibold text-[#86B7FF] hover:text-[#B9D3FF]"
+                    className="font-semibold text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
                   >
                     polÃ­tica de privacidade
                   </Link>
@@ -7015,13 +7012,13 @@ const LoginView = ({
             </>
           )}
 
-          {notice && <p className="text-[#86B7FF] text-xs font-bold leading-relaxed">{notice}</p>}
-          {error && <p className="text-[#E05A5A] text-xs font-bold leading-relaxed">{error}</p>}
+          {notice && <p className="text-[var(--text-secondary)] text-xs font-bold leading-relaxed">{notice}</p>}
+          {error && <p className="text-[var(--danger)] text-xs font-bold leading-relaxed">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#4C8DFF] py-3 text-sm font-bold text-white transition-all hover:bg-[#3B7DF5] shadow-lg shadow-[#4C8DFF]/20 disabled:opacity-50"
+            className="w-full rounded-xl bg-[var(--primary)] py-3 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--primary-hover)] shadow-lg shadow-[color:var(--primary-soft)] disabled:opacity-50"
           >
             {loading
               ? 'Processando...'
@@ -7039,7 +7036,7 @@ const LoginView = ({
               type="button"
               onClick={handleResendConfirmation}
               disabled={loading}
-              className="w-full text-center text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
+              className="w-full text-center text-xs font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-50"
             >
               NÃ£o recebeu o e-mail? Reenviar confirmaÃ§Ã£o
             </button>
@@ -7062,7 +7059,7 @@ const LoginView = ({
                     setLoading(false);
                   }
                 }}
-                className="text-xs font-semibold text-slate-400 transition hover:text-white disabled:opacity-50"
+                className="text-xs font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-50"
               >
                 Reenviar cÃ³digo
               </button>
@@ -7074,7 +7071,7 @@ const LoginView = ({
                   setError(null);
                   setNotice(null);
                 }}
-                className="text-xs font-semibold text-slate-400 transition hover:text-white"
+                className="text-xs font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
               >
                 Alterar e-mail
               </button>
@@ -7084,17 +7081,17 @@ const LoginView = ({
 
         <div className="relative my-7">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-800"></div>
+            <div className="w-full border-t border-[var(--border-default)]"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-900 px-3 text-slate-500 font-bold">Ou continue com</span>
+            <span className="bg-[var(--bg-surface)] px-3 text-[var(--text-muted)] font-bold">Ou continue com</span>
           </div>
         </div>
 
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-700 bg-slate-800 py-3 text-sm font-bold text-white transition-all hover:bg-slate-700 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--bg-surface-elevated)] disabled:opacity-50"
         >
           <svg className="size-5" viewBox="0 0 24 24">
             <path
@@ -7117,7 +7114,7 @@ const LoginView = ({
           Continuar com Google
         </button>
 
-        <p className="mt-7 text-center text-sm text-slate-500">
+        <p className="mt-7 text-center text-sm text-[var(--text-muted)]">
           {isLogin ? 'NÃ£o tem uma conta?' : 'J? tem uma conta?'}
           <button
             onClick={() => {
@@ -7129,7 +7126,7 @@ const LoginView = ({
               setOtpRequestedEmail('');
               setPassword('');
             }}
-            className="ml-1 font-bold text-[#86B7FF] hover:underline"
+            className="ml-1 font-bold text-[var(--text-secondary)] hover:underline"
           >
             {isLogin ? 'Criar conta gratuita' : 'Entrar'}
           </button>
@@ -7569,7 +7566,7 @@ export default function App() {
           category: g.category || 'Outros',
           deadline: g.deadline || null,
           icon: Wallet,
-          color: 'text-[#3FB68B]',
+          color: 'text-[var(--success)]',
         })));
       } else {
         setGoals([]);
@@ -7661,7 +7658,7 @@ export default function App() {
                 category: g.category || 'Outros',
                 deadline: g.deadline || null,
                 icon: Wallet,
-                color: 'text-[#3FB68B]',
+                color: 'text-[var(--success)]',
               }))
             : [],
           investments: Array.isArray(data.investments)
@@ -8343,8 +8340,8 @@ React.useEffect(() => {
         isoDate: nextDueDate.toISOString(),
         amount: debt.remainingAmount,
         icon: CreditCard,
-        color: 'text-amber-300',
-        bg: 'bg-amber-500/10',
+        color: 'text-[var(--text-secondary)]',
+        bg: 'bg-[color:var(--danger-soft)]',
         status: daysUntil < 0 ? 'overdue' : 'pending',
         kind: 'debt',
         helperText: `${debt.category} - vencimento todo dia ${String(debt.dueDay).padStart(2, '0')}`,
@@ -8365,8 +8362,8 @@ React.useEffect(() => {
         isoDate: nextDueDate.toISOString(),
         amount: debt.amount,
         icon: Workflow,
-        color: 'text-[#86B7FF]',
-        bg: 'bg-[#4C8DFF]/10',
+        color: 'text-[var(--text-secondary)]',
+        bg: 'bg-[color:var(--primary-soft)]',
         status: daysUntil < 0 ? 'overdue' : 'pending',
         kind: 'debt',
         helperText: `${debt.category} - ${getRecurringDebtFrequencyLabel(debt.frequency)}`,
@@ -8388,8 +8385,8 @@ React.useEffect(() => {
         isoDate: deadline.toISOString(),
         amount: Math.max(0, goal.target - goal.current),
         icon: Target,
-        color: 'text-cyan-300',
-        bg: 'bg-cyan-500/10',
+        color: 'text-[var(--text-secondary)]',
+        bg: 'bg-[color:var(--primary-soft)]',
         status: daysUntil < 0 ? 'overdue' : 'pending',
         kind: 'goal',
         helperText: `Faltam ${formatCurrency(Math.max(0, goal.target - goal.current))} para concluir`,
@@ -10087,7 +10084,7 @@ React.useEffect(() => {
   if (authLoading) {
     return (
       <div className="theme-app-shell min-h-screen flex items-center justify-center">
-        <div className="size-12 border-4 border-[#4C8DFF] border-t-transparent rounded-full animate-spin" />
+        <div className="size-12 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -10110,7 +10107,7 @@ React.useEffect(() => {
             exit={{ opacity: 0 }}
           >
             <div
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-[var(--bg-app)] backdrop-blur-sm"
               onClick={() => setIsUpgradeLimitModalOpen(false)}
             />
             <motion.div
@@ -10119,14 +10116,14 @@ React.useEffect(() => {
               exit={{ scale: 0.95, opacity: 0 }}
               className="theme-modal-surface relative w-full max-w-md rounded-3xl p-6 shadow-2xl"
             >
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1">
-                <ArrowUpRight size={12} className="text-[#86B7FF]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1">
+                <ArrowUpRight size={12} className="text-[var(--text-secondary)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
                   Upgrade
                 </span>
               </div>
-              <h3 className="card-title-premium text-white mb-2">Limite do plano Free atingido</h3>
-              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+              <h3 className="card-title-premium text-[var(--text-primary)] mb-2">Limite do plano Free atingido</h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
                 {upgradeLimitReason === 'transactions'
                   ? `VocÃª chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes no mÃªs.`
                   : `VocÃª chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interaÃ§Ãµes de IA no mÃªs.`}{' '}
@@ -10135,7 +10132,7 @@ React.useEffect(() => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsUpgradeLimitModalOpen(false)}
-                  className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300 hover:text-white transition-colors"
+                  className="flex-1 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   Agora nÃ£o
                 </button>
@@ -10145,7 +10142,7 @@ React.useEffect(() => {
                     setActiveTab('integrations');
                     void handleUpgrade('Pro Mensal');
                   }}
-                  className="flex-1 rounded-xl bg-[#4C8DFF] px-4 py-2 text-sm font-bold text-white hover:bg-[#3B7DF5] transition-colors"
+                  className="flex-1 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)] transition-colors"
                 >
                   Fazer upgrade
                 </button>
@@ -10171,7 +10168,7 @@ React.useEffect(() => {
                 setIsCreateWorkspaceModalOpen(false);
                 setCreateWorkspaceError(null);
               }}
-              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
+              className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: 16, opacity: 0, scale: 0.98 }}
@@ -10179,12 +10176,12 @@ React.useEffect(() => {
               exit={{ y: 16, opacity: 0, scale: 0.98 }}
               className="theme-modal-surface relative z-10 w-full max-w-lg rounded-t-[1.75rem] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
             >
-              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
+              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-[var(--bg-surface-elevated)] sm:hidden" />
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">Nova conta</p>
-                  <h3 className="page-title-premium text-white">Criar workspace</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Nova conta</p>
+                  <h3 className="page-title-premium text-[var(--text-primary)]">Criar workspace</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
                     Crie uma nova conta para separar finanÃ§as pessoais, empresa ou operaÃ§Ãµes diferentes dentro do mesmo
                     painel.
                   </p>
@@ -10196,7 +10193,7 @@ React.useEffect(() => {
                     setIsCreateWorkspaceModalOpen(false);
                     setCreateWorkspaceError(null);
                   }}
-                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                 >
                   Fechar
                 </button>
@@ -10210,7 +10207,7 @@ React.useEffect(() => {
                 }}
               >
                 <div>
-                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                     Nome da conta
                   </label>
                   <input
@@ -10220,12 +10217,12 @@ React.useEffect(() => {
                     placeholder="Ex.: Empresa, Casa ou Projeto"
                     autoFocus
                     maxLength={80}
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-[#4C8DFF]"
+                    className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]"
                   />
                 </div>
 
                 {createWorkspaceError && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-slate-950/70 px-4 py-3 text-sm text-[#E05A5A]">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--danger)]">
                     {createWorkspaceError}
                   </div>
                 )}
@@ -10238,14 +10235,14 @@ React.useEffect(() => {
                       setIsCreateWorkspaceModalOpen(false);
                       setCreateWorkspaceError(null);
                     }}
-                    className="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-bold text-slate-300 transition-colors hover:text-white"
+                    className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                   >
                     Agora nÃ£o
                   </button>
                   <button
                     type="submit"
                     disabled={isCreatingWorkspace}
-                    className="rounded-2xl bg-[#4C8DFF] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#3B7DF5] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isCreatingWorkspace ? 'Criando conta...' : 'Criar conta'}
                   </button>
@@ -10272,7 +10269,7 @@ React.useEffect(() => {
                 setIsCreateWalletModalOpen(false);
                 setCreateWalletError(null);
               }}
-              className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm"
+              className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: 16, opacity: 0, scale: 0.98 }}
@@ -10280,14 +10277,14 @@ React.useEffect(() => {
               exit={{ y: 16, opacity: 0, scale: 0.98 }}
               className="theme-modal-surface relative z-10 w-full max-w-lg rounded-t-[1.75rem] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
             >
-              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
+              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-[var(--bg-surface-elevated)] sm:hidden" />
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
                     Nova carteira
                   </p>
-                  <h3 className="page-title-premium text-white">Criar carteira</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  <h3 className="page-title-premium text-[var(--text-primary)]">Criar carteira</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
                     Selecione o banco de origem e crie uma nova carteira para acompanhar melhor seus saldos.
                   </p>
                 </div>
@@ -10298,7 +10295,7 @@ React.useEffect(() => {
                     setIsCreateWalletModalOpen(false);
                     setCreateWalletError(null);
                   }}
-                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:text-white"
+                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                 >
                   Fechar
                 </button>
@@ -10312,7 +10309,7 @@ React.useEffect(() => {
                 }}
               >
                 <div>
-                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                     Banco de origem
                   </label>
                   <select
@@ -10322,7 +10319,7 @@ React.useEffect(() => {
                       setNewWalletBank(nextBank);
                       setNewWalletName((prev) => (prev.trim() ? prev : nextBank));
                     }}
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#4C8DFF]"
+                    className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--primary)]"
                   >
                     <option value="">Selecione um banco</option>
                     {MAIN_BANK_OPTIONS.map((bank) => (
@@ -10334,7 +10331,7 @@ React.useEffect(() => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                     Nome da carteira
                   </label>
                   <input
@@ -10343,12 +10340,12 @@ React.useEffect(() => {
                     onChange={(event) => setNewWalletName(event.target.value)}
                     placeholder="Ex.: Nubank pessoal ou Caixa empresa"
                     maxLength={80}
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-[#4C8DFF]"
+                    className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                     Saldo inicial (opcional)
                   </label>
                   <input
@@ -10357,12 +10354,12 @@ React.useEffect(() => {
                     value={newWalletInitialBalance}
                     onChange={(event) => setNewWalletInitialBalance(maskMoneyInput(event.target.value))}
                     placeholder="R$ 0,00"
-                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-[#4C8DFF]"
+                    className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]"
                   />
                 </div>
 
                 {createWalletError && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-slate-950/70 px-4 py-3 text-sm text-[#E05A5A]">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--danger)]">
                     {createWalletError}
                   </div>
                 )}
@@ -10375,14 +10372,14 @@ React.useEffect(() => {
                       setIsCreateWalletModalOpen(false);
                       setCreateWalletError(null);
                     }}
-                    className="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-bold text-slate-300 transition-colors hover:text-white"
+                    className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                   >
                     Agora nÃ£o
                   </button>
                   <button
                     type="submit"
                     disabled={isCreatingWallet}
-                    className="rounded-2xl bg-[#4C8DFF] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#3B7DF5] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isCreatingWallet ? 'Criando carteira...' : 'Criar carteira'}
                   </button>
@@ -10401,7 +10398,7 @@ React.useEffect(() => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm" />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -10410,32 +10407,32 @@ React.useEffect(() => {
             >
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#86B7FF] font-black mb-2">
+                  <p className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-black mb-2">
                     Onboarding Cote Finance AI
                   </p>
-                  <h3 className="page-title-premium text-white">Setup inteligente do seu workspace</h3>
-                  <p className="text-sm text-slate-400">Etapa {onboardingStep + 1} de 9</p>
+                  <h3 className="page-title-premium text-[var(--text-primary)]">Setup inteligente do seu workspace</h3>
+                  <p className="text-sm text-[var(--text-secondary)]">Etapa {onboardingStep + 1} de 9</p>
                 </div>
                 <button
                   onClick={() => setIsWorkspaceOnboardingOpen(false)}
-                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white"
+                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   Depois
                 </button>
               </div>
 
-              <div className="mb-6 h-2 w-full rounded-full bg-slate-800">
+              <div className="mb-6 h-2 w-full rounded-full bg-[var(--bg-surface-elevated)]">
                 <div
-                  className="h-full rounded-full bg-[#4C8DFF] transition-all duration-300"
+                  className="h-full rounded-full bg-[var(--primary)] transition-all duration-300"
                   style={{ width: `${onboardingFlowProgress}%` }}
                 />
               </div>
 
               {onboardingStep === 0 && (
                 <div className="space-y-6">
-                  <div className="rounded-2xl border border-slate-800 bg-slate-800/40 p-6">
-                    <h4 className="page-title-premium mb-2 text-white">Bem-vindo ao Cote Finance AI</h4>
-                    <p className="text-sm text-slate-300 leading-relaxed">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/40 p-6">
+                    <h4 className="page-title-premium mb-2 text-[var(--text-primary)]">Bem-vindo ao Cote Finance AI</h4>
+                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                       Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanÃ§as e
                       gerar insights mais Ãºteis para vocÃª.
                     </p>
@@ -10443,7 +10440,7 @@ React.useEffect(() => {
                   <div className="flex justify-end">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       ComeÃ§ar
                     </button>
@@ -10454,8 +10451,8 @@ React.useEffect(() => {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">Qual Ã© seu principal objetivo financeiro?</h4>
-                    <p className="text-sm text-slate-400">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Qual Ã© seu principal objetivo financeiro?</h4>
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
                   </div>
@@ -10467,8 +10464,8 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors',
                           onboardingObjective === objective
-                            ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#86B7FF]'
-                            : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
+                            ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                            : 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                         )}
                       >
                         {objective}
@@ -10478,13 +10475,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(0)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       Continuar
                     </button>
@@ -10495,10 +10492,10 @@ React.useEffect(() => {
               {onboardingStep === 2 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">
                       Quantos lanÃ§amentos vocÃª pretende registrar por mÃªs?
                     </h4>
-                    <p className="text-sm text-slate-400">Isso ajuda a ajustar recomendaÃ§Ãµes e limites iniciais.</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Isso ajuda a ajustar recomendaÃ§Ãµes e limites iniciais.</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {ONBOARDING_USAGE_LEVELS.map((rangeLabel) => (
@@ -10508,8 +10505,8 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors',
                           onboardingProfile === rangeLabel
-                            ? 'border-cyan-500 bg-cyan-500/10 text-cyan-300'
-                            : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
+                            ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                            : 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                         )}
                       >
                         {rangeLabel}
@@ -10519,13 +10516,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       Continuar
                     </button>
@@ -10536,10 +10533,10 @@ React.useEffect(() => {
               {onboardingStep === 3 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">
                       Vamos adicionar seu primeiro registro financeiro
                     </h4>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Adicionar seus primeiros dados leva menos de 10 segundos.
                     </p>
                   </div>
@@ -10558,8 +10555,8 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-sm font-bold transition-colors',
                           onboardingFirstRecord.flowType === flowType
-                            ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#86B7FF]'
-                            : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
+                            ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                            : 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                         )}
                       >
                         {flowType}
@@ -10569,7 +10566,7 @@ React.useEffect(() => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="label-premium text-slate-500">Valor</label>
+                      <label className="label-premium text-[var(--text-muted)]">Valor</label>
                       <MoneyInput
                         value={onboardingFirstRecord.amount}
                         onChange={(value) =>
@@ -10579,11 +10576,11 @@ React.useEffect(() => {
                           }))
                         }
                         placeholder="R$ 0,00"
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
+                        className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-2 px-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="label-premium text-slate-500">Categoria</label>
+                      <label className="label-premium text-[var(--text-muted)]">Categoria</label>
                       <select
                         value={onboardingFirstRecord.category}
                         onChange={(event) =>
@@ -10592,7 +10589,7 @@ React.useEffect(() => {
                             category: event.target.value,
                           }))
                         }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
+                        className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-2 px-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                       >
                         {TRANSACTION_CATEGORIES.filter((category) => category !== 'Auto (IA)').map((category) => (
                           <option key={category} value={category}>
@@ -10604,7 +10601,7 @@ React.useEffect(() => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="label-premium text-slate-500">
+                    <label className="label-premium text-[var(--text-muted)]">
                       DescriÃ§Ã£o (opcional)
                     </label>
                     <input
@@ -10616,12 +10613,12 @@ React.useEffect(() => {
                         }))
                       }
                       placeholder="Ex: Mercado do mÃªs"
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
+                      className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-2 px-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                     />
                   </div>
 
                   {onboardingFirstRecordAdded && (
-                    <div className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-4 py-3 text-sm text-[#D8E7FF]">
+                    <div className="rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
                       ParabÃ©ns! Seu primeiro registro foi adicionado.
                     </div>
                   )}
@@ -10629,14 +10626,14 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => void handleAddOnboardingFirstRecord()}
                       disabled={isSavingOnboardingRecord || parseMoneyInput(onboardingFirstRecord.amount) <= 0}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5] disabled:opacity-60"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)] disabled:opacity-60"
                     >
                       {isSavingOnboardingRecord ? 'Adicionando...' : 'Adicionar registro'}
                     </button>
@@ -10647,12 +10644,12 @@ React.useEffect(() => {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">Este Ã© seu painel financeiro</h4>
-                    <p className="text-sm text-slate-400">Aqui vocÃª acompanha tudo em um Ãºnico lugar.</p>
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Este Ã© seu painel financeiro</h4>
+                    <p className="text-sm text-[var(--text-secondary)]">Aqui vocÃª acompanha tudo em um Ãºnico lugar.</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
-                    <p className="text-sm text-slate-200">Aqui vocÃª pode ver:</p>
-                    <ul className="space-y-2 text-sm text-slate-300">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/50 p-5 space-y-3">
+                    <p className="text-sm text-[var(--text-primary)]">Aqui vocÃª pode ver:</p>
+                    <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
                       <li>saldo atual</li>
                       <li>despesas por categoria</li>
                       <li>evoluÃ§Ã£o dos gastos</li>
@@ -10662,13 +10659,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       Continuar
                     </button>
@@ -10679,12 +10676,12 @@ React.useEffect(() => {
               {onboardingStep === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">PrÃ©via das anÃ¡lises com IA</h4>
-                    <p className="text-sm text-slate-400">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">PrÃ©via das anÃ¡lises com IA</h4>
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Este Ã© um exemplo do tipo de insight automÃ¡tico disponÃ­vel nos planos Pro e Premium.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 p-5 text-sm leading-relaxed text-[#D8E7FF]">
+                  <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-5 text-sm leading-relaxed text-[var(--text-secondary)]">
                     VocÃª gastou {onboardingPrimaryInsight.percentage}% em{' '}
                     {String(onboardingPrimaryInsight.category || 'alimenta??o').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
@@ -10693,7 +10690,7 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(4)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
@@ -10702,7 +10699,7 @@ React.useEffect(() => {
                         setOnboardingInsightViewed(true);
                         setOnboardingStep(6);
                       }}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       Entendi como funciona
                     </button>
@@ -10713,24 +10710,24 @@ React.useEffect(() => {
               {onboardingStep === 6 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">Complete seu setup</h4>
-                    <p className="text-sm text-slate-400">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Complete seu setup</h4>
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Conclua estas aÃ§Ãµes para deixar sua conta pronta para anÃ¡lises mais avanÃ§adas.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-4">
-                    <div className="h-2 w-full rounded-full bg-slate-700">
+                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/50 p-5 space-y-4">
+                    <div className="h-2 w-full rounded-full bg-[var(--bg-surface-elevated)]">
                       <div
-                        className="h-full rounded-full bg-[#4C8DFF] transition-all"
+                        className="h-full rounded-full bg-[var(--primary)] transition-all"
                         style={{ width: `${onboardingChecklistProgress}%` }}
                       />
                     </div>
-                    <p className="text-sm text-slate-300">VocÃª completou {onboardingChecklistProgress}% do setup.</p>
+                    <p className="text-sm text-[var(--text-secondary)]">VocÃª completou {onboardingChecklistProgress}% do setup.</p>
                     <div className="space-y-2">
                       {onboardingChecklist.map((item) => (
-                        <div key={item.label} className="flex items-center gap-2 text-sm text-slate-200">
-                          <CheckCircle2 size={16} className={item.done ? 'text-[#86B7FF]' : 'text-slate-500'} />
-                          <span className={item.done ? 'text-[#86B7FF]' : 'text-slate-300'}>{item.label}</span>
+                        <div key={item.label} className="flex items-center gap-2 text-sm text-[var(--text-primary)]">
+                          <CheckCircle2 size={16} className={item.done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]'} />
+                          <span className={item.done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}>{item.label}</span>
                         </div>
                       ))}
                     </div>
@@ -10738,13 +10735,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       Continuar
                     </button>
@@ -10755,12 +10752,12 @@ React.useEffect(() => {
               {onboardingStep === 7 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">Exemplo de oportunidade detectada</h4>
-                    <p className="text-sm text-slate-400">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Exemplo de oportunidade detectada</h4>
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Nos planos Pro e Premium, a IA destaca padrÃµes e oportunidades automaticamente.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 p-5 text-sm leading-relaxed text-cyan-100">
+                  <div className="rounded-2xl border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-5 text-sm leading-relaxed text-[var(--text-secondary)]">
                     VocÃª gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
                     {onboardingAutomaticInsight.categoryLabel} neste mÃªs. Se reduzir 15% desse valor, pode economizar
                     aproximadamente {formatCurrency(onboardingAutomaticInsight.annualSaving)} por ano.
@@ -10768,13 +10765,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(6)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(8)}
-                      className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5]"
+                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
                     >
                       Ver anÃ¡lise completa
                     </button>
@@ -10785,13 +10782,13 @@ React.useEffect(() => {
               {onboardingStep === 8 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-white mb-1">
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">
                       Desbloqueie anÃ¡lises financeiras avanÃ§adas
                     </h4>
-                    <p className="text-sm text-slate-400">Com o plano Pro vocÃª terÃ¡:</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Com o plano Pro vocÃª terÃ¡:</p>
                   </div>
-                  <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 p-5">
-                    <ul className="space-y-2 text-sm text-[#D8E7FF]">
+                  <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-5">
+                    <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
                       <li>â€¢ insights financeiros completos</li>
                       <li>â€¢ previsÃµes de saldo</li>
                       <li>? alertas de gastos fora do padr?o</li>
@@ -10799,7 +10796,7 @@ React.useEffect(() => {
                       <li>â€¢ relatÃ³rios avanÃ§ados</li>
                     </ul>
                   </div>
-                  <label className="flex items-center gap-2 text-sm text-slate-300">
+                  <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                     <input
                       type="checkbox"
                       checked={onboardingAiSuggestionsEnabled}
@@ -10810,7 +10807,7 @@ React.useEffect(() => {
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300"
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
                     >
                       Voltar
                     </button>
@@ -10818,14 +10815,14 @@ React.useEffect(() => {
                       <button
                         onClick={() => void handleCompleteWorkspaceOnboarding('FREE')}
                         disabled={isSavingOnboarding}
-                        className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300 hover:text-white disabled:opacity-60"
+                        className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-60"
                       >
                         Continuar no Free
                       </button>
                       <button
                         onClick={() => void handleCompleteWorkspaceOnboarding('PRO')}
                         disabled={isSavingOnboarding}
-                        className="rounded-xl bg-[#4C8DFF] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3B7DF5] disabled:opacity-60"
+                        className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)] disabled:opacity-60"
                       >
                         {isSavingOnboarding ? 'Preparando...' : 'Testar Pro gratuitamente por 3 dias'}
                       </button>
@@ -10904,7 +10901,7 @@ React.useEffect(() => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 z-[90] bg-slate-950/80 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[90] bg-[var(--bg-app)] backdrop-blur-sm lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -10912,7 +10909,7 @@ React.useEffect(() => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-white/[0.05] bg-[linear-gradient(180deg,#09111A_0%,#0B1018_100%)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
+          'sidebar-premium fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-[var(--border-default)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
           isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64'
         )}
@@ -10929,12 +10926,12 @@ React.useEffect(() => {
             <button
               type="button"
               onClick={() => setIsSidebarCollapsed((current) => !current)}
-              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-white/[0.06] bg-[#121A24] text-slate-300 transition hover:border-white/[0.1] hover:text-white lg:inline-flex"
+              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] lg:inline-flex"
               title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
             >
               {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
-            <button onClick={() => setIsSidebarOpen(false)} className="text-slate-500 hover:text-white lg:hidden">
+            <button onClick={() => setIsSidebarOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] lg:hidden">
               <X size={20} />
             </button>
           </div>
@@ -11037,8 +11034,8 @@ React.useEffect(() => {
         <div className="p-4">
           {isSidebarCollapsed ? (
             <div className="space-y-3">
-              <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/8 px-2 py-3 text-center">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">{planLabel}</p>
+              <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-2 py-3 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{planLabel}</p>
               </div>
               <button
                 type="button"
@@ -11049,7 +11046,7 @@ React.useEffect(() => {
                   }
                   handleManageSubscription();
                 }}
-                className="flex h-12 w-full items-center justify-center rounded-xl bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white transition-all duration-200 hover:brightness-105"
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] transition-all duration-200 hover:brightness-105"
                 title={isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
               >
                 <ArrowUpRight size={18} />
@@ -11057,7 +11054,7 @@ React.useEffect(() => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-800 text-white transition-all duration-200 hover:bg-slate-700"
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-[var(--bg-surface-elevated)] text-[var(--text-primary)] transition-all duration-200 hover:bg-[var(--bg-surface-elevated)]"
                 title="Sair"
               >
                 <LogOut size={18} />
@@ -11065,11 +11062,11 @@ React.useEffect(() => {
             </div>
           ) : (
             <>
-              <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/8 p-4">
-                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
+              <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-4">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
                   Plano {planLabel}
                 </p>
-                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                <p className="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed">
                   {isFreePlan
                     ? `Free: atÃ© ${FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes/mÃªs e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
                     : currentPlan === 'PREMIUM'
@@ -11084,14 +11081,14 @@ React.useEffect(() => {
                     }
                     handleManageSubscription();
                   }}
-                  className="w-full rounded-xl bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] py-2.5 text-xs font-bold text-white transition-all hover:brightness-105 shadow-lg shadow-[#4C8DFF]/15"
+                  className="w-full rounded-xl bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] py-2.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:brightness-105 shadow-lg shadow-[color:var(--primary-soft)]"
                 >
                   {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
                 </button>
               </div>
               <button
                 onClick={handleLogout}
-                className="mt-4 flex w-full items-center justify-center gap-3 px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:text-white"
+                className="mt-4 flex w-full items-center justify-center gap-3 px-3 py-2 text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
               >
                 <LogOut size={18} /> Sair
               </button>
@@ -11102,16 +11099,16 @@ React.useEffect(() => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
+        <header className="sticky top-0 z-30 border-b border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden rounded-xl border border-white/[0.06] bg-[#121A24] p-2 text-slate-400 hover:text-white"
+              className="lg:hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
               <Menu size={20} />
             </button>
-              <h2 className="max-w-[44vw] truncate text-base font-bold capitalize text-white sm:max-w-[18rem] lg:max-w-none lg:text-xl">
+              <h2 className="max-w-[44vw] truncate text-base font-bold capitalize text-[var(--text-primary)] sm:max-w-[18rem] lg:max-w-none lg:text-xl">
               {activeTab === 'dashboard'
                 ? 'Dashboard'
                 : activeTab === 'transactions'
@@ -11137,7 +11134,7 @@ React.useEffect(() => {
                 : 'Configurações'}
               </h2>
               <div className="hidden md:flex items-center gap-2">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">
                   Conta
                 </span>
                 {workspaces.length > 0 && (
@@ -11148,7 +11145,7 @@ React.useEffect(() => {
                       if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
                       setActiveWorkspaceId(nextWorkspaceId);
                     }}
-                    className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#4C8DFF]"
+                    className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-lg px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                   >
                     {workspaces.map((workspace) => (
                       <option key={workspace.id} value={workspace.id}>
@@ -11159,7 +11156,7 @@ React.useEffect(() => {
                 )}
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-bold uppercase tracking-widest text-slate-300 hover:text-white hover:border-[#4C8DFF] transition-colors"
+                  className="px-2.5 py-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--primary)] transition-colors"
                 >
                   + Conta
                 </button>
@@ -11175,7 +11172,7 @@ React.useEffect(() => {
                 }
                 handleManageSubscription();
               }}
-              className="hidden md:inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-3 py-2 text-xs font-bold text-white transition-all hover:brightness-105"
+              className="hidden md:inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-all hover:brightness-105"
             >
               <ArrowUpRight size={14} /> {isFreePlan ? 'Upgrade' : 'Assinatura'}
             </button>
@@ -11185,8 +11182,8 @@ React.useEffect(() => {
                 onClick={handleOpenNew}
                 type="button"
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-xl border bg-slate-900 px-2.5 py-2 text-xs font-bold text-white transition-all sm:gap-2 sm:px-3',
-                  isQuickCreateOpen ? 'border-[#4C8DFF]' : 'border-slate-800 hover:border-[#4C8DFF]'
+                  'inline-flex items-center gap-1.5 rounded-xl border bg-[var(--bg-surface)] px-2.5 py-2 text-xs font-bold text-[var(--text-primary)] transition-all sm:gap-2 sm:px-3',
+                  isQuickCreateOpen ? 'border-[var(--primary)]' : 'border-[var(--border-default)] hover:border-[var(--primary)]'
                 )}
               >
                 <Plus size={14} />
@@ -11200,14 +11197,14 @@ React.useEffect(() => {
                     type="button"
                     aria-label="Fechar atalhos rÃ¡pidos"
                     onClick={() => setIsQuickCreateOpen(false)}
-                    className="fixed inset-0 z-40 bg-slate-950/60 md:hidden"
+                    className="fixed inset-0 z-40 bg-[var(--bg-app)] md:hidden"
                   />
                   <div className="theme-modal-surface fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl p-3 shadow-2xl backdrop-blur-xl md:absolute md:right-0 md:top-full md:mt-2 md:w-[22rem] md:max-h-[75vh] md:inset-x-auto">
                   <div className="mb-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                       {'Atalhos r\u00e1pidos'}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">
                       Crie um novo item com menos cliques.
                     </p>
                   </div>
@@ -11216,55 +11213,55 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction('Receita')}
-                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-white transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
-                        <ArrowUpRight size={15} className="text-[#86B7FF]" />
+                        <ArrowUpRight size={15} className="text-[var(--text-secondary)]" />
                         Receita
                       </div>
-                      <p className="text-[11px] text-slate-300">{'Entrada r\u00e1pida de sal\u00e1rio, pix ou freelance.'}</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">{'Entrada r\u00e1pida de sal\u00e1rio, pix ou freelance.'}</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction('Despesa')}
-                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-white transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
-                        <ArrowDownRight size={15} className="text-[#E05A5A]" />
+                        <ArrowDownRight size={15} className="text-[var(--danger)]" />
                         Despesa
                       </div>
-                      <p className="text-[11px] text-slate-300">{'Registre um gasto sem navegar at\u00e9 a aba.'}</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">{'Registre um gasto sem navegar at\u00e9 a aba.'}</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction(TRANSACTION_FLOW_TYPES[2])}
-                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-white transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
-                        <Workflow size={15} className="text-cyan-400" />
+                        <Workflow size={15} className="text-[var(--text-secondary)]" />
                         {'Transfer\u00eancia'}
                       </div>
-                      <p className="text-[11px] text-slate-300">Movimente saldo entre contas e carteiras.</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">Movimente saldo entre contas e carteiras.</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('goals')}
-                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-white transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
-                        <Target size={15} className="text-amber-300" />
+                        <Target size={15} className="text-[var(--text-secondary)]" />
                         Meta
                       </div>
-                      <p className="text-[11px] text-slate-300">Crie um objetivo financeiro e acompanhe o progresso.</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">Crie um objetivo financeiro e acompanhe o progresso.</p>
                     </button>
                   </div>
 
                   <div className="app-surface-subtle mt-3 rounded-xl p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                         Categorias mais usadas
                       </p>
-                      <span className="text-[10px] text-slate-500">Abre como despesa</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">Abre como despesa</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {([
@@ -11278,7 +11275,7 @@ React.useEffect(() => {
                           key={quickCategory.value}
                           type="button"
                           onClick={() => handleQuickCreateTransaction('Despesa', quickCategory.value)}
-                          className="app-surface-subtle rounded-full px-3 py-1.5 text-[11px] font-semibold text-slate-200 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                          className="app-surface-subtle rounded-full px-3 py-1.5 text-[11px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                         >
                           {quickCategory.label}
                         </button>
@@ -11290,24 +11287,24 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('debts')}
-                      className="app-surface-subtle rounded-xl px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-2 text-left text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2">
-                        <CreditCard size={14} className="text-slate-400" />
+                        <CreditCard size={14} className="text-[var(--text-secondary)]" />
                         {'D\u00edvida'}
                       </div>
-                      <p className="text-[11px] font-medium text-slate-400">Adicione uma conta a pagar ou parcelamento.</p>
+                      <p className="text-[11px] font-medium text-[var(--text-secondary)]">Adicione uma conta a pagar ou parcelamento.</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('investments')}
-                      className="app-surface-subtle rounded-xl px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-2 text-left text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2">
-                        <TrendingUp size={14} className="text-slate-400" />
+                        <TrendingUp size={14} className="text-[var(--text-secondary)]" />
                         Investimento
                       </div>
-                      <p className="text-[11px] font-medium text-slate-400">Registre um ativo e acompanhe rendimento.</p>
+                      <p className="text-[11px] font-medium text-[var(--text-secondary)]">Registre um ativo e acompanhe rendimento.</p>
                     </button>
                   </div>
                   </div>
@@ -11316,11 +11313,11 @@ React.useEffect(() => {
             </div>
 
             <div className="relative hidden xl:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
               <input
                 type="text"
                 placeholder="Buscar..."
-                className="app-field rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-[#4C8DFF] transition-all w-64"
+                className="app-field rounded-xl py-2 pl-10 pr-4 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)] transition-all w-64"
               />
             </div>
 
@@ -11329,8 +11326,8 @@ React.useEffect(() => {
               className={cn(
                 'p-2 rounded-xl border transition-all',
                 isAssistantOpen
-                  ? 'bg-[#4C8DFF]/10 border-[#4C8DFF] text-[#86B7FF]'
-                  : 'app-surface-subtle text-slate-500 hover:text-white'
+                  ? 'bg-[color:var(--primary-soft)] border-[var(--primary)] text-[var(--text-secondary)]'
+                  : 'app-surface-subtle text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               )}
             >
               <MessageSquare size={18} />
@@ -11341,13 +11338,13 @@ React.useEffect(() => {
                   type="button"
                   onClick={() => setIsNotificationsOpen((current) => !current)}
                   className={cn(
-                    'app-surface-subtle relative rounded-xl p-2 transition-all hover:text-white',
-                    unreadNotifications.length > 0 ? 'text-white' : 'text-slate-500'
+                    'app-surface-subtle relative rounded-xl p-2 transition-all hover:text-[var(--text-primary)]',
+                    unreadNotifications.length > 0 ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
                   )}
                 >
                   <Bell size={18} />
                   {unreadNotifications.length > 0 && (
-                    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border border-white/[0.06] bg-slate-950/90 px-1 text-[10px] font-bold leading-none text-[#E05A5A]">
+                    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-1 text-[10px] font-bold leading-none text-[var(--danger)]">
                       {unreadNotifications.length}
                     </span>
                   )}
@@ -11364,11 +11361,11 @@ React.useEffect(() => {
                         transition={{ duration: 0.18 }}
                         className="theme-modal-surface absolute right-0 z-50 mt-3 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl shadow-2xl shadow-slate-950/40 backdrop-blur"
                       >
-                        <div className="border-b border-slate-800 px-4 py-3">
+                        <div className="border-b border-[var(--border-default)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="text-sm font-bold text-white">NotificaÃ§Ãµes</p>
-                              <p className="text-xs text-slate-400">
+                              <p className="text-sm font-bold text-[var(--text-primary)]">NotificaÃ§Ãµes</p>
+                              <p className="text-xs text-[var(--text-secondary)]">
                                 {visibleNotifications.length > 0
                                   ? unreadNotifications.length > 0
                                     ? `${unreadNotifications.length} nova(s) e ${readNotifications.length} jÃ¡ revisada(s)`
@@ -11381,14 +11378,14 @@ React.useEffect(() => {
                                 <button
                                   type="button"
                                   onClick={markAllNotificationsAsRead}
-                                  className="app-surface-subtle inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-200 transition hover:border-[#4C8DFF]/30 hover:text-white"
+                                  className="app-surface-subtle inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-primary)] transition hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                                 >
                                   <CheckCircle2 size={12} />
                                   Marcar lidas
                                 </button>
                               )}
                               {unreadNotifications.length > 0 && (
-                                <span className="rounded-full border border-white/[0.06] bg-slate-950/70 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#E05A5A]">
+                                <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--danger)]">
                                   {unreadNotifications.length} novas
                                 </span>
                               )}
@@ -11398,8 +11395,8 @@ React.useEffect(() => {
 
                         {visibleNotifications.length === 0 ? (
                           <div className="px-4 py-5">
-                            <p className="text-sm text-slate-300">Nenhuma atualizaÃ§Ã£o pendente no momento.</p>
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p className="text-sm text-[var(--text-secondary)]">Nenhuma atualizaÃ§Ã£o pendente no momento.</p>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">
                               Quando surgir algo importante sobre sua conta, assinatura ou agenda, isso aparece aqui.
                             </p>
                           </div>
@@ -11407,7 +11404,7 @@ React.useEffect(() => {
                           <div className="max-h-[26rem] overflow-y-auto p-2">
                             {unreadNotifications.length > 0 && (
                               <div className="px-2 pb-2 pt-1">
-                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">Novas</p>
+                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">Novas</p>
                               </div>
                             )}
                             {unreadNotifications.map((notification) => (
@@ -11426,27 +11423,27 @@ React.useEffect(() => {
                                         className={cn(
                                           'inline-flex size-2 rounded-full',
                                           notification.tone === 'error'
-                                            ? 'bg-rose-500'
+                                            ? 'bg-[color:var(--danger-soft)]'
                                             : notification.tone === 'warning'
-                                              ? 'bg-amber-400'
+                                              ? 'bg-[color:var(--danger-soft)]'
                                               : notification.tone === 'success'
-                                                ? 'bg-[#4C8DFF]'
-                                                : 'bg-cyan-400'
+                                                ? 'bg-[var(--primary)]'
+                                                : 'bg-[var(--primary)]'
                                         )}
                                       />
-                                      <p className="truncate text-sm font-semibold text-white">{notification.title}</p>
+                                      <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{notification.title}</p>
                                     </div>
-                                    <p className="mt-1 text-sm leading-relaxed text-slate-300">{notification.message}</p>
+                                    <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">{notification.message}</p>
                                   </button>
                                   <div className="flex shrink-0 flex-col items-end gap-2">
                                     {notification.timestamp && (
-                                      <span className="text-[11px] text-slate-500">{notification.timestamp}</span>
+                                      <span className="text-[11px] text-[var(--text-muted)]">{notification.timestamp}</span>
                                     )}
                                     <div className="flex items-center gap-1">
                                       <button
                                         type="button"
                                         onClick={() => markNotificationAsRead(notification.id)}
-                                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                                        className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-elevated)] hover:text-[var(--text-primary)]"
                                         aria-label="Marcar como lida"
                                       >
                                         <CheckCircle2 size={14} />
@@ -11454,7 +11451,7 @@ React.useEffect(() => {
                                       <button
                                         type="button"
                                         onClick={() => deleteNotification(notification.id)}
-                                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-[#E05A5A]"
+                                        className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-elevated)] hover:text-[var(--danger)]"
                                         aria-label="Apagar notificaÃ§Ã£o"
                                       >
                                         <Trash2 size={14} />
@@ -11467,13 +11464,13 @@ React.useEffect(() => {
 
                             {readNotifications.length > 0 && (
                               <div className="px-2 pb-2 pt-2">
-                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">Lidas</p>
+                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">Lidas</p>
                               </div>
                             )}
                             {readNotifications.map((notification) => (
                               <div
                                 key={notification.id}
-                                className="mb-2 rounded-2xl border border-transparent px-3 py-3 opacity-75 transition hover:border-white/[0.06] hover:bg-slate-900/50 hover:opacity-100"
+                                className="mb-2 rounded-2xl border border-transparent px-3 py-3 opacity-75 transition hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:opacity-100"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <button
@@ -11486,26 +11483,26 @@ React.useEffect(() => {
                                         className={cn(
                                           'inline-flex size-2 rounded-full',
                                           notification.tone === 'error'
-                                            ? 'bg-slate-700'
+                                            ? 'bg-[var(--bg-surface-elevated)]'
                                             : notification.tone === 'warning'
-                                              ? 'bg-amber-400/70'
+                                              ? 'bg-[color:var(--danger-soft)]/70'
                                               : notification.tone === 'success'
-                                                ? 'bg-[#4C8DFF]/70'
-                                                : 'bg-cyan-400/70'
+                                                ? 'bg-[color:var(--primary-soft)]'
+                                                : 'bg-[var(--primary)]/70'
                                         )}
                                       />
-                                      <p className="truncate text-sm font-medium text-slate-200">{notification.title}</p>
+                                      <p className="truncate text-sm font-medium text-[var(--text-primary)]">{notification.title}</p>
                                     </div>
-                                    <p className="mt-1 text-sm leading-relaxed text-slate-400">{notification.message}</p>
+                                    <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">{notification.message}</p>
                                   </button>
                                   <div className="flex shrink-0 flex-col items-end gap-2">
                                     {notification.timestamp && (
-                                      <span className="text-[11px] text-slate-500">{notification.timestamp}</span>
+                                      <span className="text-[11px] text-[var(--text-muted)]">{notification.timestamp}</span>
                                     )}
                                     <button
                                       type="button"
                                       onClick={() => deleteNotification(notification.id)}
-                                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-[#E05A5A]"
+                                      className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-elevated)] hover:text-[var(--danger)]"
                                       aria-label="Apagar notificaÃ§Ã£o"
                                     >
                                       <Trash2 size={14} />
@@ -11525,12 +11522,12 @@ React.useEffect(() => {
             <div className="relative">
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="size-10 rounded-full bg-slate-800 border border-slate-700 overflow-hidden cursor-pointer hover:border-[#4C8DFF] transition-all flex items-center justify-center group"
+                className="size-10 rounded-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] overflow-hidden cursor-pointer hover:border-[var(--primary)] transition-all flex items-center justify-center group"
               >
                 <UserAvatar
                   user={user}
                   className="size-full"
-                  fallbackClassName="border border-[#4C8DFF]/30"
+                  fallbackClassName="border border-[color:var(--border-default)]"
                   textClassName="text-sm"
                 />
               </button>
@@ -11548,31 +11545,31 @@ React.useEffect(() => {
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="theme-modal-surface absolute right-0 mt-2 w-64 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
-                      <div className="p-4 border-b border-slate-800">
+                      <div className="p-4 border-b border-[var(--border-default)]">
                         <div className="flex items-center gap-3">
                           <UserAvatar
                             user={user}
-                            className="size-12 border border-slate-700 bg-slate-800"
-                            fallbackClassName="border border-[#4C8DFF]/30"
+                            className="size-12 border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]"
+                            fallbackClassName="border border-[color:var(--border-default)]"
                             textClassName="text-base"
                           />
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-white">{getUserDisplayName(user)}</p>
-                            <p className="truncate text-xs text-slate-500">{user.email}</p>
+                            <p className="truncate text-sm font-bold text-[var(--text-primary)]">{getUserDisplayName(user)}</p>
+                            <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
                           </div>
                         </div>
                         <div
                           className={cn(
                             'mt-3 inline-block rounded border px-2 py-0.5',
                             isFreePlan
-                              ? 'bg-slate-500/10 border-slate-500/20'
-                              : 'bg-[#4C8DFF]/10 border-[#4C8DFF]/20'
+                              ? 'bg-[var(--bg-surface-elevated)]/10 border-[var(--border-strong)]/20'
+                              : 'bg-[color:var(--primary-soft)] border-[color:var(--border-default)]'
                           )}
                         >
                           <span
                             className={cn(
                               'text-[10px] font-black uppercase tracking-widest',
-                              isFreePlan ? 'text-slate-300' : 'text-[#86B7FF]'
+                              isFreePlan ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'
                             )}
                           >
                             Plano {planLabel}
@@ -11585,7 +11582,7 @@ React.useEffect(() => {
                             setActiveTab('settings');
                             setIsProfileMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-[#111827] hover:text-white transition-all"
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] transition-all"
                         >
                           <Settings size={16} /> Configurações
                         </button>
@@ -11593,14 +11590,14 @@ React.useEffect(() => {
                           onClick={() => {
                             handleManageSubscription();
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-[#111827] hover:text-white transition-all"
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] transition-all"
                         >
                           <CreditCard size={16} /> Assinatura
                         </button>
-                        <div className="h-px bg-slate-800 my-2" />
+                        <div className="h-px bg-[var(--bg-surface-elevated)] my-2" />
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[#E05A5A] hover:bg-[#111827] transition-all"
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--danger)] hover:bg-[var(--bg-surface)] transition-all"
                         >
                           <LogOut size={16} /> Sair
                         </button>
@@ -11614,13 +11611,13 @@ React.useEffect(() => {
         </div>
         </header>
 
-          <div className="border-b border-white/[0.05] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 md:hidden">
+          <div className="border-b border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 md:hidden">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Conta ativa</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Conta ativa</span>
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
-                  className="app-surface-subtle rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
+                  className="app-surface-subtle rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                 >
                   + Conta
                 </button>
@@ -11633,7 +11630,7 @@ React.useEffect(() => {
                     if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
                     setActiveWorkspaceId(nextWorkspaceId);
                   }}
-                  className="app-field w-full rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
+                  className="app-field w-full rounded-xl px-3 py-3 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                 >
                   {workspaces.map((workspace) => (
                     <option key={workspace.id} value={workspace.id}>
@@ -11645,7 +11642,7 @@ React.useEffect(() => {
             </div>
           </div>
 
-        <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(76,141,255,0.10)_0%,rgba(76,141,255,0)_36%),linear-gradient(180deg,#0A0F17_0%,#0E141D_100%)] p-3 sm:p-4 lg:p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.10)_0%,rgba(59,130,246,0)_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-4 lg:p-8 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -11814,7 +11811,7 @@ React.useEffect(() => {
               {activeTab === 'settings' && (
                 <div className="max-w-3xl space-y-6 animate-in fade-in duration-500">
                   <div className="flex items-center justify-between gap-4">
-                    <h3 className="page-title-premium text-white">Configura??es</h3>
+                    <h3 className="page-title-premium text-[var(--text-primary)]">Configura??es</h3>
                     <button
                       onClick={() => setActiveTab('integrations')}
                       className="app-button-secondary px-3 py-2 rounded-xl text-xs font-bold transition-all"
@@ -11824,22 +11821,22 @@ React.useEffect(() => {
                   </div>
 
                   <div className="app-surface-card rounded-2xl p-6 space-y-4">
-                    <h4 className="label-premium text-white">Perfil</h4>
+                    <h4 className="label-premium text-[var(--text-primary)]">Perfil</h4>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center">
                       <UserAvatar
                         user={user}
                         displayName={settingsName}
                         avatarUrl={settingsAvatarUrl}
-                        className="size-20 border border-slate-700 bg-slate-800"
-                        fallbackClassName="border border-[#4C8DFF]/30"
+                        className="size-20 border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]"
+                        fallbackClassName="border border-[color:var(--border-default)]"
                         textClassName="text-2xl"
                       />
                       <div className="flex-1 space-y-2">
                         <div>
-                          <label className="label-premium text-slate-500">
+                          <label className="label-premium text-[var(--text-muted)]">
                             Foto de perfil
                           </label>
-                          <p className="mt-2 text-xs text-slate-500">
+                          <p className="mt-2 text-xs text-[var(--text-muted)]">
                             PNG, JPG ou WEBP de atÃ© 5 MB. A imagem Ã© ajustada automaticamente para avatar.
                           </p>
                         </div>
@@ -11866,19 +11863,19 @@ React.useEffect(() => {
                               setSettingsSavedAt('Foto removida. Clique em salvar alteraÃ§Ãµes para concluir.');
                             }}
                             disabled={!settingsAvatarUrl || isAvatarProcessing}
-                            className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold text-slate-300 transition-all hover:border-white/15 hover:text-[#E05A5A] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] transition-all hover:border-[var(--border-strong)] hover:text-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Remover foto
                           </button>
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-[var(--text-muted)]">
                           Se nÃ£o houver foto, o sistema mostra automaticamente as iniciais do usu?rio.
                         </p>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="label-premium text-slate-500">Nome</label>
+                        <label className="label-premium text-[var(--text-muted)]">Nome</label>
                         <input
                           type="text"
                           value={settingsName}
@@ -11887,7 +11884,7 @@ React.useEffect(() => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="label-premium text-slate-500">E-mail</label>
+                        <label className="label-premium text-[var(--text-muted)]">E-mail</label>
                         <input
                           type="email"
                           value={settingsEmail}
@@ -11900,27 +11897,27 @@ React.useEffect(() => {
 
                   <div className="app-surface-card rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h4 className="label-premium mb-2 text-white">Plano atual</h4>
+                      <h4 className="label-premium mb-2 text-[var(--text-primary)]">Plano atual</h4>
                       <div
                         className={cn(
                           'inline-flex items-center gap-2 px-3 py-1 rounded-full border',
                           isFreePlan
-                            ? 'bg-slate-500/10 border-slate-500/20'
-                            : 'bg-[#4C8DFF]/10 border-[#4C8DFF]/20'
+                            ? 'bg-[var(--bg-surface-elevated)]/10 border-[var(--border-strong)]/20'
+                            : 'bg-[color:var(--primary-soft)] border-[color:var(--border-default)]'
                         )}
                       >
                         <span
                           className={cn(
                             'text-[10px] font-black uppercase tracking-widest',
-                            isFreePlan ? 'text-slate-300' : 'text-[#86B7FF]'
+                            isFreePlan ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'
                           )}
                         >
                           {planLabel}
                         </span>
-                        <span className="text-xs text-slate-300">Ativo</span>
+                        <span className="text-xs text-[var(--text-secondary)]">Ativo</span>
                       </div>
                       {isFreePlan && (
-                        <p className="mt-2 text-xs text-slate-400">
+                        <p className="mt-2 text-xs text-[var(--text-secondary)]">
                           {currentMonthTransactionCount}/{FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes no mÃªs - IA{' '}
                           {aiUsageCount}/{FREE_AI_LIMIT_PER_MONTH}
                         </p>
@@ -11941,13 +11938,13 @@ React.useEffect(() => {
                   </div>
 
                   <div className="app-surface-card rounded-2xl p-6 space-y-4">
-                    <h4 className="label-premium text-white">WhatsApp</h4>
+                    <h4 className="label-premium text-[var(--text-primary)]">WhatsApp</h4>
                     {isFreePlan ? (
-                      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
-                        <p className="text-sm font-semibold text-amber-200">
+                      <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-4 space-y-3">
+                        <p className="text-sm font-semibold text-[var(--text-secondary)]">
                           Alertas e resumos no WhatsApp fazem parte do plano Pro.
                         </p>
-                        <p className="text-sm text-slate-300">
+                        <p className="text-sm text-[var(--text-secondary)]">
                           FaÃ§a upgrade para receber lembretes financeiros e resumos automÃ¡ticos no celular.
                         </p>
                         <button
@@ -11960,7 +11957,7 @@ React.useEffect(() => {
                     ) : (
                       <>
                         <div className="space-y-2">
-                          <label className="label-premium text-slate-500">N?mero</label>
+                          <label className="label-premium text-[var(--text-muted)]">N?mero</label>
                           <input
                             type="text"
                             value={settingsWhatsApp}
@@ -11970,9 +11967,9 @@ React.useEffect(() => {
                           />
                         </div>
                         <div className="app-surface-subtle rounded-xl p-4 space-y-2">
-                          <p className="text-xs text-slate-400">Exemplos de mensagens:</p>
-                          <p className="text-sm text-slate-200">&quot;gastei R$ 50 mercado&quot;</p>
-                          <p className="text-sm text-slate-200">&quot;recebi R$ 200 pix&quot;</p>
+                          <p className="text-xs text-[var(--text-secondary)]">Exemplos de mensagens:</p>
+                          <p className="text-sm text-[var(--text-primary)]">&quot;gastei R$ 50 mercado&quot;</p>
+                          <p className="text-sm text-[var(--text-primary)]">&quot;recebi R$ 200 pix&quot;</p>
                         </div>
                       </>
                     )}
@@ -11980,15 +11977,15 @@ React.useEffect(() => {
 
                   <div className="app-surface-card rounded-2xl p-6 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="label-premium text-white">
+                      <h4 className="label-premium text-[var(--text-primary)]">
                         Atividade do workspace
                       </h4>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                         {workspaceEvents.length} eventos
                       </span>
                     </div>
                     {workspaceEvents.length === 0 ? (
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-[var(--text-secondary)]">
                         Nenhum evento recente encontrado para este workspace.
                       </p>
                     ) : (
@@ -11999,14 +11996,14 @@ React.useEffect(() => {
                             className="app-surface-subtle rounded-xl px-3 py-2 flex items-center justify-between gap-3"
                           >
                             <div className="min-w-0">
-                              <p className="text-xs font-semibold text-slate-100 truncate">
+                              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">
                                 {getWorkspaceEventLabel(event.type)}
                               </p>
-                              <p className="text-[11px] text-slate-500">
+                              <p className="text-[11px] text-[var(--text-muted)]">
                                 {event.user_id ? `UsuÃ¡rio: ${event.user_id.slice(0, 8)}...` : 'Sistema'}
                               </p>
                             </div>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">
+                            <span className="text-[11px] text-[var(--text-muted)] whitespace-nowrap">
                               {formatEventTimestamp(event.created_at)}
                             </span>
                           </div>
@@ -12016,18 +12013,18 @@ React.useEffect(() => {
                   </div>
 
                   <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div className="text-xs text-slate-500 min-h-4">{settingsSavedAt || ''}</div>
+                    <div className="text-xs text-[var(--text-muted)] min-h-4">{settingsSavedAt || ''}</div>
                     <div className="flex gap-2">
                       <button
                         onClick={handleLogout}
-                        className="px-4 py-2 rounded-xl bg-slate-950/70 border border-white/[0.06] text-sm font-bold text-[#E05A5A] hover:bg-slate-900 transition-all"
+                        className="px-4 py-2 rounded-xl bg-[var(--bg-app)] border border-[var(--border-default)] text-sm font-bold text-[var(--danger)] hover:bg-[var(--bg-surface)] transition-all"
                       >
                         Sair
                       </button>
                       <button
                         onClick={handleSaveSettings}
                         disabled={isAvatarProcessing}
-                        className="px-4 py-2 rounded-xl bg-[#4C8DFF] text-white text-sm font-bold hover:bg-[#3B7DF5] transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                        className="px-4 py-2 rounded-xl bg-[var(--primary)] text-[var(--text-primary)] text-sm font-bold hover:bg-[var(--primary-hover)] transition-all disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Salvar alteraÃ§Ãµes
                       </button>
@@ -12049,23 +12046,23 @@ React.useEffect(() => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 right-0 z-[120] w-full sm:w-[420px] flex flex-col border-l border-slate-900 bg-slate-950/95 backdrop-blur-xl shadow-2xl"
+            className="fixed inset-y-0 right-0 z-[120] w-full sm:w-[420px] flex flex-col border-l border-[var(--border-default)] bg-[var(--bg-app)] backdrop-blur-xl shadow-2xl"
           >
-            <div className="p-6 border-b border-slate-900 flex items-center justify-between">
+            <div className="p-6 border-b border-[var(--border-default)] flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="size-2 rounded-full bg-[#4C8DFF] animate-pulse" />
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Assistente Cote</h3>
+                  <div className="size-2 rounded-full bg-[var(--primary)] animate-pulse" />
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Assistente Cote</h3>
                   {isWhatsAppConnected && (
-                    <div className="flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded bg-[#4C8DFF]/10 border border-[#4C8DFF]/20">
-                      <MessageSquare size={8} className="text-[#86B7FF]" />
-                      <span className="text-[8px] font-black text-[#86B7FF] uppercase tracking-widest">WhatsApp Ativo</span>
+                    <div className="flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded bg-[color:var(--primary-soft)] border border-[color:var(--border-default)]">
+                      <MessageSquare size={8} className="text-[var(--text-secondary)]" />
+                      <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-widest">WhatsApp Ativo</span>
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-slate-400">Pergunte qualquer coisa sobre suas finanÃ§as</p>
+                <p className="text-xs text-[var(--text-secondary)]">Pergunte qualquer coisa sobre suas finanÃ§as</p>
               </div>
-              <button onClick={() => setIsAssistantOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+              <button onClick={() => setIsAssistantOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -12073,14 +12070,14 @@ React.useEffect(() => {
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
               {!hasUserMessages && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">SugestÃ¡es</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">SugestÃ¡es</p>
                   <div className="flex flex-wrap gap-2">
                     {ASSISTANT_SUGGESTIONS.map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => void handleSendMessage(suggestion)}
                         disabled={isLoading}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 hover:text-white hover:border-[#4C8DFF] transition-all disabled:opacity-50"
+                        className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--primary)] transition-all disabled:opacity-50"
                       >
                         {suggestion}
                       </button>
@@ -12095,14 +12092,14 @@ React.useEffect(() => {
                     className={cn(
                       'p-4 rounded-2xl max-w-[90%]',
                       msg.role === 'user'
-                        ? 'bg-[#4C8DFF] text-white rounded-tr-none'
-                        : 'bg-slate-900 border border-slate-800 text-slate-300 rounded-tl-none'
+                        ? 'bg-[var(--primary)] text-[var(--text-primary)] rounded-tr-none'
+                        : 'bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-secondary)] rounded-tl-none'
                     )}
                   >
                     {msg.role === 'model' && i > 0 && (
                       <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="text-[#86B7FF]" size={14} />
-                        <span className="text-[10px] font-black text-[#86B7FF] uppercase tracking-widest">AnÃ¡lise Cote</span>
+                        <TrendingUp className="text-[var(--text-secondary)]" size={14} />
+                        <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest">AnÃ¡lise Cote</span>
                       </div>
                     )}
                     {msg.role === 'model' ? (
@@ -12111,20 +12108,20 @@ React.useEffect(() => {
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>
                     )}
                   </div>
-                  <span className={cn('text-[10px] text-slate-600 font-bold', msg.role === 'user' ? 'mr-1' : 'ml-1')}>
+                  <span className={cn('text-[10px] text-[var(--text-muted)] font-bold', msg.role === 'user' ? 'mr-1' : 'ml-1')}>
                     {msg.time}
                   </span>
                 </div>
               ))}
 
               {isLoading && (
-                <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                <div className="flex items-center gap-2 text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-widest animate-pulse">
                   <Sparkles size={12} /> Cote estÃ¡ pensando...
                 </div>
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-900">
+            <div className="p-4 border-t border-[var(--border-default)]">
               <div className="relative">
                 <input
                   type="text"
@@ -12137,12 +12134,12 @@ React.useEffect(() => {
                   }}
                   placeholder="Digite uma mensagem..."
                   disabled={isLoading}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-[#4C8DFF] transition-all disabled:opacity-50"
+                  className="w-full bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-xl py-3 pl-4 pr-10 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)] transition-all disabled:opacity-50"
                 />
                 <button
                   onClick={() => void handleSendMessage()}
                   disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86B7FF] hover:text-[#B9D3FF] transition-colors disabled:opacity-50"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors disabled:opacity-50"
                 >
                   <Send size={16} />
                 </button>
@@ -12150,13 +12147,13 @@ React.useEffect(() => {
 
               {isFreePlan && (
                 <div className="mt-3 flex items-center justify-between gap-2">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
                     IA Free: {aiUsageCount}/{FREE_AI_LIMIT_PER_MONTH}
                   </p>
                   {aiLimitReached && (
                     <button
                       onClick={() => openUpgradeLimitModal('ai')}
-                      className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF] hover:text-[#86B7FF] transition-colors"
+                      className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
                     >
                       Desbloquear IA
                     </button>
@@ -12164,7 +12161,7 @@ React.useEffect(() => {
                 </div>
               )}
 
-              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
                 <Smartphone size={10} />
                 Integrado com WhatsApp
               </div>
@@ -12176,7 +12173,7 @@ React.useEffect(() => {
         {!isAssistantOpen && (
           <button
             onClick={() => setIsAssistantOpen(true)}
-            className="fixed bottom-8 right-8 size-14 bg-[#4C8DFF] text-white rounded-full shadow-2xl shadow-[#4C8DFF]/20 flex items-center justify-center hover:scale-110 transition-all z-50"
+            className="fixed bottom-8 right-8 size-14 bg-[var(--primary)] text-[var(--text-primary)] rounded-full shadow-2xl shadow-[color:var(--primary-soft)] flex items-center justify-center hover:scale-110 transition-all z-50"
           >
             <MessageSquare size={24} />
           </button>
@@ -12185,6 +12182,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
 

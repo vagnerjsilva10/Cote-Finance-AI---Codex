@@ -1,12 +1,10 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { TrackingProvider } from '@/components/tracking/tracking-provider';
-import { ThemeProvider } from '@/components/theme/theme-provider';
-import { ThemeScript } from '@/components/theme/theme-script';
 import './globals.css';
 
-const inter = Inter({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
@@ -29,15 +27,12 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <ThemeScript />
       </head>
-      <body className={`${inter.variable} font-sans antialiased custom-scrollbar`} suppressHydrationWarning>
-        <ThemeProvider>
-          <React.Suspense fallback={null}>
-            <TrackingProvider />
-          </React.Suspense>
-          {children}
-        </ThemeProvider>
+      <body className={`${plusJakartaSans.variable} font-sans antialiased custom-scrollbar`} suppressHydrationWarning>
+        <React.Suspense fallback={null}>
+          <TrackingProvider />
+        </React.Suspense>
+        {children}
       </body>
     </html>
   );

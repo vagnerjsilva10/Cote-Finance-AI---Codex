@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import * as React from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './theme-provider';
 
@@ -16,19 +16,20 @@ export function ThemeToggleButton({
   iconSize = 18,
   showLabel = false,
 }: ThemeToggleButtonProps) {
-  const { theme, mounted, toggleTheme } = useTheme();
-  const isDarkMode = !mounted || theme === 'dark';
+  const { mounted } = useTheme();
+  const isDarkMode = !mounted;
 
   return (
     <button
       type="button"
-      onClick={toggleTheme}
-      aria-label={isDarkMode ? 'Ativar tema claro' : 'Ativar tema escuro'}
-      title={isDarkMode ? 'Ativar tema claro' : 'Ativar tema escuro'}
+      onClick={(event) => event.preventDefault()}
+      disabled
+      aria-label="Tema dark blue premium ativo"
+      title="Tema dark blue premium ativo"
       className={cn('theme-toggle-surface button-secondary px-3 py-2 text-sm font-medium', className)}
     >
-      {isDarkMode ? <Sun size={iconSize} /> : <Moon size={iconSize} />}
-      {showLabel ? <span className="text-xs font-semibold">{isDarkMode ? 'Claro' : 'Escuro'}</span> : null}
+      <Moon size={iconSize} />
+      {showLabel ? <span className="text-xs font-semibold">{isDarkMode ? 'Dark' : 'Dark'}</span> : null}
     </button>
   );
 }

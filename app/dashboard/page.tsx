@@ -23,8 +23,8 @@ export default function DashboardAuthBridgePage() {
   }, [router]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
-      <div className="w-full max-w-md rounded-[2rem] border border-slate-800 bg-slate-900/95 p-7 text-center shadow-[0_32px_120px_-60px_rgba(16,185,129,0.45)]">
+    <main className="theme-app-shell flex min-h-screen items-center justify-center px-6 text-[var(--text-primary)]">
+      <div className="card-premium w-full max-w-md rounded-[2rem] p-7 text-center">
         <Image
           src="/brand/cote-finance-ai-logo.svg"
           alt="Cote Finance AI - By Cote Juros"
@@ -33,9 +33,9 @@ export default function DashboardAuthBridgePage() {
           priority
           className="mx-auto mb-5 h-auto w-full max-w-[360px]"
         />
-        <div className="mx-auto mb-4 size-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin" />
-        <h1 className="text-lg font-bold text-white">Preparando seu acesso</h1>
-        <p className="mt-2 text-sm text-slate-400">
+        <div className="mx-auto mb-4 size-10 rounded-full border-4 border-[var(--primary)] border-t-transparent animate-spin" />
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">Preparando seu acesso</h1>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Estamos concluindo o login com seguranca e carregando seu workspace.
         </p>
       </div>
