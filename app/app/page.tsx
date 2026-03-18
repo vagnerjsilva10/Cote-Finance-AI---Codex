@@ -1508,7 +1508,7 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0)_45%),linear-gradient(180deg,#16202B_0%,#121A24_100%)] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.26)] transition-all duration-200 hover:border-white/[0.12] hover:shadow-[0_18px_40px_rgba(0,0,0,0.34)]">
+  <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0)_45%),linear-gradient(180deg,#0F1722_0%,#121A24_100%)] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.26)] transition-all duration-200 hover:border-white/[0.12] hover:shadow-[0_18px_40px_rgba(0,0,0,0.34)]">
     <div className="flex items-center justify-between mb-4">
       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</span>
       <div
@@ -1962,7 +1962,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="app-surface-card rounded-2xl p-6">
           <h3 className="card-title-premium mb-6 text-white">Insights do mês</h3>
           <div className="space-y-4">
-            <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
+            <div className="rounded-xl border border-white/[0.06] bg-[#0F1722] p-4">
               <p className="label-premium mb-2 text-slate-500">
                 Maior gasto do mês
               </p>
@@ -1973,7 +1973,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               </p>
             </div>
 
-            <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
+            <div className="rounded-xl border border-white/[0.06] bg-[#0F1722] p-4">
               <p className="label-premium mb-2 text-slate-500">
                 Resumo do mês
               </p>
@@ -2032,7 +2032,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-left">
             <thead>
-              <tr className="border-b border-white/[0.06] bg-[#16202B]">
+              <tr className="border-b border-white/[0.06] bg-[#0F1722]">
                 <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                   Categoria
                 </th>
