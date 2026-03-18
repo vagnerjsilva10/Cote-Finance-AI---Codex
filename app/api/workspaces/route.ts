@@ -60,6 +60,11 @@ type CreateWorkspaceBody = {
   name?: string;
 };
 
+type DeleteWorkspaceBody = {
+  workspaceId?: string;
+  confirmationName?: string;
+};
+
 const isMissingTableError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';
@@ -178,5 +183,104 @@ export async function POST(req: Request) {
 
     console.error('Workspaces POST Error:', error);
     return NextResponse.json({ error: 'Failed to create workspace' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const body = (await req.json().catch(() => null)) as DeleteWorkspaceBody | null;
+    const url = new URL(req.url);
+
+    const workspaceId =
+      body?.workspaceId?.trim() || url.searchParams.get('id')?.trim() || context.workspaceId;
+
+    const targetWorkspace = context.workspaces.find((workspace) => workspace.id === workspaceId);
+    if (!targetWorkspace) {
+      throw new HttpError(403, 'Workspace access denied');
+    }
+
+    if (targetWorkspace.role !== 'OWNER') {
+      throw new HttpError(403, 'Somente o proprietário pode excluir este workspace.');
+    }
+
+    const remainingWorkspaces = context.workspaces.filter((workspace) => workspace.id !== workspaceId);
+    if (remainingWorkspaces.length === 0) {
+      throw new HttpError(409, 'Crie outra conta antes de excluir este workspace.');
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { id: true, name: true },
+    });
+    if (!workspace) {
+      throw new HttpError(404, 'Workspace not found');
+    }
+
+    const confirmationName = body?.confirmationName?.trim() || '';
+    if (confirmationName !== workspace.name) {
+      throw new HttpError(400, 'Digite o nome do workspace exatamente para confirmar a exclusão.');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.workspaceEvent.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.categorySuggestion.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.transaction.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.investment.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.goal.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.recurringDebt.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.debt.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.wallet.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.workspacePreference.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.workspaceSubscription.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.workspaceMember.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.marketingAttribution.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.workspace.delete({
+        where: { id: workspace.id },
+      });
+    });
+
+    return NextResponse.json({
+      ok: true,
+      deletedWorkspaceId: workspace.id,
+      deletedWorkspaceName: workspace.name,
+      nextWorkspaceId: remainingWorkspaces[0]?.id || null,
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    const prismaError = asPrismaServiceUnavailableError(error);
+    if (prismaError) {
+      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+    }
+
+    console.error('Workspaces DELETE Error:', error);
+    return NextResponse.json({ error: 'Failed to delete workspace' }, { status: 500 });
   }
 }

@@ -1508,7 +1508,7 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-8 shadow-[var(--shadow-soft)]">
+  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 sm:p-8 shadow-[var(--shadow-soft)]">
     <div className="mb-6 flex items-center justify-between">
       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</span>
       <div
@@ -1523,11 +1523,11 @@ const StatCard = ({
       </div>
     </div>
     <div className="flex flex-col gap-3.5">
-      <p className="text-[2.15rem] font-bold tracking-[-0.03em] leading-none text-[var(--text-primary)]">{value}</p>
-      <div className={cn('flex items-center gap-1.5 text-[13px] font-semibold', trendType === 'up' ? 'status-positive-premium' : 'status-negative-premium')}>
+      <p className="text-[clamp(1.95rem,6.2vw,2.25rem)] font-bold tracking-[-0.03em] leading-none text-[var(--text-primary)]">{value}</p>
+      <div className={cn('flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] font-semibold', trendType === 'up' ? 'status-positive-premium' : 'status-negative-premium')}>
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
         <span>{trendValue}</span>
-        <span className="ml-1 font-normal text-[var(--text-secondary)]/90">{trend}</span>
+        <span className="ml-1 text-[12px] font-normal leading-5 text-[var(--text-secondary)]/90">{trend}</span>
       </div>
     </div>
   </div>
@@ -1850,7 +1850,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
   const monthLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 className="page-title-premium text-[var(--text-primary)]">Visão Geral</h3>
@@ -1864,7 +1864,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Entradas do mês"
           value={formatCurrency(monthIncome)}
@@ -1891,21 +1891,21 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <StatCard
           label="Taxa de economia"
           value={`${savingsRate.toFixed(1)}%`}
-          trend="(entradas - despesas) / entradas"
-          trendValue="mês atual"
+          trend="economia sobre receitas"
+          trendValue="No mês atual"
           icon={Target}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="app-surface-card lg:col-span-2 rounded-2xl p-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="app-surface-card lg:col-span-2 rounded-2xl p-5 sm:p-6">
           <div className="mb-6">
             <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
             <p className="text-sm text-[var(--text-secondary)]">Últimos 6 meses</p>
           </div>
 
-          <div className="h-[320px] w-full">
+          <div className="h-[280px] w-full sm:h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
@@ -1952,7 +1952,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           </div>
         </div>
 
-        <div className="app-surface-card rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-5 sm:p-6">
           <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mês</h3>
           <div className="space-y-4">
             <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
@@ -3623,10 +3623,16 @@ type PortfolioViewProps = {
   onAddDebt: () => void;
   onViewWalletHistory: (walletName?: string) => void;
   onAdjustWalletBalance: (walletName?: string) => void;
+  onDeleteWallet: (wallet: WalletAccount) => void;
   onOpenInvestments: () => void;
   onOpenDebts: () => void;
   onOpenReports: () => void;
   onUpgrade: () => void;
+  actionFeedback?: {
+    tone: 'success' | 'error';
+    message: string;
+  } | null;
+  onDismissFeedback?: () => void;
 };
 
 const buildPortfolioInsights = ({
@@ -3691,10 +3697,13 @@ const PortfolioView = ({
   onAddDebt,
   onViewWalletHistory,
   onAdjustWalletBalance,
+  onDeleteWallet,
   onOpenInvestments,
   onOpenDebts,
   onOpenReports,
   onUpgrade,
+  actionFeedback,
+  onDismissFeedback,
 }: PortfolioViewProps) => {
   const totalInvested = investments.reduce((acc, investment) => acc + investment.value, 0);
   const activeDebts = debts.filter((debt) => debt.status !== 'Quitada');
@@ -3781,7 +3790,7 @@ const PortfolioView = ({
               Veja seu patrimônio total e onde seu dinheiro está distribuído.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end">
             <button
               type="button"
               onClick={onAddWallet}
@@ -3835,6 +3844,28 @@ const PortfolioView = ({
         )}
       </div>
 
+      {actionFeedback && (
+        <div
+          className={cn(
+            'flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm',
+            actionFeedback.tone === 'success'
+              ? 'border-[color:var(--border-default)] bg-[color:var(--success-soft)] text-[var(--text-primary)]'
+              : 'border-[color:var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-primary)]'
+          )}
+        >
+          <p className="font-medium leading-relaxed">{actionFeedback.message}</p>
+          {onDismissFeedback && (
+            <button
+              type="button"
+              onClick={onDismissFeedback}
+              className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
+              Ok
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <button
           type="button"
@@ -3886,7 +3917,7 @@ const PortfolioView = ({
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_0.9fr]">
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               {assetMix.some((item) => item.value > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <RePieChart>
@@ -3907,8 +3938,17 @@ const PortfolioView = ({
                       formatter={(value) => formatCurrency(Number(value ?? 0))}
                       contentStyle={{
                         backgroundColor: 'var(--bg-surface)',
-                        borderColor: 'var(--border-strong)',
-                        borderRadius: 16,
+                        border: '1px solid var(--border-default)',
+                        borderRadius: 12,
+                        boxShadow: 'var(--shadow-soft)',
+                        padding: '10px 12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      labelStyle={{
+                        color: 'var(--text-primary)',
+                        fontWeight: 600,
+                      }}
+                      itemStyle={{
                         color: 'var(--text-primary)',
                       }}
                     />
@@ -3916,7 +3956,7 @@ const PortfolioView = ({
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-[var(--border-default)] text-sm text-[var(--text-muted)]">
-                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecer? aqui.
+                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecerá aqui.
                 </div>
               )}
             </div>
@@ -3984,7 +4024,7 @@ const PortfolioView = ({
                   <button
                     type="button"
                     onClick={() => onViewWalletHistory(wallet.name)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   >
                     <ReceiptText size={14} />
                     Ver histórico
@@ -3992,7 +4032,7 @@ const PortfolioView = ({
                   <button
                     type="button"
                     onClick={() => onTransferBalance(wallet.name)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   >
                     <Workflow size={14} />
                     Transferir
@@ -4000,10 +4040,18 @@ const PortfolioView = ({
                   <button
                     type="button"
                     onClick={() => onAdjustWalletBalance(wallet.name)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
                   >
                     <Pencil size={14} />
                     Ajustar saldo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteWallet(wallet)}
+                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:bg-[color:var(--danger-soft)]"
+                  >
+                    <Trash2 size={14} />
+                    Excluir
                   </button>
                 </div>
               </div>
@@ -7294,6 +7342,17 @@ export default function App() {
   const [newWalletInitialBalance, setNewWalletInitialBalance] = React.useState('');
   const [createWalletError, setCreateWalletError] = React.useState<string | null>(null);
   const [isCreatingWallet, setIsCreatingWallet] = React.useState(false);
+  const [walletPendingDelete, setWalletPendingDelete] = React.useState<WalletAccount | null>(null);
+  const [deleteWalletError, setDeleteWalletError] = React.useState<string | null>(null);
+  const [isDeletingWallet, setIsDeletingWallet] = React.useState(false);
+  const [portfolioFeedback, setPortfolioFeedback] = React.useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [isDeleteWorkspaceModalOpen, setIsDeleteWorkspaceModalOpen] = React.useState(false);
+  const [deleteWorkspaceConfirmationName, setDeleteWorkspaceConfirmationName] = React.useState('');
+  const [deleteWorkspaceError, setDeleteWorkspaceError] = React.useState<string | null>(null);
+  const [isDeletingWorkspace, setIsDeletingWorkspace] = React.useState(false);
   const [loginModeFromQuery, setLoginModeFromQuery] = React.useState<'login' | 'signup'>('login');
   const [pendingPlanFromQuery, setPendingPlanFromQuery] = React.useState<string | null>(null);
   const [pendingPlanHandled, setPendingPlanHandled] = React.useState(false);
@@ -8750,13 +8809,21 @@ React.useEffect(() => {
     );
   }, [user]);
 
+  const activeWorkspace = React.useMemo(
+    () => (activeWorkspaceId ? workspaces.find((workspace) => workspace.id === activeWorkspaceId) ?? null : null),
+    [activeWorkspaceId, workspaces]
+  );
+  const canDeleteActiveWorkspace = Boolean(
+    activeWorkspace &&
+      String(activeWorkspace.role || '').toUpperCase() === 'OWNER' &&
+      workspaces.length > 1
+  );
+
   React.useEffect(() => {
-    if (!activeWorkspaceId) return;
-    const currentWorkspace = workspaces.find((workspace) => workspace.id === activeWorkspaceId);
-    if (currentWorkspace?.name) {
-      setOnboardingWorkspaceName(currentWorkspace.name);
+    if (activeWorkspace?.name) {
+      setOnboardingWorkspaceName(activeWorkspace.name);
     }
-  }, [activeWorkspaceId, workspaces]);
+  }, [activeWorkspace]);
 
   React.useEffect(() => {
     if (!isWorkspaceOnboardingOpen) return;
@@ -10039,6 +10106,109 @@ React.useEffect(() => {
     }
   };
 
+  const handleRequestDeleteWallet = (wallet: WalletAccount) => {
+    setDeleteWalletError(null);
+    setWalletPendingDelete(wallet);
+  };
+
+  const handleConfirmDeleteWallet = async () => {
+    if (!walletPendingDelete) return;
+
+    setIsDeletingWallet(true);
+    setDeleteWalletError(null);
+    try {
+      const response = await fetch(`/api/wallets?id=${encodeURIComponent(walletPendingDelete.id)}`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(false),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message =
+          typeof payload?.error === 'string'
+            ? payload.error
+            : `Falha ao excluir carteira (HTTP ${response.status}).`;
+        throw new Error(message);
+      }
+
+      setWallets((prev) => prev.filter((wallet) => wallet.id !== walletPendingDelete.id));
+      if (typeof walletPendingDelete.balance === 'number' && Number.isFinite(walletPendingDelete.balance)) {
+        setTotalBalance((prev) => prev - walletPendingDelete.balance);
+      }
+      setPortfolioFeedback({
+        tone: 'success',
+        message: `Carteira "${walletPendingDelete.name}" excluída com sucesso.`,
+      });
+      setWalletPendingDelete(null);
+      void fetchDashboardData({ silent: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha ao excluir carteira.';
+      setDeleteWalletError(message);
+      setPortfolioFeedback({
+        tone: 'error',
+        message,
+      });
+    } finally {
+      setIsDeletingWallet(false);
+    }
+  };
+
+  const handleOpenDeleteWorkspaceModal = () => {
+    setDeleteWorkspaceError(null);
+    setDeleteWorkspaceConfirmationName('');
+    setIsDeleteWorkspaceModalOpen(true);
+  };
+
+  const handleDeleteWorkspace = async () => {
+    if (!activeWorkspace) {
+      setDeleteWorkspaceError('Selecione um workspace válido para excluir.');
+      return;
+    }
+
+    const expectedName = activeWorkspace.name.trim();
+    const providedName = deleteWorkspaceConfirmationName.trim();
+    if (providedName !== expectedName) {
+      setDeleteWorkspaceError('Digite o nome do workspace exatamente para confirmar a exclusão.');
+      return;
+    }
+
+    setIsDeletingWorkspace(true);
+    setDeleteWorkspaceError(null);
+    try {
+      const response = await fetch('/api/workspaces', {
+        method: 'DELETE',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({
+          workspaceId: activeWorkspace.id,
+          confirmationName: providedName,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message =
+          typeof payload?.error === 'string'
+            ? payload.error
+            : `Falha ao excluir workspace (HTTP ${response.status}).`;
+        throw new Error(message);
+      }
+
+      const nextWorkspaceId =
+        typeof payload?.nextWorkspaceId === 'string' && payload.nextWorkspaceId
+          ? payload.nextWorkspaceId
+          : workspaces.find((workspace) => workspace.id !== activeWorkspace.id)?.id || null;
+
+      setWorkspaces((prev) => prev.filter((workspace) => workspace.id !== activeWorkspace.id));
+      setActiveWorkspaceId(nextWorkspaceId);
+      setIsDeleteWorkspaceModalOpen(false);
+      setDeleteWorkspaceConfirmationName('');
+      setSettingsSavedAt(`Workspace "${activeWorkspace.name}" excluído com sucesso.`);
+      setActiveTab('dashboard');
+    } catch (error) {
+      setDeleteWorkspaceError(error instanceof Error ? error.message : 'Falha ao excluir workspace.');
+    } finally {
+      setIsDeletingWorkspace(false);
+    }
+  };
+
   const handleOpenNew = () => {
     setIsQuickCreateOpen((prev) => !prev);
   };
@@ -10384,9 +10554,160 @@ React.useEffect(() => {
       </AnimatePresence>
 
       <AnimatePresence>
+        {walletPendingDelete && (
+          <motion.div
+            className="fixed inset-0 z-[134] flex items-end justify-center p-0 sm:items-center sm:p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              type="button"
+              aria-label="Fechar confirmação de exclusão de carteira"
+              onClick={() => {
+                if (isDeletingWallet) return;
+                setWalletPendingDelete(null);
+                setDeleteWalletError(null);
+              }}
+              className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: 16, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 16, opacity: 0, scale: 0.98 }}
+              className="theme-modal-surface relative z-10 w-full max-w-lg rounded-t-[1.75rem] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
+            >
+              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-[var(--bg-surface-elevated)] sm:hidden" />
+              <div className="mb-5 space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--danger)]">Excluir carteira</p>
+                <h3 className="card-title-premium text-[var(--text-primary)]">
+                  Confirmar exclusão de &quot;{walletPendingDelete.name}&quot;
+                </h3>
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                  Essa ação remove a carteira de forma permanente. Se houver transações ou investimentos vinculados, a
+                  exclusão será bloqueada para evitar perda de dados.
+                </p>
+              </div>
+
+              {deleteWalletError && (
+                <div className="mb-4 rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                  {deleteWalletError}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isDeletingWallet) return;
+                    setWalletPendingDelete(null);
+                    setDeleteWalletError(null);
+                  }}
+                  className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleConfirmDeleteWallet()}
+                  disabled={isDeletingWallet}
+                  className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm font-bold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isDeletingWallet ? 'Excluindo carteira...' : 'Excluir carteira'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isDeleteWorkspaceModalOpen && activeWorkspace && (
+          <motion.div
+            className="fixed inset-0 z-[135] flex items-end justify-center p-0 sm:items-center sm:p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              type="button"
+              aria-label="Fechar confirmação de exclusão de workspace"
+              onClick={() => {
+                if (isDeletingWorkspace) return;
+                setIsDeleteWorkspaceModalOpen(false);
+                setDeleteWorkspaceError(null);
+                setDeleteWorkspaceConfirmationName('');
+              }}
+              className="absolute inset-0 bg-[var(--bg-app)]/90 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: 16, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 16, opacity: 0, scale: 0.98 }}
+              className="theme-modal-surface relative z-10 w-full max-w-xl rounded-t-[1.75rem] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
+            >
+              <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-[var(--bg-surface-elevated)] sm:hidden" />
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--danger)]">Ação irreversível</p>
+                <h3 className="card-title-premium text-[var(--text-primary)]">
+                  Excluir workspace &quot;{activeWorkspace.name}&quot;
+                </h3>
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                  Para confirmar, digite o nome do workspace exatamente como está. Todos os dados vinculados serão
+                  apagados permanentemente.
+                </p>
+              </div>
+
+              <div className="mt-5 space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+                  Digite: {activeWorkspace.name}
+                </label>
+                <input
+                  type="text"
+                  value={deleteWorkspaceConfirmationName}
+                  onChange={(event) => setDeleteWorkspaceConfirmationName(event.target.value)}
+                  placeholder={activeWorkspace.name}
+                  className="app-field w-full rounded-xl px-4 py-3 text-sm"
+                />
+              </div>
+
+              {deleteWorkspaceError && (
+                <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                  {deleteWorkspaceError}
+                </div>
+              )}
+
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isDeletingWorkspace) return;
+                    setIsDeleteWorkspaceModalOpen(false);
+                    setDeleteWorkspaceError(null);
+                    setDeleteWorkspaceConfirmationName('');
+                  }}
+                  className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteWorkspace()}
+                  disabled={isDeletingWorkspace}
+                  className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm font-bold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isDeletingWorkspace ? 'Excluindo workspace...' : 'Excluir workspace'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {isWorkspaceOnboardingOpen && (
           <motion.div
-            className="fixed inset-0 z-[135] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[136] flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -10904,16 +11225,16 @@ React.useEffect(() => {
         className={cn(
           'sidebar-premium fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-[var(--border-default)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
-          isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64'
+          isSidebarCollapsed ? 'w-[19rem] lg:w-24' : 'w-[19rem] lg:w-72'
         )}
       >
-        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-5' : 'px-6 py-7')} id="sidebar-logo">
+        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-5' : 'px-7 py-8')} id="sidebar-logo">
           <Image
             src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo}
             alt="Cote Finance AI - By Cote Juros"
-            width={isSidebarCollapsed ? 56 : 500}
-            height={isSidebarCollapsed ? 56 : 136}
-            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-12' : 'w-full max-w-[320px]')}
+            width={isSidebarCollapsed ? 64 : 640}
+            height={isSidebarCollapsed ? 64 : 176}
+            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-14' : 'w-full max-w-[380px]')}
           />
           <div className="flex items-center gap-2">
             <button
@@ -11635,7 +11956,7 @@ React.useEffect(() => {
             </div>
           </div>
 
-        <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.10)_0%,rgba(59,130,246,0)_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-4 lg:p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.10)_0%,rgba(59,130,246,0)_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-5 lg:p-8 xl:p-10 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -11734,10 +12055,13 @@ React.useEffect(() => {
                       description: 'Ajuste de saldo',
                     });
                   }}
+                  onDeleteWallet={handleRequestDeleteWallet}
                   onOpenInvestments={() => setActiveTab('investments')}
                   onOpenDebts={() => setActiveTab('debts')}
                   onOpenReports={() => setActiveTab('reports')}
                   onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                  actionFeedback={portfolioFeedback}
+                  onDismissFeedback={() => setPortfolioFeedback(null)}
                 />
               )}
               {activeTab === 'agenda' && <AgendaView bills={bills} />}
@@ -12005,6 +12329,34 @@ React.useEffect(() => {
                     )}
                   </div>
 
+                  <div className="app-surface-card rounded-2xl border border-[color:var(--border-default)] p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="space-y-2">
+                        <h4 className="label-premium text-[var(--danger)]">Zona de risco</h4>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">Excluir workspace atual</p>
+                        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                          Essa ação é irreversível e remove carteiras, transações, metas, dívidas, investimentos e eventos
+                          deste workspace.
+                        </p>
+                        {!canDeleteActiveWorkspace && (
+                          <p className="text-xs text-[var(--text-muted)]">
+                            {workspaces.length <= 1
+                              ? 'Crie outra conta antes de excluir a atual.'
+                              : 'Somente o proprietário da conta pode excluir este workspace.'}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={!canDeleteActiveWorkspace || isDeletingWorkspace}
+                        onClick={handleOpenDeleteWorkspaceModal}
+                        className="inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-2 text-sm font-bold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Excluir workspace
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="text-xs text-[var(--text-muted)] min-h-4">{settingsSavedAt || ''}</div>
                     <div className="flex gap-2">
@@ -12063,7 +12415,7 @@ React.useEffect(() => {
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
               {!hasUserMessages && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">Sugestáes</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">Sugestões</p>
                   <div className="flex flex-wrap gap-2">
                     {ASSISTANT_SUGGESTIONS.map((suggestion) => (
                       <button
