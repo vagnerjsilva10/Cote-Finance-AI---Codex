@@ -1860,7 +1860,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-white">Visão Geral</h3>
+          <h3 className="page-title-premium text-white">Visão Geral</h3>
           <p className="text-sm text-slate-400 capitalize">Resumo de {monthLabel}</p>
         </div>
         <button
@@ -1959,11 +1959,11 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           </div>
         </div>
 
-        <div className="theme-report-card app-surface-card rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-white mb-6">Insights do mês</h3>
           <div className="space-y-4">
             <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+              <p className="label-premium mb-2 text-slate-500">
                 Maior gasto do mês
               </p>
               <p className="text-sm font-semibold text-white">
@@ -1974,7 +1974,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
             </div>
 
             <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+              <p className="label-premium mb-2 text-slate-500">
                 Resumo do mês
               </p>
               <p className="text-sm text-slate-200">
@@ -2021,7 +2021,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
       </div>
 
-      <div className="theme-table-surface app-table-shell overflow-hidden rounded-2xl">
+      <div className="app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
           <h3 className="text-lg font-bold text-white">Últimas transações</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
@@ -2056,7 +2056,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 </tr>
               )}
               {recentTransactions.map((tx) => (
-                <tr key={tx.id} className="transition-colors hover:bg-white/[0.03]">
+                <tr key={tx.id} className="transition-colors hover:bg-slate-800/40">
                   <td className="px-6 py-4 text-sm text-slate-300">{tx.cat || 'Sem categoria'}</td>
                   <td className="px-6 py-4 text-sm font-medium text-white">{tx.desc}</td>
                   <td className="px-6 py-4 text-sm text-slate-400">{tx.date}</td>
@@ -2125,7 +2125,7 @@ const TransactionsView = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Transações</h3>
+        <h3 className="page-title-premium text-white">Transações</h3>
         <button
           onClick={onAddTransaction}
           className="app-button-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
@@ -2136,22 +2136,22 @@ const TransactionsView = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Entradas totais</p>
+          <p className="label-premium mb-2 text-slate-500">Entradas totais</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saídas totais</p>
+          <p className="label-premium mb-2 text-slate-500">Saídas totais</p>
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saldo</p>
+          <p className="label-premium mb-2 text-slate-500">Saldo</p>
           <p className={cn('text-2xl font-black', balance >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
             {formatCurrency(balance)}
           </p>
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 lg:p-5">
+      <div className="app-surface-card rounded-2xl p-4 lg:p-5">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="lg:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
@@ -2189,7 +2189,7 @@ const TransactionsView = ({
           const baseType = mapFlowTypeToBaseType(tx.flowType);
 
           return (
-            <div key={tx.id} className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <div key={tx.id} className="app-surface-card rounded-2xl p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-white">{tx.desc}</p>
@@ -2248,7 +2248,7 @@ const TransactionsView = ({
         })}
       </div>
 
-      <div className="theme-table-surface app-table-shell hidden lg:block rounded-2xl overflow-hidden">
+      <div className="app-table-shell hidden lg:block rounded-2xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-800/30">
@@ -2471,7 +2471,7 @@ const IntegrationsView = ({
               key={plan.name}
               className="relative rounded-3xl border border-slate-800 bg-slate-900/50 p-8 transition-all duration-300 hover:border-slate-700"
             >
-              <h3 className="mb-2 text-xl font-bold text-white">{plan.name}</h3>
+              <h3 className="mb-2 page-title-premium text-white">{plan.name}</h3>
               <div className="mb-6 flex items-baseline gap-1">
                 <span className="text-4xl font-black text-white">
                   R$ {billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice}
@@ -2506,7 +2506,7 @@ const IntegrationsView = ({
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white">Integração com WhatsApp</h3>
+              <h3 className="page-title-premium text-white">Integração com WhatsApp</h3>
               <p className="text-sm text-slate-500">Alertas e resumos automáticos direto no celular do workspace</p>
             </div>
           </div>
@@ -3525,7 +3525,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Metas</h3>
+        <h3 className="page-title-premium text-white">Metas</h3>
         <button
           onClick={onAddGoal}
           className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
@@ -3536,15 +3536,15 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Total de metas</p>
+          <p className="label-premium mb-2 text-slate-500">Total de metas</p>
           <p className="text-2xl font-black text-white">{totalGoals}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Meta total</p>
+          <p className="label-premium mb-2 text-slate-500">Meta total</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(targetTotal)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Valor acumulado</p>
+          <p className="label-premium mb-2 text-slate-500">Valor acumulado</p>
           <p className="text-2xl font-black text-blue-400">{formatCurrency(accumulatedTotal)}</p>
         </div>
       </div>
@@ -3561,7 +3561,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
           const remaining = Math.max(0, goal.target - goal.current);
 
           return (
-            <div key={goal.id} className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl">
+            <div key={goal.id} className="app-surface-card rounded-2xl p-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -3786,7 +3786,7 @@ const PortfolioView = ({
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-white">Carteira</h3>
+            <h3 className="page-title-premium text-white">Carteira</h3>
             <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
               Veja seu patrimônio total e onde seu dinheiro está distribuído.
             </p>
@@ -4207,7 +4207,7 @@ const InvestmentsView = ({
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Investimentos</h3>
+        <h3 className="page-title-premium text-white">Investimentos</h3>
         <button
           onClick={onAddInvestment}
           className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
@@ -4218,28 +4218,28 @@ const InvestmentsView = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Total investido</p>
+          <p className="label-premium mb-2 text-slate-500">Total investido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(totalInvested)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Valor atual</p>
+          <p className="label-premium mb-2 text-slate-500">Valor atual</p>
           <p className="text-2xl font-black text-blue-400">{formatCurrency(currentValue)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Rendimento</p>
+          <p className="label-premium mb-2 text-slate-500">Rendimento</p>
           <p className={cn('text-2xl font-black', profit >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
             {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
           </p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Rentabilidade %</p>
+          <p className="label-premium mb-2 text-slate-500">Rentabilidade %</p>
           <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
             {profitPercentage.toFixed(2)}%
           </p>
         </div>
       </div>
 
-      <div className="theme-table-surface app-table-shell rounded-2xl overflow-hidden">
+      <div className="app-table-shell rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -4622,7 +4622,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-bold text-white">Relatórios</h3>
+            <h3 className="page-title-premium text-white">Relatórios</h3>
             <p className="text-sm text-slate-400">
               Visão básica da sua movimentação financeira atual.
             </p>
@@ -4653,8 +4653,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="theme-report-card app-surface-card rounded-2xl p-6">
-            <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Resumo por categoria</h4>
+          <div className="app-surface-card rounded-2xl p-6">
+            <h4 className="label-premium text-white mb-4">Resumo por categoria</h4>
             <div className="space-y-3">
               {categoryData.length === 0 ? (
                 <p className="text-sm text-slate-500">Registre despesas para visualizar um resumo por categoria.</p>
@@ -4675,8 +4675,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
           </div>
 
-          <div className="theme-report-card app-surface-card rounded-2xl p-6">
-            <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Disponível no Pro</h4>
+          <div className="app-surface-card rounded-2xl p-6">
+            <h4 className="label-premium text-white mb-4">Disponível no Pro</h4>
             <div className="space-y-3">
               {[
                 'Gráficos comparativos completos',
@@ -4709,7 +4709,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-xl font-bold text-white">Relatórios e Insights</h3>
+        <h3 className="page-title-premium text-white">Relatórios e Insights</h3>
         <div className="flex gap-2">
           <button
             onClick={onExportPDF}
@@ -4743,10 +4743,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       {currentPlan === 'PREMIUM' ? (
         <div className="space-y-6">
-          <div className="theme-report-card app-surface-card rounded-2xl p-6">
+          <div className="app-surface-card rounded-2xl p-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
-                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previs?o de saldo</h4>
+                <h4 className="label-premium text-white">Previs?o de saldo</h4>
                 <p className="text-sm text-slate-400 mt-2">
                   Projeção baseada no ritmo médio das suas movimentações dos últimos 60 dias.
                 </p>
@@ -4774,7 +4774,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   key={item.days}
                   className="app-surface-subtle rounded-2xl p-5"
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  <p className="label-premium mb-2 text-slate-500">
                     Em {item.days} dias
                   </p>
                   <p
@@ -4834,10 +4834,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
           </div>
 
-          <div className="theme-report-card app-surface-card rounded-2xl p-6">
+          <div className="app-surface-card rounded-2xl p-6">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Análises profundas de despesas</h4>
+                <h4 className="label-premium text-white">Análises profundas de despesas</h4>
                 <p className="mt-2 max-w-3xl text-sm text-slate-400">
                   Veja quais categorias mais cresceram, onde estáo os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
                 </p>
@@ -4849,7 +4849,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Despesas do mês</p>
+                <p className="label-premium mb-2 text-slate-500">Despesas do mês</p>
                 <p className="text-2xl font-black text-white">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
                 <p className="mt-2 text-xs text-slate-400">
                   {expenseDeepDive.previousMonthTotal > 0
@@ -4859,7 +4859,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Variação mensal</p>
+                <p className="label-premium mb-2 text-slate-500">Variação mensal</p>
                 <p
                   className={cn(
                     'text-2xl font-black',
@@ -4880,7 +4880,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Categoria mais pesada</p>
+                <p className="label-premium mb-2 text-slate-500">Categoria mais pesada</p>
                 <p className="text-lg font-black text-white">
                   {expenseDeepDive.topCurrentCategory?.name || 'Sem dados'}
                 </p>
@@ -4892,7 +4892,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Maior despesa individual</p>
+                <p className="label-premium mb-2 text-slate-500">Maior despesa individual</p>
                 <p className="text-lg font-black text-white">
                   {expenseDeepDive.largestExpense?.description || 'Sem dados'}
                 </p>
@@ -4906,7 +4906,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Categorias que mais cresceram</p>
+                <p className="label-premium mb-4 text-slate-500">Categorias que mais cresceram</p>
                 <div className="space-y-3">
                   {expenseDeepDive.growingCategories.length === 0 ? (
                     <p className="text-sm text-slate-400">
@@ -4935,7 +4935,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Categorias recorrentes que mais pesam</p>
+                <p className="label-premium mb-4 text-slate-500">Categorias recorrentes que mais pesam</p>
                 <div className="space-y-3">
                   {expenseDeepDive.recurringHeavyCategories.length === 0 ? (
                     <p className="text-sm text-slate-400">
@@ -4963,10 +4963,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
       ) : (
-        <div className="theme-report-card app-surface-card rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-widest">Disponível no Premium</h4>
+              <h4 className="label-premium text-white">Disponível no Premium</h4>
               <p className="text-sm text-slate-400 mt-2 max-w-2xl">
                 Desbloqueie previsões de saldo em 7, 15 e 30 dias, alertas inteligentes e análises profundas de despesas para identificar crescimento por categoria e padrões que pressionam seu caixa.
               </p>
@@ -4981,9 +4981,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       )}
 
-      <div className="theme-report-card app-surface-card rounded-2xl p-6">
+      <div className="app-surface-card rounded-2xl p-6">
         <div className="mb-5">
-          <h4 className="text-sm font-bold text-white uppercase tracking-widest">Receita x Despesa (12 meses)</h4>
+          <h4 className="label-premium text-white">Receita x Despesa (12 meses)</h4>
         </div>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -5016,8 +5016,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="theme-report-card app-surface-card rounded-2xl p-6">
-          <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Gastos por categoria</h4>
+        <div className="app-surface-card rounded-2xl p-6">
+          <h4 className="label-premium text-white mb-6">Gastos por categoria</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RePieChart>
@@ -5062,8 +5062,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
 
-        <div className="theme-report-card app-surface-card rounded-2xl p-6">
-          <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Taxa de economia (6 meses)</h4>
+        <div className="app-surface-card rounded-2xl p-6">
+          <h4 className="label-premium text-white mb-6">Taxa de economia (6 meses)</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={savingsRate6Months}>
@@ -5098,9 +5098,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       </div>
 
-      <div className="theme-report-card app-surface-card rounded-2xl p-6">
+      <div className="app-surface-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
-          <h4 className="text-sm font-bold text-white uppercase tracking-widest">Insights da IA</h4>
+          <h4 className="label-premium text-white">Insights da IA</h4>
           <button
             onClick={generateAIInsight}
             disabled={isGeneratingInsight}
@@ -5141,7 +5141,7 @@ type AssistantTabViewProps = {
 const AssistantTabView = ({ onOpenAssistant }: AssistantTabViewProps) => (
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="app-surface-card rounded-2xl p-6">
-      <h3 className="text-xl font-bold text-white mb-2">Assistente IA</h3>
+      <h3 className="page-title-premium text-white mb-2">Assistente IA</h3>
       <p className="text-slate-400 text-sm mb-6">
         Converse com o Cote para analisar gastos, metas e investimentos com base nos seus dados atuais.
       </p>
@@ -5228,7 +5228,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
         className="theme-modal-surface bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
+          <h3 className="page-title-premium text-white">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -5389,7 +5389,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
         className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
+          <h3 className="page-title-premium text-white">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -5570,7 +5570,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-white">{initialData ? 'Editar dívida única' : 'Nova dívida única'}</h3>
+            <h3 className="page-title-premium text-white">{initialData ? 'Editar dívida única' : 'Nova dívida única'}</h3>
             <p className="mt-1 text-sm text-slate-400">Use para obrigações específicas com valor total definido.</p>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
@@ -5784,7 +5784,7 @@ const RecurringDebtModal = ({
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-bold text-white">{initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}</h3>
+            <h3 className="page-title-premium text-white">{initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}</h3>
             <p className="mt-1 text-sm text-slate-400">Use para cobranças repetidas com frequência e próxima cobrança definidas.</p>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
@@ -6193,7 +6193,7 @@ const TransactionModal = ({
           <div className="h-1.5 w-12 rounded-full bg-slate-700" />
         </div>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
+          <h3 className="page-title-premium text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -11814,29 +11814,29 @@ React.useEffect(() => {
               {activeTab === 'settings' && (
                 <div className="max-w-3xl space-y-6 animate-in fade-in duration-500">
                   <div className="flex items-center justify-between gap-4">
-                    <h3 className="text-xl font-bold text-white">Configurações</h3>
+                    <h3 className="page-title-premium text-white">Configura??es</h3>
                     <button
                       onClick={() => setActiveTab('integrations')}
-                      className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-all"
+                      className="app-button-secondary px-3 py-2 rounded-xl text-xs font-bold transition-all"
                     >
                       Abrir Integrações
                     </button>
                   </div>
 
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-widest">Perfil</h4>
+                  <div className="app-surface-card rounded-2xl p-6 space-y-4">
+                    <h4 className="label-premium text-white">Perfil</h4>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center">
                       <UserAvatar
                         user={user}
                         displayName={settingsName}
                         avatarUrl={settingsAvatarUrl}
                         className="size-20 border border-slate-700 bg-slate-800"
-                        fallbackClassName="border border-emerald-500/30"
+                        fallbackClassName="border border-[#4C8DFF]/30"
                         textClassName="text-2xl"
                       />
                       <div className="flex-1 space-y-2">
                         <div>
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
+                          <label className="label-premium text-slate-500">
                             Foto de perfil
                           </label>
                           <p className="mt-2 text-xs text-slate-500">
@@ -11855,7 +11855,7 @@ React.useEffect(() => {
                             type="button"
                             onClick={() => avatarInputRef.current?.click()}
                             disabled={isAvatarProcessing}
-                            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-bold text-slate-100 transition-all hover:border-emerald-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                            className="app-button-secondary inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {isAvatarProcessing ? 'Processando foto...' : 'Enviar foto'}
                           </button>
@@ -11878,41 +11878,41 @@ React.useEffect(() => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Nome</label>
+                        <label className="label-premium text-slate-500">Nome</label>
                         <input
                           type="text"
                           value={settingsName}
                           onChange={(e) => setSettingsName(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                          className="app-field w-full rounded-xl py-2 px-4 text-sm"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">E-mail</label>
+                        <label className="label-premium text-slate-500">E-mail</label>
                         <input
                           type="email"
                           value={settingsEmail}
                           onChange={(e) => setSettingsEmail(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                          className="app-field w-full rounded-xl py-2 px-4 text-sm"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="app-surface-card rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-2">Plano atual</h4>
+                      <h4 className="label-premium mb-2 text-white">Plano atual</h4>
                       <div
                         className={cn(
                           'inline-flex items-center gap-2 px-3 py-1 rounded-full border',
                           isFreePlan
                             ? 'bg-slate-500/10 border-slate-500/20'
-                            : 'bg-emerald-500/10 border-emerald-500/20'
+                            : 'bg-[#4C8DFF]/10 border-[#4C8DFF]/20'
                         )}
                       >
                         <span
                           className={cn(
                             'text-[10px] font-black uppercase tracking-widest',
-                            isFreePlan ? 'text-slate-300' : 'text-emerald-500'
+                            isFreePlan ? 'text-slate-300' : 'text-[#86B7FF]'
                           )}
                         >
                           {planLabel}
@@ -11934,14 +11934,14 @@ React.useEffect(() => {
                         }
                         handleManageSubscription();
                       }}
-                      className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm font-bold text-slate-200 hover:text-white hover:border-emerald-500 transition-all"
+                      className="app-button-secondary px-4 py-2 rounded-xl text-sm font-bold transition-all"
                     >
                       {isFreePlan ? 'Fazer upgrade' : 'Gerenciar assinatura'}
                     </button>
                   </div>
 
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-widest">WhatsApp</h4>
+                  <div className="app-surface-card rounded-2xl p-6 space-y-4">
+                    <h4 className="label-premium text-white">WhatsApp</h4>
                     {isFreePlan ? (
                       <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
                         <p className="text-sm font-semibold text-amber-200">
@@ -11952,7 +11952,7 @@ React.useEffect(() => {
                         </p>
                         <button
                           onClick={() => void handleUpgrade('Pro Mensal')}
-                          className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-emerald-600"
+                          className="app-button-primary inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-bold transition-all"
                         >
                           Liberar WhatsApp no Pro
                         </button>
@@ -11960,16 +11960,16 @@ React.useEffect(() => {
                     ) : (
                       <>
                         <div className="space-y-2">
-                          <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Número</label>
+                          <label className="label-premium text-slate-500">N?mero</label>
                           <input
                             type="text"
                             value={settingsWhatsApp}
                             onChange={(e) => setSettingsWhatsApp(e.target.value)}
                             placeholder="+551199999999"
-                            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                            className="app-field w-full rounded-xl py-2 px-4 text-sm"
                           />
                         </div>
-                        <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4 space-y-2">
+                        <div className="app-surface-subtle rounded-xl p-4 space-y-2">
                           <p className="text-xs text-slate-400">Exemplos de mensagens:</p>
                           <p className="text-sm text-slate-200">&quot;gastei R$ 50 mercado&quot;</p>
                           <p className="text-sm text-slate-200">&quot;recebi R$ 200 pix&quot;</p>
@@ -11978,9 +11978,9 @@ React.useEffect(() => {
                     )}
                   </div>
 
-                  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4">
+                  <div className="app-surface-card rounded-2xl p-6 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-sm font-bold text-white uppercase tracking-widest">
+                      <h4 className="label-premium text-white">
                         Atividade do workspace
                       </h4>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
@@ -11996,7 +11996,7 @@ React.useEffect(() => {
                         {workspaceEvents.slice(0, 8).map((event) => (
                           <div
                             key={event.id}
-                            className="rounded-xl border border-slate-800 bg-slate-800/30 px-3 py-2 flex items-center justify-between gap-3"
+                            className="app-surface-subtle rounded-xl px-3 py-2 flex items-center justify-between gap-3"
                           >
                             <div className="min-w-0">
                               <p className="text-xs font-semibold text-slate-100 truncate">
