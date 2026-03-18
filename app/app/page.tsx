@@ -4639,15 +4639,15 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
+            <p className="label-premium mb-1 text-slate-500">Receitas</p>
             <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
+            <p className="label-premium mb-1 text-slate-500">Despesas</p>
             <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
+            <p className="label-premium mb-1 text-slate-500">Saldo líquido</p>
             <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
           </div>
         </div>
@@ -4728,15 +4728,15 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
+          <p className="label-premium mb-1 text-slate-500">Receitas</p>
           <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
+          <p className="label-premium mb-1 text-slate-500">Despesas</p>
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
+          <p className="label-premium mb-1 text-slate-500">Saldo líquido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
         </div>
       </div>
@@ -5225,18 +5225,18 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface p-6 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="page-title-premium text-white">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Titulo</label>
+            <label className="label-premium text-slate-500">Titulo</label>
             <input
               type="text"
               value={formData.title}
@@ -5248,7 +5248,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Meta (R$)</label>
+              <label className="label-premium text-slate-500">Meta (R$)</label>
               <MoneyInput
                 value={formData.target}
                 onChange={(value) => setFormData((prev) => ({ ...prev, target: value }))}
@@ -5258,7 +5258,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Acumulado (R$)</label>
+              <label className="label-premium text-slate-500">Acumulado (R$)</label>
               <MoneyInput
                 value={formData.accumulated}
                 onChange={(value) => setFormData((prev) => ({ ...prev, accumulated: value }))}
@@ -5270,7 +5270,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
+              <label className="label-premium text-slate-500">Categoria</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
@@ -5285,7 +5285,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Prazo</label>
+              <label className="label-premium text-slate-500">Prazo</label>
               <input
                 type="date"
                 value={formData.deadline}
@@ -5386,18 +5386,18 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="page-title-premium text-white">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Nome</label>
+            <label className="label-premium text-slate-500">Nome</label>
             <input
               type="text"
               value={formData.name}
@@ -5408,7 +5408,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Tipo</label>
+            <label className="label-premium text-slate-500">Tipo</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
@@ -5423,7 +5423,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Carteira</label>
+            <label className="label-premium text-slate-500">Carteira</label>
             <select
               value={formData.walletId}
               onChange={(e) => setFormData((prev) => ({ ...prev, walletId: e.target.value }))}
@@ -5440,7 +5440,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Valor investido (R$)</label>
+              <label className="label-premium text-slate-500">Valor investido (R$)</label>
               <MoneyInput
                 value={formData.invested}
                 onChange={(value) => setFormData((prev) => ({ ...prev, invested: value }))}
@@ -5449,7 +5449,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Valor atual (R$)</label>
+              <label className="label-premium text-slate-500">Valor atual (R$)</label>
               <MoneyInput
                 value={formData.current}
                 onChange={(value) => setFormData((prev) => ({ ...prev, current: value }))}
@@ -5460,7 +5460,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Retorno esperado (% a.a.)</label>
+            <label className="label-premium text-slate-500">Retorno esperado (% a.a.)</label>
             <input
               type="number"
               min="0"
@@ -5566,21 +5566,21 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h3 className="page-title-premium text-white">{initialData ? 'Editar dívida única' : 'Nova dívida única'}</h3>
             <p className="mt-1 text-sm text-slate-400">Use para obrigações específicas com valor total definido.</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Credor</label>
+            <label className="label-premium text-slate-500">Credor</label>
             <input
               type="text"
               value={formData.creditor}
@@ -5592,7 +5592,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Valor total</label>
+              <label className="label-premium text-slate-500">Valor total</label>
               <MoneyInput
                 value={formData.originalAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, originalAmount: value }))}
@@ -5601,7 +5601,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Saldo em aberto</label>
+              <label className="label-premium text-slate-500">Saldo em aberto</label>
               <MoneyInput
                 value={formData.remainingAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
@@ -5613,7 +5613,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Juros (% mês)</label>
+              <label className="label-premium text-slate-500">Juros (% mês)</label>
               <input
                 type="number"
                 min="0"
@@ -5624,7 +5624,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Dia do vencimento</label>
+              <label className="label-premium text-slate-500">Dia do vencimento</label>
               <input
                 type="number"
                 min={1}
@@ -5638,7 +5638,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
+              <label className="label-premium text-slate-500">Categoria</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
@@ -5652,7 +5652,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Status</label>
+              <label className="label-premium text-slate-500">Status</label>
               <select
                 value={formData.status}
                 onChange={(e) =>
@@ -5675,7 +5675,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
             onClick={handleSubmit}
             disabled={!isValid || isSubmitting}
             className={cn(
-              'w-full mt-4 py-3 rounded-xl font-bold transition-all shadow-lg',
+              'w-full mt-4 rounded-xl py-3 font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                 : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
@@ -5780,21 +5780,21 @@ const RecurringDebtModal = ({
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-2xl w-full shadow-2xl"
+        className="theme-modal-surface p-8 rounded-3xl max-w-2xl w-full shadow-2xl"
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <h3 className="page-title-premium text-white">{initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}</h3>
             <p className="mt-1 text-sm text-slate-400">Use para cobranças repetidas com frequência e próxima cobrança definidas.</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descrição</label>
+            <label className="label-premium text-slate-500">Descrição</label>
             <input
               type="text"
               value={formData.creditor}
@@ -5804,7 +5804,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Valor da cobrança</label>
+            <label className="label-premium text-slate-500">Valor da cobrança</label>
             <MoneyInput
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
@@ -5813,7 +5813,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
+            <label className="label-premium text-slate-500">Categoria</label>
             <select
               value={formData.category}
               onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))}
@@ -5829,7 +5829,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Status</label>
+            <label className="label-premium text-slate-500">Status</label>
             <select
               value={formData.status}
               onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
@@ -5841,7 +5841,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Frequência</label>
+            <label className="label-premium text-slate-500">Frequência</label>
             <select
               value={formData.frequency}
               onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
@@ -5855,7 +5855,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Repetir a cada</label>
+            <label className="label-premium text-slate-500">Repetir a cada</label>
             <input
               type="number"
               min={1}
@@ -5865,7 +5865,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Data inicial</label>
+            <label className="label-premium text-slate-500">Data inicial</label>
             <input
               type="date"
               value={formData.startDate}
@@ -5874,7 +5874,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Data final (opcional)</label>
+            <label className="label-premium text-slate-500">Data final (opcional)</label>
             <input
               type="date"
               value={formData.endDate}
@@ -5884,7 +5884,7 @@ const RecurringDebtModal = ({
           </div>
           {isMonthlyFamily ? (
             <div className="space-y-2 md:col-span-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Dia da cobrança</label>
+              <label className="label-premium text-slate-500">Dia da cobrança</label>
               <input
                 type="number"
                 min={1}
@@ -5896,7 +5896,7 @@ const RecurringDebtModal = ({
             </div>
           ) : null}
           <div className="space-y-2 md:col-span-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Observações</label>
+            <label className="label-premium text-slate-500">Observações</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
@@ -6182,7 +6182,7 @@ const TransactionModal = ({
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="theme-modal-surface hide-scrollbar box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:border sm:p-6"
+        className="theme-modal-surface hide-scrollbar box-border w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] max-h-[92dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-[1.75rem] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:my-6 sm:w-full sm:max-w-lg sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:p-6"
         style={{
           WebkitOverflowScrolling: 'touch',
           msOverflowStyle: 'none',
@@ -6194,14 +6194,14 @@ const TransactionModal = ({
         </div>
         <div className="flex items-center justify-between mb-6">
           <h3 className="page-title-premium text-white">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" disabled={isSubmitting}>
+          <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Tipo</label>
+            <label className="label-premium text-slate-500">Tipo</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {TRANSACTION_FLOW_TYPES.map((flowType) => (
                 <button
@@ -6237,7 +6237,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Valor (R$)</label>
+            <label className="label-premium text-slate-500">Valor (R$)</label>
             <MoneyInput
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
@@ -6247,7 +6247,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Descrição</label>
+            <label className="label-premium text-slate-500">Descrição</label>
             <input
               type="text"
               value={formData.description}
@@ -6280,7 +6280,7 @@ const TransactionModal = ({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="min-w-0 overflow-hidden space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Data</label>
+              <label className="label-premium text-slate-500">Data</label>
               <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                 <input
                   type="date"
@@ -6292,7 +6292,7 @@ const TransactionModal = ({
             </div>
 
             <div className="min-w-0 overflow-hidden space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
+              <label className="label-premium text-slate-500">Categoria</label>
               <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                 <select
                   value={formData.category}
@@ -6310,7 +6310,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
+            <label className="label-premium text-slate-500">
               Método de pagamento
             </label>
             <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
@@ -6331,7 +6331,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
+            <label className="label-premium text-slate-500">
               Comprovante (JPG, PNG, PDF)
             </label>
             <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-3 sm:flex-row sm:items-center">
@@ -6367,7 +6367,7 @@ const TransactionModal = ({
           {formData.flowType === 'Transferência' ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="min-w-0 overflow-hidden space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta origem</label>
+                <label className="label-premium text-slate-500">Conta origem</label>
                 <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                   <select
                     value={formData.wallet}
@@ -6383,7 +6383,7 @@ const TransactionModal = ({
                 </div>
               </div>
               <div className="min-w-0 overflow-hidden space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta destino</label>
+                <label className="label-premium text-slate-500">Conta destino</label>
                 <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                   <select
                     value={formData.destinationWallet}
@@ -6402,7 +6402,7 @@ const TransactionModal = ({
             </div>
           ) : (
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Conta / Carteira</label>
+              <label className="label-premium text-slate-500">Conta / Carteira</label>
               <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
                 <select
                   value={formData.wallet}
@@ -6497,7 +6497,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
       >
         <div className="flex items-center justify-between mb-6">
           <span className="text-xs font-black text-[#86B7FF] uppercase tracking-widest">
@@ -6796,7 +6796,7 @@ const LoginView = ({
   };
 
   return (
-    <div className="theme-app-shell min-h-screen bg-slate-950 px-4 py-8">
+    <div className="theme-app-shell min-h-screen px-4 py-8">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -6872,7 +6872,7 @@ const LoginView = ({
           {!isLogin && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Nome</label>
+                <label className="label-premium text-slate-500">Nome</label>
                 <input
                   type="text"
                   required
@@ -6883,7 +6883,7 @@ const LoginView = ({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Sobrenome</label>
+                <label className="label-premium text-slate-500">Sobrenome</label>
                 <input
                   type="text"
                   required
@@ -6897,7 +6897,7 @@ const LoginView = ({
           )}
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Email</label>
+            <label className="label-premium text-slate-500">Email</label>
             <input
               type="email"
               required
@@ -6909,7 +6909,7 @@ const LoginView = ({
           </div>
           {!isLogin || loginMethod === 'password' ? (
             <div className="space-y-2">
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Senha</label>
+              <label className="label-premium text-slate-500">Senha</label>
               <input
                 type="password"
                 required
@@ -10086,7 +10086,7 @@ React.useEffect(() => {
 
   if (authLoading) {
     return (
-      <div className="theme-app-shell min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="theme-app-shell min-h-screen flex items-center justify-center">
         <div className="size-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -10098,7 +10098,7 @@ React.useEffect(() => {
 
   return (
     <AppErrorBoundary>
-      <div className="theme-app-shell flex h-screen overflow-hidden bg-[#0A0F17]">
+      <div className="theme-app-shell flex h-screen overflow-hidden">
       {showTutorial && <OnboardingTutorial onComplete={() => setShowTutorial(false)} />}
 
       <AnimatePresence>
@@ -10125,7 +10125,7 @@ React.useEffect(() => {
                   Upgrade
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Limite do plano Free atingido</h3>
+              <h3 className="card-title-premium text-white mb-2">Limite do plano Free atingido</h3>
               <p className="text-sm text-slate-400 leading-relaxed mb-6">
                 {upgradeLimitReason === 'transactions'
                   ? `Você chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês.`
@@ -10183,7 +10183,7 @@ React.useEffect(() => {
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">Nova conta</p>
-                  <h3 className="text-xl font-bold text-white">Criar workspace</h3>
+                  <h3 className="page-title-premium text-white">Criar workspace</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">
                     Crie uma nova conta para separar finanças pessoais, empresa ou operações diferentes dentro do mesmo
                     painel.
@@ -10286,7 +10286,7 @@ React.useEffect(() => {
                   <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">
                     Nova carteira
                   </p>
-                  <h3 className="text-xl font-bold text-white">Criar carteira</h3>
+                  <h3 className="page-title-premium text-white">Criar carteira</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">
                     Selecione o banco de origem e crie uma nova carteira para acompanhar melhor seus saldos.
                   </p>
@@ -10413,7 +10413,7 @@ React.useEffect(() => {
                   <p className="text-[10px] uppercase tracking-widest text-[#86B7FF] font-black mb-2">
                     Onboarding Cote Finance AI
                   </p>
-                  <h3 className="text-xl font-bold text-white">Setup inteligente do seu workspace</h3>
+                  <h3 className="page-title-premium text-white">Setup inteligente do seu workspace</h3>
                   <p className="text-sm text-slate-400">Etapa {onboardingStep + 1} de 9</p>
                 </div>
                 <button
@@ -10434,7 +10434,7 @@ React.useEffect(() => {
               {onboardingStep === 0 && (
                 <div className="space-y-6">
                   <div className="rounded-2xl border border-slate-800 bg-slate-800/40 p-6">
-                    <h4 className="text-2xl font-bold text-white mb-2">Bem-vindo ao Cote Finance AI</h4>
+                    <h4 className="page-title-premium mb-2 text-white">Bem-vindo ao Cote Finance AI</h4>
                     <p className="text-sm text-slate-300 leading-relaxed">
                       Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanças e
                       gerar insights mais úteis para você.
@@ -10454,7 +10454,7 @@ React.useEffect(() => {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Qual é seu principal objetivo financeiro?</h4>
+                    <h4 className="page-title-premium text-white mb-1">Qual é seu principal objetivo financeiro?</h4>
                     <p className="text-sm text-slate-400">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
@@ -10495,7 +10495,7 @@ React.useEffect(() => {
               {onboardingStep === 2 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">
+                    <h4 className="page-title-premium text-white mb-1">
                       Quantos lançamentos você pretende registrar por mês?
                     </h4>
                     <p className="text-sm text-slate-400">Isso ajuda a ajustar recomendações e limites iniciais.</p>
@@ -10536,7 +10536,7 @@ React.useEffect(() => {
               {onboardingStep === 3 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">
+                    <h4 className="page-title-premium text-white mb-1">
                       Vamos adicionar seu primeiro registro financeiro
                     </h4>
                     <p className="text-sm text-slate-400">
@@ -10569,7 +10569,7 @@ React.useEffect(() => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Valor</label>
+                      <label className="label-premium text-slate-500">Valor</label>
                       <MoneyInput
                         value={onboardingFirstRecord.amount}
                         onChange={(value) =>
@@ -10583,7 +10583,7 @@ React.useEffect(() => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">Categoria</label>
+                      <label className="label-premium text-slate-500">Categoria</label>
                       <select
                         value={onboardingFirstRecord.category}
                         onChange={(event) =>
@@ -10604,7 +10604,7 @@ React.useEffect(() => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-500 font-bold uppercase tracking-widest">
+                    <label className="label-premium text-slate-500">
                       Descrição (opcional)
                     </label>
                     <input
@@ -10647,7 +10647,7 @@ React.useEffect(() => {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Este é seu painel financeiro</h4>
+                    <h4 className="page-title-premium text-white mb-1">Este é seu painel financeiro</h4>
                     <p className="text-sm text-slate-400">Aqui você acompanha tudo em um único lugar.</p>
                   </div>
                   <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-5 space-y-3">
@@ -10679,7 +10679,7 @@ React.useEffect(() => {
               {onboardingStep === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Prévia das análises com IA</h4>
+                    <h4 className="page-title-premium text-white mb-1">Prévia das análises com IA</h4>
                     <p className="text-sm text-slate-400">
                       Este é um exemplo do tipo de insight automático disponível nos planos Pro e Premium.
                     </p>
@@ -10713,7 +10713,7 @@ React.useEffect(() => {
               {onboardingStep === 6 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Complete seu setup</h4>
+                    <h4 className="page-title-premium text-white mb-1">Complete seu setup</h4>
                     <p className="text-sm text-slate-400">
                       Conclua estas ações para deixar sua conta pronta para análises mais avançadas.
                     </p>
@@ -10755,7 +10755,7 @@ React.useEffect(() => {
               {onboardingStep === 7 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">Exemplo de oportunidade detectada</h4>
+                    <h4 className="page-title-premium text-white mb-1">Exemplo de oportunidade detectada</h4>
                     <p className="text-sm text-slate-400">
                       Nos planos Pro e Premium, a IA destaca padrões e oportunidades automaticamente.
                     </p>
@@ -10785,7 +10785,7 @@ React.useEffect(() => {
               {onboardingStep === 8 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="text-xl font-bold text-white mb-1">
+                    <h4 className="page-title-premium text-white mb-1">
                       Desbloqueie análises financeiras avançadas
                     </h4>
                     <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
