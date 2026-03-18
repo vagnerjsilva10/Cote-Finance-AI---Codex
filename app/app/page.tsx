@@ -1476,16 +1476,16 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
     onClick={onClick}
     title={collapsed ? label : undefined}
     className={cn(
-      'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-200 group',
+      'group flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-left transition-all duration-200',
       collapsed && 'justify-center px-2',
       active
-        ? 'bg-emerald-500/10 text-emerald-500 font-medium'
-        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+        ? 'border-[#4C8DFF]/20 bg-[linear-gradient(180deg,rgba(76,141,255,0.14)_0%,rgba(76,141,255,0.08)_100%)] text-[#E8EEF5] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
+        : 'text-slate-400 hover:border-white/[0.04] hover:bg-[#121A24] hover:text-[#E8EEF5]'
     )}
   >
     <Icon
       size={20}
-      className={cn(active ? 'text-emerald-500' : 'text-slate-500 group-hover:text-slate-300')}
+      className={cn(active ? 'text-[#6BA7FF]' : 'text-slate-500 group-hover:text-slate-300')}
     />
     {!collapsed && <span className="text-sm">{label}</span>}
   </button>
@@ -1508,22 +1508,22 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl hover:border-slate-700 transition-colors group relative overflow-hidden">
+  <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0)_45%),linear-gradient(180deg,#16202B_0%,#121A24_100%)] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.26)] transition-all duration-200 hover:border-white/[0.12] hover:shadow-[0_18px_40px_rgba(0,0,0,0.34)]">
     <div className="flex items-center justify-between mb-4">
-      <span className="text-slate-400 text-sm font-medium">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</span>
       <div
         className={cn(
-          'p-2 rounded-lg',
+          'rounded-full border p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]',
           trendType === 'up'
-            ? 'bg-emerald-500/10 text-emerald-500'
-            : 'bg-rose-500/10 text-rose-500'
+            ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-400'
+            : 'border-rose-500/18 bg-rose-500/10 text-rose-400'
         )}
       >
         <Icon size={18} />
       </div>
     </div>
-    <div className="flex flex-col gap-1">
-      <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+    <div className="flex flex-col gap-2">
+      <p className="text-[2rem] font-bold tracking-[-0.03em] text-[#F8FBFF]">{value}</p>
       <div
         className={cn(
           'text-sm font-semibold flex items-center gap-1',
@@ -1531,7 +1531,7 @@ const StatCard = ({
         )}
       >
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-        {trendValue} <span className="text-slate-500 font-normal ml-1">{trend}</span>
+        {trendValue} <span className="ml-1 font-normal text-slate-500">{trend}</span>
       </div>
     </div>
     <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
@@ -1865,7 +1865,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
         <button
           onClick={onAddTransaction}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-4 py-2 text-sm font-bold text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
         >
           <Plus size={16} /> Nova Transação
         </button>
@@ -1906,7 +1906,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="lg:col-span-2 rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,#121A24_0%,#101924_100%)] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-white">Receitas vs Despesas</h3>
             <p className="text-sm text-slate-400">Últimos 6 meses</p>
@@ -1915,10 +1915,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
+                <XAxis dataKey="name" stroke="#7D8A9A" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis
-                  stroke="#64748b"
+                  stroke="#7D8A9A"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -1926,9 +1926,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0f172a',
-                    border: '1px solid #1e293b',
+                    backgroundColor: '#101924',
+                    border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: '12px',
+                    boxShadow: '0 18px 40px rgba(0,0,0,0.32)',
                   }}
                   formatter={(value, name) => [
                     formatCurrency(Number(value || 0)),
@@ -1939,7 +1940,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="income"
                   name="income"
-                  stroke="#10b981"
+                  stroke="#4C8DFF"
                   strokeWidth={3}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -1958,10 +1959,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           </div>
         </div>
 
-        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,#121A24_0%,#101924_100%)] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
           <h3 className="text-lg font-bold text-white mb-6">Insights do mês</h3>
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
+            <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                 Maior gasto do mês
               </p>
@@ -1972,7 +1973,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4">
+            <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                 Resumo do mês
               </p>
@@ -1987,18 +1988,18 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
             </div>
 
             {currentPlan === 'FREE' ? (
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
+              <div className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 p-4">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] mb-2">
                   Disponível no Pro
                 </p>
-                <p className="text-sm text-emerald-100/90 leading-relaxed">
+                <p className="text-sm leading-relaxed text-slate-200">
                   Receba insights financeiros automáticos com base no seu histórico para identificar padrões,
                   desperdícios e oportunidades de ajuste.
                 </p>
                 <button
                   type="button"
                   onClick={onUpgrade}
-                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-400"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-white/[0.08] bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-4 py-2 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,141,255,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
                 >
                   Liberar insights automáticos
                 </button>
@@ -2007,12 +2008,12 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               insights.map((insight, index) => (
                 <div
                   key={`${index}-${insight.slice(0, 24)}`}
-                  className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"
+                  className="rounded-xl border border-[#4C8DFF]/18 bg-[#4C8DFF]/10 p-4"
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] mb-2">
                     Insight automático
                   </p>
-                  <p className="text-sm text-emerald-100/90">{insight}</p>
+                  <p className="text-sm text-slate-200">{insight}</p>
                 </div>
               ))
             )}
@@ -2020,8 +2021,8 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
       </div>
 
-      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+      <div className="theme-table-surface overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,#121A24_0%,#101924_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
           <h3 className="text-lg font-bold text-white">Últimas transações</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
             {recentTransactions.length} registros
@@ -2031,22 +2032,22 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-left">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-800/30">
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
+              <tr className="border-b border-white/[0.06] bg-[#16202B]">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                   Categoria
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                   Descrição
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                   Data
                 </th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500 text-right">
                   Valor
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-white/[0.06]">
               {recentTransactions.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-sm text-slate-500">
@@ -2055,7 +2056,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 </tr>
               )}
               {recentTransactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-slate-800/30 transition-colors">
+                <tr key={tx.id} className="transition-colors hover:bg-white/[0.03]">
                   <td className="px-6 py-4 text-sm text-slate-300">{tx.cat || 'Sem categoria'}</td>
                   <td className="px-6 py-4 text-sm font-medium text-white">{tx.desc}</td>
                   <td className="px-6 py-4 text-sm text-slate-400">{tx.date}</td>
@@ -10097,7 +10098,7 @@ React.useEffect(() => {
 
   return (
     <AppErrorBoundary>
-      <div className="theme-app-shell flex h-screen overflow-hidden bg-slate-950">
+      <div className="theme-app-shell flex h-screen overflow-hidden bg-[#0A0F17]">
       {showTutorial && <OnboardingTutorial onComplete={() => setShowTutorial(false)} />}
 
       <AnimatePresence>
@@ -10911,7 +10912,7 @@ React.useEffect(() => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-slate-900 bg-slate-950/96 backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-white/[0.05] bg-[linear-gradient(180deg,#09111A_0%,#0B1018_100%)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
           isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64'
         )}
@@ -10928,7 +10929,7 @@ React.useEffect(() => {
             <button
               type="button"
               onClick={() => setIsSidebarCollapsed((current) => !current)}
-              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-300 transition hover:border-slate-700 hover:text-white lg:inline-flex"
+              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-white/[0.06] bg-[#121A24] text-slate-300 transition hover:border-white/[0.1] hover:text-white lg:inline-flex"
               title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
             >
               {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -11101,12 +11102,12 @@ React.useEffect(() => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="sticky top-0 z-30 border-b border-slate-900 bg-slate-950/80 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
+        <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-[#0E141D]/88 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden rounded-xl border border-slate-800 bg-slate-900 p-2 text-slate-400 hover:text-white"
+              className="lg:hidden rounded-xl border border-white/[0.06] bg-[#121A24] p-2 text-slate-400 hover:text-white"
             >
               <Menu size={20} />
             </button>
@@ -11644,7 +11645,7 @@ React.useEffect(() => {
             </div>
           </div>
 
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(76,141,255,0.10)_0%,rgba(76,141,255,0)_36%),linear-gradient(180deg,#0A0F17_0%,#0E141D_100%)] p-3 sm:p-4 lg:p-8 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
