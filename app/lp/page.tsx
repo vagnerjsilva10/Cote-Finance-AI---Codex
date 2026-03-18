@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import PaidLandingClient from './paid-landing-client';
+import LandingPage from '../landing/page';
 
 export const metadata: Metadata = {
   title: 'Cote Finance AI | Descubra para onde seu dinheiro está indo',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function PaidLandingPage() {
-  return <PaidLandingClient />;
+  return <LandingPage />;
 }
