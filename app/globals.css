@@ -6,7 +6,7 @@
   --background: #0A0F17;
   --background-secondary: #0E141D;
   --surface: #121A24;
-  --surface-secondary: #16202B;
+  --surface-secondary: #0F1722;
   --surface-tertiary: #1A2532;
   --surface-hover: #1D2A38;
   --surface-active: #223244;
@@ -854,7 +854,7 @@ html[data-theme='dark'] .theme-toggle-surface {
   --color-bg-primary: #0A0F17;
   --color-bg-secondary: #0E141D;
   --color-surface-1: #121A24;
-  --color-surface-2: #16202B;
+  --color-surface-2: #0F1722;
   --color-surface-3: #1D2A38;
   --color-border-subtle: rgba(255,255,255,0.06);
   --color-border-default: rgba(255,255,255,0.08);
@@ -878,7 +878,7 @@ html[data-theme='dark'] .theme-toggle-surface {
   }
 
   .app-surface-subtle {
-    background: linear-gradient(180deg, var(--color-surface-2) 0%, var(--color-surface-1) 100%);
+    background: linear-gradient(180deg, #0F1722 0%, var(--color-surface-1) 100%);
     border: 1px solid var(--color-border-default);
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
   }
@@ -890,7 +890,7 @@ html[data-theme='dark'] .theme-toggle-surface {
   }
 
   .app-field {
-    background: var(--color-surface-2);
+    background: #0F1722;
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--color-text-primary);
     transition:
