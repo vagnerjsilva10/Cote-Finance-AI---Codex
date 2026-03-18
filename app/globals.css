@@ -30,13 +30,13 @@
   --primary-glow: rgba(76, 141, 255, 0.22);
   --primary-glow-strong: rgba(76, 141, 255, 0.32);
 
-  --success: #22C55E;
-  --success-soft: rgba(34, 197, 94, 0.12);
-  --success-text: #86EFAC;
+  --success: #3FB68B;
+  --success-soft: rgba(63, 182, 139, 0.08);
+  --success-text: #8FD7BB;
 
-  --danger: #EF4444;
-  --danger-soft: rgba(239, 68, 68, 0.12);
-  --danger-text: #FCA5A5;
+  --danger: #E05A5A;
+  --danger-soft: rgba(224, 90, 90, 0.08);
+  --danger-text: #F1A4A4;
 
   --warning: #F59E0B;
   --warning-soft: rgba(245, 158, 11, 0.12);
@@ -304,9 +304,9 @@ html[data-theme='dark'] .theme-toggle-surface {
 .theme-report-card,
 .theme-table-surface,
 .theme-modal-surface {
-  background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.006) 100%), #121A24;
+  background: linear-gradient(180deg, rgba(255,255,255,0.014) 0%, rgba(255,255,255,0.004) 100%), #111827;
   border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
 }
 
 .theme-report-card::before,
@@ -328,7 +328,7 @@ html[data-theme='dark'] .theme-toggle-surface {
 
 .theme-report-card:hover,
 .theme-table-surface:hover {
-  background: linear-gradient(180deg, rgba(255,255,255,0.018) 0%, rgba(255,255,255,0.008) 100%), #16202B;
+  background: linear-gradient(180deg, rgba(255,255,255,0.018) 0%, rgba(255,255,255,0.008) 100%), #121A24;
   border-color: rgba(255,255,255,0.08);
   box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
 }
@@ -866,29 +866,29 @@ html[data-theme='dark'] .theme-toggle-surface {
   --color-primary: #4C8DFF;
   --color-primary-hover: #3B7DF5;
   --color-primary-active: #2F6FE8;
-  --color-success: #22C55E;
-  --color-danger: #EF4444;
+  --color-success: #3FB68B;
+  --color-danger: #E05A5A;
   --color-warning: #F59E0B;
   font-family: var(--font-sans);
 }
 
 @layer components {
   .app-surface-card {
-    background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.006) 100%), #121A24;
+    background: linear-gradient(180deg, rgba(255,255,255,0.014) 0%, rgba(255,255,255,0.004) 100%), #111827;
     border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
   }
 
   .app-surface-subtle {
-    background: linear-gradient(180deg, rgba(255,255,255,0.012) 0%, rgba(255,255,255,0.004) 100%), #16202B;
+    background: linear-gradient(180deg, rgba(255,255,255,0.012) 0%, rgba(255,255,255,0.004) 100%), #121A24;
     border: 1px solid rgba(255,255,255,0.06);
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
   }
 
   .app-table-shell {
-    background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.006) 100%), #121A24;
+    background: linear-gradient(180deg, rgba(255,255,255,0.014) 0%, rgba(255,255,255,0.004) 100%), #111827;
     border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
   }
 
   .app-field {
@@ -974,3 +974,17 @@ html[data-theme='dark'] .theme-toggle-surface {
     color: #ffffff;
   }
 }
+
+
+
+
+.theme-modal-surface {
+  color-scheme: dark;
+}
+
+.theme-modal-surface input,
+.theme-modal-surface select,
+.theme-modal-surface textarea {
+  color-scheme: dark;
+}
+

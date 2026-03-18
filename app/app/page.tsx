@@ -172,7 +172,7 @@ type Goal = {
   category: string;
   deadline?: string | null;
   icon: LucideIcon;
-  color: string; // className ex: 'text-[#22C55E]'
+  color: string; // className ex: 'text-[#3FB68B]'
 };
 
 type Investment = {
@@ -1516,7 +1516,7 @@ const StatCard = ({
           'rounded-full border p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]',
           trendType === 'up'
             ? 'border-[#4C8DFF]/18 bg-[#4C8DFF]/10 text-[#86B7FF]'
-            : 'border-rose-500/18 bg-rose-500/10 text-rose-400'
+            : 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
         )}
       >
         <Icon size={18} />
@@ -1527,7 +1527,7 @@ const StatCard = ({
       <div
         className={cn(
           'text-sm font-semibold flex items-center gap-1',
-          trendType === 'up' ? 'text-[#22C55E]' : 'text-rose-500'
+          trendType === 'up' ? 'text-[#3FB68B]' : 'text-[#E05A5A]'
         )}
       >
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
@@ -1571,7 +1571,7 @@ const SubscriptionView = ({
     summary?.status === 'PENDING'
       ? 'border-amber-400/20 bg-amber-500/10 text-amber-100'
       : summary?.status === 'CANCELED'
-        ? 'border-rose-400/20 bg-rose-500/10 text-rose-100'
+        ? 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
         : summary?.status === 'TRIALING'
           ? 'border-cyan-400/20 bg-cyan-500/10 text-cyan-100'
           : 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#D8E7FF]';
@@ -1608,8 +1608,8 @@ const SubscriptionView = ({
           </p>
         </div>
       ) : error ? (
-        <div className="rounded-[1.75rem] border border-rose-400/20 bg-rose-500/10 p-6">
-          <p className="text-sm font-bold uppercase tracking-[0.24em] text-rose-200">Falha ao carregar</p>
+        <div className="rounded-[1.75rem] border border-white/[0.06] bg-slate-950/70 p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#E05A5A]">Falha ao carregar</p>
           <p className="mt-3 text-sm text-slate-100">{error}</p>
           <button
             onClick={onRetry}
@@ -1722,7 +1722,7 @@ const SubscriptionView = ({
                 <button
                   onClick={onCancel}
                   disabled={!summary.canCancel || actionLoading !== null}
-                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-rose-400/30 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/15 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span>{actionLoading === 'cancel' ? 'Cancelando...' : 'Cancelar assinatura'}</span>
                 </button>
@@ -1978,7 +1978,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 Resumo do mês
               </p>
               <p className="text-sm text-slate-200">
-                Você gastou <span className="font-bold text-rose-400">{formatCurrency(monthExpenses)}</span>{' '}
+                Você gastou <span className="font-bold text-[#E05A5A]">{formatCurrency(monthExpenses)}</span>{' '}
                 em{' '}
                 <span className="font-bold text-white">
                   {currentMonthTransactions.filter((tx) => tx.type === 'expense').length}
@@ -2064,9 +2064,9 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
                       tx.type === 'income'
-                        ? 'text-[#22C55E]'
+                        ? 'text-[#3FB68B]'
                         : tx.type === 'expense'
-                          ? 'text-rose-500'
+                          ? 'text-[#E05A5A]'
                           : 'text-cyan-400'
                     )}
                   >
@@ -2137,15 +2137,15 @@ const TransactionsView = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Entradas totais</p>
-          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
+          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Saídas totais</p>
-          <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
+          <p className="text-2xl font-black text-[#E05A5A]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Saldo</p>
-          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
+          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
             {formatCurrency(balance)}
           </p>
         </div>
@@ -2199,9 +2199,9 @@ const TransactionsView = ({
                   className={cn(
                     'text-sm font-bold',
                     baseType === 'income'
-                      ? 'text-[#22C55E]'
+                      ? 'text-[#3FB68B]'
                       : baseType === 'expense'
-                        ? 'text-rose-500'
+                        ? 'text-[#E05A5A]'
                         : 'text-cyan-400'
                   )}
                 >
@@ -2219,7 +2219,7 @@ const TransactionsView = ({
                 <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
                   {getPaymentMethodIconLabel(tx.paymentMethod)}
                 </span>
-                <span className="text-[10px] text-[#22C55E]/80 font-bold uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] text-[#3FB68B]/80 font-bold uppercase tracking-widest flex items-center gap-1">
                   <Wallet size={10} /> {tx.wallet}
                 </span>
                 {tx.flowType === 'Transferência' && tx.destinationWallet && (
@@ -2238,7 +2238,7 @@ const TransactionsView = ({
                 </button>
                 <button
                   onClick={() => onDeleteTransaction(tx.id)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-slate-950/70 text-[#E05A5A] hover:bg-slate-900 transition-colors"
                 >
                   <Trash2 size={12} /> Excluir
                 </button>
@@ -2293,9 +2293,9 @@ const TransactionsView = ({
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
                       baseType === 'income'
-                        ? 'text-[#22C55E]'
+                        ? 'text-[#3FB68B]'
                         : baseType === 'expense'
-                          ? 'text-rose-500'
+                          ? 'text-[#E05A5A]'
                           : 'text-cyan-400'
                     )}
                   >
@@ -2312,7 +2312,7 @@ const TransactionsView = ({
                       </button>
                       <button
                         onClick={() => onDeleteTransaction(tx.id)}
-                        className="p-2 text-slate-500 hover:text-rose-500 transition-colors"
+                        className="p-2 text-slate-500 hover:text-[#E05A5A] transition-colors"
                         title="Excluir"
                       >
                         <Trash2 size={14} />
@@ -2434,7 +2434,7 @@ const IntegrationsView = ({
     whatsAppFeedback?.tone === 'success'
       ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#DCEAFF]'
       : whatsAppFeedback?.tone === 'error'
-      ? 'border-rose-500/30 bg-rose-500/10 text-rose-100'
+      ? 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
       : 'border-slate-700 bg-slate-900/80 text-slate-200';
 
   return (
@@ -2519,7 +2519,7 @@ const IntegrationsView = ({
                   : connectionTone === 'warning'
                     ? 'bg-amber-500/10 text-amber-300'
                     : connectionTone === 'error'
-                      ? 'bg-rose-500/10 text-rose-500'
+                      ? 'bg-slate-950/70 text-[#E05A5A]'
                       : 'bg-slate-800 text-slate-400'
                 : 'bg-amber-500/10 text-amber-300'
             )}
@@ -2696,7 +2696,7 @@ const IntegrationsView = ({
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
                         !isWhatsAppConnected
                           ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                          : 'border-rose-500/20 bg-rose-500/10 text-rose-300 hover:bg-rose-500 hover:text-white'
+                          : 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A] hover:bg-slate-900 hover:text-white'
                       )}
                     >
                       Desconectar
@@ -2815,7 +2815,7 @@ const IntegrationsView = ({
                     : connectionTone === 'warning'
                     ? 'bg-amber-500/10 text-amber-300'
                     : connectionTone === 'error'
-                    ? 'bg-rose-500/10 text-rose-300'
+                    ? 'bg-slate-950/70 text-[#E05A5A]'
                     : 'bg-slate-800 text-slate-400'
                 )}
               >
@@ -2870,7 +2870,7 @@ const IntegrationsView = ({
                         'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                         whatsAppDiagnostic.validationResult === 'OK'
                           ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
-                          : 'bg-rose-500/10 text-rose-300'
+                          : 'bg-slate-950/70 text-[#E05A5A]'
                       )}
                     >
                       {whatsAppDiagnostic.validationResult}
@@ -2880,7 +2880,7 @@ const IntegrationsView = ({
                   {whatsAppDiagnostic.validationIssues.length > 0 && (
                     <ul className="mt-4 space-y-2">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
-                        <li key={issue} className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-3 py-2 text-sm text-rose-100">
+                        <li key={issue} className="rounded-xl border border-white/[0.06] bg-slate-950/60 px-3 py-2 text-sm text-[#E05A5A]">
                           {issue}
                         </li>
                       ))}
@@ -3040,7 +3040,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
                               className={cn(
                                 'rounded-full px-2.5 py-1 font-black uppercase tracking-[0.14em]',
                                 bill.status === 'overdue'
-                                  ? 'bg-rose-500/12 text-rose-300'
+                                  ? 'bg-slate-950/70 text-[#E05A5A]'
                                   : 'bg-amber-500/10 text-amber-300'
                               )}
                             >
@@ -3114,7 +3114,7 @@ const DebtsView = ({
   const totalRegisteredItems = debts.length + recurringDebts.length;
   const getDebtStatusTone = (status: Debt['status']) => {
     if (status === 'Quitada') return 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]';
-    if (status === 'Atrasada') return 'border-rose-500/20 bg-rose-500/10 text-rose-300';
+    if (status === 'Atrasada') return 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]';
     if (status === 'Parcelada') return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
     return 'border-slate-700 bg-slate-800/70 text-slate-200';
   };
@@ -3242,7 +3242,7 @@ const DebtsView = ({
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Progresso</p>
                   {overdueDebts.length > 0 ? (
-                    <span className="rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-rose-300">
+                    <span className="rounded-full border border-white/[0.06] bg-slate-950/70 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#E05A5A]">
                       {overdueDebts.length} vencida(s)
                     </span>
                   ) : null}
@@ -3279,7 +3279,7 @@ const DebtsView = ({
                     key={debt.id}
                     className={cn(
                       'rounded-2xl border bg-slate-950/60 p-5 transition-colors hover:border-slate-700',
-                      debt.status === 'Atrasada' ? 'border-rose-500/30' : 'border-slate-800'
+                      debt.status === 'Atrasada' ? 'border-white/[0.08]' : 'border-slate-800'
                     )}
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -3310,7 +3310,7 @@ const DebtsView = ({
                         <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
                           <Pencil size={12} /> Editar
                         </button>
-                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20">
+                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-white/[0.06] bg-slate-950/70 px-3 py-2 text-xs font-bold text-[#E05A5A] transition-colors hover:bg-slate-900">
                           <Trash2 size={12} /> Excluir
                         </button>
                       </div>
@@ -3441,7 +3441,7 @@ const DebtsView = ({
                       <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:border-slate-500 hover:text-white">
                         <Pencil size={12} /> Editar
                       </button>
-                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20">
+                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-white/[0.06] bg-slate-950/70 px-3 py-2 text-xs font-bold text-[#E05A5A] transition-colors hover:bg-slate-900">
                         <Trash2 size={12} /> Excluir
                       </button>
                     </div>
@@ -3541,7 +3541,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Meta total</p>
-          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(targetTotal)}</p>
+          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(targetTotal)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Valor acumulado</p>
@@ -3584,7 +3584,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
                   </button>
                   <button
                     onClick={() => onDeleteGoal(goal.id)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-slate-950/70 text-[#E05A5A] hover:bg-slate-900 transition-colors"
                   >
                     <Trash2 size={12} /> Excluir
                   </button>
@@ -3599,7 +3599,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-slate-300">{formatCurrency(goal.current)} acumulado</span>
                   <span className="text-slate-500">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-[#22C55E] font-bold">{progress.toFixed(1)}%</span>
+                  <span className="text-[#3FB68B] font-bold">{progress.toFixed(1)}%</span>
                 </div>
 
                 <p className="text-xs text-slate-500">Faltam {formatCurrency(remaining)} para concluir.</p>
@@ -3852,7 +3852,7 @@ const PortfolioView = ({
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Patrimônio líquido</p>
-          <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-white' : 'text-rose-400')}>
+          <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-white' : 'text-[#E05A5A]')}>
             {formatCurrency(netWorth)}
           </p>
           <p className="mt-3 text-xs text-slate-500">Saldo em contas + investimentos - dívidas</p>
@@ -3863,7 +3863,7 @@ const PortfolioView = ({
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Saldo em contas</p>
-          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalBalance)}</p>
+          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalBalance)}</p>
           <p className="mt-3 text-xs text-slate-500">Veja o histórico e movimente saldo entre carteiras</p>
         </button>
         <button
@@ -4075,7 +4075,7 @@ const PortfolioView = ({
                     <p
                       className={cn(
                         'text-xs font-semibold',
-                        investment.profit >= 0 ? 'text-[#86B7FF]' : 'text-rose-400'
+                        investment.profit >= 0 ? 'text-[#86B7FF]' : 'text-[#E05A5A]'
                       )}
                     >
                       {investment.profit >= 0 ? '+' : ''}
@@ -4130,7 +4130,7 @@ const PortfolioView = ({
                     <p className="text-sm font-semibold text-white">{debt.creditor}</p>
                     <p className="mt-1 text-xs text-slate-500">{debt.category}</p>
                   </div>
-                  <span className="text-sm font-bold text-rose-300">{formatCurrency(debt.remainingAmount)}</span>
+                  <span className="text-sm font-bold text-[#E05A5A]">{formatCurrency(debt.remainingAmount)}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
                   <span>Vence no dia {debt.dueDay}</span>
@@ -4227,13 +4227,13 @@ const InvestmentsView = ({
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Rendimento</p>
-          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
+          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
             {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
           </p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-slate-500">Rentabilidade %</p>
-          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
+          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
             {profitPercentage.toFixed(2)}%
           </p>
         </div>
@@ -4279,10 +4279,10 @@ const InvestmentsView = ({
                     <td className="px-6 py-4 text-sm text-slate-300">{item.walletName}</td>
                     <td className="px-6 py-4 text-sm text-slate-300">{formatCurrency(item.invested)}</td>
                     <td className="px-6 py-4 text-sm text-white">{formatCurrency(item.value)}</td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
                       {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
                     </td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[#22C55E]' : 'text-rose-500')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[#3FB68B]' : 'text-[#E05A5A]')}>
                       {itemProfitPct.toFixed(2)}%
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-300">{item.expectedReturnAnnual.toFixed(2)}%</td>
@@ -4296,7 +4296,7 @@ const InvestmentsView = ({
                         </button>
                         <button
                           onClick={() => onDeleteInvestment(item.id)}
-                          className="p-2 text-slate-500 hover:text-rose-500 transition-colors"
+                          className="p-2 text-slate-500 hover:text-[#E05A5A] transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -4640,11 +4640,11 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
             <p className="label-premium mb-1 text-slate-500">Receitas</p>
-            <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
+            <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
             <p className="label-premium mb-1 text-slate-500">Despesas</p>
-            <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
+            <p className="text-2xl font-black text-[#E05A5A]">{formatCurrency(totalExpenses)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
             <p className="label-premium mb-1 text-slate-500">Saldo líquido</p>
@@ -4729,11 +4729,11 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
           <p className="label-premium mb-1 text-slate-500">Receitas</p>
-          <p className="text-2xl font-black text-[#22C55E]">{formatCurrency(totalIncome)}</p>
+          <p className="text-2xl font-black text-[#3FB68B]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
           <p className="label-premium mb-1 text-slate-500">Despesas</p>
-          <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
+          <p className="text-2xl font-black text-[#E05A5A]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
           <p className="label-premium mb-1 text-slate-500">Saldo líquido</p>
@@ -4756,7 +4756,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   balanceForecast.trend === 'positive'
                     ? 'bg-[#4C8DFF]/10 text-[#86B7FF]'
                     : balanceForecast.trend === 'negative'
-                      ? 'bg-rose-500/10 text-rose-300'
+                      ? 'bg-slate-950/70 text-[#E05A5A]'
                       : 'bg-slate-800 text-slate-300'
                 }`}
               >
@@ -4779,7 +4779,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   </p>
                   <p
                     className={`text-2xl font-black ${
-                      item.projectedBalance >= 0 ? 'text-white' : 'text-rose-400'
+                      item.projectedBalance >= 0 ? 'text-white' : 'text-[#E05A5A]'
                     }`}
                   >
                     {formatCurrency(item.projectedBalance)}
@@ -4809,7 +4809,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     className={cn(
                       'rounded-2xl border p-4',
                       alert.tone === 'error'
-                        ? 'border-rose-500/30 bg-rose-500/10'
+                        ? 'border-white/[0.06] bg-slate-950/70'
                         : alert.tone === 'warning'
                           ? 'border-amber-400/30 bg-amber-400/10'
                           : 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10'
@@ -4819,7 +4819,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                       className={cn(
                         'text-xs font-bold uppercase tracking-widest',
                         alert.tone === 'error'
-                          ? 'text-rose-300'
+                          ? 'text-[#E05A5A]'
                           : alert.tone === 'warning'
                             ? 'text-amber-200'
                             : 'text-[#86B7FF]'
@@ -7016,7 +7016,7 @@ const LoginView = ({
           )}
 
           {notice && <p className="text-[#86B7FF] text-xs font-bold leading-relaxed">{notice}</p>}
-          {error && <p className="text-rose-500 text-xs font-bold leading-relaxed">{error}</p>}
+          {error && <p className="text-[#E05A5A] text-xs font-bold leading-relaxed">{error}</p>}
 
           <button
             type="submit"
@@ -7569,7 +7569,7 @@ export default function App() {
           category: g.category || 'Outros',
           deadline: g.deadline || null,
           icon: Wallet,
-          color: 'text-[#22C55E]',
+          color: 'text-[#3FB68B]',
         })));
       } else {
         setGoals([]);
@@ -7661,7 +7661,7 @@ export default function App() {
                 category: g.category || 'Outros',
                 deadline: g.deadline || null,
                 icon: Wallet,
-                color: 'text-[#22C55E]',
+                color: 'text-[#3FB68B]',
               }))
             : [],
           investments: Array.isArray(data.investments)
@@ -10087,7 +10087,7 @@ React.useEffect(() => {
   if (authLoading) {
     return (
       <div className="theme-app-shell min-h-screen flex items-center justify-center">
-        <div className="size-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="size-12 border-4 border-[#4C8DFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -10225,7 +10225,7 @@ React.useEffect(() => {
                 </div>
 
                 {createWorkspaceError && (
-                  <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  <div className="rounded-2xl border border-white/[0.06] bg-slate-950/70 px-4 py-3 text-sm text-[#E05A5A]">
                     {createWorkspaceError}
                   </div>
                 )}
@@ -10362,7 +10362,7 @@ React.useEffect(() => {
                 </div>
 
                 {createWalletError && (
-                  <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  <div className="rounded-2xl border border-white/[0.06] bg-slate-950/70 px-4 py-3 text-sm text-[#E05A5A]">
                     {createWalletError}
                   </div>
                 )}
@@ -10467,7 +10467,7 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors',
                           onboardingObjective === objective
-                            ? 'border-emerald-500 bg-[#4C8DFF]/10 text-[#86B7FF]'
+                            ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#86B7FF]'
                             : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
                         )}
                       >
@@ -10558,7 +10558,7 @@ React.useEffect(() => {
                         className={cn(
                           'rounded-2xl border px-4 py-3 text-sm font-bold transition-colors',
                           onboardingFirstRecord.flowType === flowType
-                            ? 'border-emerald-500 bg-[#4C8DFF]/10 text-[#86B7FF]'
+                            ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#86B7FF]'
                             : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
                         )}
                       >
@@ -10621,7 +10621,7 @@ React.useEffect(() => {
                   </div>
 
                   {onboardingFirstRecordAdded && (
-                    <div className="rounded-xl border border-emerald-500/25 bg-[#4C8DFF]/10 px-4 py-3 text-sm text-emerald-200">
+                    <div className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-4 py-3 text-sm text-[#D8E7FF]">
                       Parabéns! Seu primeiro registro foi adicionado.
                     </div>
                   )}
@@ -10684,7 +10684,7 @@ React.useEffect(() => {
                       Este é um exemplo do tipo de insight automático disponível nos planos Pro e Premium.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-emerald-500/25 bg-[#4C8DFF]/10 p-5 text-sm leading-relaxed text-emerald-100">
+                  <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 p-5 text-sm leading-relaxed text-[#D8E7FF]">
                     Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
                     {String(onboardingPrimaryInsight.category || 'alimenta??o').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
@@ -10790,8 +10790,8 @@ React.useEffect(() => {
                     </h4>
                     <p className="text-sm text-slate-400">Com o plano Pro você terá:</p>
                   </div>
-                  <div className="rounded-2xl border border-emerald-500/25 bg-[#4C8DFF]/10 p-5">
-                    <ul className="space-y-2 text-sm text-emerald-100">
+                  <div className="rounded-2xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 p-5">
+                    <ul className="space-y-2 text-sm text-[#D8E7FF]">
                       <li>• insights financeiros completos</li>
                       <li>• previsões de saldo</li>
                       <li>? alertas de gastos fora do padr?o</li>
@@ -11227,10 +11227,10 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction('Despesa')}
-                      className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-3 text-left text-white transition-colors hover:border-rose-500/40 hover:bg-rose-500/15"
+                      className="rounded-xl border border-white/[0.06] bg-slate-950/70 px-3 py-3 text-left text-white transition-colors hover:border-white/15 hover:bg-slate-900"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
-                        <ArrowDownRight size={15} className="text-rose-400" />
+                        <ArrowDownRight size={15} className="text-[#E05A5A]" />
                         Despesa
                       </div>
                       <p className="text-[11px] text-slate-300">{'Registre um gasto sem navegar at\u00e9 a aba.'}</p>
@@ -11347,7 +11347,7 @@ React.useEffect(() => {
                 >
                   <Bell size={18} />
                   {unreadNotifications.length > 0 && (
-                    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
+                    <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border border-white/[0.06] bg-slate-950/90 px-1 text-[10px] font-bold leading-none text-[#E05A5A]">
                       {unreadNotifications.length}
                     </span>
                   )}
@@ -11388,7 +11388,7 @@ React.useEffect(() => {
                                 </button>
                               )}
                               {unreadNotifications.length > 0 && (
-                                <span className="rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-200">
+                                <span className="rounded-full border border-white/[0.06] bg-slate-950/70 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#E05A5A]">
                                   {unreadNotifications.length} novas
                                 </span>
                               )}
@@ -11454,7 +11454,7 @@ React.useEffect(() => {
                                       <button
                                         type="button"
                                         onClick={() => deleteNotification(notification.id)}
-                                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
+                                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-[#E05A5A]"
                                         aria-label="Apagar notificação"
                                       >
                                         <Trash2 size={14} />
@@ -11486,7 +11486,7 @@ React.useEffect(() => {
                                         className={cn(
                                           'inline-flex size-2 rounded-full',
                                           notification.tone === 'error'
-                                            ? 'bg-rose-500/70'
+                                            ? 'bg-slate-700'
                                             : notification.tone === 'warning'
                                               ? 'bg-amber-400/70'
                                               : notification.tone === 'success'
@@ -11505,7 +11505,7 @@ React.useEffect(() => {
                                     <button
                                       type="button"
                                       onClick={() => deleteNotification(notification.id)}
-                                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
+                                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-[#E05A5A]"
                                       aria-label="Apagar notificação"
                                     >
                                       <Trash2 size={14} />
@@ -11600,7 +11600,7 @@ React.useEffect(() => {
                         <div className="h-px bg-slate-800 my-2" />
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-rose-500 hover:bg-rose-500/10 transition-all"
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[#E05A5A] hover:bg-slate-900 transition-all"
                         >
                           <LogOut size={16} /> Sair
                         </button>
@@ -11866,7 +11866,7 @@ React.useEffect(() => {
                               setSettingsSavedAt('Foto removida. Clique em salvar alterações para concluir.');
                             }}
                             disabled={!settingsAvatarUrl || isAvatarProcessing}
-                            className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold text-slate-300 transition-all hover:border-rose-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold text-slate-300 transition-all hover:border-white/15 hover:text-[#E05A5A] disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Remover foto
                           </button>
@@ -12020,7 +12020,7 @@ React.useEffect(() => {
                     <div className="flex gap-2">
                       <button
                         onClick={handleLogout}
-                        className="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-sm font-bold text-rose-400 hover:bg-rose-500/20 transition-all"
+                        className="px-4 py-2 rounded-xl bg-slate-950/70 border border-white/[0.06] text-sm font-bold text-[#E05A5A] hover:bg-slate-900 transition-all"
                       >
                         Sair
                       </button>
@@ -12185,6 +12185,10 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
+
+
+
 
 
 
