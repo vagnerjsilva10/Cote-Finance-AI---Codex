@@ -304,11 +304,9 @@ html[data-theme='dark'] .theme-toggle-surface {
 .theme-report-card,
 .theme-table-surface,
 .theme-modal-surface {
-  background:
-    var(--gradient-surface),
-    var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.006) 100%), #0F1722;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
 }
 
 .theme-report-card::before,
@@ -319,7 +317,7 @@ html[data-theme='dark'] .theme-toggle-surface {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: var(--gradient-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -330,11 +328,9 @@ html[data-theme='dark'] .theme-toggle-surface {
 
 .theme-report-card:hover,
 .theme-table-surface:hover {
-  background:
-    var(--gradient-surface),
-    var(--surface-secondary);
-  border-color: var(--border-secondary);
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.008) 100%), #121A24;
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
 }
 
 .theme-modal-backdrop {
@@ -872,26 +868,26 @@ html[data-theme='dark'] .theme-toggle-surface {
 
 @layer components {
   .app-surface-card {
-    background: linear-gradient(180deg, var(--color-surface-1) 0%, #101924 100%);
-    border: 1px solid var(--color-border-default);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.006) 100%), #0F1722;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
   }
 
   .app-surface-subtle {
-    background: linear-gradient(180deg, #0F1722 0%, var(--color-surface-1) 100%);
-    border: 1px solid var(--color-border-default);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+    background: linear-gradient(180deg, rgba(255,255,255,0.012) 0%, rgba(255,255,255,0.004) 100%), #101827;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
   }
 
   .app-table-shell {
-    background: linear-gradient(180deg, var(--color-surface-1) 0%, #101924 100%);
-    border: 1px solid var(--color-border-default);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0.006) 100%), #0F1722;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
   }
 
   .app-field {
     background: #0F1722;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     color: var(--color-text-primary);
     transition:
       border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -911,8 +907,8 @@ html[data-theme='dark'] .theme-toggle-surface {
   }
 
   .app-field-strong {
-    background: #101924;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #101827;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     color: var(--color-text-primary);
     transition:
       border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
