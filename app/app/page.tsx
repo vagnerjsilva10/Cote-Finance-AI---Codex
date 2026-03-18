@@ -1601,7 +1601,7 @@ const SubscriptionView = ({
       </div>
 
       {isLoading ? (
-        <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-8 text-center">
+        <div className="app-surface-card rounded-[1.75rem] p-8 text-center">
           <p className="text-base font-semibold text-white">Carregando assinatura...</p>
           <p className="mt-2 text-sm text-slate-400">
             Estamos sincronizando o status do workspace e a cobrança atual.
@@ -1621,7 +1621,7 @@ const SubscriptionView = ({
       ) : summary ? (
         <>
           <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
+            <div className="app-surface-card space-y-4 rounded-[1.9rem] p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-3">
                   <span className={cn('inline-flex w-fit rounded-full border px-3 py-1 text-xs font-bold', statusTone)}>
@@ -1655,7 +1655,7 @@ const SubscriptionView = ({
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[1.9rem] border border-slate-800 bg-slate-900/60 p-6">
+            <div className="app-surface-card space-y-4 rounded-[1.9rem] p-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-white">Central de assinatura</h4>
@@ -1689,7 +1689,7 @@ const SubscriptionView = ({
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-6">
+            <div className="app-surface-card rounded-[1.75rem] p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Recursos do plano</p>
@@ -1708,7 +1708,7 @@ const SubscriptionView = ({
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/60 p-6">
+            <div className="app-surface-card rounded-[1.75rem] p-6">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Ações disponíveis</p>
               <h4 className="mt-2 text-xl font-black text-white">Gerenciar assinatura</h4>
               <div className="mt-5 space-y-3">
@@ -2469,7 +2469,7 @@ const IntegrationsView = ({
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className="relative rounded-3xl border border-slate-800 bg-slate-900/50 p-8 transition-all duration-300 hover:border-slate-700"
+              className="app-surface-card relative rounded-3xl p-8 transition-all duration-300 hover:border-white/[0.08]"
             >
               <h3 className="mb-2 page-title-premium text-white">{plan.name}</h3>
               <div className="mb-6 flex items-baseline gap-1">
@@ -2499,7 +2499,7 @@ const IntegrationsView = ({
 
       ) : null}
 
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 lg:p-8">
+      <div className="app-surface-card rounded-3xl p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-[#4C8DFF]/10 p-3 text-[#86B7FF]">
@@ -2836,7 +2836,7 @@ const IntegrationsView = ({
             </div>
 
             {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
-              <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70">
+              <div className="app-surface-card mt-5 rounded-2xl">
                 <div className="border-b border-slate-800 px-4 py-3 text-sm font-bold text-slate-200">
                   Detalhes da validação
                 </div>
@@ -2950,7 +2950,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
             caixa já está comprometido nos próximos 30 dias.
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-2 text-sm font-semibold text-slate-300">
+        <div className="app-surface-subtle inline-flex items-center gap-2 self-start rounded-2xl px-4 py-2 text-sm font-semibold text-slate-300">
           <Calendar size={16} className="text-[#86B7FF]" />
           Próximos 30 dias
         </div>
@@ -2979,7 +2979,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5 shadow-[0_18px_60px_rgba(2,6,23,0.28)]"
+            className="app-surface-card rounded-3xl p-5"
           >
             <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">{card.label}</p>
             <p className="mt-3 text-2xl font-black text-white">{card.value}</p>
@@ -3002,7 +3002,7 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
       ) : (
         <div className="space-y-5">
           {groupedBills.map((group) => (
-            <section key={group.key} className="rounded-3xl border border-slate-800 bg-slate-900/55 p-5">
+            <section key={group.key} className="app-surface-card rounded-3xl p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <h4 className="card-title-premium text-white">{group.title}</h4>
@@ -4914,7 +4914,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     </p>
                   ) : (
                     expenseDeepDive.growingCategories.map((item) => (
-                      <div key={item.name} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                      <div key={item.name} className="app-surface-subtle rounded-2xl p-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-bold text-white">{item.name}</p>
                           <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
@@ -4943,7 +4943,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     </p>
                   ) : (
                     expenseDeepDive.recurringHeavyCategories.map((item) => (
-                      <div key={item.name} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                      <div key={item.name} className="app-surface-subtle rounded-2xl p-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-bold text-white">{item.name}</p>
                           <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
@@ -6801,7 +6801,7 @@ const LoginView = ({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[420px] rounded-[2rem] border border-slate-800 bg-slate-900/95 p-7 shadow-[0_32px_120px_-60px_rgba(16,185,129,0.45)]"
+        className="theme-modal-surface w-full max-w-[420px] rounded-[2rem] p-7 shadow-[0_32px_120px_-60px_rgba(2,6,23,0.45)]"
       >
         <div className="mb-8">
           <div className="flex flex-col items-center">
@@ -10117,7 +10117,7 @@ React.useEffect(() => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
+              className="theme-modal-surface relative w-full max-w-md rounded-3xl p-6 shadow-2xl"
             >
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1">
                 <ArrowUpRight size={12} className="text-[#86B7FF]" />
@@ -10177,7 +10177,7 @@ React.useEffect(() => {
               initial={{ y: 16, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 16, opacity: 0, scale: 0.98 }}
-              className="relative z-10 w-full max-w-lg rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 p-5 shadow-2xl sm:rounded-3xl sm:border sm:p-6"
+              className="theme-modal-surface relative z-10 w-full max-w-lg rounded-t-[1.75rem] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
             >
               <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
               <div className="mb-5 flex items-start justify-between gap-4">
@@ -10278,7 +10278,7 @@ React.useEffect(() => {
               initial={{ y: 16, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 16, opacity: 0, scale: 0.98 }}
-              className="relative z-10 w-full max-w-lg rounded-t-[1.75rem] border-x border-t border-slate-800 bg-slate-900 p-5 shadow-2xl sm:rounded-3xl sm:border sm:p-6"
+              className="theme-modal-surface relative z-10 w-full max-w-lg rounded-t-[1.75rem] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
             >
               <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700 sm:hidden" />
               <div className="mb-5 flex items-start justify-between gap-4">
@@ -10406,7 +10406,7 @@ React.useEffect(() => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-3xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
+              className="theme-modal-surface relative w-full max-w-3xl rounded-3xl p-6 shadow-2xl"
             >
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
@@ -11290,7 +11290,7 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('debts')}
-                      className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF] hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
                     >
                       <div className="mb-1 flex items-center gap-2">
                         <CreditCard size={14} className="text-slate-400" />
@@ -11301,7 +11301,7 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateResource('investments')}
-                      className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF] hover:text-white"
+                      className="app-surface-subtle rounded-xl px-3 py-2 text-left text-xs font-bold text-slate-200 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
                     >
                       <div className="mb-1 flex items-center gap-2">
                         <TrendingUp size={14} className="text-slate-400" />
@@ -11413,7 +11413,7 @@ React.useEffect(() => {
                             {unreadNotifications.map((notification) => (
                               <div
                                 key={notification.id}
-                                className="mb-2 rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-3"
+                                className="app-surface-subtle mb-2 rounded-2xl px-3 py-3"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <button
@@ -11473,7 +11473,7 @@ React.useEffect(() => {
                             {readNotifications.map((notification) => (
                               <div
                                 key={notification.id}
-                                className="mb-2 rounded-2xl border border-transparent px-3 py-3 opacity-75 transition hover:border-slate-800 hover:bg-slate-900/50 hover:opacity-100"
+                                className="mb-2 rounded-2xl border border-transparent px-3 py-3 opacity-75 transition hover:border-white/[0.06] hover:bg-slate-900/50 hover:opacity-100"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <button
@@ -11620,7 +11620,7 @@ React.useEffect(() => {
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Conta ativa</span>
                 <button
                   onClick={handleOpenCreateWorkspaceModal}
-                  className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 transition-colors hover:border-[#4C8DFF] hover:text-white"
+                  className="app-surface-subtle rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300 transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
                 >
                   + Conta
                 </button>
@@ -11633,7 +11633,7 @@ React.useEffect(() => {
                     if (!nextWorkspaceId || nextWorkspaceId === activeWorkspaceId) return;
                     setActiveWorkspaceId(nextWorkspaceId);
                   }}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-3 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
+                  className="app-field w-full rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-[#4C8DFF]"
                 >
                   {workspaces.map((workspace) => (
                     <option key={workspace.id} value={workspace.id}>
@@ -12185,6 +12185,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
 
