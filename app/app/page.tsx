@@ -871,7 +871,7 @@ const ASSISTANT_SUGGESTIONS = [
   'Qual meu saldo este mês',
   'Me dê dicas para economizar',
   'Quais são meus maiores gastos',
-  'Como estáo meus investimentos',
+  'Como estão meus investimentos',
   'Quais dívidas devo priorizar',
 ];
 
@@ -1508,34 +1508,27 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="group relative overflow-hidden app-surface-subtle rounded-2xl p-6 transition-all duration-200 hover:border-[var(--border-default)] hover:bg-[var(--bg-surface-elevated)]">
-    <div className="flex items-center justify-between mb-4">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</span>
+  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-8 shadow-[var(--shadow-soft)]">
+    <div className="mb-6 flex items-center justify-between">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</span>
       <div
         className={cn(
-          'rounded-full border p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]',
+          'rounded-full border p-2.5',
           trendType === 'up'
             ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-            : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]'
+            : 'border-[var(--border-default)] bg-[var(--bg-app-secondary)] text-[var(--danger)]'
         )}
       >
-        <Icon size={18} />
+        <Icon size={17} />
       </div>
     </div>
-    <div className="flex flex-col gap-2">
-      <p className="text-[2rem] font-bold tracking-[-0.03em] text-[var(--text-primary)]">{value}</p>
-      <div
-        className={cn(
-          'text-sm font-semibold flex items-center gap-1',
-          trendType === 'up' ? 'text-[var(--success)]' : 'text-[var(--danger)]'
-        )}
-      >
+    <div className="flex flex-col gap-3.5">
+      <p className="text-[2.15rem] font-bold tracking-[-0.03em] leading-none text-[var(--text-primary)]">{value}</p>
+      <div className={cn('flex items-center gap-1.5 text-[13px] font-semibold', trendType === 'up' ? 'status-positive-premium' : 'status-negative-premium')}>
         {trendType === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-        {trendValue} <span className="ml-1 font-normal text-[var(--text-muted)]">{trend}</span>
+        <span>{trendValue}</span>
+        <span className="ml-1 font-normal text-[var(--text-secondary)]/90">{trend}</span>
       </div>
-    </div>
-    <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
-      <Icon size={100} />
     </div>
   </div>
 );
@@ -1678,7 +1671,7 @@ const SubscriptionView = ({
                 <div className="flex items-start gap-3">
                   <CreditCard size={18} className="mt-0.5 text-[var(--text-secondary)]" />
                   <div>
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">Gestáo sem sair do app</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Gestão sem sair do app</p>
                     <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       Status, plano e próximas cobranças aparecem dentro do SaaS. Portal externo só quando preciso.
                     </p>
@@ -1865,7 +1858,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
         <button
           onClick={onAddTransaction}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+          className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft)]"
         >
           <Plus size={16} /> Nova Transação
         </button>
@@ -1909,13 +1902,13 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="app-surface-card lg:col-span-2 rounded-2xl p-6">
           <div className="mb-6">
             <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
-            <p className="text-sm text-[var(--text-secondary)]">?ltimos 6 meses</p>
+            <p className="text-sm text-[var(--text-secondary)]">Últimos 6 meses</p>
           </div>
 
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
+                <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
                 <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis
                   stroke="var(--text-muted)"
@@ -1927,9 +1920,9 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: '1px solid var(--border-default)',
                     borderRadius: '12px',
-                    boxShadow: '0 18px 40px rgba(0,0,0,0.32)',
+                    boxShadow: 'var(--shadow-soft)',
                   }}
                   formatter={(value, name) => [
                     formatCurrency(Number(value || 0)),
@@ -1941,18 +1934,18 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   dataKey="income"
                   name="income"
                   stroke="var(--primary)"
-                  strokeWidth={3}
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="expense"
                   name="expense"
                   stroke="var(--danger)"
-                  strokeWidth={3}
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 4, fill: 'var(--danger)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -1962,7 +1955,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="app-surface-card rounded-2xl p-6">
           <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mês</h3>
           <div className="space-y-4">
-            <div className="app-surface-subtle rounded-xl p-4">
+            <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
               <p className="label-premium mb-2 text-[var(--text-muted)]">
                 Maior gasto do mês
               </p>
@@ -1973,7 +1966,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               </p>
             </div>
 
-            <div className="app-surface-subtle rounded-xl p-4">
+            <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
               <p className="label-premium mb-2 text-[var(--text-muted)]">
                 Resumo do mês
               </p>
@@ -1988,7 +1981,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
             </div>
 
             {currentPlan === 'FREE' ? (
-              <div className="app-surface-subtle rounded-xl p-4">
+              <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
                   Disponível no Pro
                 </p>
@@ -1999,7 +1992,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                 <button
                   type="button"
                   onClick={onUpgrade}
-                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] shadow-[0_10px_24px_rgba(76,141,255,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+                  className="app-button-primary mt-4 rounded-xl px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft)]"
                 >
                   Liberar insights automáticos
                 </button>
@@ -2008,7 +2001,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               insights.map((insight, index) => (
                 <div
                   key={`${index}-${insight.slice(0, 24)}`}
-                  className="app-surface-subtle rounded-xl p-4"
+                  className="app-surface-subtle rounded-[var(--radius-md)] p-5"
                 >
                   <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
                     Insight automático
@@ -2023,7 +2016,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
 
       <div className="app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-[var(--border-default)] px-6 py-4">
-          <h3 className="card-title-premium text-[var(--text-primary)]">?ltimas transações</h3>
+          <h3 className="card-title-premium text-[var(--text-primary)]">Últimas transações</h3>
           <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
@@ -3181,7 +3174,7 @@ const DebtsView = ({
         <div className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
           <div>
             <p className="font-bold">{feedbackMessage}</p>
-            <p className="mt-1 text-[var(--text-secondary)]/80">Sua ?rea de dívidas foi atualizada com sucesso.</p>
+            <p className="mt-1 text-[var(--text-secondary)]/80">Sua área de dívidas foi atualizada com sucesso.</p>
           </div>
           {onDismissFeedback ? (
             <button onClick={onDismissFeedback} className="text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
@@ -4836,7 +4829,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               <div>
                 <h4 className="label-premium text-[var(--text-primary)]">Análises profundas de despesas</h4>
                 <p className="mt-2 max-w-3xl text-sm text-[var(--text-secondary)]">
-                  Veja quais categorias mais cresceram, onde estáo os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
+                  Veja quais categorias mais cresceram, onde estão os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
                 </p>
               </div>
               <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
@@ -6257,7 +6250,7 @@ const TransactionModal = ({
           {(isLoadingSuggestion || suggestedCategory) && (
             <div className="app-surface-subtle rounded-xl p-3 text-xs text-[var(--text-secondary)]">
               {isLoadingSuggestion ? (
-                <span>Buscando sugestáo de categoria...</span>
+                <span>Buscando sugestão de categoria...</span>
               ) : suggestedCategory ? (
                 <div className="flex items-center justify-between gap-2">
                   <span>
@@ -6268,7 +6261,7 @@ const TransactionModal = ({
                     onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
                     className="rounded-md bg-[color:var(--primary-soft)] px-2 py-1 text-[var(--text-secondary)] transition-colors hover:bg-[color:var(--primary-soft)]"
                   >
-                    Usar sugestáo
+                    Usar sugestão
                   </button>
                 </div>
               ) : null}
@@ -10914,13 +10907,13 @@ React.useEffect(() => {
           isSidebarCollapsed ? 'w-[18rem] lg:w-24' : 'w-[18rem] lg:w-64'
         )}
       >
-        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-4' : 'p-6')} id="sidebar-logo">
+        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-5' : 'px-6 py-7')} id="sidebar-logo">
           <Image
             src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo}
             alt="Cote Finance AI - By Cote Juros"
-            width={isSidebarCollapsed ? 48 : 420}
-            height={isSidebarCollapsed ? 48 : 112}
-            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-11' : 'w-full max-w-[280px]')}
+            width={isSidebarCollapsed ? 56 : 500}
+            height={isSidebarCollapsed ? 56 : 136}
+            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-12' : 'w-full max-w-[320px]')}
           />
           <div className="flex items-center gap-2">
             <button

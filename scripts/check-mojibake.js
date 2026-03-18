@@ -22,6 +22,7 @@ const TEXT_EXTENSIONS = new Set([
 ]);
 
 const MOJIBAKE_REGEX = /(?:\u00C3[\u0080-\u00BF]|\u00C2[\u0080-\u00BF]|\u00E2[\u0080-\u00BF]{1,2}|\uFFFD)/g;
+const BROKEN_ACCENT_REGEX = /(?:^|[\s"'([{>])\?[a-zà-ÿ]{3,}(?=[\s.,;:!?'"\])}<]|$)/gim;
 
 function isTextFile(filePath) {
   return TEXT_EXTENSIONS.has(path.extname(filePath).toLowerCase());
@@ -57,13 +58,23 @@ function main() {
     const files = walk(dir);
     for (const filePath of files) {
       const text = fs.readFileSync(filePath, 'utf8');
-      let match;
-      while ((match = MOJIBAKE_REGEX.exec(text)) !== null) {
-        const { line, column } = lineAndColumn(text, match.index);
-        findings.push(`${path.relative(ROOT, filePath)}:${line}:${column}: ${match[0]}`);
+      const checks = [
+        { label: 'mojibake', regex: MOJIBAKE_REGEX },
+        { label: 'broken-accent', regex: BROKEN_ACCENT_REGEX },
+      ];
+
+      for (const check of checks) {
+        let match;
+        while ((match = check.regex.exec(text)) !== null) {
+          const markerIndex = match.index + match[0].indexOf('?');
+          const index = markerIndex >= match.index ? markerIndex : match.index;
+          const { line, column } = lineAndColumn(text, index);
+          findings.push(`${path.relative(ROOT, filePath)}:${line}:${column}: [${check.label}] ${match[0].trim()}`);
+          if (findings.length >= 200) break;
+        }
+        check.regex.lastIndex = 0;
         if (findings.length >= 200) break;
       }
-      MOJIBAKE_REGEX.lastIndex = 0;
       if (findings.length >= 200) break;
     }
     if (findings.length >= 200) break;
