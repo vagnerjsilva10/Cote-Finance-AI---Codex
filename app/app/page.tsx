@@ -1508,14 +1508,14 @@ const StatCard = ({
   icon: Icon,
   trendType = 'up',
 }: StatCardProps) => (
-  <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0)_45%),linear-gradient(180deg,#0F1722_0%,#121A24_100%)] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.26)] transition-all duration-200 hover:border-white/[0.12] hover:shadow-[0_18px_40px_rgba(0,0,0,0.34)]">
+  <div className="group relative overflow-hidden app-surface-subtle rounded-2xl p-6 transition-all duration-200 hover:border-white/[0.08] hover:bg-[#16202B]">
     <div className="flex items-center justify-between mb-4">
       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</span>
       <div
         className={cn(
           'rounded-full border p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]',
           trendType === 'up'
-            ? 'border-[#4C8DFF]/18 bg-[#4C8DFF]/10 text-[#86B7FF]'
+            ? 'border-[#4C8DFF]/20 bg-[#4C8DFF]/10 text-[#86B7FF]'
             : 'border-white/[0.06] bg-slate-950/70 text-[#E05A5A]'
         )}
       >
@@ -1634,7 +1634,7 @@ const SubscriptionView = ({
                   </div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">PrÃ³xima cobranÃ§a</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Próxima cobrança</p>
                   <p className="mt-2 text-lg font-semibold text-white">{formatSubscriptionDate(summary.nextBillingDate)}</p>
                 </div>
               </div>
@@ -1860,27 +1860,27 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="page-title-premium text-white">VisÃ£o Geral</h3>
+          <h3 className="page-title-premium text-white">Visão Geral</h3>
           <p className="text-sm text-slate-400 capitalize">Resumo de {monthLabel}</p>
         </div>
         <button
           onClick={onAddTransaction}
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] px-4 py-2 text-sm font-bold text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
         >
-          <Plus size={16} /> Nova TransaÃ§Ã£o
+          <Plus size={16} /> Nova Transação
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          label="Entradas do mÃªs"
+          label="Entradas do mês"
           value={formatCurrency(monthIncome)}
           trend="transaÃ§Ãµes de entrada"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'income').length}`}
           icon={TrendingUp}
         />
         <StatCard
-          label="Despesas do mÃªs"
+          label="Despesas do mês"
           value={formatCurrency(monthExpenses)}
           trend="transaÃ§Ãµes de saÃ­da"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'expense').length}`}
@@ -1888,7 +1888,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trendType="down"
         />
         <StatCard
-          label="Saldo do mÃªs"
+          label="Saldo do mês"
           value={formatCurrency(monthBalance)}
           trend="entradas - despesas"
           trendValue={monthBalance >= 0 ? 'Positivo' : 'Negativo'}
@@ -1899,7 +1899,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           label="Taxa de economia"
           value={`${savingsRate.toFixed(1)}%`}
           trend="(entradas - despesas) / entradas"
-          trendValue="mÃªs atual"
+          trendValue="mês atual"
           icon={Target}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
         />
@@ -1969,7 +1969,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               <p className="text-sm font-semibold text-white">
                 {largestExpenseEntry
                   ? `${largestExpenseEntry[0]} (${formatCurrency(largestExpenseEntry[1])})`
-                  : 'Sem despesas no mÃªs atual'}
+                  : 'Sem despesas no mês atual'}
               </p>
             </div>
 
@@ -1988,7 +1988,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
             </div>
 
             {currentPlan === 'FREE' ? (
-              <div className="rounded-xl border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 p-4">
+              <div className="app-surface-subtle rounded-xl p-4">
                 <p className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] mb-2">
                   DisponÃ­vel no Pro
                 </p>
@@ -2008,7 +2008,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               insights.map((insight, index) => (
                 <div
                   key={`${index}-${insight.slice(0, 24)}`}
-                  className="rounded-xl border border-[#4C8DFF]/18 bg-[#4C8DFF]/10 p-4"
+                  className="app-surface-subtle rounded-xl p-4"
                 >
                   <p className="text-xs font-bold uppercase tracking-widest text-[#86B7FF] mb-2">
                     Insight automÃ¡tico
@@ -2125,12 +2125,12 @@ const TransactionsView = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-white">TransaÃ§Ãµes</h3>
+        <h3 className="page-title-premium text-white">Transações</h3>
         <button
           onClick={onAddTransaction}
           className="app-button-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
         >
-          <Plus size={18} /> Nova TransaÃ§Ã£o
+          <Plus size={18} /> Nova Transação
         </button>
       </div>
 
@@ -2407,7 +2407,7 @@ const IntegrationsView = ({
       features: [
         'LanÃ§amentos ilimitados',
         'AnÃ¡lises inteligentes com IA',
-        'RelatÃ³rios completos e grÃ¡ficos avanÃ§ados',
+        'Relatórios completos e grÃ¡ficos avanÃ§ados',
         'Insights financeiros automÃ¡ticos',
         'Metas ilimitadas',
         'Investimentos',
@@ -2545,8 +2545,8 @@ const IntegrationsView = ({
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div className="space-y-6">
             {!hasWhatsAppAccess ? (
-              <div className="space-y-5 rounded-3xl border border-amber-500/20 bg-amber-500/5 p-6">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+              <div className="app-surface-subtle space-y-5 rounded-3xl p-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#4C8DFF]/20 bg-[#4C8DFF]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#86B7FF]">
                   Recurso Pro
                 </div>
                 <p className="leading-relaxed text-slate-300">
@@ -2560,7 +2560,7 @@ const IntegrationsView = ({
                     'Teste de envio e configuraÃ§Ã£o por workspace',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <CheckCircle2 size={16} className="mt-0.5 text-amber-300" />
+                      <CheckCircle2 size={16} className="mt-0.5 text-[#86B7FF]" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -2596,7 +2596,7 @@ const IntegrationsView = ({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2 sm:col-span-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                      NÃºmero do WhatsApp do workspace
+                      Número do WhatsApp do workspace
                     </label>
                     <input
                       type="tel"
@@ -2609,7 +2609,7 @@ const IntegrationsView = ({
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                      NÃºmero para teste
+                      Número para teste
                     </label>
                     <input
                       type="tel"
@@ -2638,9 +2638,9 @@ const IntegrationsView = ({
                 )}
 
                 {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
-                  <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                    <p className="text-sm font-bold text-amber-200">Revis?o necess?ria</p>
-                    <ul className="mt-2 space-y-2 text-sm text-amber-100/90">
+                  <div className="app-surface-subtle rounded-2xl px-4 py-3">
+                    <p className="text-sm font-bold text-white">Revis?o necess?ria</p>
+                    <ul className="mt-2 space-y-2 text-sm text-slate-300">
                       {whatsAppDiagnostic.validationIssues.map((issue) => (
                         <li key={issue}>{issue}</li>
                       ))}
@@ -2790,7 +2790,7 @@ const IntegrationsView = ({
 
                       <button
                         onClick={onRunWhatsAppDiagnostic}
-                        className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-[#4C8DFF]/50 hover:text-white sm:col-span-1"
+                        className="app-surface-subtle flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-slate-200 transition-all hover:border-[#4C8DFF]/30 hover:text-white sm:col-span-1"
                       >
                         Validar configuraÃ§Ã£o
                       </button>
@@ -3722,7 +3722,7 @@ const PortfolioView = ({
       [
         { name: 'Caixa', value: Math.max(totalBalance, 0), color: '#10b981' },
         { name: 'Investimentos', value: Math.max(totalInvested, 0), color: '#3b82f6' },
-        { name: 'DÃ­vidas', value: Math.max(totalDebt, 0), color: '#f59e0b' },
+        { name: 'Dívidas', value: Math.max(totalDebt, 0), color: '#f59e0b' },
       ],
     [totalBalance, totalInvested, totalDebt]
   );
@@ -3880,7 +3880,7 @@ const PortfolioView = ({
           onClick={onOpenDebts}
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">DÃ­vidas</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Dívidas</p>
           <p className="text-2xl font-black text-amber-400">{formatCurrency(totalDebt)}</p>
           <p className="mt-3 text-xs text-slate-500">Acompanhe o valor em aberto e os prÃ³ximos vencimentos</p>
         </button>
@@ -4622,7 +4622,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="page-title-premium text-white">RelatÃ³rios</h3>
+            <h3 className="page-title-premium text-white">Relatórios</h3>
             <p className="text-sm text-slate-400">
               VisÃ£o bÃ¡sica da sua movimentaÃ§Ã£o financeira atual.
             </p>
@@ -4709,7 +4709,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-white">RelatÃ³rios e Insights</h3>
+        <h3 className="page-title-premium text-white">Relatórios e Insights</h3>
         <div className="flex gap-2">
           <button
             onClick={onExportPDF}
@@ -4849,7 +4849,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-slate-500">Despesas do mÃªs</p>
+                <p className="label-premium mb-2 text-slate-500">Despesas do mês</p>
                 <p className="text-2xl font-black text-white">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
                 <p className="mt-2 text-xs text-slate-400">
                   {expenseDeepDive.previousMonthTotal > 0
@@ -4875,7 +4875,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
-                  ComparaÃ§Ã£o entre as despesas do mÃªs atual e do mÃªs anterior.
+                  ComparaÃ§Ã£o entre as despesas do mês atual e do mÃªs anterior.
                 </p>
               </div>
 
@@ -5570,7 +5570,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h3 className="page-title-premium text-white">{initialData ? 'Editar dÃ­vida Ãºnica' : 'Nova dÃ­vida Ãºnica'}</h3>
+            <h3 className="page-title-premium text-white">{initialData ? 'Editar dÃ­vida Ãºnica' : 'Nova dívida Ãºnica'}</h3>
             <p className="mt-1 text-sm text-slate-400">Use para obrigaÃ§Ãµes especÃ­ficas com valor total definido.</p>
           </div>
           <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
@@ -5784,7 +5784,7 @@ const RecurringDebtModal = ({
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h3 className="page-title-premium text-white">{initialData ? 'Editar recorrÃªncia' : 'Nova dÃ­vida recorrente'}</h3>
+            <h3 className="page-title-premium text-white">{initialData ? 'Editar recorrÃªncia' : 'Nova dívida recorrente'}</h3>
             <p className="mt-1 text-sm text-slate-400">Use para cobranÃ§as repetidas com frequÃªncia e prÃ³xima cobranÃ§a definidas.</p>
           </div>
           <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
@@ -6193,7 +6193,7 @@ const TransactionModal = ({
           <div className="h-1.5 w-12 rounded-full bg-slate-700" />
         </div>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-white">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova TransaÃ§Ã£o'}</h3>
+          <h3 className="page-title-premium text-white">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova Transação'}</h3>
           <button onClick={onClose} className="text-slate-500 transition-colors hover:text-white" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -6457,7 +6457,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       target: 'sidebar-logo',
     },
     {
-      title: 'VisÃ£o Geral do Painel',
+      title: 'Visão Geral do Painel',
       description: 'Aqui vocÃª acompanha seu saldo consolidado, entradas e saÃ­das em tempo real.',
       target: 'dashboard-stats',
     },
@@ -10953,7 +10953,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={ReceiptText}
-            label="TransaÃ§Ãµes"
+            label="Transações"
             active={activeTab === 'transactions'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -10973,7 +10973,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={CreditCard}
-            label="DÃ­vidas"
+            label="Dívidas"
             active={activeTab === 'debts'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11003,7 +11003,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={PieChart}
-            label="RelatÃ³rios"
+            label="Relatórios"
             active={activeTab === 'reports'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11024,7 +11024,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={Settings}
-            label="ConfiguraÃ§Ãµes"
+            label="Configurações"
             active={activeTab === 'settings'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11115,26 +11115,26 @@ React.useEffect(() => {
               {activeTab === 'dashboard'
                 ? 'Dashboard'
                 : activeTab === 'transactions'
-                ? 'TransaÃ§Ãµes'
+                ? 'Transações'
                 : activeTab === 'goals'
                 ? 'Metas'
                 : activeTab === 'debts'
-                ? 'DÃ­vidas'
+                ? 'Dívidas'
                 : activeTab === 'investments'
                 ? 'Investimentos'
                 : activeTab === 'portfolio'
                 ? 'Carteira'
                 : activeTab === 'reports'
-                ? 'RelatÃ³rios'
+                ? 'Relatórios'
                 : activeTab === 'assistant'
                 ? 'Assistente IA'
                 : activeTab === 'agenda'
                 ? 'Agenda'
                 : activeTab === 'integrations'
-                ? 'IntegraÃ§Ãµes'
+                ? 'Integrações'
                 : activeTab === 'subscription'
                 ? 'Minha assinatura'
-                : 'ConfiguraÃ§Ãµes'}
+                : 'Configurações'}
               </h2>
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
@@ -11227,7 +11227,7 @@ React.useEffect(() => {
                     <button
                       type="button"
                       onClick={() => handleQuickCreateTransaction('Despesa')}
-                      className="rounded-xl border border-white/[0.06] bg-slate-950/70 px-3 py-3 text-left text-white transition-colors hover:border-white/15 hover:bg-slate-900"
+                      className="app-surface-subtle rounded-xl px-3 py-3 text-left text-white transition-colors hover:border-[#4C8DFF]/30 hover:text-white"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
                         <ArrowDownRight size={15} className="text-[#E05A5A]" />
@@ -11587,7 +11587,7 @@ React.useEffect(() => {
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-[#111827] hover:text-white transition-all"
                         >
-                          <Settings size={16} /> ConfiguraÃ§Ãµes
+                          <Settings size={16} /> Configurações
                         </button>
                         <button
                           onClick={() => {
@@ -11819,7 +11819,7 @@ React.useEffect(() => {
                       onClick={() => setActiveTab('integrations')}
                       className="app-button-secondary px-3 py-2 rounded-xl text-xs font-bold transition-all"
                     >
-                      Abrir IntegraÃ§Ãµes
+                      Abrir Integrações
                     </button>
                   </div>
 
@@ -12185,6 +12185,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
 
