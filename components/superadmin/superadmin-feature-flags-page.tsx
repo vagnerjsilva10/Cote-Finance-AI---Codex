@@ -277,7 +277,7 @@ export function SuperadminFeatureFlagsPage() {
                               onClick={() => toggleAllowedPlan(flag.key, plan)}
                               className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] transition ${
                                 isActive
-                                  ? 'border border-sky-500/30 bg-sky-500/10 text-sky-300'
+                                  ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
                                   : 'border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
                               }`}
                             >

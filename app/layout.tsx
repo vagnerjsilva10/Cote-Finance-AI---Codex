@@ -10,7 +10,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Cote Finance AI | Seu Assistente Financeiro Inteligente',
+  title: 'Cote Finance AI | Seu assistente financeiro inteligente',
   description: 'Organize, analise, preveja e acompanhe suas finanças com clareza no Cote Finance AI.',
   icons: {
     icon: [{ url: '/brand/cote-favicon.svg', type: 'image/svg+xml' }],

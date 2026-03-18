@@ -1,23 +1,13 @@
-﻿'use client';
+'use client';
 
+import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import * as React from 'react';
-import type { ReactNode } from 'react';
-import { Manrope, Space_Grotesk } from 'next/font/google';
-import { motion } from 'motion/react';
-import {
-  ArrowRight,
-  BarChart3,
-  BrainCircuit,
-  Check,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-} from 'lucide-react';
+import { Space_Grotesk } from 'next/font/google';
+import { ArrowRight, Check, ShieldCheck, Sparkles } from 'lucide-react';
+import { ButtonPrimary, ButtonSecondary, Card, Container, Header, Section } from '@/components/ui/premium-primitives';
 
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
-const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
 
 type PublicPlanCatalogItem = {
   code: 'FREE' | 'PRO' | 'PREMIUM';
@@ -31,150 +21,47 @@ type PublicPlanCatalogItem = {
   default: boolean;
 };
 
-const heroBullets = [
-  'Análise automática dos seus gastos',
-  'Insights financeiros com inteligência artificial',
-  'Alertas e resumos no WhatsApp',
-];
-
-const socialBullets = ['entender seus gastos', 'organizar suas finanças', 'tomar decisões melhores'];
-
-const invisibleExpenseExamples = [
-  { label: 'Delivery frequente', monthly: 'R$350' },
-  { label: 'Assinaturas esquecidas', monthly: 'R$120' },
-  { label: 'Compras impulsivas', monthly: 'R$280' },
-];
-
-const savingsExamples = [
-  { label: 'Delivery frequente', monthly: 'R$300' },
-  { label: 'Assinaturas esquecidas', monthly: 'R$120' },
-  { label: 'Compras impulsivas', monthly: 'R$250' },
-  { label: 'Pequenos gastos diários', monthly: 'R$200' },
-];
-
-const solutionBullets = [
-  'onde está gastando demais',
-  'quais categorias consomem mais dinheiro',
-  'padrões invisíveis de consumo',
-  'oportunidades reais de economia',
-];
-
-const howItWorks = [
-  { step: '1. Registre seus gastos', text: 'Adicione suas despesas e receitas em poucos segundos.' },
-  { step: '2. O sistema analisa seus hábitos', text: 'O Cote Finance AI organiza seus gastos automaticamente e identifica padrões.' },
-  { step: '3. Receba insights e alertas', text: 'Descubra onde economizar e acompanhe alertas e resumos diretamente no WhatsApp.' },
-];
-
-const functionalityCards = [
-  {
-    title: 'Visão por categoria',
-    text: 'Veja quanto você gasta em cada área da sua vida.',
-    items: ['Alimentação', 'Transporte', 'Lazer', 'Moradia', 'Compras'],
-    icon: BarChart3,
-    accent: 'cyan',
-  },
-  {
-    title: 'Inteligência aplicada no dia a dia',
-    text: 'Receba insights automáticos sobre seus hábitos financeiros.',
-    items: ['Padrões invisíveis', 'Mudanças do mês', 'Oportunidades de ajuste'],
-    icon: BrainCircuit,
-    accent: 'emerald',
-  },
-  {
-    title: 'WhatsApp no dia a dia',
-    text: 'Acompanhe sua vida financeira pelo canal mais prático da rotina.',
-    items: ['Resumo diário', 'Alertas importantes', 'Acompanhamento mais rápido'],
-    icon: MessageCircle,
-    accent: 'slate',
-  },
-];
-
-const dashboardItems = [
-  'resumo financeiro do mês',
-  'categorias de despesas',
-  'gráficos inteligentes',
-  'tendências financeiras',
-  'insights automáticos da IA',
-];
-
-const comparison = {
-  left: ['controle manual', 'difícil manter atualizado', 'difícil identificar padrões'],
-  right: ['análise automática', 'insights inteligentes', 'clareza financeira real'],
+type PaidPlan = {
+  name: string;
+  price: string;
+  href: string;
+  cta: string;
+  features: string[];
+  highlight?: boolean;
 };
 
-const transformationBullets = [
-  'descobre para onde o dinheiro está indo',
-  'elimina gastos desnecessários',
-  'toma decisões financeiras melhores',
-  'ganha tranquilidade no fim do mês',
-];
-
-const securityBullets = ['criptografia de dados', 'armazenamento seguro', 'proteção de informações sensíveis'];
-
-const testimonials = [
-  { quote: 'Descobri que gastava muito mais com delivery do que imaginava.', author: 'Mariana R.' },
-  { quote: 'Agora recebo alertas no WhatsApp e acompanho tudo.', author: 'Lucas T.' },
-  { quote: 'Muito mais simples que planilhas.', author: 'Rafael S.' },
-];
-
-const featuredPortraitUrl = 'https://purepng.com/public/uploads/large/purepng.com-business-manbusinessmanbusinesssalesrevenuegeneratingsuits-1421526857853si53r.png';
-
-const fallbackPlans = [
+const fallbackPlans: PaidPlan[] = [
   {
     name: 'Free',
     price: 'R$0/mês',
-    href: '/signup',
+    href: '/signup?plan=free',
     cta: 'Criar conta grátis',
-    badge: 'Entrada',
-    features: [
-      'Dashboard financeiro',
-      'Categorias automáticas',
-      'Análise básica de despesas',
-      'Até 10 lançamentos por mês',
-      'Até 10 interações com IA por mês',
-    ],
+    features: ['Dashboard essencial', 'Controle inicial de gastos', 'Até 10 lançamentos por mês'],
   },
   {
     name: 'Pro',
     price: 'R$29/mês',
     href: '/signup?plan=pro&trial=true',
-    cta: 'Começar teste grátis',
-    badge: 'Mais popular',
+    cta: 'Testar Pro grátis',
     highlight: true,
-    features: [
-      'Tudo do Free',
-      'Lançamentos ilimitados',
-      '500 interações com IA por mês',
-      'Insights avancados da IA',
-      'Alertas financeiros',
-      'Resumos e alertas no WhatsApp',
-      'Relatórios detalhados',
-    ],
+    features: ['Lançamentos ilimitados', 'IA aplicada em decisões', 'Alertas e resumos no WhatsApp'],
   },
   {
     name: 'Premium',
     price: 'R$49/mês',
     href: '/signup?plan=premium',
     cta: 'Assinar Premium',
-    badge: 'Completo',
-    features: [
-      'Tudo do Pro',
-      'Lançamentos ilimitados',
-      'IA ilimitada',
-      'Análises financeiras profundas',
-      'Recomendações personalizadas',
-    ],
+    features: ['Tudo do Pro', 'IA ilimitada', 'Previsões e automações avançadas'],
   },
 ];
 
-function toPaidLandingPlan(plan: PublicPlanCatalogItem) {
+function mapPlan(plan: PublicPlanCatalogItem): PaidPlan {
   if (plan.code === 'FREE') {
     return {
       name: 'Free',
       price: `R$${plan.monthlyPrice}/mês`,
-      href: '/signup',
+      href: '/signup?plan=free',
       cta: 'Criar conta grátis',
-      badge: 'Entrada',
       features: plan.features,
     };
   }
@@ -185,7 +72,6 @@ function toPaidLandingPlan(plan: PublicPlanCatalogItem) {
       price: `R$${plan.monthlyPrice}/mês`,
       href: '/signup?plan=premium',
       cta: 'Assinar Premium',
-      badge: 'Completo',
       features: plan.features,
     };
   }
@@ -194,109 +80,27 @@ function toPaidLandingPlan(plan: PublicPlanCatalogItem) {
     name: 'Pro',
     price: `R$${plan.monthlyPrice}/mês`,
     href: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
-    cta: plan.trialDays > 0 ? 'Começar teste grátis' : 'Assinar Pro',
-    badge: 'Mais popular',
-    highlight: true,
+    cta: plan.trialDays > 0 ? 'Testar Pro grátis' : 'Assinar Pro',
     features: plan.features,
+    highlight: true,
   };
 }
 
-const faqs = [
-  {
-    question: 'Preciso conectar conta bancária?',
-    answer:
-      'Não. Você pode começar registrando suas receitas e despesas manualmente no app e já usar os relatórios, categorias e análises para entender melhor sua rotina financeira.',
-  },
-  {
-    question: 'O app usa IA?',
-    answer:
-      'Sim. O Cote Finance AI usa inteligência artificial para interpretar seus gastos, destacar padrões, gerar insights e ajudar você a enxergar com mais clareza onde pode ajustar sua rotina financeira.',
-  },
-  {
-    question: 'Existe plano gratuito?',
-    answer:
-      'Sim. Você pode criar sua conta no plano Free e começar a organizar suas finanças sem custo. Depois, se quiser mais análises, alertas, WhatsApp e recursos avançados, pode evoluir para um plano pago.',
-  },
-  {
-    question: 'Posso cancelar quando quiser?',
-    answer:
-      'Sim. Você pode cancelar quando quiser, sem fidelidade. A ideia é que você teste com tranquilidade e continue apenas se fizer sentido para a sua rotina.',
-  },
-];
-
-const sectionMotion = {
-  initial: { opacity: 0, y: 26 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-100px' },
-  transition: { duration: 0.45 },
-};
-
-function PrimaryCta({ href, children, invert = false, className = '' }: { href: string; children: ReactNode; invert?: boolean; className?: string }) {
-  return (
-    <Link
-      href={href}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all duration-200 sm:px-6 sm:py-3.5 ${className} ${
-        invert
-          ? 'button-light-secondary'
-          : 'button-primary'
-      }`}
-    >
-      {children}
-      <ArrowRight size={16} />
-    </Link>
-  );
-}
-
-function SectionTitle({ eyebrow, title, description }: { eyebrow?: string; title: string; description?: string }) {
-  return (
-    <div className="space-y-3 text-center">
-      {eyebrow ? (
-        <span className="marketing-badge px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em]">
-          <Sparkles size={13} /> {eyebrow}
-        </span>
-      ) : null}
-      <h2 className="mx-auto max-w-3xl text-3xl font-bold leading-tight text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-        {title}
-      </h2>
-      {description ? <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">{description}</p> : null}
-    </div>
-  );
-}
-
-function MotionCard({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.4 }}
-      whileHover={{ y: -4 }}
-      className={`${className}`}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 export default function PaidLandingClient() {
-  const [plans, setPlans] = React.useState(fallbackPlans);
+  const [plans, setPlans] = React.useState<PaidPlan[]>(fallbackPlans);
 
   React.useEffect(() => {
     let active = true;
-
     const run = async () => {
       try {
         const response = await fetch('/api/public/plan-catalog', { cache: 'no-store' });
         const payload = (await response.json().catch(() => null)) as { plans?: PublicPlanCatalogItem[] } | null;
-        if (!response.ok || !payload?.plans?.length) return;
-        if (active) {
-          setPlans(payload.plans.map(toPaidLandingPlan));
-        }
+        if (!response.ok || !payload?.plans?.length || !active) return;
+        setPlans(payload.plans.map(mapPlan));
       } catch {
-        // Mantem fallback para a LP de mídia paga caso o endpoint falhe.
+        // fallback local
       }
     };
-
     void run();
     return () => {
       active = false;
@@ -304,478 +108,136 @@ export default function PaidLandingClient() {
   }, []);
 
   return (
-    <main className={`${displayFont.variable} ${bodyFont.variable} marketing-dark-shell min-h-screen overflow-x-clip`} style={{ fontFamily: 'var(--font-body)' }}>
+    <div className={`marketing-dark-shell min-h-screen ${displayFont.variable}`}>
       <div className="marketing-dark-backdrop pointer-events-none fixed inset-0 -z-10" />
-      <div className="border-b border-[var(--divider)] bg-[linear-gradient(90deg,rgba(76,141,255,.14),rgba(10,15,23,.92),rgba(56,189,248,.08))] px-4 py-2 text-center text-[11px] font-medium tracking-[0.08em] text-[var(--text-primary)] sm:px-6 sm:text-xs">
-        Entenda melhor seus gastos • Sem planilhas complicadas
-      </div>
-      <header className="marketing-dark-header sticky top-0 z-40">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
-          <Link href="/lp" className="flex items-center">
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={680} height={180} className="h-16 w-auto sm:h-16 lg:h-20" priority />
-          </Link>
-          <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
-        </div>
-      </header>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-20 pt-6 sm:px-6 sm:gap-20 sm:pb-28 sm:pt-8">
-        <section className="grid items-center gap-8 lg:grid-cols-[1.04fr_.96fr] lg:gap-14">
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="space-y-6 text-center lg:space-y-7 lg:text-left">
-            <span className="marketing-badge px-3.5 py-1.5 text-xs font-semibold"><Sparkles size={14} /> Mais controle sobre o seu dinheiro</span>
-            <h1 className="text-[2.15rem] font-bold leading-[1.04] text-[var(--text-primary)] sm:text-5xl lg:text-[4.2rem]" style={{ fontFamily: 'var(--font-display)' }}>Seu dinheiro está sumindo e você nem sabe por quê</h1>
-            <div className="space-y-3 text-[15px] leading-7 text-[var(--text-secondary)] sm:text-lg">
-              <p>O Cote Finance AI analisa seus gastos e mostra exatamente para onde seu dinheiro está indo e o que está drenando sua renda.</p>
-              <p>Entenda seus hábitos financeiros, descubra desperdícios invisíveis e tome decisões melhores sem planilhas complicadas.</p>
-            </div>
-            <div className="space-y-3">
-              {heroBullets.map((item, index) => (
-                <motion.div key={item} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.35, delay: 0.12 + index * 0.06 }} className="marketing-card flex items-start gap-3 px-4 py-3 text-left text-sm text-[var(--text-primary)] sm:items-center sm:text-base">
-                  <Check size={16} className="shrink-0 text-[var(--primary)]" />
-                  <span>{item}</span>
-                </motion.div>
-              ))}
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
-              <PrimaryCta href="/signup" className="shrink-0 px-4 py-2.5 text-xs sm:px-6 sm:py-3.5 sm:text-sm">Criar conta grátis</PrimaryCta>
-              <p className="text-sm text-[var(--text-muted)]">Comece grátis e veja seus gastos com mais clareza</p>
-            </div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.08 }} className="relative mx-auto w-full max-w-xl px-1 sm:px-0">
-            <div className="absolute -inset-3 rounded-[2rem] bg-[radial-gradient(circle_at_30%_15%,rgba(16,185,129,.38),transparent_48%),radial-gradient(circle_at_80%_82%,rgba(59,130,246,.2),transparent_44%)] blur-3xl sm:-inset-6 sm:rounded-[2.4rem] sm:bg-[radial-gradient(circle_at_30%_15%,rgba(16,185,129,.46),transparent_48%),radial-gradient(circle_at_80%_82%,rgba(59,130,246,.26),transparent_44%)]" />
-            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--primary-soft)] to-transparent sm:inset-x-8" />
-            <div className="relative overflow-hidden marketing-panel rounded-[1.65rem] p-3.5 sm:rounded-[2rem] sm:p-4">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.04),transparent_20%,transparent_80%,rgba(255,255,255,.03))]" />
-              <div className="mb-4 flex items-center justify-between marketing-card rounded-xl px-4 py-2">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">Dashboard do Cote Finance AI</p>
-                <span className="rounded-full border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] px-2.5 py-1 text-[10px] font-semibold text-[var(--primary)]">IA ativa</span>
-              </div>
-              <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <Header
+        logo={
+          <Link href="/lp" className="flex items-center">
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={620} height={160} priority className="h-16 w-auto lg:h-20" />
+          </Link>
+        }
+        navItems={[]}
+        actions={
+          <>
+            <Link href="/app?auth=login" className="button-secondary px-4 py-2 text-sm">
+              Entrar
+            </Link>
+            <Link href="/signup" className="button-primary px-4 py-2 text-sm">
+              Criar conta grátis
+            </Link>
+          </>
+        }
+      />
+
+      <Container>
+        <Section className="pt-16 lg:pt-20">
+          <section className="grid items-center gap-10 lg:grid-cols-[1.04fr_.96fr]">
+            <div className="space-y-6">
+              <span className="badge-premium badge-premium-info px-4 py-2 text-xs">
+                <Sparkles size={13} /> Diagnóstico financeiro em segundos
+              </span>
+              <h1 className="text-4xl font-bold leading-[1.03] text-[var(--text-primary)] md:text-6xl">
+                Descubra para onde seu dinheiro está indo e ajuste rápido.
+              </h1>
+              <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)] md:text-lg">
+                O Cote Finance AI cruza seus dados de gastos e mostra ações objetivas para recuperar previsibilidade no mês.
+              </p>
+              <div className="space-y-2 text-sm text-[var(--text-secondary)]">
                 {[
-                  { label: 'Saldo total', value: 'R$ 12.830', accent: 'emerald' },
-                  { label: 'Receitas', value: 'R$ 9.430', accent: 'cyan' },
-                  { label: 'Despesas', value: 'R$ 4.180', accent: 'rose' },
-                ].map((item, index) => (
-                  <motion.div key={item.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 + index * 0.08 }} className={`rounded-xl border p-3 ${item.accent === 'emerald' ? 'border-[var(--border-default)]/30 bg-[color:var(--primary-soft)]' : item.accent === 'cyan' ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)]' : 'border-[var(--border-default)] bg-[color:var(--danger-soft)]'}`}>
-                    <p className="text-[11px] text-[var(--text-primary)]/80">{item.label}</p>
-                    <p className="text-base font-bold text-[var(--text-primary)]">{item.value}</p>
-                  </motion.div>
+                  'Controle financeiro sem planilha improvisada',
+                  'Insights automáticos para decisões melhores',
+                  'Resumo operacional no dashboard e no WhatsApp',
+                ].map((item) => (
+                  <p key={item} className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--primary)]" />
+                    {item}
+                  </p>
                 ))}
               </div>
-              <div className="marketing-card rounded-2xl p-4">
-                <div className="mb-3 flex items-center justify-between text-xs text-[var(--text-muted)]"><span>Receitas x despesas (6 meses)</span><span>Atualizado agora</span></div>
-                <svg viewBox="0 0 320 120" className="h-32 w-full sm:h-36">
-                  <path d="M0,88 C28,78 48,42 74,36 C100,30 122,52 149,42 C176,32 200,18 226,16 C252,14 274,30 300,32 C312,33 318,26 320,24" fill="none" stroke="rgba(16,185,129,.95)" strokeWidth="3.5" />
-                  <path d="M0,108 C22,106 48,95 74,90 C98,86 122,98 149,94 C176,90 200,76 226,80 C252,84 274,90 300,94 C312,96 318,92 320,89" fill="none" stroke="rgba(251,113,133,.92)" strokeWidth="3.5" />
-                  <circle cx="300" cy="32" r="4" fill="rgba(16,185,129,.95)" />
+              <div className="flex flex-wrap gap-3">
+                <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => (window.location.href = '/signup')}>
+                  Começar grátis <ArrowRight size={16} />
+                </ButtonPrimary>
+                <ButtonSecondary className="px-6 py-3 text-sm" onClick={() => (window.location.href = '/quiz')}>
+                  Fazer diagnóstico
+                </ButtonSecondary>
+              </div>
+            </div>
+
+            <Card className="p-6 md:p-7">
+              <div className="mb-5 grid gap-3 sm:grid-cols-3">
+                {[
+                  { title: 'Despesas invisíveis', value: 'R$ 870/mês' },
+                  { title: 'Potencial de ajuste', value: '19%' },
+                  { title: 'Economia anual', value: 'R$ 10.440' },
+                ].map((item) => (
+                  <div key={item.title} className="app-surface-subtle rounded-xl p-4">
+                    <p className="text-xs text-[var(--text-muted)]">{item.title}</p>
+                    <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-container)] p-4">
+                <p className="label-premium">Simulação de comportamento</p>
+                <svg viewBox="0 0 320 110" className="mt-3 h-28 w-full">
+                  <path d="M0,88 C26,82 54,68 84,54 C110,42 132,42 162,50 C188,57 212,72 242,68 C270,65 296,44 320,28" fill="none" stroke="var(--primary)" strokeWidth="3.5" />
+                  <path d="M0,102 C22,102 48,98 80,95 C108,92 136,92 166,90 C196,88 224,82 252,84 C282,86 303,90 320,92" fill="none" stroke="var(--secondary-highlight)" strokeWidth="2.4" strokeOpacity="0.55" />
                 </svg>
               </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-[1.1fr_.9fr]">
-                <div className="marketing-card rounded-2xl p-4">
-                  <p className="mb-3 text-xs text-[var(--text-muted)]">Categorias do mês</p>
-                  <div className="space-y-3">
-                    {[
-                      { name: 'Delivery', width: '82%', color: 'bg-[var(--primary)]' },
-                      { name: 'Assinaturas', width: '61%', color: 'bg-[var(--primary)]' },
-                      { name: 'Compras', width: '49%', color: 'bg-sky-400' },
-                    ].map((item, index) => (
-                      <div key={item.name} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]"><span>{item.name}</span><span>{item.width}</span></div>
-                        <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-surface)]/10"><motion.div initial={{ width: 0 }} animate={{ width: item.width }} transition={{ duration: 0.8, delay: 0.35 + index * 0.08 }} className={`h-full rounded-full ${item.color}`} /></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }} className="rounded-2xl border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-3 shadow-[0_20px_40px_-28px_rgba(59,130,246,.45)]">
-                    <p className="mb-1 text-[11px] text-[var(--primary)]">Insight IA</p>
-                    <p className="text-sm text-[var(--text-secondary)]">Delivery subiu 18%. Existe espaço para economizar neste mês.</p>
-                  </motion.div>
-                  <motion.div animate={{ y: [0, 3, 0] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }} className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3 shadow-[0_20px_40px_-28px_rgba(34,211,238,.75)]">
-                    <p className="mb-1 text-[11px] text-[var(--text-secondary)]">WhatsApp</p>
-                    <p className="text-sm text-[var(--text-secondary)]">Resumo automático entregue com o que mais merece sua atenção.</p>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </section>
+            </Card>
+          </section>
+        </Section>
 
-        <motion.section
-          {...sectionMotion}
-          className="overflow-hidden marketing-panel p-6 md:p-8"
-        >
-          <div className="grid gap-8 xl:grid-cols-[1.08fr_.92fr] xl:items-stretch">
-            <div className="space-y-5">
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35 }}
-                className="space-y-4"
-              >
-                <p className="text-[var(--text-secondary)]">★★★★★</p>
-                <h2 className="max-w-2xl text-2xl font-bold text-[var(--text-primary)] md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-                  Mais de 1.000 pessoas já começaram a organizar suas finanças com o Cote Finance AI.
-                </h2>
-                <p className="max-w-2xl text-[var(--text-secondary)]">
-                  Uma rotina financeira mais clara começa quando você finalmente enxerga o que antes passava despercebido.
-                </p>
-              </motion.div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <motion.div
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: 0.04 }}
-                  className="marketing-card rounded-[1.4rem] p-4"
-                >
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">Usuários</p>
-                  <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">+1.000</p>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">organizando melhor receitas, despesas e hábitos</p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: 0.1 }}
-                  className="rounded-[1.4rem] border border-[var(--border-default)]/18 bg-[color:var(--primary-soft)] p-4"
-                >
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--primary)]">Resultado</p>
-                  <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">Mais controle</p>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]/80">para agir com mais segurança ao longo do mês</p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: 0.16 }}
-                  className="rounded-[1.4rem] border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-4"
-                >
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-secondary)]">Rotina</p>
-                  <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">Sem planilhas</p>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]/80">com alertas e leituras simples no dia a dia</p>
-                </motion.div>
-              </div>
-
-              <div className="flex flex-wrap gap-3 border-t border-[var(--border-default)] pt-4 text-sm text-[var(--text-primary)]">
-                {socialBullets.map((item, index) => (
-                  <motion.span
-                    key={item}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: 0.12 + index * 0.05 }}
-                    className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)]/5 px-3 py-1.5"
-                  >
-                    <Check size={14} className="text-[var(--primary)]" /> {item}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 18 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              className="relative overflow-hidden marketing-panel rounded-[1.85rem] p-6"
-            >
-              <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--primary-soft)] to-transparent" />
-              <div className="absolute -right-12 top-10 h-28 w-28 rounded-full bg-[color:var(--primary-soft)] blur-3xl" />
-              <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">História real de quem ganhou mais controle</p>
-              <p className="mt-5 text-lg leading-8 text-[var(--text-primary)] md:text-[1.15rem]">
-                &ldquo;Finalmente entendi para onde meu dinheiro estava indo e onde eu podia economizar sem mexer em tudo.&rdquo;
-              </p>
-              <div className="mt-6 flex items-center gap-4 border-t border-[var(--border-default)] pt-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-sm font-bold text-[var(--text-primary)]">MR</div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">Mariana R.</p>
-                  <p className="text-xs text-[var(--text-muted)]">Usuária do Cote Finance AI</p>
-                </div>
-              </div>
-              <div className="mt-6 flex items-start">
-                <PrimaryCta href="/signup" className="w-full sm:w-auto sm:px-6 sm:py-3.5">Criar conta grátis</PrimaryCta>
-              </div>
-            </motion.div>
+        <Section>
+          <div id="planos" />
+          <div className="space-y-3 text-center">
+            <p className="label-premium">Planos</p>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Escolha o plano para o seu momento.</h2>
           </div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="grid gap-6 lg:grid-cols-2">
-          <MotionCard className="marketing-panel p-6 md:p-8">
-            <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>O problema não é quanto você ganha.</h2>
-            <p className="mb-5 text-lg text-[var(--text-secondary)]">A maioria das pessoas acredita que precisa ganhar mais dinheiro.</p>
-            <p className="mb-5 text-[var(--text-secondary)]">Mas na prática, o problema é outro. Você não consegue enxergar para onde o dinheiro está indo.</p>
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-              <p className="mb-4 text-[var(--text-secondary)]">No começo do mês parece que tudo está sob controle.</p>
-              <ul className="space-y-3 text-[var(--text-primary)]">
-                <li className="flex items-center gap-3"><Check size={16} className="text-[var(--primary)]" /> o salário entra</li>
-                <li className="flex items-center gap-3"><Check size={16} className="text-[var(--primary)]" /> algumas contas são pagas</li>
-              </ul>
-            </div>
-            <div className="mt-5 rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-4 text-[var(--text-primary)]">
-              <p className="mb-2 font-semibold">Mas então aparecem:</p>
-              <ul className="space-y-2 text-sm text-[var(--danger)]">
-                <li>- pequenas compras</li>
-                <li>- assinaturas esquecidas</li>
-                <li>- gastos invisíveis</li>
-              </ul>
-              <p className="mt-4 font-semibold">E no final do mês o dinheiro simplesmente desaparece.</p>
-            </div>
-          </MotionCard>
-
-          <MotionCard className="marketing-panel p-6 md:p-8">
-            <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quanto dinheiro você pode estar perdendo?</h2>
-            <p className="mb-5 text-[var(--text-secondary)]">A maioria das pessoas perde dinheiro sem perceber.</p>
-            <p className="mb-5 text-[var(--text-secondary)]">Pequenos gastos que parecem inofensivos podem somar valores enormes.</p>
-            <div className="space-y-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-              {invisibleExpenseExamples.map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-[var(--border-default)] pb-3 text-sm last:border-none last:pb-0"><span className="text-[var(--text-secondary)]">{item.label}</span><span className="font-semibold text-[var(--text-primary)]">{item.monthly}</span></div>
-              ))}
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-4"><p className="text-xs uppercase tracking-[0.22em] text-[var(--text-secondary)]">Total perdido</p><p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">R$750 por mês</p></div>
-              <div className="rounded-2xl border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-4"><p className="text-xs uppercase tracking-[0.22em] text-[var(--primary)]">Em um ano</p><p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">R$9.000 ou mais</p></div>
-            </div>
-            <p className="mt-5 text-[var(--text-secondary)]">O problema não é gastar. O problema é não enxergar o que está acontecendo.</p>
-          </MotionCard>
-        </motion.section>
-        <motion.section {...sectionMotion} className="grid gap-8 lg:grid-cols-[1fr_.95fr] lg:items-center">
-          <div className="space-y-5">
-            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>O Cote Finance AI mostra exatamente para onde seu dinheiro está indo.</h2>
-            <p className="text-lg text-[var(--text-secondary)]">Ele funciona como um raio-X da sua vida financeira.</p>
-            <p className="text-[var(--text-secondary)]">O sistema analisa seus gastos e transforma tudo em informações simples.</p>
-            <ul className="space-y-3 text-[var(--text-primary)]">
-              {solutionBullets.map((item) => (
-                <li key={item} className="flex items-center gap-3"><Check size={16} className="text-[var(--primary)]" /><span>{item}</span></li>
-              ))}
-            </ul>
-            <p className="text-[var(--text-secondary)]">Tudo explicado de forma simples, visual e prática.</p>
-          </div>
-          <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.68))] p-5 shadow-[0_28px_74px_-44px_rgba(15,23,42,.95)]">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {functionalityCards.map((card) => (
-                <div key={card.title} className={`rounded-2xl border p-4 ${card.accent === 'cyan' ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)]' : card.accent === 'emerald' ? 'border-[var(--border-default)]/25 bg-[color:var(--primary-soft)]' : 'border-[var(--border-default)] bg-[var(--bg-app)] sm:col-span-2'}`}>
-                  <card.icon size={18} className="mb-3 text-[var(--text-primary)]" />
-                  <p className="font-semibold text-[var(--text-primary)]">{card.title}</p>
-                  <p className="mt-2 text-sm text-[var(--text-secondary)]">{card.text}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {card.items.map((item) => (
-                      <span key={item} className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)]/5 px-3 py-1 text-xs text-[var(--text-primary)]">{item}</span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="marketing-panel p-6 md:p-8">
-          <SectionTitle eyebrow="Como funciona" title="Começar é simples." />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {howItWorks.map((item, index) => (
-              <MotionCard key={item.step} className="marketing-card rounded-2xl p-4 sm:p-5">
-                <p className="mb-3 text-sm font-semibold text-[var(--primary)]">{item.step}</p>
-                <p className="text-[var(--text-secondary)]">{item.text}</p>
-                <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-[var(--bg-surface)]/10"><motion.div initial={{ width: 0 }} whileInView={{ width: `${(index + 1) * 33}%` }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.08 }} className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-hover)]" /></div>
-              </MotionCard>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="marketing-panel p-6 md:p-8">
-          <SectionTitle eyebrow="Dashboard" title="Um dashboard simples. Uma visão completa." description="Em poucos segundos você consegue ver:" />
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {dashboardItems.map((item) => (
-              <MotionCard key={item} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 text-sm text-[var(--text-primary)]"><div className="flex items-start gap-3"><Check size={16} className="mt-0.5 shrink-0 text-[var(--primary)]" /><span>{item}</span></div></MotionCard>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(15,23,42,.86),rgba(15,23,42,.62))] p-6 md:p-8">
-          <SectionTitle eyebrow="Simulação de ganho" title="Quanto dinheiro você pode economizar ao entender seus gastos?" />
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
-            <div className="space-y-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-              {savingsExamples.map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-[var(--border-default)] pb-3 text-sm last:border-none last:pb-0"><span className="text-[var(--text-secondary)]">{item.label}</span><span className="font-semibold text-[var(--text-primary)]">{item.monthly}</span></div>
-              ))}
-              <div className="grid gap-3 pt-2 sm:grid-cols-2">
-                <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-4"><p className="text-xs uppercase tracking-[0.22em] text-[var(--danger)]">Possível desperdício</p><p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">R$870 por mês</p></div>
-                <div className="rounded-2xl border border-[var(--border-default)]/20 bg-[color:var(--primary-soft)] p-4"><p className="text-xs uppercase tracking-[0.22em] text-[var(--primary)]">Em um ano</p><p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">R$10.440</p></div>
-              </div>
-            </div>
-            <div className="space-y-4 rounded-2xl border border-[var(--border-default)]/20 bg-[color:var(--primary-soft)] p-5">
-              <p className="text-[var(--text-primary)]">A maioria das pessoas nem percebe que está perdendo esse dinheiro.</p>
-              <div className="space-y-3 text-[var(--text-primary)]">
-                <p>Com o Cote Finance AI você consegue:</p>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-3"><Check size={16} className="text-[var(--primary)]" /> identificar gastos invisíveis</li>
-                  <li className="flex items-center gap-3"><Check size={16} className="text-[var(--primary)]" /> descobrir hábitos que drenam sua renda</li>
-                  <li className="flex items-center gap-3"><Check size={16} className="text-[var(--primary)]" /> encontrar oportunidades reais de economia</li>
-                </ul>
-              </div>
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)]/30 p-4"><p className="text-sm text-[var(--text-primary)]">Muitos usuários relatam economias de <span className="font-semibold text-[var(--text-primary)]">R$300 a R$1000 por mês</span> apenas entendendo melhor seus gastos.</p></div>
-              <div className="pt-2"><PrimaryCta href="/signup">Descubra quanto você pode economizar</PrimaryCta></div>
-            </div>
-          </div>
-        </motion.section>
-        <motion.section {...sectionMotion} className="grid gap-6 xl:grid-cols-[1.04fr_.96fr]">
-          <MotionCard className="rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(15,23,42,.76),rgba(15,23,42,.58))] p-6 md:p-8">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">Comparação</p>
-                <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Planilhas vs Inteligência Financeira</h2>
-                <p className="max-w-2xl text-[var(--text-secondary)]">Controle manual consome tempo. Quando o sistema interpreta seus gastos por você, fica mais fácil agir com segurança.</p>
-              </div>
-              <div className="grid gap-4 lg:grid-cols-2">
-                <div className="flex h-full flex-col rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-                  <div className="mb-5 space-y-3">
-                    <span className="inline-flex w-fit rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-[11px] font-medium text-[var(--danger)]">Mais esforço</span>
-                    <h3 className="text-xl font-semibold text-[var(--text-primary)]">Planilhas</h3>
-                  </div>
-                  <ul className="space-y-3 text-[var(--text-secondary)]">
-                    {comparison.left.map((item) => (
-                      <li key={item} className="flex min-h-14 items-start gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/[0.02] px-3 py-3">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--danger-soft)] text-xs text-[var(--danger)]">✕</span>
-                        <span className="leading-6">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex h-full flex-col rounded-[1.75rem] border border-[var(--border-default)]/22 bg-[linear-gradient(180deg,rgba(16,185,129,.14),rgba(15,23,42,.78))] p-5 shadow-[0_22px_52px_-34px_rgba(16,185,129,.36)]">
-                  <div className="mb-5 space-y-3">
-                    <span className="inline-flex w-fit rounded-full border border-[var(--border-default)]/15 bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-medium text-[var(--text-primary)]">Mais clareza</span>
-                    <h3 className="text-xl font-semibold text-[var(--text-primary)]">Cote Finance AI</h3>
-                  </div>
-                  <ul className="space-y-3 text-[var(--text-secondary)]">
-                    {comparison.right.map((item) => (
-                      <li key={item} className="flex min-h-14 items-start gap-3 rounded-xl border border-[var(--border-default)]/10 bg-[var(--bg-surface)]/[0.03] px-3 py-3">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--primary-soft)] text-[var(--primary)]">
-                          <Check size={12} />
-                        </span>
-                        <span className="leading-6">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </MotionCard>
-
-          <MotionCard className="rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(15,23,42,.76),rgba(15,23,42,.58))] p-6 md:p-8">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">Transformação</p>
-                <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>Quando você entende seu dinheiro, tudo muda.</h2>
-                <p className="max-w-2xl text-[var(--text-secondary)]">Quando você enxerga melhor o seu dinheiro, fica mais fácil ajustar hábitos, cortar excessos e terminar o mês com mais tranquilidade.</p>
-              </div>
-              <div className="grid gap-3">
-                {transformationBullets.map((item) => (
-                  <motion.div key={item} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-[1.35rem] border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-4 shadow-[0_18px_44px_-30px_rgba(15,23,42,.95)]">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--primary-soft)] text-[var(--primary)]">
-                        <Check size={14} />
-                      </span>
-                      <p className="text-[var(--text-primary)]">{item}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="rounded-[1.5rem] border border-[var(--border-default)]/16 bg-[linear-gradient(180deg,rgba(16,185,129,.12),rgba(15,23,42,.82))] p-5">
-                <p className="text-sm leading-7 text-[var(--text-primary)]">Mais contexto para decidir melhor, reduzir excessos e ter uma rotina financeira muito mais previsível.</p>
-              </div>
-            </div>
-          </MotionCard>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(15,23,42,.82),rgba(15,23,42,.62))] p-6 md:p-8">
-          <SectionTitle eyebrow="Segurança e privacidade" title="Suas informações são 100% privadas." description="Seus dados financeiros são extremamente importantes." />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {securityBullets.map((item) => (
-              <MotionCard key={item} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5"><ShieldCheck size={18} className="mb-3 text-[var(--primary)]" /><p className="font-semibold text-[var(--text-primary)]">{item}</p></MotionCard>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="space-y-6">
-          <SectionTitle title="Quem usa entende rápido a diferença." />
-          <div className="grid gap-4 md:grid-cols-3">
-            {testimonials.map((item) => (
-              <MotionCard key={item.author} className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 backdrop-blur-sm"><p className="text-[var(--text-primary)]">&ldquo;{item.quote}&rdquo;</p><footer className="mt-4 text-sm text-[var(--text-muted)]">- {item.author}</footer></MotionCard>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="space-y-6" id="planos">
-          <SectionTitle title="Comece gratuitamente" />
           <div className="grid gap-4 lg:grid-cols-3">
             {plans.map((plan) => (
-              <MotionCard key={plan.name} className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 sm:rounded-[30px] sm:p-6 ${plan.highlight ? 'border-[var(--border-default)]/45 bg-gradient-to-b from-[var(--primary)]/18 via-white/10 to-white/8 shadow-[0_34px_100px_rgba(59,130,246,0.22)] lg:-translate-y-3' : 'border-[var(--border-default)] bg-[var(--bg-surface)]'}`}>
-                <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${plan.highlight ? 'bg-[var(--primary)] text-[var(--text-primary)]' : 'border border-[var(--border-default)] bg-[var(--bg-surface)]/5 text-[var(--text-secondary)]'}`}>{plan.badge}</span>
-                <div className="mt-4 space-y-2"><h3 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>{plan.name}</h3><p className="text-3xl font-semibold text-[var(--text-primary)]">{plan.price}</p></div>
-                <ul className="mb-6 mt-6 space-y-3 text-sm text-[var(--text-primary)]">{plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><Check size={15} className="mt-0.5 shrink-0 text-[var(--primary)]" /><span>{feature}</span></li>)}</ul>
-                <Link href={plan.href} className={`mt-auto inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-colors sm:w-auto ${plan.highlight ? 'button-primary' : 'button-light-secondary'}`}>{plan.cta}</Link>
-              </MotionCard>
+              <Card key={plan.name} className={plan.highlight ? 'border-[color:var(--border-strong)] bg-[color:var(--primary-soft)] p-6' : 'p-6'}>
+                <h3 className="text-2xl font-bold text-[var(--text-primary)]">{plan.name}</h3>
+                <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{plan.price}</p>
+                <ul className="mt-5 space-y-2">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                      <Check size={14} className="mt-0.5 text-[var(--primary)]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link href={plan.href} className={plan.highlight ? 'button-primary mt-6 w-full px-4 py-3 text-sm font-semibold' : 'button-secondary mt-6 w-full px-4 py-3 text-sm font-semibold'}>
+                  {plan.cta}
+                </Link>
+              </Card>
             ))}
           </div>
-        </motion.section>
+        </Section>
 
-        <motion.section {...sectionMotion} className="marketing-panel p-6 md:p-8">
-          <SectionTitle title="Perguntas frequentes" />
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            {faqs.map((item) => (
-              <motion.details key={item.question} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35 }} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-                <summary className="cursor-pointer list-none font-semibold text-[var(--text-primary)]">{item.question}</summary>
-                <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
-              </motion.details>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section {...sectionMotion} className="marketing-panel border-[color:rgba(76,141,255,0.18)] px-5 py-9 text-center sm:px-6 md:px-10">
-          <h2 className="mx-auto max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>Descubra para onde seu dinheiro realmente está indo.</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-[var(--text-primary)]">Comece gratuitamente e tenha uma visão clara da sua vida financeira.</p>
-          <div className="mt-6 flex flex-col items-center justify-center gap-3">
-            <PrimaryCta href="/signup" invert className="w-full sm:w-auto">Criar conta grátis</PrimaryCta>
-            <p className="text-sm text-[var(--text-muted)]">Sem compromisso para começar</p>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)]/5 px-3 py-1.5 text-xs text-[var(--text-secondary)]"><ShieldCheck size={14} className="text-[var(--primary)]" /> Seus dados protegidos com criptografia</div>
-          </div>
-        </motion.section>
-      </div>
-    </main>
+        <Section className="pt-2">
+          <Card className="p-8 text-center md:p-10">
+            <h2 className="mx-auto max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-5xl">
+              Comece hoje e crie previsibilidade no seu financeiro.
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
+              Menos ruído, mais decisões práticas com um produto visualmente consistente.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <Link href="/signup" className="button-primary px-6 py-3 text-sm font-semibold">
+                Criar conta grátis
+              </Link>
+              <Link href="/app?auth=login" className="button-secondary px-6 py-3 text-sm font-semibold">
+                Entrar no app
+              </Link>
+            </div>
+            <p className="mt-4 inline-flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+              <ShieldCheck size={14} className="text-[var(--primary)]" /> Segurança e dados protegidos
+            </p>
+          </Card>
+        </Section>
+      </Container>
+    </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

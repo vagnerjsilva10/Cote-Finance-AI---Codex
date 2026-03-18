@@ -160,7 +160,7 @@ export function SuperadminAiPage() {
                   <div key={item.date} className="flex min-w-0 flex-col justify-end gap-3">
                     <div className="flex flex-1 items-end justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)]/[0.03] px-1 pb-1 pt-4">
                       <div
-                        className="w-full rounded-xl bg-[linear-gradient(180deg,var(--primary),var(--primary-hover))] shadow-[0_16px_40px_-24px_rgba(59,130,246,.38)]"
+                        className="w-full rounded-xl bg-[linear-gradient(180deg,var(--primary),var(--primary-hover))] shadow-[var(--shadow-glow-soft)]"
                         style={{ height: `${height}%` }}
                         title={`${item.total} interações em ${item.date}`}
                       />

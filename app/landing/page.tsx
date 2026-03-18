@@ -1,47 +1,25 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Manrope, Space_Grotesk } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import { motion } from 'motion/react';
 import {
   ArrowRight,
   BarChart3,
   BrainCircuit,
   Check,
-  CircleDollarSign,
-  CreditCard,
-  LayoutDashboard,
   MessageCircle,
   ShieldCheck,
   Sparkles,
   Target,
-  TrendingDown,
-  TrendingUp,
   Wallet,
 } from 'lucide-react';
+import { ButtonPrimary, ButtonSecondary, Card, Container, Header, Section } from '@/components/ui/premium-primitives';
 
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
-const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
-
-type CheckoutPlan = 'Pro Mensal' | 'Premium Mensal';
-
-type PlanCard = {
-  name: 'Free' | 'Pro' | 'Premium';
-  price: string;
-  label?: string;
-  benefit: string;
-  buttonText: string;
-  microcopy: string;
-  features: string[];
-  checkoutPlan?: CheckoutPlan;
-  signupHref?: string;
-  popular?: boolean;
-  proof?: string;
-  accent?: 'subtle' | 'highlight' | 'premium';
-};
 
 type PublicPlanCatalogItem = {
   code: 'FREE' | 'PRO' | 'PREMIUM';
@@ -55,1349 +33,462 @@ type PublicPlanCatalogItem = {
   default: boolean;
 };
 
-const legacyPlans: PlanCard[] = [
+type Plan = {
+  name: 'Free' | 'Pro' | 'Premium';
+  badge: string;
+  price: string;
+  description: string;
+  ctaLabel: string;
+  href: string;
+  features: string[];
+  highlight?: boolean;
+};
+
+const fallbackPlans: Plan[] = [
   {
-    name: 'Premium',
-    price: 'R$49/mês',
-    benefit: 'Controle financeiro avançado com automações inteligentes.',
-    buttonText: 'Assinar Premium',
-    microcopy: 'Mais profundidade, previsões e suporte prioritário.',
-    checkoutPlan: 'Premium Mensal',
-    features: [
-      'Tudo do plano Pro',
-      'Previsão de saldo futuro',
-      'Alertas financeiros inteligentes',
-      'Análise profunda de despesas',
-      'WhatsApp com alertas, resumos e automações',
-      'Suporte prioritário',
-    ],
+    name: 'Free',
+    badge: 'Entrada',
+    price: 'R$0/mês',
+    description: 'Ideal para começar e validar sua rotina financeira.',
+    ctaLabel: 'Criar conta grátis',
+    href: '/signup?plan=free',
+    features: ['Até 10 lançamentos/mês', 'Dashboard essencial', 'Organização inicial de gastos'],
   },
   {
     name: 'Pro',
+    badge: 'Mais escolhido',
     price: 'R$29/mês',
-    benefit: 'Organize suas finanças com ajuda da inteligência artificial.',
-    buttonText: 'Testar 3 dias grátis',
-    microcopy: 'Cancele quando quiser.',
-    checkoutPlan: 'Pro Mensal',
-    popular: true,
-    proof: 'Mais de 80% dos usuários escolhem o plano Pro',
-    features: [
-      'Lançamentos ilimitados',
-      'Descubra exatamente para onde seu dinheiro está indo',
-      'Gráficos financeiros inteligentes',
-      'Análise automática da IA sobre seus gastos',
-      'Insights financeiros automáticos',
-      'Relatórios completos de despesas e receitas',
-      'Resumos, alertas e acompanhamento no WhatsApp',
-    ],
-  },
-  {
-    name: 'Free',
-    price: 'R$0/mês',
-    benefit: 'Experimente o produto sem resolver completamente o problema.',
-    buttonText: 'Criar conta grátis',
-    microcopy: 'Experimente gratuitamente. Sem cartão.',
-    features: [
-      'Até 10 lançamentos por mês',
-      'Dashboard financeiro básico',
-      'Acompanhamento simples de saldo',
-      'Sem análise da IA',
-      'Sem relatórios avançados',
-      'Sem alertas no WhatsApp',
-    ],
-  },
-];
-
-const legacyPricingFaqs = [
-  {
-    question: 'Posso começar gratuitamente?',
-    answer:
-      'Sim. O plano Free permite experimentar o produto, registrar seus primeiros lançamentos e acompanhar seu saldo sem custo inicial.',
-  },
-  {
-    question: 'Preciso de cartão para testar?',
-    answer:
-      'Você pode criar sua conta grátis sem cartão. Para testar o Pro, o fluxo segue o checkout do produto e você pode cancelar quando quiser.',
-  },
-  {
-    question: 'Posso cancelar quando quiser?',
-    answer:
-      'Sim. Os planos pagos podem ser cancelados a qualquer momento na área de assinatura do produto.',
-  },
-  {
-    question: 'Qual a diferença entre Pro e Premium?',
-    answer:
-      'O Pro entrega controle financeiro completo com IA, relatórios e acompanhamento no WhatsApp. O Premium adiciona previsões, alertas inteligentes, automações mais profundas e suporte prioritário.',
-  },
-  {
-    question: 'O WhatsApp está incluído em quais planos?',
-    answer:
-      'Os resumos e alertas financeiros no WhatsApp estão disponíveis nos planos Pro e Premium. No Premium, o canal ganha automações mais avançadas, consultas e ações mais ricas.',
-  },
-] as const;
-
-const currentPlans: PlanCard[] = [
-  {
-    name: 'Free',
-    price: 'R$0/mês',
-    label: 'Entrada',
-    benefit: 'Comece a visualizar seus gastos e sentir o produto na prática, sem compromisso.',
-    buttonText: 'Começar grátis',
-    microcopy: 'Sem cartão. Ideal para dar o primeiro passo com segurança.',
-    features: [
-      'Até 10 lançamentos por mês',
-      'Até 10 interações com IA por mês',
-      'Dashboard financeiro essencial',
-      'Visão inicial de saldo, entradas e saídas',
-      'Organização básica para sair do zero',
-    ],
-    accent: 'subtle',
-  },
-  {
-    name: 'Pro',
-    price: 'R$29/mês',
-    label: 'Melhor escolha',
-    benefit: 'Descubra para onde seu dinheiro está indo e transforme seu diagnóstico financeiro em uma rotina organizada.',
-    buttonText: 'Testar Pro grátis por 3 dias',
-    microcopy: 'Depois do teste, continue por R$29/mês. Cancele quando quiser.',
-    checkoutPlan: 'Pro Mensal',
-    popular: true,
-    proof: 'Mais escolhido por quem quer sair do descontrole sem complicar a rotina.',
-    features: [
-      'Lançamentos ilimitados para acompanhar tudo em um só lugar',
-      '500 interações com IA por mês',
-      'IA que identifica padrões e mostra onde você está perdendo dinheiro',
-      'Relatórios e gráficos completos para decisões mais claras',
-      'Insights automáticos para economizar e ajustar sua rotina',
-      'Metas, dívidas e investimentos com acompanhamento contínuo',
-      'Resumos e alertas no WhatsApp para não deixar nada passar',
-    ],
-    accent: 'highlight',
+    description: 'Controle completo com IA e acompanhamento diário.',
+    ctaLabel: 'Testar Pro grátis',
+    href: '/signup?plan=pro&trial=true',
+    highlight: true,
+    features: ['Lançamentos ilimitados', '500 interações com IA', 'Relatórios e alertas no WhatsApp'],
   },
   {
     name: 'Premium',
+    badge: 'Avançado',
     price: 'R$49/mês',
-    label: 'Controle total',
-    benefit: 'Para quem quer mais automação, previsões e profundidade para tomar decisões com antecedência.',
-    buttonText: 'Assinar Premium',
-    microcopy: 'Mais inteligência, mais automação e uma visão financeira mais estratégica.',
-    checkoutPlan: 'Premium Mensal',
-    features: [
-      'Tudo do Pro com camada extra de automação',
-      'Lançamentos ilimitados',
-      'IA ilimitada',
-      'Previsão de saldo para antecipar apertos e sobras',
-      'Alertas inteligentes para agir antes do problema virar bola de neve',
-      'Análises mais profundas de despesas e comportamento financeiro',
-      'WhatsApp com automações, alertas e acompanhamento contínuo',
-      'Suporte prioritário para quem quer mais agilidade',
-    ],
-    accent: 'premium',
+    description: 'Camada estratégica com automações e previsões avançadas.',
+    ctaLabel: 'Assinar Premium',
+    href: '/signup?plan=premium',
+    features: ['Tudo do Pro', 'IA ilimitada', 'Previsão e alertas inteligentes'],
   },
 ];
-
-const currentPricingFaqs = [
-  {
-    question: 'Posso começar gratuitamente?',
-    answer:
-      'Sim. O Free é a porta de entrada para organizar seus primeiros lançamentos e entender como o Cote Finance AI funciona antes de evoluir.',
-  },
-  {
-    question: 'Preciso de cartão para testar?',
-    answer:
-      'Você pode criar sua conta no Free sem cartão. Para testar o Pro, o acesso começa pelo checkout e o cancelamento pode ser feito quando quiser.',
-  },
-  {
-    question: 'Posso cancelar quando quiser?',
-    answer:
-      'Sim. Os planos pagos podem ser cancelados a qualquer momento na área de assinatura, sem contrato de fidelidade.',
-  },
-  {
-    question: 'Qual a diferença entre Pro e Premium?',
-    answer:
-      'O Pro é a melhor escolha para quem quer organizar a vida financeira com IA, clareza e acompanhamento diário. O Premium adiciona automações, previsões e análises mais profundas para quem quer controle total.',
-  },
-  {
-    question: 'O WhatsApp está incluído em quais planos?',
-    answer:
-      'Os resumos e alertas no WhatsApp estão disponíveis no Pro e no Premium. No Premium, esse acompanhamento ganha automações mais avançadas, consultas e ações no canal.',
-  },
-] as const;
-
-const currentFeatures = [
-  {
-    icon: LayoutDashboard,
-    title: 'Registro inteligente de despesas',
-    text: 'Todos os seus gastos organizados automaticamente.',
-  },
-  {
-    icon: BrainCircuit,
-    title: 'Análise automática',
-    text: 'Insights claros para melhorar suas decisões financeiras.',
-  },
-  {
-    icon: Target,
-    title: 'Previsões financeiras futuras',
-    text: 'Entenda tendências e acompanhe o impacto das suas decisões.',
-  },
-  {
-    icon: CreditCard,
-    title: 'Alertas e notificações financeiras',
-    text: 'Saiba o que merece atenção antes de virar problema.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Gráficos e relatórios inteligentes',
-    text: 'Visualize seus hábitos financeiros com mais clareza.',
-  },
-  {
-    icon: Wallet,
-    title: 'Registro automático de despesas',
-    text: 'Mantenha sua vida financeira organizada sem complicação.',
-  },
-  {
-    icon: MessageCircle,
-    title: 'Insights financeiros personalizados',
-    text: 'Receba recomendações úteis para melhorar sua rotina financeira.',
-  },
-];
-
-const fallbackPlans: PlanCard[] = [
-  {
-    name: 'Free',
-    price: 'R$0/mês',
-    label: 'Entrada',
-    benefit: 'Ideal para começar a organizar suas finanças.',
-    buttonText: 'Criar conta grátis',
-    microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
-    signupHref: '/signup?plan=free',
-    features: [
-      'Até 10 lançamentos por mês',
-      'Até 10 interações com IA por mês',
-      'Controle básico de receitas e despesas',
-      'Dashboard financeiro',
-      'Gráficos simples',
-      'Organização de gastos',
-    ],
-    accent: 'subtle',
-  },
-  {
-    name: 'Pro',
-    price: 'R$29/mês',
-    label: 'Melhor escolha',
-    benefit: 'Mais escolhido por quem quer controle financeiro completo.',
-    buttonText: 'Começar teste grátis',
-    microcopy: 'Crie sua conta, teste grátis e evolua no seu ritmo.',
-    signupHref: '/signup?plan=pro&trial=true',
-    popular: true,
-    proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
-    features: [
-      'Todos os recursos do plano Free',
-      'Lançamentos ilimitados',
-      '500 interações com IA por mês',
-      'Insights automáticos de IA',
-      'Alertas de gastos',
-      'Previsões financeiras',
-      'Relatórios avançados',
-      'Resumos e alertas financeiros no WhatsApp',
-    ],
-    accent: 'highlight',
-  },
-  {
-    name: 'Premium',
-    price: 'R$49/mês',
-    label: 'Controle total',
-    benefit: 'Controle total com inteligência financeira avançada.',
-    buttonText: 'Assinar Premium',
-    microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
-    signupHref: '/signup?plan=premium',
-    features: [
-      'Todos os recursos do plano Pro',
-      'Lançamentos ilimitados',
-      'IA ilimitada',
-      'Insights avançados da IA',
-      'Análises financeiras completas',
-      'Alertas inteligentes',
-      'Planejamento financeiro avançado',
-      'Automações financeiras no WhatsApp',
-      'Suporte prioritário',
-    ],
-    accent: 'premium',
-  },
-];
-
-const pricingFaqs = [
-  {
-    question: 'O Cote Finance AI é gratuito?',
-    answer: 'Sim. Você pode começar com o plano gratuito e evoluir para um plano pago quando quiser mais recursos.',
-  },
-  {
-    question: 'Preciso conectar minha conta bancária?',
-    answer: 'Não. Você pode registrar suas receitas e despesas manualmente e acompanhar tudo pela plataforma.',
-  },
-  {
-    question: 'Como funciona a inteligência artificial?',
-    answer:
-      'A IA analisa seus lançamentos, identifica padrões e entrega insights automáticos para ajudar você a entender melhor seus gastos.',
-  },
-  {
-    question: 'Posso cancelar quando quiser?',
-    answer: 'Sim. Os planos pagos não exigem contrato de longo prazo.',
-  },
-] as const;
-
-const testimonials = [
-  {
-    quote: 'Finalmente entendi para onde meu dinheiro estava indo.',
-    author: 'João',
-    location: 'São Paulo',
-  },
-  {
-    quote: 'Hoje consigo acompanhar meus gastos sem planilhas complicadas.',
-    author: 'Mariana',
-    location: 'Rio de Janeiro',
-  },
-  {
-    quote: 'Os alertas e insights me ajudaram a organizar minha rotina financeira de verdade.',
-    author: 'Carlos',
-    location: 'Belo Horizonte',
-  },
-] as const;
 
 const features = [
   {
-    icon: LayoutDashboard,
-    title: 'Receitas e despesas',
-    text: 'Registro simples de receitas e despesas.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Gráficos inteligentes',
-    text: 'Gráficos financeiros inteligentes para visualizar tudo com mais clareza.',
+    icon: Wallet,
+    title: 'Controle em tempo real',
+    description: 'Registre entradas e despesas com clareza em uma única visão.',
   },
   {
     icon: BrainCircuit,
-    title: 'Análise automática',
-    text: 'Análise automática com IA e insights financeiros personalizados.',
+    title: 'IA financeira aplicada',
+    description: 'A IA identifica padrões de gasto e propõe ajustes objetivos.',
   },
   {
-    icon: Sparkles,
-    title: 'Insights financeiros',
-    text: 'Insights financeiros personalizados para apoiar decisões melhores.',
+    icon: BarChart3,
+    title: 'Relatórios consistentes',
+    description: 'Painéis, métricas e tendências para decisões com mais segurança.',
   },
   {
     icon: MessageCircle,
-    title: 'Alertas no WhatsApp',
-    text: 'Alertas e resumos via WhatsApp.',
+    title: 'WhatsApp integrado',
+    description: 'Alertas e resumos automáticos sem depender só do dashboard.',
   },
   {
     icon: Target,
-    title: 'Previsões financeiras',
-    text: 'Previsões financeiras para acompanhar tendências e próximos passos.',
+    title: 'Metas e dívida no mesmo fluxo',
+    description: 'Planejamento, execução e acompanhamento em uma jornada única.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Infra segura',
+    description: 'Proteção de dados e operações com padrão SaaS moderno.',
   },
 ];
 
-void currentPlans;
-void currentPricingFaqs;
-void currentFeatures;
+const detailSections = [
+  {
+    title: 'Segmentação financeira sem ruído',
+    description:
+      'Organize transações por categorias relevantes e enxergue rapidamente onde está a maior pressão do caixa.',
+    visual: '/landing/clarity-visual.svg',
+  },
+  {
+    title: 'Diagnóstico de hábitos com IA',
+    description:
+      'A plataforma cruza comportamento de gastos, receita e sazonalidade para mostrar ações práticas de curto prazo.',
+    visual: '/landing/problem-visual.svg',
+  },
+  {
+    title: 'Execução com contexto diário',
+    description:
+      'Combine dashboard e alertas inteligentes para manter consistência nas decisões financeiras do mês.',
+    visual: '/landing/solution-visual.svg',
+  },
+];
 
-function toMarketingPlan(plan: PublicPlanCatalogItem): PlanCard {
+const testimonials = [
+  {
+    quote: 'Finalmente minha visão mensal ficou objetiva. Consigo agir antes do fim do caixa.',
+    author: 'Mariana L.',
+    role: 'Empreendedora',
+  },
+  {
+    quote: 'A diferença foi tirar o improviso. Tudo agora segue um fluxo muito claro.',
+    author: 'Carlos N.',
+    role: 'Líder comercial',
+  },
+  {
+    quote: 'A leitura financeira ficou simples, sem perder profundidade.',
+    author: 'Fernanda P.',
+    role: 'Autônoma',
+  },
+];
+
+const faqItems = [
+  {
+    question: 'Preciso conectar banco para começar?',
+    answer:
+      'Não. Você pode iniciar com lançamento manual e evoluir no seu ritmo mantendo total controle dos dados.',
+  },
+  {
+    question: 'Posso cancelar quando quiser?',
+    answer: 'Sim. Os planos pagos podem ser cancelados a qualquer momento pela área de assinatura.',
+  },
+  {
+    question: 'Qual plano é melhor para começar?',
+    answer:
+      'O Pro é o plano recomendado para quem quer consistência operacional com IA, relatórios e alertas automáticos.',
+  },
+  {
+    question: 'O WhatsApp está em quais planos?',
+    answer: 'O canal está disponível no Pro e Premium, com mais automação no Premium.',
+  },
+];
+
+const partners = ['Meta', 'Vercel', 'Supabase', 'Stripe', 'Recharts', 'OpenAI'];
+
+function mapPlan(plan: PublicPlanCatalogItem): Plan {
   if (plan.code === 'FREE') {
     return {
       name: 'Free',
+      badge: 'Entrada',
       price: `R$${plan.monthlyPrice}/mês`,
-      label: 'Entrada',
-      benefit: plan.description,
-      buttonText: 'Criar conta grátis',
-      microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
-      signupHref: '/signup?plan=free',
+      description: plan.description,
+      ctaLabel: 'Criar conta grátis',
+      href: '/signup?plan=free',
       features: plan.features,
-      accent: 'subtle',
     };
   }
 
   if (plan.code === 'PREMIUM') {
     return {
       name: 'Premium',
+      badge: 'Avançado',
       price: `R$${plan.monthlyPrice}/mês`,
-      label: 'Controle total',
-      benefit: plan.description,
-      buttonText: 'Assinar Premium',
-      microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
-      signupHref: '/signup?plan=premium',
+      description: plan.description,
+      ctaLabel: 'Assinar Premium',
+      href: '/signup?plan=premium',
       features: plan.features,
-      accent: 'premium',
     };
   }
 
   return {
     name: 'Pro',
+    badge: 'Mais escolhido',
     price: `R$${plan.monthlyPrice}/mês`,
-    label: 'Melhor escolha',
-    benefit: plan.description,
-    buttonText: plan.trialDays > 0 ? 'Começar teste grátis' : 'Assinar Pro',
-    microcopy:
-      plan.trialDays > 0
-        ? `Teste grátis por ${plan.trialDays} dias e evolua no seu ritmo.`
-        : 'Crie sua conta e evolua no seu ritmo.',
-    signupHref: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
-    popular: true,
-    proof: 'Mais popular entre quem quer mais clareza sobre os gastos sem complicar a rotina.',
+    description: plan.description,
+    ctaLabel: plan.trialDays > 0 ? 'Testar Pro grátis' : 'Assinar Pro',
+    href: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
     features: plan.features,
-    accent: 'highlight',
+    highlight: true,
   };
 }
 
 export default function LandingPage() {
-  const brandLogo = '/brand/cote-finance-ai-logo.svg';
   const router = useRouter();
-  const [isBusy, setIsBusy] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [heroParallax, setHeroParallax] = React.useState({ x: 0, y: 0 });
-  const [pricingPlans, setPricingPlans] = React.useState<PlanCard[]>(fallbackPlans);
+  const [plans, setPlans] = React.useState<Plan[]>(fallbackPlans);
 
   React.useEffect(() => {
     let active = true;
 
-    const run = async () => {
+    const load = async () => {
       try {
         const response = await fetch('/api/public/plan-catalog', { cache: 'no-store' });
         const payload = (await response.json().catch(() => null)) as { plans?: PublicPlanCatalogItem[] } | null;
-        if (!response.ok || !payload?.plans?.length) return;
-        if (active) {
-          setPricingPlans(payload.plans.map(toMarketingPlan));
-        }
+        if (!response.ok || !payload?.plans?.length || !active) return;
+        setPlans(payload.plans.map(mapPlan));
       } catch {
-        // Mantem fallback comercial caso o endpoint publico falhe.
+        // fallback local permanece
       }
     };
 
-    void run();
+    void load();
     return () => {
       active = false;
     };
   }, []);
 
-  const scrollTo = React.useCallback((id: string) => {
-    const node = document.getElementById(id);
-    if (!node) return;
-    const header = document.querySelector('header');
-    const headerHeight = header instanceof HTMLElement ? header.offsetHeight : 0;
-    const top = node.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
-    window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
-  }, []);
-
-  const handleHeroMouseMove = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const nx = (event.clientX - rect.left) / rect.width - 0.5;
-    const ny = (event.clientY - rect.top) / rect.height - 0.5;
-    setHeroParallax({
-      x: nx * 18,
-      y: ny * 16,
-    });
-  }, []);
-
-  const handleHeroMouseLeave = React.useCallback(() => {
-    setHeroParallax({ x: 0, y: 0 });
-  }, []);
-
-  const navigateToSignup = React.useCallback(
-    (href: string) => {
-      setError(null);
-      router.push(href);
-    },
-    [router]
-  );
-
-  const startFree = React.useCallback(() => {
-    navigateToSignup('/signup');
-  }, [navigateToSignup]);
+  const navItems = [
+    { label: 'Produto', onClick: () => document.getElementById('produto')?.scrollIntoView({ behavior: 'smooth' }) },
+    { label: 'Funcionalidades', onClick: () => document.getElementById('funcionalidades')?.scrollIntoView({ behavior: 'smooth' }) },
+    { label: 'Preços', onClick: () => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }) },
+    { label: 'Blog', href: '/blog' },
+  ];
 
   return (
-    <div
-      className={`theme-landing-shell marketing-dark-shell ${displayFont.variable} ${bodyFont.variable} min-h-screen overflow-x-clip`}
-      style={{ fontFamily: 'var(--font-body)' }}
-    >
+    <div className={`theme-landing-shell marketing-dark-shell min-h-screen ${displayFont.variable}`}>
       <div className="theme-landing-backdrop marketing-dark-backdrop pointer-events-none fixed inset-0 -z-10" />
 
-      <header className="marketing-dark-header sticky top-0 z-40">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:gap-6 lg:py-4">
-          <Link href="/" className="flex min-w-0 items-center">
-            <Image
-              src="/brand/cote-favicon.svg"
-              alt="Cote Finance AI"
-              width={96}
-              height={96}
-              priority
-              className="h-11 w-11 sm:hidden"
-            />
-            <Image
-              src={brandLogo}
-              alt="Cote Finance AI - By Cote Juros"
-              width={560}
-              height={150}
-              priority
-              className="hidden h-16 w-auto sm:block lg:h-20"
-            />
+      <Header
+        logo={
+          <Link href="/" className="flex items-center">
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={620} height={160} priority className="h-16 w-auto lg:h-20" />
           </Link>
-
-          <nav className="hidden items-center gap-6 text-sm text-[var(--text-secondary)] lg:flex">
-            <button type="button" onClick={() => scrollTo('produto')} className="transition-colors hover:text-[var(--text-primary)]">
-              Produto
-            </button>
-            <button type="button" onClick={() => scrollTo('como-funciona')} className="transition-colors hover:text-[var(--text-primary)]">
-              Como funciona
-            </button>
-            <button type="button" onClick={() => scrollTo('funcionalidades')} className="transition-colors hover:text-[var(--text-primary)]">
-              Funcionalidades
-            </button>
-            <Link href="/blog" className="transition-colors hover:text-[var(--text-primary)]">
-              Blog
-            </Link>
-            <button type="button" onClick={() => scrollTo('planos')} className="transition-colors hover:text-[var(--text-primary)]">
-              Preços
-            </button>
-          </nav>
-
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => router.push('/app?auth=login')}
-              className="button-secondary px-3 py-2 text-xs font-semibold sm:min-w-[112px] sm:px-4 sm:text-sm"
-            >
+        }
+        navItems={navItems}
+        actions={
+          <>
+            <ButtonSecondary className="px-4 py-2 text-sm" onClick={() => router.push('/app?auth=login')}>
               Entrar
-            </button>
-            <button
-              onClick={startFree}
-              disabled={isBusy}
-              className="button-primary px-3 py-2 text-xs font-semibold disabled:opacity-60 sm:min-w-[152px] sm:px-4 sm:text-sm"
-            >
+            </ButtonSecondary>
+            <ButtonPrimary className="px-4 py-2 text-sm" onClick={() => router.push('/signup')}>
               Começar grátis
-            </button>
-          </div>
-        </div>
-      </header>
+            </ButtonPrimary>
+          </>
+        }
+      />
 
-      <main className="mx-auto w-full max-w-7xl space-y-14 px-4 pb-16 pt-8 sm:space-y-20 sm:px-6 sm:pb-24 sm:pt-14">
-        <section
-          className="grid items-center gap-8 lg:grid-cols-2 lg:gap-10"
-          onMouseMove={handleHeroMouseMove}
-          onMouseLeave={handleHeroMouseLeave}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
-            className="space-y-5 text-center lg:space-y-6 lg:text-left"
-          >
-            <span className="marketing-badge px-3 py-1 text-xs font-semibold">
-              <Sparkles size={14} /> Sem cartão de crédito • Crie sua conta em segundos
-            </span>
-            <h1 className="text-[2rem] font-bold leading-tight text-[var(--text-primary)] sm:text-5xl lg:text-6xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Descubra para onde seu dinheiro está indo
-            </h1>
-            <p className="max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg sm:leading-relaxed">
-              Organize seus gastos, entenda seus hábitos financeiros e tome decisões melhores com ajuda da IA.
-              Tudo sem planilhas complicadas.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
-              <button
-                onClick={startFree}
-                disabled={isBusy}
-                className="button-primary inline-flex w-full items-center justify-center gap-2 px-6 py-3 text-sm font-semibold disabled:opacity-60 sm:w-auto"
-              >
-              Começar grátis <ArrowRight size={16} />
-              </button>
-              <button
-                onClick={() => scrollTo('como-funciona')}
-                className="button-secondary w-full px-6 py-3 text-sm font-semibold sm:w-auto"
-              >
-                Ver como funciona
-              </button>
-            </div>
-            {error && <div className="rounded-xl border border-[var(--danger-soft)] bg-[var(--danger-soft)] p-3 text-sm text-[var(--danger-text)]">{error}</div>}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.08 }}
-            className="relative mx-auto w-full max-w-xl overflow-hidden sm:overflow-visible lg:max-w-none"
-            style={{
-              transform: `translate3d(${heroParallax.x * -0.35}px, ${heroParallax.y * -0.35}px, 0)`,
-            }}
-          >
-            <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-[var(--primary)]/25 via-[color:var(--primary-soft)] to-[color:var(--primary-soft)] blur-3xl sm:-inset-6" />
-            <div className="relative rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/75 p-4 sm:p-5">
-              <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="mb-3 inline-flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-[11px] text-[var(--text-secondary)] sm:text-xs"
-              >
-                IA detectou 3 oportunidades
-              </motion.div>
-              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-[var(--text-muted)]">Preview do dashboard</p>
-              <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3">
-                  <p className="text-[11px] text-[var(--text-secondary)]">Saldo</p>
-                  <p className="text-sm font-bold text-[var(--text-secondary)]">R$ 12.830</p>
-                </div>
-                <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3">
-                  <p className="text-[11px] text-[var(--text-secondary)]">Receitas</p>
-                  <p className="text-sm font-bold text-[var(--text-secondary)]">R$ 9.430</p>
-                </div>
-                <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3">
-                  <p className="text-[11px] text-[var(--danger)]">Despesas</p>
-                  <p className="text-sm font-bold text-[var(--danger)]">R$ 4.180</p>
-                </div>
-              </div>
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
-                <p className="mb-2 text-xs text-[var(--text-secondary)]">Receitas x Despesas (6 meses)</p>
-                <svg viewBox="0 0 320 96" className="h-24 w-full">
-                  <path
-                    d="M0,70 C22,62 42,42 68,38 C92,34 116,49 142,42 C168,35 190,24 214,22 C238,20 262,34 288,36 C302,38 311,33 320,27"
-                    fill="none"
-                    stroke="rgba(16,185,129,.95)"
-                    strokeWidth="3"
-                  />
-                  <path
-                    d="M0,86 C24,84 42,74 68,72 C92,70 116,78 142,75 C170,72 188,63 214,66 C240,69 262,78 288,80 C304,82 312,77 320,73"
-                    fill="none"
-                    stroke="rgba(251,113,133,.9)"
-                    strokeWidth="3"
-                  />
-                </svg>
-              </div>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-xs text-[var(--text-secondary)]">
-                  Insight IA: gasto em alimentação subiu 14%.
-                </div>
-                <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-xs text-[var(--text-secondary)]">
-                  Meta mensal: 82% concluída.
-                </div>
-              </div>
-            </div>
-            <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -bottom-5 -right-6 hidden rounded-xl border border-[var(--border-default)]/25 bg-[var(--bg-surface)] px-3 py-2 text-xs text-[var(--text-secondary)] xl:block"
-              style={{
-                transform: `translate3d(${heroParallax.x * 0.45}px, ${heroParallax.y * 0.45}px, 0)`,
-              }}
-            >
-              Projeção mensal em tempo real
-            </motion.div>
-          </motion.div>
-        </section>
-
-        <motion.section
-          id="problema"
-          className="relative grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(248,113,113,.14),transparent_55%)]" />
-          <div className="space-y-5 lg:order-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--danger)]">
-              <TrendingDown size={14} /> Problemas comuns no controle financeiro
-            </span>
-            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              O problema não é só ganhar dinheiro. É não saber para onde ele vai.
-            </h2>
-            <p className="text-[var(--text-secondary)]">
-              Pequenos gastos passam despercebidos, o saldo some no fim do mês e fica difícil saber o que ajustar.
-            </p>
-            <ul className="space-y-2 text-[var(--text-primary)]">
-              <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-[var(--danger)]" /> Assinaturas esquecidas
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-[var(--danger)]" /> Delivery frequente
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingDown size={16} className="text-[var(--danger)]" /> Compras impulsivas
-              </li>
-            </ul>
-            <p className="text-[var(--text-secondary)]">
-              O Cote Finance AI mostra com clareza onde seu dinheiro está indo e o que merece atenção.
-            </p>
-          </div>
-
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.2 }}
-            className="relative mx-auto w-full max-w-xl lg:order-1"
-          >
-            <Image
-              src="/landing/problem-visual.svg"
-              alt="Problemas comuns no controle financeiro"
-              width={880}
-              height={620}
-              className="h-auto w-full"
-              priority={false}
-            />
-            <div className="absolute left-3 top-3 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--danger)] sm:block lg:-left-3 lg:top-5">
-              Sem visibilidade real
-            </div>
-            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-right-3 lg:bottom-7">
-              Decisão no escuro
-            </div>
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          id="solucao"
-          className="relative grid items-center gap-10 lg:grid-cols-[.95fr_1.05fr]"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-6 -z-10 h-56 bg-[radial-gradient(circle_at_80%_30%,rgba(16,185,129,.18),transparent_52%)]" />
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.2 }}
-            className="relative mx-auto w-full max-w-xl lg:order-2"
-          >
-            <Image
-              src="/landing/solution-visual.svg"
-              alt="Clareza financeira com IA"
-              width={880}
-              height={620}
-              className="h-auto w-full"
-              priority={false}
-            />
-            <div className="absolute left-3 top-3 hidden rounded-lg border border-[var(--border-default)]/25 bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-left-3 lg:top-5">
-              Insights automáticos
-            </div>
-            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-right-3 lg:bottom-7">
-              Clareza em minutos
-            </div>
-          </motion.div>
-
-          <div className="space-y-5 lg:order-1">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-              <Sparkles size={14} /> Clareza financeira com inteligência artificial
-            </span>
-            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Clareza financeira muda tudo
-            </h2>
-            <p className="text-[var(--text-secondary)]">
-              Em vez de planilhas complicadas, você passa a contar com uma inteligência financeira trabalhando por você.
-            </p>
-            <ul className="space-y-2 text-[var(--text-secondary)]">
-              <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-[var(--text-secondary)]" /> IA analisando gastos automaticamente
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-[var(--text-secondary)]" /> Gráficos financeiros inteligentes
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-[var(--text-secondary)]" /> Insights personalizados
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <Check size={16} className="text-[var(--text-secondary)]" /> Organização financeira mais simples
-              </li>
-            </ul>
-            <p className="text-[var(--text-secondary)]">Tudo explicado de forma simples, clara e prática.</p>
-          </div>
-        </motion.section>
-
-        <motion.section
-          id="como-funciona"
-          className="scroll-mt-24 space-y-6 lg:scroll-mt-28"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <h2
-            className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Tudo o que você precisa para organizar sua vida financeira
-          </h2>
-          <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-[var(--text-secondary)]">Receitas e despesas</p>
-              <p className="text-[var(--text-primary)]">Registro simples de receitas e despesas.</p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-[var(--text-secondary)]">Gráficos inteligentes</p>
-              <p className="text-[var(--text-primary)]">Gráficos financeiros inteligentes para entender o mês com clareza.</p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center">
-              <p className="mb-2 text-xs uppercase tracking-widest text-[var(--text-secondary)]">IA e alertas</p>
-              <p className="text-[var(--text-primary)]">
-                Análise automática com IA, insights personalizados e alertas via WhatsApp.
-              </p>
-            </div>
-          </div>
-        </motion.section>
-
-                <motion.section
-          id="produto"
-          className="relative scroll-mt-24 py-2 pb-12 lg:scroll-mt-28 lg:overflow-visible lg:py-4 lg:pb-16"
-          initial={{ opacity: 0, y: 26 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-72 bg-[radial-gradient(circle_at_15%_20%,rgba(16,185,129,.2),transparent_46%),radial-gradient(circle_at_82%_80%,rgba(59,130,246,.18),transparent_42%)]" />
-          <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12">
-            <div className="max-w-xl space-y-5 text-left">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-                <Sparkles size={14} /> Demonstração do produto
+      <Container>
+        <Section className="pt-16 lg:pt-20">
+          <section id="produto" className="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-6">
+              <span className="badge-premium badge-premium-info px-4 py-2 text-xs">
+                <Sparkles size={13} /> Plataforma financeira com IA
               </span>
-              <div className="space-y-4">
-                <h3 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-                  Tenha visão completa da sua vida financeira
-                </h3>
-                <p className="max-w-lg text-base leading-7 text-[var(--text-secondary)]">
-                  Veja receitas, despesas, saldo e oportunidades de ajuste em uma única visão.
-                </p>
-              </div>
-
-              <div className="grid gap-2.5 sm:gap-3">
-                {[
-                  'Receitas e despesas organizadas',
-                  'Evolução do saldo em tempo real',
-                  'Identificação automática de padrões de gastos',
-                  'Alertas e tendências financeiras',
-                ].map((benefit) => (
-                  <div
-                    key={benefit}
-                    className="flex items-start gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-primary)] shadow-[0_18px_40px_-34px_rgba(15,23,42,.9)]"
-                  >
-                    <div className="mt-0.5 rounded-full border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-1 text-[var(--text-secondary)]">
-                      <Check size={14} />
-                    </div>
-                    <span>{benefit}</span>
-                  </div>
-                ))}
-              </div>
-
-              <p className="text-sm leading-6 text-[var(--text-secondary)]">
-                Experimente a organização financeira com IA sem complicar sua rotina.
+              <h1 className="max-w-4xl text-4xl font-bold leading-[1.03] tracking-tight text-[var(--text-primary)] md:text-6xl">
+                Clareza financeira para decidir melhor todos os meses.
+              </h1>
+              <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)] md:text-lg">
+                O Cote Finance AI unifica gastos, metas, dívidas, relatórios e assistente IA em um fluxo visual único,
+                sofisticado e orientado à ação.
               </p>
-            </div>
-
-            <motion.div whileHover={{ y: -3, scale: 1.005 }} className="relative mx-auto w-full max-w-3xl px-1 sm:px-0">
-              <div className="absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_35%_15%,rgba(16,185,129,.35),transparent_48%),radial-gradient(circle_at_70%_80%,rgba(16,185,129,.18),transparent_45%)] blur-2xl sm:-inset-5 sm:rounded-[2.3rem]" />
-              <div className="relative overflow-hidden rounded-[2rem] bg-[var(--bg-app)]/88 p-3 sm:p-4 ring-1 ring-[color:var(--primary-soft)] shadow-[0_28px_95px_-38px_rgba(59,130,246,.38)]">
-                <div className="mb-4 flex items-center justify-between rounded-xl bg-[var(--bg-surface)] px-3 py-2 sm:px-4">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--danger-soft)]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--danger-soft)]/90" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]/90" />
-                  </div>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--text-muted)]">Cote Finance AI</p>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
-                  <div className="space-y-4 rounded-2xl bg-[var(--bg-surface)] p-4 ring-1 ring-[color:var(--primary-soft)]">
-                    <p className="text-xs text-[var(--text-secondary)]">Receitas x despesas (6 meses)</p>
-                    <svg viewBox="0 0 320 120" className="h-32 w-full">
-                      <motion.path
-                        d="M0,88 C28,78 48,42 74,36 C100,30 122,52 149,42 C176,32 200,18 226,16 C252,14 274,30 300,32 C312,33 318,26 320,24"
-                        fill="none"
-                        stroke="rgba(16,185,129,.95)"
-                        strokeWidth="3.5"
-                        initial={{ pathLength: 0, opacity: 0.3 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.2, ease: 'easeOut' }}
-                      />
-                      <motion.path
-                        d="M0,108 C22,106 48,95 74,90 C98,86 122,98 149,94 C176,90 200,76 226,80 C252,84 274,90 300,94 C312,96 318,92 320,89"
-                        fill="none"
-                        stroke="rgba(251,113,133,.92)"
-                        strokeWidth="3.5"
-                        initial={{ pathLength: 0, opacity: 0.3 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.2, delay: 0.2, ease: 'easeOut' }}
-                      />
-                    </svg>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[62, 84, 56, 88, 70, 94].map((height, idx) => (
-                        <div key={`bar-${idx}`} className="flex h-16 items-end rounded-lg bg-[var(--bg-app)] p-1">
-                          <motion.div
-                            className="w-full rounded-md bg-gradient-to-t from-[var(--primary)] to-[var(--primary-hover)]"
-                            initial={{ height: 6 }}
-                            animate={{ height: [Math.max(8, height - 16), height, Math.max(10, height - 10)] }}
-                            transition={{
-                              duration: 2 + idx * 0.1,
-                              repeat: Infinity,
-                              repeatType: 'mirror',
-                              ease: 'easeInOut',
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35 }}
-                      className="rounded-2xl border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] p-3"
-                    >
-                      <p className="text-[11px] text-[var(--text-secondary)]">Saldo projetado</p>
-                      <p className="text-lg font-bold text-[var(--text-secondary)]">R$ 8.430</p>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35, delay: 0.1 }}
-                      className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3"
-                    >
-                      <p className="text-[11px] text-[var(--text-secondary)]">Economia potencial</p>
-                      <p className="text-lg font-bold text-[var(--text-secondary)]">+ R$ 1.280/ano</p>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35, delay: 0.2 }}
-                      className="rounded-2xl bg-[var(--bg-surface)] p-3 ring-1 ring-white/10"
-                    >
-                      <p className="mb-1 text-[11px] text-[var(--text-secondary)]">Insight IA</p>
-                      <p className="text-sm text-[var(--text-primary)]">
-                        Transporte subiu 18%. Reduzindo 10% você recupera R$ 146/mês.
-                      </p>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.35, delay: 0.28 }}
-                      className="rounded-2xl border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-3"
-                    >
-                      <p className="mb-1 text-[11px] text-[var(--text-secondary)]">WhatsApp</p>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        Receba lembretes de vencimento, resumo diário e alertas do que merece atenção.
-                      </p>
-                    </motion.div>
-                  </div>
-                </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => router.push('/signup')}>
+                  Começar agora <ArrowRight size={16} />
+                </ButtonPrimary>
+                <ButtonSecondary className="px-6 py-3 text-sm" onClick={() => router.push('/quiz')}>
+                  Fazer diagnóstico rápido
+                </ButtonSecondary>
               </div>
-
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -left-5 top-12 hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/92 px-3 py-2 text-xs text-[var(--text-secondary)] xl:block"
-              >
-                IA analisando gastos
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, 6, 0] }}
-                transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -right-4 -bottom-2 hidden rounded-xl border border-[var(--border-default)]/30 bg-[var(--bg-surface)]/92 px-3 py-2 text-xs text-[var(--text-secondary)] xl:block"
-              >
-                Organização em tempo real
-              </motion.div>
             </motion.div>
-          </div>
-        </motion.section>
 
-        <motion.section
-          id="funcionalidades"
-          className="scroll-mt-24 space-y-6 lg:scroll-mt-28"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <h2
-            className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Tudo o que você precisa para organizar sua vida financeira
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <motion.div
-                key={feature.title}
-                whileHover={{ y: -4 }}
-                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 text-center"
-              >
-                <feature.icon size={18} className="mx-auto mb-3 text-[var(--text-secondary)]" />
-                <h3 className="mb-2 text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
-                <p className="text-sm text-[var(--text-secondary)]">{feature.text}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          className="relative grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-10 -z-10 h-56 bg-[radial-gradient(circle_at_20%_30%,rgba(16,185,129,.15),transparent_54%)]" />
-
-          <div className="space-y-5">
-            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Quando você entende seu dinheiro, tudo muda
-            </h2>
-            <p className="text-[var(--text-secondary)]">Quando você tem clareza financeira, você pode:</p>
-            <ul className="space-y-2 text-[var(--text-primary)]">
-              <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Parar de perder dinheiro sem perceber
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Identificar gastos desnecessários
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Tomar decisões financeiras melhores
-              </li>
-              <li className="flex items-center justify-start gap-2">
-                <TrendingUp size={16} className="text-[var(--text-secondary)]" /> Planejar seu futuro com mais segurança
-              </li>
-            </ul>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">
-              Resultado: mais clareza, mais controle e decisões mais seguras.
-            </div>
-          </div>
-
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.2 }}
-            className="relative mx-auto w-full max-w-xl"
-          >
-            <Image
-              src="/landing/clarity-visual.svg"
-              alt="Visual de evolução financeira com clareza"
-              width={880}
-              height={620}
-              className="h-auto w-full"
-              priority={false}
-            />
-            <div className="absolute left-3 top-4 hidden rounded-lg border border-[var(--border-default)]/25 bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-left-3 lg:top-7">
-              + Controle
-            </div>
-            <div className="absolute right-3 bottom-4 hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] sm:block lg:-right-3 lg:bottom-7">
-              + Decisões melhores
-            </div>
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 md:p-10"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Milhares de pessoas já começaram a organizar melhor a vida financeira
-          </h2>
-          <p className="mb-6 text-[var(--text-secondary)]">
-            Cada vez mais usuários usam o Cote Finance AI para:
-          </p>
-          <ul className="mb-6 space-y-2 text-[var(--text-primary)]">
-            <li className="flex items-center justify-start gap-2">
-              <Check size={16} className="text-[var(--text-secondary)]" /> Entender melhor seus gastos
-            </li>
-            <li className="flex items-center justify-start gap-2">
-              <Check size={16} className="text-[var(--text-secondary)]" /> Melhorar sua saúde financeira
-            </li>
-            <li className="flex items-center justify-start gap-2">
-              <Check size={16} className="text-[var(--text-secondary)]" /> Tomar decisões mais inteligentes com seu dinheiro
-            </li>
-          </ul>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-              <p className="text-2xl font-bold text-[var(--text-primary)]">+12.000</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">usuários ativos</p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-              <p className="text-2xl font-bold text-[var(--text-primary)]">R$320 milhões</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">analisados em movimentações</p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-              <p className="text-2xl font-bold text-[var(--text-primary)]">94%</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">afirmam ter mais controle financeiro</p>
-            </div>
-          </div>
-        </motion.section>
-
-        <motion.section
-          className="space-y-6"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="space-y-3 text-center">
-            <span className="inline-flex rounded-full border border-[var(--border-default)] bg-[var(--primary)]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
-              Histórias de quem usa
-            </span>
-            <h2 className="text-[1.85rem] font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Histórias de quem ganhou mais clareza
-            </h2>
-            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
-              Depoimentos de pessoas que passaram a entender melhor o próprio dinheiro no dia a dia.
-            </p>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <div
-                key={`${testimonial.author}-${testimonial.location}`}
-                className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,.9)]"
-              >
-                <p className="text-base leading-7 text-[var(--text-primary)]">&ldquo;{testimonial.quote}&rdquo;</p>
-                <div className="mt-5 border-t border-[var(--border-default)] pt-4">
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">{testimonial.author}</p>
-                  <p className="text-sm text-[var(--text-secondary)]">{testimonial.location}</p>
+            <motion.div initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.06 }}>
+              <Card className="p-6 md:p-7">
+                <div className="mb-5 flex items-center justify-between">
+                  <p className="label-premium">Visão operacional</p>
+                  <span className="badge-premium badge-premium-info px-3 py-1 text-[10px]">IA ativa</span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          id="planos"
-          className="scroll-mt-24 space-y-8 lg:scroll-mt-28"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="space-y-5 text-center">
-            <span className="inline-flex rounded-full border border-[var(--border-default)]/30 bg-[var(--primary)]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
-              Planos para cada fase da sua organização
-            </span>
-            <h2 className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Escolha o plano ideal para assumir o controle do seu dinheiro
-            </h2>
-            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
-              Escolha o plano que faz mais sentido para o seu momento e evolua com mais clareza e controle.
-            </p>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
-            {pricingPlans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative flex h-full flex-col overflow-hidden rounded-[28px] border p-5 sm:p-7 ${
-                  plan.accent === 'highlight'
-                    ? 'border-[var(--border-default)]/50 bg-gradient-to-b from-[var(--primary)]/20 via-[var(--bg-surface)]/95 to-[var(--bg-app)] shadow-[0_30px_90px_rgba(59,130,246,0.22)] ring-1 ring-[color:var(--primary-soft)] lg:-translate-y-3 lg:scale-[1.02]'
-                    : plan.accent === 'premium'
-                      ? 'border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(59,130,246,0.20),rgba(15,26,46,0.94)_30%,rgba(11,18,32,0.98)_100%)] shadow-[0_26px_80px_rgba(59,130,246,0.18)]'
-                      : 'border-[var(--border-default)] bg-[var(--bg-surface)]'
-                }`}
-              >
-                <div
-                  className={`pointer-events-none absolute inset-x-0 top-0 h-28 ${
-                    plan.accent === 'highlight'
-                      ? 'bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.22),transparent_72%)]'
-                      : plan.accent === 'premium'
-                        ? 'bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),transparent_72%)]'
-                        : 'bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.1),transparent_72%)]'
-                  }`}
-                />
-                {plan.popular && (
-                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-[var(--primary)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
-                    Mais popular
-                  </span>
-                )}
-
-                <div className="relative space-y-5">
-                  <div className="space-y-3">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
-                        plan.accent === 'highlight'
-                          ? 'border border-[var(--border-default)]/30 bg-[var(--primary)]/10 text-[var(--text-secondary)]'
-                          : plan.accent === 'premium'
-                            ? 'border border-[var(--border-default)] bg-[var(--primary)]/10 text-[var(--text-secondary)]'
-                            : 'border border-[var(--border-default)] bg-[var(--bg-surface)]/5 text-[var(--text-secondary)]'
-                      }`}
-                    >
-                      {plan.label}
-                    </span>
-                    <h3 className="text-2xl font-bold text-[var(--text-primary)] md:text-[2rem]" style={{ fontFamily: 'var(--font-display)' }}>
-                      Plano {plan.name}
-                    </h3>
-                    <p className="text-sm leading-6 text-[var(--text-primary)]">{plan.benefit}</p>
-                  </div>
-
-                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
-                    <p className="text-3xl font-semibold text-[var(--text-primary)] md:text-4xl">{plan.price}</p>
-                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{plan.microcopy}</p>
-                  </div>
-                </div>
-
-                <ul className="mb-7 mt-7 space-y-3.5">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm leading-6 text-[var(--text-primary)]">
-                      <span className="mt-0.5 rounded-full border border-[var(--border-default)]/25 bg-[var(--primary)]/10 p-1">
-                        <Check size={12} className="shrink-0 text-[var(--text-secondary)]" />
-                      </span>
-                      <span>{feature}</span>
-                    </li>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                    { label: 'Entradas', value: 'R$ 9.430' },
+                    { label: 'Despesas', value: 'R$ 4.180' },
+                    { label: 'Saldo', value: 'R$ 5.250' },
+                  ].map((item) => (
+                    <div key={item.label} className="app-surface-subtle rounded-xl p-3">
+                      <p className="text-xs text-[var(--text-secondary)]">{item.label}</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{item.value}</p>
+                    </div>
                   ))}
-                </ul>
+                </div>
+                <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-container)] p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-muted)]">Tendência mensal</p>
+                  <svg viewBox="0 0 320 110" className="mt-3 h-28 w-full">
+                    <path d="M0,90 C35,80 55,48 80,42 C104,36 130,55 160,44 C188,34 215,21 248,26 C270,29 296,40 320,24" fill="none" stroke="var(--primary)" strokeWidth="3.5" />
+                    <path d="M0,102 C32,101 58,98 86,93 C112,89 134,91 160,88 C188,86 214,79 246,82 C272,84 298,91 320,94" fill="none" stroke="var(--secondary-highlight)" strokeWidth="2.5" strokeOpacity="0.55" />
+                  </svg>
+                </div>
+              </Card>
+            </motion.div>
+          </section>
 
-                <button
-                  onClick={() => navigateToSignup(plan.signupHref || '/signup')}
-                  disabled={isBusy}
-                  className={`mt-auto w-full rounded-xl px-4 py-3.5 text-sm font-bold transition-colors disabled:opacity-60 ${
-                    plan.accent === 'highlight'
-                      ? 'bg-[var(--primary)] text-[var(--text-primary)] hover:bg-[var(--primary-hover)]'
-                      : plan.accent === 'premium'
-                        ? 'bg-[color:var(--primary-soft)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
-                        : 'bg-[color:var(--primary-soft)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
-                  }`}
-                >
-                  {plan.buttonText}
-                </button>
+          <section className="space-y-5">
+            <p className="label-premium text-center">Confiado por times que operam com dados e disciplina financeira</p>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {partners.map((partner) => (
+                <Card key={partner} className="p-4 text-center">
+                  <span className="text-sm font-semibold text-[var(--text-secondary)]">{partner}</span>
+                </Card>
+              ))}
+            </div>
+          </section>
+        </Section>
 
-                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-[var(--text-secondary)]">{plan.proof}</p> : null}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            {pricingFaqs.map((item) => (
-              <details key={item.question} className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
-                <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)]">{item.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
-              </details>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          id="planos-legacy"
-          className="hidden scroll-mt-24 space-y-8 lg:scroll-mt-28"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="space-y-5 text-center">
-            <span className="inline-flex rounded-full border border-[var(--border-default)]/30 bg-[var(--primary)]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
-              Planos para cada fase da sua organização
-            </span>
-            <h2
-              className="text-center text-3xl font-bold text-[var(--text-primary)] md:text-4xl"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              Estas são as melhores opções para organizar sua vida financeira
+        <Section>
+          <div id="funcionalidades" />
+          <div className="space-y-3 text-center">
+            <p className="label-premium">Vantagens da plataforma</p>
+            <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+              Uma única interface para gestão financeira com padrão enterprise.
             </h2>
-            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
-              Escolha o plano que faz mais sentido para o seu momento e transforme o resultado do quiz em uma rotina
-              financeira mais clara, prática e consistente.
+            <p className="mx-auto max-w-3xl text-base leading-7 text-[var(--text-secondary)]">
+              Cards, tabelas, métricas e IA operam com a mesma linguagem visual e sem ruído de navegação.
             </p>
           </div>
-
-          <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
-            {legacyPlans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative flex h-full flex-col rounded-[30px] border p-6 ${
-                  plan.popular
-                    ? 'border-[var(--border-default)]/45 bg-gradient-to-b from-[var(--primary)]/18 via-white/10 to-white/8 shadow-[0_30px_90px_rgba(59,130,246,0.2)] lg:-translate-y-3'
-                    : 'border-[var(--border-default)] bg-[var(--bg-surface)]'
-                }`}
-              >
-                {plan.popular && (
-                  <span className="absolute right-6 top-6 inline-flex rounded-full bg-[var(--primary)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
-                    Mais popular
-                  </span>
-                )}
-                <div className="space-y-4">
-                  <p className="max-w-[18rem] text-sm leading-6 text-[var(--text-primary)]">{plan.benefit}</p>
-                  <div>
-                    <h3 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                      Plano {plan.name}
-                    </h3>
-                    <p className="mt-1 text-3xl font-semibold text-[var(--text-primary)]">{plan.price}</p>
-                    <p className="mt-2 text-sm text-[var(--text-secondary)]">{plan.microcopy}</p>
-                  </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {features.map((feature) => (
+              <Card key={feature.title} className="p-6">
+                <div className="inline-flex rounded-xl border border-[var(--border-default)] bg-[var(--primary-soft)] p-2.5 text-[var(--text-primary)]">
+                  <feature.icon size={18} />
                 </div>
+                <h3 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+        </Section>
 
-                <ul className="mb-6 mt-8 space-y-3">
+        <Section>
+          {detailSections.map((section, index) => (
+            <section key={section.title} className="grid items-center gap-8 lg:grid-cols-2">
+              <div className={index % 2 ? 'lg:order-2' : ''}>
+                <Card className="p-6 md:p-8">
+                  <p className="label-premium">Fluxo {index + 1}</p>
+                  <h3 className="mt-3 text-3xl font-bold text-[var(--text-primary)] md:text-4xl">{section.title}</h3>
+                  <p className="mt-4 text-base leading-8 text-[var(--text-secondary)]">{section.description}</p>
+                  <ul className="mt-6 space-y-3">
+                    {[
+                      'Estrutura visual consistente entre módulos',
+                      'Hierarquia tipográfica clara para leitura rápida',
+                      'Estados de ação refinados e discretos',
+                    ].map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                        <Check size={14} className="text-[var(--primary)]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </div>
+
+              <div className={index % 2 ? 'lg:order-1' : ''}>
+                <Card className="p-4 md:p-6">
+                  <Image src={section.visual} alt={section.title} width={920} height={620} className="h-auto w-full" />
+                </Card>
+              </div>
+            </section>
+          ))}
+        </Section>
+
+        <Section>
+          <Card className="p-6 md:p-8">
+            <div className="grid gap-6 md:grid-cols-3">
+              {[
+                { label: 'Workspaces ativos', value: '+12.000' },
+                { label: 'Movimentações analisadas', value: 'R$ 320 mi' },
+                { label: 'Usuários com mais controle', value: '94%' },
+              ].map((metric) => (
+                <div key={metric.label} className="app-surface-subtle rounded-xl p-5">
+                  <p className="label-premium">{metric.label}</p>
+                  <p className="mt-3 text-3xl font-bold text-[var(--text-primary)]">{metric.value}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </Section>
+
+        <Section>
+          <div className="space-y-3 text-center">
+            <p className="label-premium">Depoimentos</p>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Produto simples, sólido e consistente.</h2>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            {testimonials.map((item) => (
+              <Card key={item.author} className="p-6">
+                <p className="text-base leading-7 text-[var(--text-primary)]">&ldquo;{item.quote}&rdquo;</p>
+                <div className="mt-5 border-t border-[var(--border-default)] pt-4">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">{item.author}</p>
+                  <p className="text-xs text-[var(--text-secondary)]">{item.role}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </Section>
+
+        <Section>
+          <div id="planos" />
+          <div className="space-y-3 text-center">
+            <p className="label-premium">Planos</p>
+            <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+              Preços objetivos para cada estágio de maturidade financeira.
+            </h2>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            {plans.map((plan) => (
+              <Card key={plan.name} className={plan.highlight ? 'border-[color:var(--border-strong)] bg-[color:var(--primary-soft)] p-6' : 'p-6'}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-2xl font-bold text-[var(--text-primary)]">{plan.name}</p>
+                  <span className={plan.highlight ? 'badge-premium badge-premium-info px-3 py-1 text-[10px]' : 'badge-premium px-3 py-1 text-[10px]'}>
+                    {plan.badge}
+                  </span>
+                </div>
+                <p className="mt-3 text-3xl font-bold text-[var(--text-primary)]">{plan.price}</p>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{plan.description}</p>
+                <ul className="mt-5 space-y-2">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-sm text-[var(--text-primary)]">
-                      <Check size={15} className="mt-0.5 shrink-0 text-[var(--text-secondary)]" />
+                    <li key={feature} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                      <Check size={14} className="mt-0.5 text-[var(--primary)]" />
                       {feature}
                     </li>
                   ))}
                 </ul>
-
-                <button
-                  onClick={() => navigateToSignup(plan.signupHref || '/signup')}
-                  disabled={isBusy}
-                  className={`mt-auto w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${
-                    plan.popular
-                      ? 'bg-[var(--primary)] text-[var(--text-primary)] hover:bg-[var(--primary-hover)]'
-                      : 'bg-[color:var(--primary-soft)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
-                  }`}
-                >
-                  {plan.buttonText}
-                </button>
-
-                {plan.proof ? <p className="mt-4 text-center text-xs font-medium text-[var(--text-secondary)]">{plan.proof}</p> : null}
-              </div>
+                <Link href={plan.href} className={plan.highlight ? 'button-primary mt-6 w-full px-4 py-3 text-sm font-semibold' : 'button-secondary mt-6 w-full px-4 py-3 text-sm font-semibold'}>
+                  {plan.ctaLabel}
+                </Link>
+              </Card>
             ))}
           </div>
+        </Section>
 
+        <Section>
+          <div className="space-y-3 text-center">
+            <p className="label-premium">FAQ</p>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Perguntas frequentes</h2>
+          </div>
           <div className="grid gap-4 lg:grid-cols-2">
-            {legacyPricingFaqs.map((item) => (
-              <details key={item.question} className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
-                <summary className="cursor-pointer list-none text-base font-semibold text-[var(--text-primary)]">{item.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
+            {faqItems.map((item) => (
+              <details key={item.question} className="ds-card p-5">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--text-primary)]">{item.question}</summary>
+                <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
               </details>
             ))}
           </div>
-        </motion.section>
+        </Section>
 
-        <motion.section
-          className="relative overflow-hidden py-6 text-center sm:py-8"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-120px' }}
-          transition={{ duration: 0.45 }}
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-52 -translate-y-1/2 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,.28),transparent_55%),radial-gradient(circle_at_60%_70%,rgba(56,189,248,.22),transparent_45%)] blur-xl" />
-          <div className="mx-auto max-w-3xl space-y-4">
-            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Comece a organizar suas finanças hoje
+        <Section className="pt-4">
+          <Card className="p-8 text-center md:p-10">
+            <h2 className="mx-auto max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-5xl">
+              Eleve sua operação financeira com um produto visualmente coerente e pronto para escala.
             </h2>
-            <p className="mx-auto max-w-2xl text-base leading-7 text-[var(--text-primary)]/90 md:text-lg">
-              Crie sua conta gratuita e tenha clareza total do seu dinheiro.
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
+              Crie sua conta e aplique uma rotina de controle financeiro com clareza, consistência e inteligência prática.
             </p>
-          </div>
-          <div className="mx-auto mt-8 flex max-w-sm flex-col items-center">
-            <button
-              onClick={startFree}
-              disabled={isBusy}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--bg-surface)] px-6 py-3 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-[color:var(--primary-soft)] disabled:opacity-60 sm:w-auto"
-            >
-              Começar grátis <ArrowRight size={16} />
-            </button>
-            <p className="mt-4 text-sm font-medium text-[var(--text-secondary)]">Comece gratuitamente. Cancele quando quiser.</p>
-            <div className="mt-3 inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] sm:text-sm">
-              <ShieldCheck size={14} className="text-[var(--text-secondary)]" />
-              Dados protegidos e conexões seguras.
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => router.push('/signup')}>
+                Começar grátis <ArrowRight size={16} />
+              </ButtonPrimary>
+              <ButtonSecondary className="px-6 py-3 text-sm" onClick={() => router.push('/app?auth=login')}>
+                Entrar no app
+              </ButtonSecondary>
             </div>
-          </div>
-        </motion.section>
-      </main>
+          </Card>
+        </Section>
+      </Container>
 
       <footer className="border-t border-[var(--border-default)] py-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center text-xs text-[var(--text-muted)] sm:flex-row sm:px-6 sm:text-left">
+        <Container className="flex flex-col items-center justify-between gap-3 text-center text-xs text-[var(--text-muted)] sm:flex-row sm:text-left">
           <p>© {new Date().getFullYear()} Cote Finance AI. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <Link href="/blog" className="hover:text-[var(--text-secondary)]">
@@ -1412,19 +503,9 @@ export default function LandingPage() {
             <Link href="/politica-de-privacidade" className="hover:text-[var(--text-secondary)]">
               Privacidade
             </Link>
-            <Link href="/app" className="hover:text-[var(--text-secondary)]">
-              App
-            </Link>
-            <button onClick={() => navigateToSignup('/signup')} className="hover:text-[var(--text-secondary)]">
-              Cadastro
-            </button>
           </div>
-        </div>
+        </Container>
       </footer>
     </div>
   );
 }
-
-
-
-

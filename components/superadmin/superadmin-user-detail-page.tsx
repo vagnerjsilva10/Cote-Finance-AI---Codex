@@ -174,7 +174,7 @@ export function SuperadminUserDetailPage() {
               <div className="flex flex-col gap-3">
                 <div className="overflow-x-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-xs text-[var(--text-secondary)]">{supportLink.url}</div>
                 <div className="flex justify-end">
-                  <button type="button" onClick={() => navigator.clipboard.writeText(supportLink.url)} className="inline-flex items-center gap-2 rounded-xl border border-sky-400/30 bg-sky-500/10 px-4 py-2 text-sm font-bold text-sky-100 transition hover:bg-sky-500/20">
+                  <button type="button" onClick={() => navigator.clipboard.writeText(supportLink.url)} className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] transition hover:bg-[color:var(--primary-soft)]">
                     <Copy className="h-4 w-4" />
                     Copiar link
                   </button>
@@ -283,7 +283,7 @@ function ActionButton({ children, onClick, disabled, danger }: { children: React
   return <button type="button" disabled={disabled} onClick={onClick} className={className}>{children}</button>;
 }
 function PlanBadge({ label }: { label: string }) { return <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">{label}</span>; }
-function RoleBadge({ label }: { label: string }) { return <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-200">{label}</span>; }
+function RoleBadge({ label }: { label: string }) { return <span className="rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">{label}</span>; }
 function StatusBadge({ status }: { status: string | null }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getSubscriptionTone(status)}`}>{formatSubscriptionStatus(status)}</span>; }
 function LifecycleBadge({ status }: { status: 'ACTIVE' | 'SUSPENDED' | 'BLOCKED' }) { return <span className={status === 'BLOCKED' ? 'rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--danger)]' : status === 'SUSPENDED' ? 'rounded-full border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]' : 'rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]'}>{status === 'BLOCKED' ? 'Bloqueado' : status === 'SUSPENDED' ? 'Suspenso' : 'Ativo'}</span>; }
 function LoadingState({ label }: { label: string }) { return <div className="flex min-h-[220px] items-center justify-center"><div className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-5 py-4 text-[var(--text-primary)]"><Loader2 className="h-5 w-5 animate-spin text-[var(--text-secondary)]" />{label}</div></div>; }

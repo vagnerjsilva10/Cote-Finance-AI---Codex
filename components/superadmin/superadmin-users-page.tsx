@@ -108,7 +108,7 @@ export function SuperadminUsersPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Users2 className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
-        <StatCard label="Pagantes" value={formatAdminNumber(paidUsers)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
+        <StatCard label="Pagantes" value={formatAdminNumber(paidUsers)} icon={<Sparkles className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Super admins" value={formatAdminNumber(superadmins)} icon={<ShieldCheck className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Bloqueados" value={formatAdminNumber(blockedUsers)} icon={<ShieldCheck className="h-4.5 w-4.5 text-[var(--danger)]" />} />
       </section>

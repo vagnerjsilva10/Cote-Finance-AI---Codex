@@ -12,7 +12,7 @@ export function BlogCard({ article }: BlogCardProps) {
   const localizedDescription = localizeBlogText(article.description);
 
   return (
-    <article className="group public-light-card overflow-hidden rounded-[1.9rem] transition-all hover:-translate-y-1 hover:shadow-[0_26px_80px_-44px_rgba(76,141,255,.18)]">
+    <article className="group public-light-card overflow-hidden rounded-[1.9rem] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]">
       <Link href={`/blog/${article.slug}`} className="block">
         <BlogCover
           title={article.title}

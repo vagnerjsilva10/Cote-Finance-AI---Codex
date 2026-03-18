@@ -284,7 +284,7 @@ export function HelpCenterExperience() {
 
   return (
     <BlogShell activeItem="help">
-      <section className="rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_28px_90px_-54px_rgba(15,23,42,.18)] sm:p-8 lg:p-10">
+      <section className="rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[var(--shadow-soft)] sm:p-8 lg:p-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_320px] lg:items-end">
           <div className="max-w-4xl space-y-5">
             <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
@@ -305,7 +305,7 @@ export function HelpCenterExperience() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar ajuda..."
-                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] py-4 pl-12 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)] focus:bg-[var(--bg-surface)]"
+                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] py-4 pl-12 pr-4 text-sm text-[var(--text-primary)] outline-none transition focus:border-[color:var(--primary)] focus:shadow-[0_0_0_4px_var(--focus-ring)] focus:bg-[var(--bg-surface)]"
               />
             </div>
 
@@ -517,7 +517,7 @@ export function HelpCenterExperience() {
         </div>
       </section>
 
-      <section className="mt-14 rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,var(--bg-surface)_0%,var(--bg-surface-elevated)_100%)] p-6 shadow-[0_24px_80px_-50px_rgba(59,130,246,0.24)] sm:p-8">
+      <section className="mt-14 rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,var(--bg-surface)_0%,var(--bg-surface-elevated)_100%)] p-6 shadow-[var(--shadow-soft)] sm:p-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
           <div className="space-y-3">
             <p className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
@@ -546,7 +546,7 @@ export function HelpCenterExperience() {
                   value={ticketName}
                   onChange={(event) => setTicketName(event.target.value)}
                   placeholder="Seu nome"
-                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[color:var(--primary)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 />
               </label>
               <label className="space-y-2 text-sm font-medium text-[var(--text-primary)]">
@@ -556,7 +556,7 @@ export function HelpCenterExperience() {
                   value={ticketEmail}
                   onChange={(event) => setTicketEmail(event.target.value)}
                   placeholder="voce@exemplo.com"
-                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[color:var(--primary)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 />
               </label>
             </div>
@@ -567,7 +567,7 @@ export function HelpCenterExperience() {
                 <select
                   value={ticketCategory}
                   onChange={(event) => setTicketCategory(event.target.value)}
-                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[color:var(--primary)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 >
                   {categories.map((category) => (
                     <option key={category.id} value={category.title}>
@@ -584,7 +584,7 @@ export function HelpCenterExperience() {
                   value={ticketSubject}
                   onChange={(event) => setTicketSubject(event.target.value)}
                   placeholder="Resumo rápido da sua dúvida"
-                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                  className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[color:var(--primary)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
                 />
               </label>
             </div>
@@ -596,7 +596,7 @@ export function HelpCenterExperience() {
                 onChange={(event) => setTicketMessage(event.target.value)}
                 rows={6}
                 placeholder="Explique o que aconteceu, o que você tentou fazer e qual ajuda você precisa."
-                className="w-full resize-none rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm leading-7 text-[var(--text-primary)] outline-none transition focus:border-[rgba(59,130,246,0.48)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
+                className="w-full resize-none rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm leading-7 text-[var(--text-primary)] outline-none transition focus:border-[color:var(--primary)] focus:shadow-[0_0_0_4px_var(--focus-ring)]"
               />
             </label>
 

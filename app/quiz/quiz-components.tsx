@@ -67,7 +67,7 @@ export function QuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -18 }}
       transition={{ duration: 0.35 }}
-      className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/65 p-4 shadow-[0_24px_80px_-36px_rgba(15,23,42,.8)] sm:rounded-[2rem] sm:p-8"
+      className="rounded-[1.5rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/65 p-4 shadow-[var(--shadow-soft)] sm:rounded-[2rem] sm:p-8"
     >
       {eyebrow ? (
         <span className="inline-flex max-w-full rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold leading-5 text-[var(--text-secondary)]">
@@ -101,7 +101,7 @@ export function AnswerButton({
       disabled={disabled}
       className={`flex min-h-[72px] w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-[15px] font-medium leading-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] sm:text-base ${
         selected
-          ? 'border-[var(--border-default)]/50 bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[0_16px_36px_-24px_rgba(16,185,129,.7)]'
+          ? 'border-[var(--border-default)]/50 bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[var(--shadow-soft)]'
           : 'border-[var(--border-default)] bg-[var(--bg-app)]/65 text-[var(--text-primary)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]'
       } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
     >
@@ -181,7 +181,7 @@ export function AnalysisScreen({
               {[
                 { label: 'Mapa de gastos', width: '82%', color: 'bg-[var(--primary)]' },
                 { label: 'Padrões invisíveis', width: '68%', color: 'bg-[var(--primary)]' },
-                { label: 'Potencial de economia', width: '74%', color: 'bg-sky-400' },
+                { label: 'Potencial de economia', width: '74%', color: 'bg-[var(--secondary-highlight)]' },
               ].map((item, index) => (
                 <div key={item.label} className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">

@@ -147,7 +147,7 @@ export function SuperadminOverviewPage() {
               ]}
             />
             <ControlCard
-              icon={<Bot className="h-4.5 w-4.5 text-sky-300" />}
+              icon={<Bot className="h-4.5 w-4.5 text-[var(--text-secondary)]" />}
               title="Uso de produto"
               subtitle="IA, WhatsApp e atividade"
               rows={[
@@ -225,7 +225,7 @@ export function SuperadminOverviewPage() {
                         ? 'rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3.5'
                         : alert.tone === 'warning'
                           ? 'rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3.5'
-                          : 'rounded-xl border border-sky-500/20 bg-sky-500/10 p-3.5'
+                          : 'rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-3.5'
                     }
                   >
                     <div className="flex items-start justify-between gap-3">

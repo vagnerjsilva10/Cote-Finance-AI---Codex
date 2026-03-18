@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import PaidLandingClient from './paid-landing-client';
 
 export const metadata: Metadata = {
-  title: 'Cote Finance AI | Descubra Para Onde Seu Dinheiro Está Indo',
+  title: 'Cote Finance AI | Descubra para onde seu dinheiro está indo',
   description:
     'Controle financeiro com IA para entender seus gastos, visualizar categorias, receber insights automáticos e alertas no WhatsApp.',
 };

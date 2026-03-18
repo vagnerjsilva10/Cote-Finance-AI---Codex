@@ -11359,7 +11359,7 @@ React.useEffect(() => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.97 }}
                         transition={{ duration: 0.18 }}
-                        className="theme-modal-surface absolute right-0 z-50 mt-3 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl shadow-2xl shadow-slate-950/40 backdrop-blur"
+                        className="theme-modal-surface absolute right-0 z-50 mt-3 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl shadow-[var(--shadow-soft)] backdrop-blur"
                       >
                         <div className="border-b border-[var(--border-default)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">

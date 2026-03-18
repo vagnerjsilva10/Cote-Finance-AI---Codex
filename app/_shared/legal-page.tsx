@@ -1,5 +1,6 @@
-﻿import Image from 'next/image';
+import Image from 'next/image';
 import Link from 'next/link';
+import { Header } from '@/components/ui/premium-primitives';
 
 type LegalSection = {
   title: string;
@@ -29,8 +30,9 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
     <div className="theme-public-light public-light-shell">
       <div className="public-light-backdrop pointer-events-none fixed inset-0 -z-10" />
 
-      <header className="public-light-header sticky top-0 z-40">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <Header
+        light
+        logo={
           <Link href="/" className="flex items-center gap-4">
             <Image
               src="/brand/cote-finance-ai-logo-black.svg"
@@ -49,63 +51,23 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
               className="h-14 w-14 sm:hidden"
             />
           </Link>
-
-          <nav className="hidden items-center gap-6 text-sm text-[var(--text-secondary)] md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  item.active
-                    ? 'font-semibold text-[var(--text-primary)] transition-colors hover:text-[var(--primary-active)]'
-                    : 'transition-colors hover:text-[var(--text-primary)]'
-                }
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/app"
-              className="button-light-secondary px-4 py-2 text-sm font-semibold"
-            >
+        }
+        navItems={navItems}
+        actions={
+          <>
+            <Link href="/app" className="button-light-secondary px-4 py-2 text-sm font-semibold">
               Entrar
             </Link>
-            <Link
-              href="/signup"
-              className="button-light-primary px-4 py-2 text-sm font-semibold"
-            >
+            <Link href="/signup" className="button-light-primary px-4 py-2 text-sm font-semibold">
               Começar grátis
             </Link>
-          </div>
-        </div>
-
-        <div className="border-t border-[rgba(15,23,42,0.08)] md:hidden">
-          <nav className="mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  item.active
-                    ? 'whitespace-nowrap public-light-badge whitespace-nowrap px-4 py-2 text-sm font-semibold'
-                    : 'whitespace-nowrap button-light-secondary whitespace-nowrap px-4 py-2 text-sm font-medium'
-                }
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10 sm:px-6 sm:pb-24 sm:pt-14">
         <section className="public-light-panel p-6 sm:p-8 md:p-10">
-          <span className="inline-flex items-center rounded-full border border-[rgba(76,141,255,0.16)] bg-[rgba(76,141,255,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--primary-active)]">
-            {eyebrow}
-          </span>
+          <span className="public-light-badge px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</span>
           <h1 className="mt-5 text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl">{title}</h1>
           <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">{description}</p>
           <p className="mt-4 text-sm public-light-subtle">Última atualização: {lastUpdated}</p>
@@ -113,10 +75,7 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
 
         <section className="mt-8 space-y-6">
           {sections.map((section) => (
-            <article
-              key={section.title}
-              className="public-light-card p-6 sm:p-8"
-            >
+            <article key={section.title} className="public-light-card p-6 sm:p-8">
               <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">{section.title}</h2>
               <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
                 {section.paragraphs.map((paragraph) => (
@@ -137,7 +96,7 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
         </section>
       </main>
 
-      <footer className="border-t border-[rgba(15,23,42,0.08)] bg-[var(--bg-surface)] py-8 backdrop-blur">
+      <footer className="border-t border-[var(--border-default)] bg-[var(--bg-surface)] py-8 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-sm public-light-subtle sm:flex-row sm:px-6 sm:text-left">
           <p>© 2026 Cote Finance AI. Blog e plataforma financeira integrados.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">

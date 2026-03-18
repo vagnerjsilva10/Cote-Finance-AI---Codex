@@ -103,7 +103,7 @@ export function SuperadminSubscriptionsPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Base total" value={formatAdminNumber(metrics?.total || 0)} icon={<CreditCard className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
-        <StatCard label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
+        <StatCard label="Pagantes" value={formatAdminNumber(metrics?.paying || 0)} icon={<Sparkles className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Pendentes" value={formatAdminNumber(metrics?.pending || 0)} icon={<ShieldCheck className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="MRR" value={formatAdminCurrency(metrics?.estimatedMrr || 0)} icon={<TrendingUp className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
       </section>

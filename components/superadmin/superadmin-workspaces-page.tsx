@@ -90,7 +90,7 @@ export function SuperadminWorkspacesPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Base total" value={formatAdminNumber(data?.total || 0)} icon={<Building2 className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
-        <StatCard label="Pagantes" value={formatAdminNumber(paidWorkspaces)} icon={<Sparkles className="h-4.5 w-4.5 text-sky-300" />} />
+        <StatCard label="Pagantes" value={formatAdminNumber(paidWorkspaces)} icon={<Sparkles className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="WhatsApp" value={formatAdminNumber(whatsappConnected)} icon={<MessageSquare className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
         <StatCard label="Suspensos" value={formatAdminNumber(suspended)} icon={<CreditCard className="h-4.5 w-4.5 text-[var(--text-secondary)]" />} />
       </section>

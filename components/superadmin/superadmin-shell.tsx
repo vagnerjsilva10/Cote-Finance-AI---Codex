@@ -90,7 +90,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="theme-app-shell min-h-screen text-[var(--text-primary)]">
         <div className="flex min-h-screen items-center justify-center px-6">
-          <div className="card-premium w-full max-w-2xl rounded-[2rem] border border-[rgba(239,68,68,0.18)] p-8 text-center">
+          <div className="card-premium w-full max-w-2xl rounded-[2rem] border border-[var(--border-strong)] p-8 text-center">
             <ShieldAlert className="mx-auto h-10 w-10 text-[var(--danger)]" />
             <h1 className="page-title-premium mt-4 text-2xl">Acesso negado</h1>
             <p className="text-secondary-premium mt-3">{error || 'Você não tem permissão para acessar a área administrativa da plataforma.'}</p>

@@ -171,11 +171,11 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
         <header className="grid gap-8 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] public-light-subtle">
-              <span className="rounded-full border border-[rgba(76,141,255,0.16)] bg-[rgba(76,141,255,0.08)] px-3 py-1 text-[var(--primary-active)]">
+              <span className="public-light-badge rounded-full px-3 py-1 text-[var(--primary-active)]">
                 {localizedCategory}
               </span>
               <span>{article.publishedLabel}</span>
-              <span className="h-1 w-1 rounded-full bg-[rgba(15,23,42,0.14)]" />
+              <span className="h-1 w-1 rounded-full bg-[var(--border-strong)]" />
               <span className="inline-flex items-center gap-1">
                 <Clock3 size={12} />
                 {article.readingTimeLabel}
@@ -223,7 +223,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
                             {subSection.bullets.map((bullet) => (
                               <li
                                 key={bullet}
-                                className="rounded-2xl border border-[rgba(15,23,42,0.06)] bg-[rgba(76,141,255,0.05)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]"
+                                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]"
                               >
                                 {bullet}
                               </li>
@@ -241,7 +241,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
                       {section.bullets.map((bullet) => (
                         <li
                           key={bullet}
-                          className="rounded-2xl border border-[rgba(15,23,42,0.06)] bg-[rgba(76,141,255,0.05)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]"
+                          className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]"
                         >
                           {bullet}
                         </li>
@@ -321,7 +321,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
                 {localizedKeywords.map((keyword) => (
                   <span
                     key={keyword}
-                    className="rounded-full border border-[rgba(76,141,255,0.16)] bg-[rgba(76,141,255,0.08)] px-3 py-1 text-xs font-semibold text-[var(--primary-active)]"
+                    className="public-light-badge rounded-full px-3 py-1 text-xs font-semibold text-[var(--primary-active)]"
                   >
                     {keyword}
                   </span>

@@ -220,8 +220,8 @@ function getPixStatusLabel(status: PixCheckoutStatus) {
 }
 
 function getPixStatusTone(status: PixCheckoutStatus) {
-  if (status === 'confirmed') return 'border-[rgba(76,141,255,0.18)] bg-[color:var(--primary-soft)] text-[var(--text-primary)]';
-  if (status === 'processing') return 'border-sky-400/20 bg-sky-500/10 text-sky-100';
+  if (status === 'confirmed') return 'border-[var(--border-strong)] bg-[color:var(--primary-soft)] text-[var(--text-primary)]';
+  if (status === 'processing') return 'border-[var(--border-strong)] bg-[var(--bg-surface-elevated)] text-[var(--text-primary)]';
   if (status === 'expired' || status === 'failed') return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]';
   return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]';
 }
@@ -509,7 +509,7 @@ function CheckoutLoadingShell() {
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/65 p-7 backdrop-blur-xl">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.18)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                 <Sparkles className="size-3.5" />
                 Cote Finance AI
               </div>
@@ -1079,7 +1079,7 @@ function CheckoutPageContent() {
           <section className="relative overflow-hidden rounded-[2rem] marketing-panel p-7">
             <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(76,141,255,.18),transparent_58%)]" />
             <div className="relative space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.18)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                 <Sparkles className="size-3.5" />
                 Cote Finance AI
               </div>
@@ -1103,7 +1103,7 @@ function CheckoutPageContent() {
                   <p className="mt-4 text-2xl font-black tracking-tight text-[var(--primary)]">{checkoutPriceLabel}</p>
                 </div>
 
-                <div className="rounded-2xl border border-[rgba(76,141,255,0.16)] bg-[rgba(76,141,255,0.08)] p-4">
+                <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">Workspace selecionado</p>
                   <p className="mt-3 text-xl font-semibold text-[var(--text-primary)]">
                     {checkoutWorkspaceName}
@@ -1243,7 +1243,7 @@ function CheckoutPageContent() {
                       <div
                         className={cn(
                           'mt-1 flex size-5 items-center justify-center rounded-full border',
-                          paymentMethod === option.value ? 'border-[var(--primary)] bg-[rgba(76,141,255,0.18)]' : 'border-[rgba(255,255,255,0.16)]'
+                          paymentMethod === option.value ? 'border-[var(--primary)] bg-[color:var(--primary-soft)]' : 'border-[var(--border-default)]'
                         )}
                       >
                         {paymentMethod === option.value ? <div className="size-2 rounded-full bg-[var(--primary)]" /> : null}
@@ -1266,8 +1266,8 @@ function CheckoutPageContent() {
                   </p>
                 </div>
               ) : successMessage ? (
-                <div className="space-y-5 rounded-[1.6rem] border border-[rgba(76,141,255,0.18)] bg-[color:var(--primary-soft)] p-6 shadow-[var(--shadow-glow-soft)]">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.24)] bg-[rgba(76,141,255,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
+                <div className="space-y-5 rounded-[1.6rem] border border-[var(--border-strong)] bg-[color:var(--primary-soft)] p-6 shadow-[var(--shadow-glow-soft)]">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                     <CheckCircle2 className="size-3.5" />
                     Pagamento confirmado
                   </div>
@@ -1358,8 +1358,8 @@ function CheckoutPageContent() {
                   />
                 </Elements>
               ) : checkoutData && !checkoutData.requiresConfirmation ? (
-                <div className="space-y-5 rounded-[1.6rem] border border-[rgba(76,141,255,0.18)] bg-[color:var(--primary-soft)] p-6 shadow-[var(--shadow-glow-soft)]">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(76,141,255,0.24)] bg-[rgba(76,141,255,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
+                <div className="space-y-5 rounded-[1.6rem] border border-[var(--border-strong)] bg-[color:var(--primary-soft)] p-6 shadow-[var(--shadow-glow-soft)]">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                     <CheckCircle2 className="size-3.5" />
                     Assinatura pronta
                   </div>
