@@ -1959,7 +1959,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           </div>
         </div>
 
-        <div className="theme-report-card rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,#121A24_0%,#101924_100%)] p-6 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
+        <div className="theme-report-card app-surface-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-white mb-6">Insights do mês</h3>
           <div className="space-y-4">
             <div className="rounded-xl border border-white/[0.06] bg-[#16202B] p-4">
@@ -2021,7 +2021,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         </div>
       </div>
 
-      <div className="theme-table-surface overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,#121A24_0%,#101924_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
+      <div className="theme-table-surface app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
           <h3 className="text-lg font-bold text-white">Últimas transações</h3>
           <span className="text-xs text-slate-500 uppercase tracking-widest">
@@ -2128,22 +2128,22 @@ const TransactionsView = ({
         <h3 className="text-xl font-bold text-white">Transações</h3>
         <button
           onClick={onAddTransaction}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+          className="app-button-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
         >
           <Plus size={18} /> Nova Transação
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Entradas totais</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saídas totais</p>
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Saldo</p>
           <p className={cn('text-2xl font-black', balance >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
             {formatCurrency(balance)}
@@ -2159,14 +2159,14 @@ const TransactionsView = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por descrição"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 pl-10 pr-4 text-sm"
             />
           </div>
 
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as 'Todos' | TransactionFlowType)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+            className="app-field w-full rounded-xl py-2 px-4 text-sm"
           >
             <option value="Todos">Todos os tipos</option>
             {TRANSACTION_FLOW_TYPES.map((flowType) => (
@@ -2180,7 +2180,7 @@ const TransactionsView = ({
 
       <div className="lg:hidden space-y-4">
         {filteredTransactions.length === 0 && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-sm">
+          <div className="app-surface-card rounded-2xl p-6 text-center text-slate-500 text-sm">
             Nenhuma transação encontrada para os filtros atuais.
           </div>
         )}
@@ -2248,7 +2248,7 @@ const TransactionsView = ({
         })}
       </div>
 
-      <div className="theme-table-surface hidden lg:block bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="theme-table-surface app-table-shell hidden lg:block rounded-2xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-800/30">
@@ -2432,7 +2432,7 @@ const IntegrationsView = ({
 
   const feedbackToneClass =
     whatsAppFeedback?.tone === 'success'
-      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+      ? 'border-[#4C8DFF]/30 bg-[#4C8DFF]/10 text-[#DCEAFF]'
       : whatsAppFeedback?.tone === 'error'
       ? 'border-rose-500/30 bg-rose-500/10 text-rose-100'
       : 'border-slate-700 bg-slate-900/80 text-slate-200';
@@ -2449,7 +2449,7 @@ const IntegrationsView = ({
             onClick={() => setBillingCycle('monthly')}
             className={cn(
               'rounded-lg px-6 py-2 text-sm font-bold transition-all',
-              billingCycle === 'monthly' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400'
+              billingCycle === 'monthly' ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-lg shadow-[#4C8DFF]/20' : 'text-slate-400'
             )}
           >
             Mensal
@@ -2458,7 +2458,7 @@ const IntegrationsView = ({
             onClick={() => setBillingCycle('annually')}
             className={cn(
               'rounded-lg px-6 py-2 text-sm font-bold transition-all',
-              billingCycle === 'annually' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400'
+              billingCycle === 'annually' ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-lg shadow-[#4C8DFF]/20' : 'text-slate-400'
             )}
           >
             Anual <span className="ml-1 text-[10px] opacity-70">(2 meses grátis)</span>
@@ -2480,7 +2480,7 @@ const IntegrationsView = ({
               </div>
               <button
                 onClick={() => onUpgrade(`${plan.name} ${billingCycle === 'monthly' ? 'Mensal' : 'Anual'}`)}
-                className="mb-8 w-full rounded-2xl bg-emerald-500 py-4 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
+                className="app-button-primary mb-8 w-full rounded-2xl py-4 font-bold"
               >
                 Escolher {plan.name}
               </button>
@@ -2567,7 +2567,7 @@ const IntegrationsView = ({
                 </ul>
                 <button
                   onClick={() => onUpgrade(`Pro ${billingCycle === 'monthly' ? 'Mensal' : 'Anual'}`)}
-                  className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
+                  className="app-button-primary inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold"
                 >
                   Liberar WhatsApp no Pro
                 </button>
@@ -2603,7 +2603,7 @@ const IntegrationsView = ({
                       value={whatsAppPhoneNumber}
                       onChange={(e) => onWhatsAppPhoneNumberChange(e.target.value)}
                       placeholder="+55 (11) 99999-9999"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                      className="app-field w-full rounded-xl px-4 py-3"
                     />
                   </div>
 
@@ -2616,7 +2616,7 @@ const IntegrationsView = ({
                       value={whatsAppTestPhoneNumber}
                       onChange={(e) => onWhatsAppTestPhoneNumberChange(e.target.value)}
                       placeholder="+55 (11) 99999-9999"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                      className="app-field w-full rounded-xl px-4 py-3"
                     />
                   </div>
 
@@ -2657,7 +2657,7 @@ const IntegrationsView = ({
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
                         isSavingWhatsAppConfig
                           ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
+                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-[#4C8DFF]/50 hover:text-white'
                       )}
                     >
                       {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar números'}
@@ -2670,7 +2670,7 @@ const IntegrationsView = ({
                         'flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all shadow-lg',
                         !canConnectWhatsApp
                           ? 'cursor-not-allowed bg-slate-800 text-slate-500'
-                          : 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600'
+                          : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
                       )}
                     >
                       {isConnectingWhatsApp ? 'Conectando...' : isWhatsAppConnected ? 'Reconectar' : 'Conectar'}
@@ -2683,7 +2683,7 @@ const IntegrationsView = ({
                         'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
                         !canSendWhatsAppTest
                           ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
+                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-[#4C8DFF]/50 hover:text-white'
                       )}
                     >
                       {isSendingWhatsAppTest ? 'Enviando teste...' : 'Testar envio'}
@@ -2745,7 +2745,7 @@ const IntegrationsView = ({
                           value={whatsAppConnectTemplateName}
                           onChange={(e) => onWhatsAppConnectTemplateNameChange(e.target.value)}
                           placeholder="cote_connect_success"
-                          className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                          className="app-field w-full rounded-xl px-4 py-3"
                         />
                       </div>
 
@@ -2758,7 +2758,7 @@ const IntegrationsView = ({
                           value={whatsAppTemplateLanguage}
                           onChange={(e) => onWhatsAppTemplateLanguageChange(e.target.value)}
                           placeholder="pt_BR"
-                          className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                          className="app-field w-full rounded-xl px-4 py-3"
                         />
                       </div>
 
@@ -2771,7 +2771,7 @@ const IntegrationsView = ({
                           value={whatsAppDigestTemplateName}
                           onChange={(e) => onWhatsAppDigestTemplateNameChange(e.target.value)}
                           placeholder="cote_daily_digest"
-                          className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                          className="app-field w-full rounded-xl px-4 py-3"
                         />
                       </div>
 
@@ -2782,7 +2782,7 @@ const IntegrationsView = ({
                           'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all sm:col-span-1',
                           isSavingWhatsAppConfig
                             ? 'cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500'
-                            : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-emerald-500/50 hover:text-white'
+                            : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-[#4C8DFF]/50 hover:text-white'
                         )}
                       >
                         {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar ajustes'}
@@ -3145,7 +3145,7 @@ const DebtsView = ({
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
                 <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining + recurringMonthlyTotal)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -3154,14 +3154,14 @@ const DebtsView = ({
                     : 'Sem recorrências ativas no momento'}
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
                 <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   {paidDebts > 0 ? `${paidDebts} dívida(s) já quitadas` : 'Ainda não há dívidas quitadas'}
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Itens cadastrados</p>
                 <p className="mt-2 text-2xl font-black text-white">{totalRegisteredItems}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -3173,7 +3173,7 @@ const DebtsView = ({
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row xl:flex-col">
             <button
               onClick={() => setIsCreateChooserOpen(true)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600 sm:w-auto"
+              className="app-button-primary inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black sm:w-auto"
             >
               <Plus size={16} /> Nova dívida
             </button>
@@ -3200,7 +3200,7 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'single'
-              ? 'bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.18)]'
+              ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
               : 'text-slate-400 hover:text-white'
           )}
         >
@@ -3212,7 +3212,7 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'recurring'
-              ? 'bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.18)]'
+              ? 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
               : 'text-slate-400 hover:text-white'
           )}
         >
@@ -3230,15 +3230,15 @@ const DebtsView = ({
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Total em aberto</p>
                 <p className="mt-2 text-2xl font-black text-white">{formatCurrency(totalRemaining)}</p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Valor quitado</p>
                 <p className="mt-2 text-2xl font-black text-emerald-400">{formatCurrency(totalPaid)}</p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Progresso</p>
                   {overdueDebts.length > 0 ? (
@@ -3265,7 +3265,7 @@ const DebtsView = ({
               </p>
               <button
                 onClick={openSingleDebtFlow}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
+                className="app-button-primary mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black"
               >
                 <Plus size={16} /> Adicionar primeira dívida
               </button>
@@ -3332,15 +3332,15 @@ const DebtsView = ({
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Compromisso mensal</p>
                 <p className="mt-2 text-2xl font-black text-white">{formatCurrency(recurringMonthlyTotal)}</p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Recorrências ativas</p>
                 <p className="mt-2 text-2xl font-black text-white">{activeRecurringDebts.length}</p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Próxima cobrança</p>
                 <p className="mt-2 text-base font-black text-emerald-400">
                   {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previs?o'}
@@ -3367,7 +3367,7 @@ const DebtsView = ({
                   key={preset.category}
                   type="button"
                   onClick={() => openRecurringDebtFlow(preset.category)}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-900"
+                  className="app-surface-subtle rounded-2xl p-4 text-left transition-all hover:border-[#4C8DFF]/40 hover:bg-slate-900"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -3393,7 +3393,7 @@ const DebtsView = ({
               </p>
               <button
                 onClick={() => openRecurringDebtFlow()}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-emerald-600"
+                className="app-button-primary mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black"
               >
                 <Plus size={16} /> Adicionar primeira conta fixa
               </button>
@@ -3463,7 +3463,7 @@ const DebtsView = ({
           <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Nova dívida</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#86B7FF]">Nova dívida</p>
                 <h4 className="mt-2 text-2xl font-black text-white">Como essa dívida funciona?</h4>
                 <p className="mt-2 text-sm leading-7 text-slate-400">
                   Escolha o tipo para organizar melhor suas finanças.
@@ -3481,9 +3481,9 @@ const DebtsView = ({
               <button
                 type="button"
                 onClick={openSingleDebtFlow}
-                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
+                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-[#4C8DFF]/40 hover:bg-slate-950"
               >
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
                   <Wallet size={22} />
                 </div>
                 <h5 className="mt-5 text-xl font-black text-white">Dívida única</h5>
@@ -3494,9 +3494,9 @@ const DebtsView = ({
               <button
                 type="button"
                 onClick={() => openRecurringDebtFlow()}
-                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-950"
+                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 text-left transition-all hover:border-[#4C8DFF]/40 hover:bg-slate-950"
               >
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-[#4C8DFF]/10 text-[#86B7FF]">
                   <Calendar size={22} />
                 </div>
                 <h5 className="mt-5 text-xl font-black text-white">Conta recorrente</h5>
@@ -3528,22 +3528,22 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
         <h3 className="text-xl font-bold text-white">Metas</h3>
         <button
           onClick={onAddGoal}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+          className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
         >
           <Plus size={18} /> Nova Meta
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Total de metas</p>
           <p className="text-2xl font-black text-white">{totalGoals}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Meta total</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(targetTotal)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Valor acumulado</p>
           <p className="text-2xl font-black text-blue-400">{formatCurrency(accumulatedTotal)}</p>
         </div>
@@ -3551,7 +3551,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
 
       <div className="space-y-4">
         {goals.length === 0 && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-sm">
+          <div className="app-surface-card rounded-2xl p-6 text-center text-slate-500 text-sm">
             Nenhuma meta cadastrada.
           </div>
         )}
@@ -3795,7 +3795,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={onAddWallet}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#4C8DFF]/30 bg-[#4C8DFF]/10 px-4 py-3 text-sm font-bold text-[#B8D3FF] transition-colors hover:border-[#4C8DFF]/50 hover:bg-[#4C8DFF]/15 hover:text-white"
             >
               <Plus size={16} />
               Criar carteira
@@ -3836,7 +3836,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={onAddWallet}
-              className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-emerald-400"
+              className="app-button-primary mt-5 inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold"
             >
               <Plus size={16} />
               Criar primeira carteira
@@ -3849,7 +3849,7 @@ const PortfolioView = ({
         <button
           type="button"
           onClick={onOpenReports}
-          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Patrimônio líquido</p>
           <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-white' : 'text-rose-400')}>
@@ -3860,7 +3860,7 @@ const PortfolioView = ({
         <button
           type="button"
           onClick={() => onViewWalletHistory()}
-          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Saldo em contas</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalBalance)}</p>
@@ -3869,7 +3869,7 @@ const PortfolioView = ({
         <button
           type="button"
           onClick={onOpenInvestments}
-          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Investimentos</p>
           <p className="text-2xl font-black text-blue-400">{formatCurrency(totalInvested)}</p>
@@ -3878,7 +3878,7 @@ const PortfolioView = ({
         <button
           type="button"
           onClick={onOpenDebts}
-          className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left transition-colors hover:border-slate-600"
+          className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-white/[0.12]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Dívidas</p>
           <p className="text-2xl font-black text-amber-400">{formatCurrency(totalDebt)}</p>
@@ -3887,7 +3887,7 @@ const PortfolioView = ({
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <h4 className="text-lg font-bold text-white">Distribuição do patrimônio</h4>
@@ -3938,7 +3938,7 @@ const PortfolioView = ({
                   ? (entry.value / portfolioBase) * 100
                   : 0;
                 return (
-                  <div key={entry.name} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                  <div key={entry.name} className="app-surface-subtle rounded-2xl p-4">
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
                         <span className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
@@ -3956,7 +3956,7 @@ const PortfolioView = ({
           </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="text-lg font-bold text-white">Onde está meu dinheiro</h4>
@@ -3981,7 +3981,7 @@ const PortfolioView = ({
             )}
 
             {visibleWallets.map((wallet) => (
-              <div key={wallet.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+              <div key={wallet.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <span className="text-sm font-semibold text-white">{wallet.name}</span>
                   <span className="text-sm font-bold text-emerald-400">{formatCurrency(wallet.balance)}</span>
@@ -4023,7 +4023,7 @@ const PortfolioView = ({
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="text-lg font-bold text-white">Resumo de investimentos</h4>
@@ -4059,7 +4059,7 @@ const PortfolioView = ({
             )}
 
             {topInvestments.map((investment) => (
-              <div key={investment.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+              <div key={investment.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-white">{investment.label}</p>
@@ -4088,7 +4088,7 @@ const PortfolioView = ({
           </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="text-lg font-bold text-white">Resumo de dívidas</h4>
@@ -4124,7 +4124,7 @@ const PortfolioView = ({
             )}
 
             {topDebts.map((debt) => (
-              <div key={debt.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+              <div key={debt.id} className="app-surface-subtle rounded-2xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                   <div>
                     <p className="text-sm font-semibold text-white">{debt.creditor}</p>
@@ -4142,7 +4142,7 @@ const PortfolioView = ({
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+      <div className="app-surface-card rounded-2xl p-6">
         <div className="mb-4">
           <h4 className="text-lg font-bold text-white">Insights da IA</h4>
           <p className="text-sm text-slate-500">
@@ -4155,7 +4155,7 @@ const PortfolioView = ({
         {hasPortfolioAiInsights ? (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             {portfolioInsights.map((insight, index) => (
-              <div key={`${index}-${insight}`} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+              <div key={`${index}-${insight}`} className="app-surface-subtle rounded-2xl p-4">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
                   <Sparkles size={12} />
                   Insight
@@ -4180,7 +4180,7 @@ const PortfolioView = ({
               <button
                 type="button"
                 onClick={onUpgrade}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-400"
+                className="app-button-primary inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold"
               >
                 <Sparkles size={16} />
                 Ativar plano Pro
@@ -4210,28 +4210,28 @@ const InvestmentsView = ({
         <h3 className="text-xl font-bold text-white">Investimentos</h3>
         <button
           onClick={onAddInvestment}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+          className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
         >
           <Plus size={18} /> Novo Investimento
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Total investido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(totalInvested)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Valor atual</p>
           <p className="text-2xl font-black text-blue-400">{formatCurrency(currentValue)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Rendimento</p>
           <p className={cn('text-2xl font-black', profit >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
             {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
           </p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+        <div className="app-surface-card rounded-2xl p-5">
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Rentabilidade %</p>
           <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
             {profitPercentage.toFixed(2)}%
@@ -4239,7 +4239,7 @@ const InvestmentsView = ({
         </div>
       </div>
 
-      <div className="theme-table-surface bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="theme-table-surface app-table-shell rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -4630,7 +4630,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           {currentPlan === 'FREE' && (
             <button
               onClick={onUpgrade}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+              className="app-button-primary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
             >
               <Sparkles size={16} /> Liberar relatórios completos
             </button>
@@ -4638,22 +4638,22 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="app-surface-card rounded-2xl p-6">
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
             <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
           </div>
-          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="app-surface-card rounded-2xl p-6">
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
             <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
           </div>
-          <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="app-surface-card rounded-2xl p-6">
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
             <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="theme-report-card app-surface-card rounded-2xl p-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Resumo por categoria</h4>
             <div className="space-y-3">
               {categoryData.length === 0 ? (
@@ -4662,7 +4662,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 categoryData.slice(0, 5).map((item) => (
                   <div
                     key={item.name}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3"
+                    className="flex items-center justify-between gap-3 app-surface-subtle rounded-xl px-4 py-3"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
@@ -4675,7 +4675,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
           </div>
 
-          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="theme-report-card app-surface-card rounded-2xl p-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-4">Disponível no Pro</h4>
             <div className="space-y-3">
               {[
@@ -4695,7 +4695,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             {currentPlan === 'FREE' && (
               <button
                 onClick={onUpgrade}
-                className="mt-5 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+                className="app-button-primary mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
               >
                 <Sparkles size={16} /> Fazer upgrade para Pro
               </button>
@@ -4727,15 +4727,15 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="app-surface-card rounded-2xl p-6">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Receitas</p>
           <p className="text-2xl font-black text-emerald-500">{formatCurrency(totalIncome)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="app-surface-card rounded-2xl p-6">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Despesas</p>
           <p className="text-2xl font-black text-rose-500">{formatCurrency(totalExpenses)}</p>
         </div>
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="app-surface-card rounded-2xl p-6">
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Saldo líquido</p>
           <p className="text-2xl font-black text-white">{formatCurrency(balance)}</p>
         </div>
@@ -4743,7 +4743,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       {currentPlan === 'PREMIUM' ? (
         <div className="space-y-6">
-          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="theme-report-card app-surface-card rounded-2xl p-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-widest">Previs?o de saldo</h4>
@@ -4772,7 +4772,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               {balanceForecast.projections.map((item) => (
                 <div
                   key={item.days}
-                  className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5"
+                  className="app-surface-subtle rounded-2xl p-5"
                 >
                   <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                     Em {item.days} dias
@@ -4793,7 +4793,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               ))}
             </div>
 
-            <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+            <div className="mt-5 app-surface-subtle rounded-2xl p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
                   Alertas inteligentes
@@ -4834,7 +4834,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
           </div>
 
-          <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="theme-report-card app-surface-card rounded-2xl p-6">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-widest">Análises profundas de despesas</h4>
@@ -4848,7 +4848,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Despesas do mês</p>
                 <p className="text-2xl font-black text-white">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
                 <p className="mt-2 text-xs text-slate-400">
@@ -4858,7 +4858,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Variação mensal</p>
                 <p
                   className={cn(
@@ -4879,7 +4879,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Categoria mais pesada</p>
                 <p className="text-lg font-black text-white">
                   {expenseDeepDive.topCurrentCategory?.name || 'Sem dados'}
@@ -4891,7 +4891,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Maior despesa individual</p>
                 <p className="text-lg font-black text-white">
                   {expenseDeepDive.largestExpense?.description || 'Sem dados'}
@@ -4905,7 +4905,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
-              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Categorias que mais cresceram</p>
                 <div className="space-y-3">
                   {expenseDeepDive.growingCategories.length === 0 ? (
@@ -4934,7 +4934,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-800/30 p-5">
+              <div className="app-surface-subtle rounded-2xl p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Categorias recorrentes que mais pesam</p>
                 <div className="space-y-3">
                   {expenseDeepDive.recurringHeavyCategories.length === 0 ? (
@@ -4963,7 +4963,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
       ) : (
-        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card app-surface-card rounded-2xl p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h4 className="text-sm font-bold text-white uppercase tracking-widest">Disponível no Premium</h4>
@@ -4973,7 +4973,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             </div>
             <button
               onClick={onUpgrade}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+              className="app-button-primary inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
             >
               <Sparkles size={16} /> Conhecer Premium
             </button>
@@ -4981,7 +4981,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       )}
 
-      <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+      <div className="theme-report-card app-surface-card rounded-2xl p-6">
         <div className="mb-5">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Receita x Despesa (12 meses)</h4>
         </div>
@@ -5016,7 +5016,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card app-surface-card rounded-2xl p-6">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Gastos por categoria</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -5062,7 +5062,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
         </div>
 
-        <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+        <div className="theme-report-card app-surface-card rounded-2xl p-6">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Taxa de economia (6 meses)</h4>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -5098,7 +5098,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
       </div>
 
-      <div className="theme-report-card bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+      <div className="theme-report-card app-surface-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Insights da IA</h4>
           <button
@@ -5140,14 +5140,14 @@ type AssistantTabViewProps = {
 
 const AssistantTabView = ({ onOpenAssistant }: AssistantTabViewProps) => (
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+    <div className="app-surface-card rounded-2xl p-6">
       <h3 className="text-xl font-bold text-white mb-2">Assistente IA</h3>
       <p className="text-slate-400 text-sm mb-6">
         Converse com o Cote para analisar gastos, metas e investimentos com base nos seus dados atuais.
       </p>
       <button
         onClick={onOpenAssistant}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+        className="app-button-primary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
       >
         <MessageSquare size={16} /> Abrir Assistente
       </button>
@@ -5242,7 +5242,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="Ex: Reserva de Emergencia"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
 
@@ -5253,7 +5253,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 value={formData.target}
                 onChange={(value) => setFormData((prev) => ({ ...prev, target: value }))}
                 placeholder="R$ 0,00"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
 
@@ -5263,7 +5263,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 value={formData.accumulated}
                 onChange={(value) => setFormData((prev) => ({ ...prev, accumulated: value }))}
                 placeholder="R$ 0,00"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
           </div>
@@ -5274,7 +5274,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               >
                 {GOAL_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -5290,7 +5290,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 type="date"
                 value={formData.deadline}
                 onChange={(e) => setFormData((prev) => ({ ...prev, deadline: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
           </div>
@@ -5302,7 +5302,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar meta'}
@@ -5403,7 +5403,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="Ex: Tesouro Selic 2029"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
 
@@ -5412,7 +5412,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
             <select
               value={formData.type}
               onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
-              className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+              className="app-field block w-full min-w-0 rounded-xl px-4 py-2 text-sm"
             >
               {INVESTMENT_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -5427,7 +5427,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
             <select
               value={formData.walletId}
               onChange={(e) => setFormData((prev) => ({ ...prev, walletId: e.target.value }))}
-              className="block w-full min-w-0 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+              className="app-field block w-full min-w-0 rounded-xl px-4 py-2 text-sm"
             >
               <option value="">Selecione uma carteira</option>
               {wallets.map((wallet) => (
@@ -5445,7 +5445,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
                 value={formData.invested}
                 onChange={(value) => setFormData((prev) => ({ ...prev, invested: value }))}
                 placeholder="R$ 0,00"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
             <div className="space-y-2">
@@ -5454,7 +5454,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
                 value={formData.current}
                 onChange={(value) => setFormData((prev) => ({ ...prev, current: value }))}
                 placeholder="R$ 0,00"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
           </div>
@@ -5468,7 +5468,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               value={formData.expectedReturnAnnual}
               onChange={(e) => setFormData((prev) => ({ ...prev, expectedReturnAnnual: e.target.value }))}
               placeholder="0.00"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
 
@@ -5479,7 +5479,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
@@ -5585,7 +5585,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               type="text"
               value={formData.creditor}
               onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
               placeholder="Ex: Banco X"
             />
           </div>
@@ -5597,7 +5597,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 value={formData.originalAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, originalAmount: value }))}
                 placeholder="R$ 0,00"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
             <div className="space-y-2">
@@ -5606,7 +5606,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 value={formData.remainingAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
                 placeholder="R$ 0,00"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
           </div>
@@ -5620,7 +5620,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 step="0.01"
                 value={formData.interestRateMonthly}
                 onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
             <div className="space-y-2">
@@ -5631,7 +5631,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 max={31}
                 value={formData.dueDay}
                 onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
           </div>
@@ -5642,7 +5642,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               <select
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               >
                 {DEBT_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -5661,7 +5661,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                     status: e.target.value as DebtFormData['status'],
                   }))
                 }
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               >
                 <option>Em aberto</option>
                 <option>Quitada</option>
@@ -5678,7 +5678,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               'w-full mt-4 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida única'}
@@ -5799,7 +5799,7 @@ const RecurringDebtModal = ({
               type="text"
               value={formData.creditor}
               onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
               placeholder="Ex: Aluguel"
             />
           </div>
@@ -5809,7 +5809,7 @@ const RecurringDebtModal = ({
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
               placeholder="R$ 0,00"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
           <div className="space-y-2">
@@ -5817,7 +5817,7 @@ const RecurringDebtModal = ({
             <select
               value={formData.category}
               onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             >
               {[...RECURRING_DEBT_PRESETS.map((item) => item.category), 'Outros']
                 .filter((value, index, array) => array.indexOf(value) === index)
@@ -5833,7 +5833,7 @@ const RecurringDebtModal = ({
             <select
               value={formData.status}
               onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             >
               <option>Ativa</option>
               <option>Pausada</option>
@@ -5845,7 +5845,7 @@ const RecurringDebtModal = ({
             <select
               value={formData.frequency}
               onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             >
               {RECURRING_DEBT_FREQUENCIES.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -5861,7 +5861,7 @@ const RecurringDebtModal = ({
               min={1}
               value={formData.interval}
               onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
           <div className="space-y-2">
@@ -5870,7 +5870,7 @@ const RecurringDebtModal = ({
               type="date"
               value={formData.startDate}
               onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
           <div className="space-y-2">
@@ -5879,7 +5879,7 @@ const RecurringDebtModal = ({
               type="date"
               value={formData.endDate}
               onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
           {isMonthlyFamily ? (
@@ -5891,7 +5891,7 @@ const RecurringDebtModal = ({
                 max={31}
                 value={formData.dueDay}
                 onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="app-field w-full rounded-xl py-2 px-4 text-sm"
               />
             </div>
           ) : null}
@@ -5901,7 +5901,7 @@ const RecurringDebtModal = ({
               value={formData.notes}
               onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
               rows={3}
-              className="w-full resize-none bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full resize-none rounded-xl py-2 px-4 text-sm"
               placeholder="Ex: cobrança obrigatória do condomínio"
             />
           </div>
@@ -5914,7 +5914,7 @@ const RecurringDebtModal = ({
             'mt-6 w-full rounded-xl py-3 font-bold transition-all shadow-lg',
             !isValid || isSubmitting
               ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-              : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+              : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
           )}
         >
           {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrência' : 'Criar recorrência'}
@@ -6225,7 +6225,7 @@ const TransactionModal = ({
                   className={cn(
                     'flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-bold transition-colors sm:px-4 sm:py-3.5',
                     formData.flowType === flowType
-                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                      ? 'bg-[#4C8DFF]/20 border-[#4C8DFF] text-[#86B7FF]'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
                   )}
                 >
@@ -6242,7 +6242,7 @@ const TransactionModal = ({
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
               placeholder="R$ 0,00"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
 
@@ -6253,12 +6253,12 @@ const TransactionModal = ({
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Ex: Supermercado"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="app-field w-full rounded-xl py-2 px-4 text-sm"
             />
           </div>
 
           {(isLoadingSuggestion || suggestedCategory) && (
-            <div className="rounded-xl border border-slate-800 bg-slate-800/40 p-3 text-xs text-slate-300">
+            <div className="app-surface-subtle rounded-xl p-3 text-xs text-slate-300">
               {isLoadingSuggestion ? (
                 <span>Buscando sugestáo de categoria...</span>
               ) : suggestedCategory ? (
@@ -6269,7 +6269,7 @@ const TransactionModal = ({
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
-                    className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors"
+                    className="rounded-md bg-[#4C8DFF]/20 px-2 py-1 text-[#B8D3FF] transition-colors hover:bg-[#4C8DFF]/30"
                   >
                     Usar sugestáo
                   </button>
@@ -6286,7 +6286,7 @@ const TransactionModal = ({
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-white [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                  className="block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-white [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
                 />
               </div>
             </div>
@@ -6297,7 +6297,7 @@ const TransactionModal = ({
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
                 >
                   {availableCategories.map((category) => (
                     <option key={category} value={category}>
@@ -6319,7 +6319,7 @@ const TransactionModal = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
                 }
-                className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
               >
                 {PAYMENT_METHODS.map((method) => (
                   <option key={method} value={method}>
@@ -6372,7 +6372,7 @@ const TransactionModal = ({
                   <select
                     value={formData.wallet}
                     onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
                   >
                     {walletChoices.map((wallet) => (
                       <option key={wallet} value={wallet}>
@@ -6388,7 +6388,7 @@ const TransactionModal = ({
                   <select
                     value={formData.destinationWallet}
                     onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
-                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
                   >
                     <option value="">Selecione</option>
                     {walletChoices.map((wallet) => (
@@ -6407,7 +6407,7 @@ const TransactionModal = ({
                 <select
                   value={formData.wallet}
                   onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-emerald-500"
+                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-white focus:outline-none sm:rounded-xl sm:border sm:border-slate-700 sm:bg-slate-800 sm:focus:border-[#4C8DFF]"
                 >
                   {walletChoices.map((wallet) => (
                     <option key={wallet} value={wallet}>
@@ -6432,7 +6432,7 @@ const TransactionModal = ({
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+                : 'bg-[linear-gradient(135deg,#4C8DFF_0%,#6BA7FF_100%)] text-white shadow-[#4C8DFF]/20 hover:brightness-105'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
