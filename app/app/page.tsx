@@ -6240,7 +6240,7 @@ const TransactionModal = ({
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-[var(--bg-app)] p-0 sm:overflow-y-auto sm:items-center sm:p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-end justify-center overflow-x-hidden overflow-y-hidden bg-[var(--bg-app)] p-0 sm:items-center sm:p-4">
       <motion.div
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
