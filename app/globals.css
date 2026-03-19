@@ -380,8 +380,9 @@ body {
   }
 
   .landing-floating-chip-alt {
-    right: -2.1rem;
-    top: 3.1rem;
+    width: min(11.8rem, 38%);
+    right: -2.6rem;
+    top: -1.45rem;
   }
 
   .landing-float-card {
@@ -910,8 +911,9 @@ body {
   }
 
   .landing-floating-chip-alt {
-    right: -1rem;
-    top: 2.7rem;
+    width: min(11rem, 40%);
+    right: -0.8rem;
+    top: -0.65rem;
   }
 }
 

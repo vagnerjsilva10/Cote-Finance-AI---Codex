@@ -391,6 +391,15 @@ function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax
         <p className="text-xs text-[var(--text-secondary)]">Despesas invisíveis</p>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$680/mês</p>
       </motion.div>
+
+      <motion.div
+        className="landing-floating-chip-alt landing-panel landing-glass p-3"
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 5.3, repeat: Infinity }}
+      >
+        <p className="text-xs text-[var(--text-secondary)]">Ação prioritária</p>
+        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Cortar assinaturas</p>
+      </motion.div>
     </motion.div>
   );
 }
@@ -817,6 +826,14 @@ export default function LandingPage() {
             <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
               Escolha o plano ideal para assumir o controle do seu dinheiro.
             </h2>
+            <div className="mx-auto mt-3 max-w-3xl space-y-2 rounded-2xl border border-[var(--border-default)] bg-[rgba(15,23,42,.58)] px-4 py-4 text-left sm:text-center">
+              <p className="text-sm font-medium leading-7 text-[var(--text-primary)]">
+                Receba alertas financeiros no WhatsApp e aja antes que pequenos desvios virem descontrole.
+              </p>
+              <p className="text-xs leading-6 text-[var(--text-secondary)]">
+                No Pro: resumos e alertas. No Premium: automações financeiras avançadas.
+              </p>
+            </div>
           </motion.section>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">

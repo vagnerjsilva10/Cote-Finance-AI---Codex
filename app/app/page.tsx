@@ -7181,7 +7181,7 @@ const LoginView = ({
         </button>
 
         <p className="mt-7 text-center text-sm text-[var(--text-muted)]">
-          {isLogin ? 'Não tem uma conta?' : 'J? tem uma conta?'}
+          {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
           <button
             onClick={() => {
               setError(null);
