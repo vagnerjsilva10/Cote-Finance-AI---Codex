@@ -44,6 +44,81 @@ type Plan = {
   highlight?: boolean;
 };
 
+function useElementInView<T extends Element>(threshold = 0.25) {
+  const ref = React.useRef<T | null>(null);
+  const [inView, setInView] = React.useState(false);
+
+  React.useEffect(() => {
+    const node = ref.current;
+    if (!node || inView) return;
+
+    let raf = 0;
+    let observer: IntersectionObserver | null = null;
+
+    const checkVisible = () => {
+      const rect = node.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const triggerLine = viewportHeight * (1 - threshold);
+      return rect.top <= triggerLine && rect.bottom >= 0;
+    };
+
+    const teardown = () => {
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      window.removeEventListener('scroll', scheduleCheck);
+      window.removeEventListener('resize', scheduleCheck);
+      window.removeEventListener('orientationchange', scheduleCheck);
+      if (raf) {
+        window.cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const activate = () => {
+      setInView(true);
+      teardown();
+    };
+
+    const scheduleCheck = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        if (checkVisible()) activate();
+      });
+    };
+
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting || entry.intersectionRatio >= threshold) {
+              activate();
+              break;
+            }
+          }
+        },
+        { threshold: [0, threshold, 0.5], rootMargin: '0px 0px -8% 0px' }
+      );
+      observer.observe(node);
+    }
+
+    scheduleCheck();
+    window.addEventListener('scroll', scheduleCheck, { passive: true });
+    window.addEventListener('resize', scheduleCheck);
+    window.addEventListener('orientationchange', scheduleCheck);
+    const delayedCheck = window.setTimeout(scheduleCheck, 260);
+
+    return () => {
+      window.clearTimeout(delayedCheck);
+      teardown();
+    };
+  }, [threshold, inView]);
+
+  return [ref, inView] as const;
+}
+
 const reveal = {
   initial: { opacity: 0, y: 14 },
   whileInView: { opacity: 1, y: 0 },
@@ -261,10 +336,12 @@ function alignPlanCopy(plan: Plan): Plan {
   };
 }
 
-function useNumberTicker(target: number, duration = 900) {
+function useNumberTicker(target: number, duration = 900, start = true) {
   const [value, setValue] = React.useState(0);
 
   React.useEffect(() => {
+    if (!start) return;
+
     let frame = 0;
     let raf = 0;
     const start = performance.now();
@@ -280,15 +357,24 @@ function useNumberTicker(target: number, duration = 900) {
     };
     raf = window.requestAnimationFrame(loop);
     return () => window.cancelAnimationFrame(raf);
-  }, [target, duration]);
+  }, [target, duration, start]);
 
   return value;
 }
 
 function CurrencyTicker({ target }: { target: number }) {
-  const value = useNumberTicker(target);
+  const shouldReduceMotion = useReducedMotion();
+  const [ref, inView] = useElementInView<HTMLSpanElement>(0.3);
+  const [started, setStarted] = React.useState(false);
+
+  React.useEffect(() => {
+    if (inView) setStarted(true);
+  }, [inView]);
+
+  const animatedValue = useNumberTicker(target, 900, started && !shouldReduceMotion);
+  const value = shouldReduceMotion ? target : animatedValue;
   return (
-    <span>
+    <span ref={ref}>
       {new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -300,20 +386,14 @@ function CurrencyTicker({ target }: { target: number }) {
 
 function AnimatedChart() {
   const shouldReduceMotion = useReducedMotion();
-  const [isIOS, setIsIOS] = React.useState(false);
+  const [svgRef, inView] = useElementInView<SVGSVGElement>(0.22);
   const gradientA = React.useId();
   const gradientB = React.useId();
   const glowId = React.useId();
-  const shouldUseViewportReveal = !shouldReduceMotion && !isIOS;
-
-  React.useEffect(() => {
-    const ua = window.navigator.userAgent || '';
-    const iOSLike = /iP(hone|ad|od)/i.test(ua) || (/Mac/i.test(ua) && 'ontouchend' in window);
-    setIsIOS(iOSLike);
-  }, []);
+  const shouldStart = shouldReduceMotion || inView;
 
   return (
-    <svg viewBox="0 0 360 130" className="h-32 w-full" aria-hidden>
+    <svg ref={svgRef} viewBox="0 0 360 130" className="h-32 w-full" aria-hidden>
       <defs>
         <linearGradient id={gradientA} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="var(--primary)" />
@@ -341,10 +421,14 @@ function AnimatedChart() {
         strokeLinecap="round"
         pathLength={1}
         initial={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 0.08, opacity: 0.2 }}
-        whileInView={shouldUseViewportReveal ? { pathLength: 1, opacity: [0.56, 1, 0.72] } : undefined}
-        viewport={shouldUseViewportReveal ? { once: true, amount: 0.22 } : undefined}
-        animate={shouldUseViewportReveal ? undefined : shouldReduceMotion ? { opacity: 0.95 } : { pathLength: [0.08, 1], opacity: [0.4, 0.95, 0.72] }}
-        transition={shouldReduceMotion ? { duration: 0 } : isIOS ? { duration: 1.15, ease: 'easeOut' } : { duration: 1.05, ease: 'easeOut' }}
+        animate={
+          shouldReduceMotion
+            ? { opacity: 0.95 }
+            : shouldStart
+              ? { pathLength: [0.08, 1], opacity: [0.4, 0.95, 0.72] }
+              : { pathLength: 0.08, opacity: 0.2 }
+        }
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.05, ease: 'easeOut' }}
       />
       <motion.path
         d="M0,120 C34,116 66,110 98,104 C134,98 170,94 206,88 C242,82 272,84 304,92 C328,98 345,104 360,108"
@@ -355,10 +439,14 @@ function AnimatedChart() {
         strokeLinecap="round"
         pathLength={1}
         initial={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 0.08, opacity: 0.16 }}
-        whileInView={shouldUseViewportReveal ? { pathLength: 1, opacity: [0.42, 0.8, 0.58] } : undefined}
-        viewport={shouldUseViewportReveal ? { once: true, amount: 0.22 } : undefined}
-        animate={shouldUseViewportReveal ? undefined : shouldReduceMotion ? { opacity: 0.82 } : { pathLength: [0.08, 1], opacity: [0.3, 0.82, 0.58] }}
-        transition={shouldReduceMotion ? { duration: 0 } : isIOS ? { duration: 1.2, delay: 0.08, ease: 'easeOut' } : { duration: 1.1, delay: 0.06, ease: 'easeOut' }}
+        animate={
+          shouldReduceMotion
+            ? { opacity: 0.82 }
+            : shouldStart
+              ? { pathLength: [0.08, 1], opacity: [0.3, 0.82, 0.58] }
+              : { pathLength: 0.08, opacity: 0.16 }
+        }
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.1, delay: 0.06, ease: 'easeOut' }}
       />
       {shouldReduceMotion ? null : (
         <motion.path
@@ -369,7 +457,7 @@ function AnimatedChart() {
           strokeLinecap="round"
           strokeDasharray="5 11"
           initial={{ strokeDashoffset: 0, opacity: 0 }}
-          animate={{ strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] }}
+          animate={shouldStart ? { strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] } : { strokeDashoffset: 0, opacity: 0 }}
           transition={{ duration: 3.4, repeat: Infinity, ease: 'linear' }}
         />
       )}
@@ -378,7 +466,13 @@ function AnimatedChart() {
         cy="74"
         r="3.8"
         fill="var(--accent-cyan)"
-        animate={shouldReduceMotion ? { opacity: 0.9, scale: 1 } : { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
+        animate={
+          shouldReduceMotion
+            ? { opacity: 0.9, scale: 1 }
+            : shouldStart
+              ? { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }
+              : { opacity: 0.35, scale: 1 }
+        }
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 2.2, repeat: Infinity }}
       />
     </svg>
