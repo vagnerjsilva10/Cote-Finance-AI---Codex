@@ -11673,7 +11673,7 @@ React.useEffect(() => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.97 }}
                         transition={{ duration: 0.18 }}
-                        className="theme-modal-surface absolute right-0 z-50 mt-3 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl shadow-[var(--shadow-soft)] backdrop-blur"
+                        className="theme-modal-surface fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl shadow-[var(--shadow-soft)] backdrop-blur md:absolute md:right-0 md:top-full md:mt-3 md:w-[min(26rem,calc(100vw-1.5rem))] md:max-h-none md:inset-x-auto"
                       >
                         <div className="border-b border-[var(--border-default)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">
@@ -11715,18 +11715,15 @@ React.useEffect(() => {
                             </p>
                           </div>
                         ) : (
-                          <div className="max-h-[26rem] overflow-y-auto p-2">
+                          <div className="max-h-[calc(100vh-11rem)] overflow-y-auto p-2 md:max-h-[26rem]">
                             {unreadNotifications.length > 0 && (
                               <div className="px-2 pb-2 pt-1">
                                 <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">Novas</p>
                               </div>
                             )}
                             {unreadNotifications.map((notification) => (
-                              <div
-                                key={notification.id}
-                                className="app-surface-subtle mb-2 rounded-2xl px-3 py-3"
-                              >
-                                <div className="flex items-start justify-between gap-3">
+                              <div key={notification.id} className="app-surface-subtle mb-2 rounded-2xl px-3 py-3">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                   <button
                                     type="button"
                                     onClick={() => handleNotificationClick(notification)}
@@ -11749,7 +11746,7 @@ React.useEffect(() => {
                                     </div>
                                     <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">{notification.message}</p>
                                   </button>
-                                  <div className="flex shrink-0 flex-col items-end gap-2">
+                                  <div className="flex shrink-0 items-center justify-between gap-2 sm:flex-col sm:items-end sm:justify-start">
                                     {notification.timestamp && (
                                       <span className="text-[11px] text-[var(--text-muted)]">{notification.timestamp}</span>
                                     )}
@@ -11786,7 +11783,7 @@ React.useEffect(() => {
                                 key={notification.id}
                                 className="mb-2 rounded-2xl border border-transparent px-3 py-3 opacity-75 transition hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:opacity-100"
                               >
-                                <div className="flex items-start justify-between gap-3">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                   <button
                                     type="button"
                                     onClick={() => handleNotificationClick(notification)}
@@ -11809,7 +11806,7 @@ React.useEffect(() => {
                                     </div>
                                     <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">{notification.message}</p>
                                   </button>
-                                  <div className="flex shrink-0 flex-col items-end gap-2">
+                                  <div className="flex shrink-0 items-center justify-between gap-2 sm:flex-col sm:items-end sm:justify-start">
                                     {notification.timestamp && (
                                       <span className="text-[11px] text-[var(--text-muted)]">{notification.timestamp}</span>
                                     )}
