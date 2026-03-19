@@ -215,10 +215,10 @@ body {
     position: relative;
     min-height: 100vh;
     background:
-      radial-gradient(circle at 16% 10%, rgba(59, 130, 246, 0.09), transparent 34%),
-      radial-gradient(circle at 84% 12%, rgba(99, 102, 241, 0.08), transparent 34%),
-      radial-gradient(circle at 52% 115%, rgba(34, 211, 238, 0.05), transparent 42%),
-      linear-gradient(168deg, #05070d 0%, #04060b 42%, #060914 72%, #05070d 100%);
+      radial-gradient(circle at 16% 10%, rgba(59, 130, 246, 0.075), transparent 34%),
+      radial-gradient(circle at 84% 12%, rgba(99, 102, 241, 0.068), transparent 34%),
+      radial-gradient(circle at 52% 115%, rgba(34, 211, 238, 0.04), transparent 42%),
+      linear-gradient(168deg, #04060c 0%, #030409 42%, #040714 72%, #03050a 100%);
     color: var(--text-primary);
     overflow: hidden;
   }
@@ -228,8 +228,8 @@ body {
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 50% -12%, rgba(99, 102, 241, 0.07), transparent 44%),
-      radial-gradient(circle at 52% 118%, rgba(34, 211, 238, 0.035), transparent 44%);
+      radial-gradient(circle at 50% -12%, rgba(99, 102, 241, 0.05), transparent 44%),
+      radial-gradient(circle at 52% 118%, rgba(34, 211, 238, 0.03), transparent 44%);
     pointer-events: none;
     animation: landing-gradient-shift 18s ease-in-out infinite;
   }
@@ -238,12 +238,12 @@ body {
     background:
       repeating-linear-gradient(
         128deg,
-        transparent 0 58px,
-        color-mix(in srgb, var(--accent-indigo) 10%, transparent) 58px 59px
+        transparent 0 64px,
+        color-mix(in srgb, var(--accent-indigo) 9%, transparent) 64px 65px
       ),
-      radial-gradient(circle at 24% 14%, rgba(59, 130, 246, 0.1), transparent 36%),
-      radial-gradient(circle at 78% 18%, rgba(99, 102, 241, 0.09), transparent 36%);
-    opacity: 0.22;
+      radial-gradient(circle at 24% 14%, rgba(59, 130, 246, 0.08), transparent 36%),
+      radial-gradient(circle at 78% 18%, rgba(99, 102, 241, 0.075), transparent 36%);
+    opacity: 0.17;
     mask-image: linear-gradient(180deg, black 0%, rgba(0, 0, 0, 0.68) 64%, transparent 100%);
     animation: landing-beam-drift 22s linear infinite;
   }
@@ -255,7 +255,7 @@ body {
     background-size:
       160px 160px,
       200px 200px;
-    opacity: 0.2;
+    opacity: 0.14;
     mix-blend-mode: soft-light;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
   }
@@ -265,7 +265,7 @@ body {
       linear-gradient(color-mix(in srgb, var(--accent-indigo) 12%, transparent) 1px, transparent 1px),
       linear-gradient(90deg, color-mix(in srgb, var(--accent-indigo) 12%, transparent) 1px, transparent 1px);
     background-size: 72px 72px;
-    opacity: 0.04;
+    opacity: 0.03;
     mask-image: radial-gradient(circle at 50% 0%, black 20%, transparent 74%);
   }
 
@@ -278,7 +278,7 @@ body {
     position: absolute;
     inset: -14% -8% auto -8%;
     height: 72%;
-    background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.14) 0%, rgba(59, 130, 246, 0) 74%);
+    background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0) 74%);
     pointer-events: none;
   }
 
@@ -361,7 +361,27 @@ body {
 
   .landing-hero-cluster {
     position: relative;
-    padding: 0.9rem 0.8rem 1.8rem;
+    padding: 1.2rem 2.2rem 2.2rem 1.2rem;
+  }
+
+  .landing-floating-chip,
+  .landing-floating-chip-alt {
+    position: absolute;
+    z-index: 6;
+    width: min(13.5rem, 43%);
+    pointer-events: none;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .landing-floating-chip {
+    left: -0.4rem;
+    bottom: -1.35rem;
+  }
+
+  .landing-floating-chip-alt {
+    right: -2.1rem;
+    top: 3.1rem;
   }
 
   .landing-float-card {
@@ -879,6 +899,20 @@ body {
     padding-top: 3rem;
     padding-bottom: 3rem;
   }
+
+  .landing-hero-cluster {
+    padding: 0.9rem 0.8rem 1.2rem;
+  }
+
+  .landing-floating-chip {
+    left: 0.4rem;
+    bottom: -1rem;
+  }
+
+  .landing-floating-chip-alt {
+    right: -1rem;
+    top: 2.7rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -905,6 +939,13 @@ body {
   }
 
   .landing-float-card {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .landing-floating-chip,
+  .landing-floating-chip-alt {
     position: static;
     width: 100%;
     margin-top: 10px;

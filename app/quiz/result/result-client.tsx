@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
+import { Check, Sparkles, TriangleAlert } from 'lucide-react';
 import { Manrope, Space_Grotesk } from 'next/font/google';
-import { Sparkles } from 'lucide-react';
 import { CTAButton, QuizContainer } from '../quiz-components';
 import { trackQuizEvent } from '../quiz-analytics';
 import { readQuizResult } from '../quiz-storage';
@@ -42,7 +43,7 @@ export default function ResultClient() {
   if (result === undefined) {
     return (
       <QuizContainer className={`${displayFont.variable} ${bodyFont.variable}`}>
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/65 p-8 text-center" style={{ fontFamily: 'var(--font-body)' }}>
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[var(--border-default)] bg-[rgba(15,23,42,.62)] p-8 text-center backdrop-blur-xl" style={{ fontFamily: 'var(--font-body)' }}>
           <p className="text-[var(--text-secondary)]">Carregando seu diagnóstico...</p>
         </div>
       </QuizContainer>
@@ -57,150 +58,128 @@ export default function ResultClient() {
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/65 p-5 sm:rounded-[2rem] sm:p-8"
+          transition={{ duration: 0.42 }}
+          className="rounded-[1.75rem] border border-[var(--border-default)] bg-[rgba(15,23,42,.64)] p-5 shadow-[0_20px_52px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
         >
-          <span className="inline-flex rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-            Seu perfil financeiro foi identificado
-          </span>
-          <h1 className="mt-4 text-[1.9rem] font-bold text-[var(--text-primary)] sm:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Seu perfil financeiro
-          </h1>
-          <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_.9fr]">
-            <div className="space-y-4">
-              <div className="rounded-3xl border border-[var(--border-default)]/20 bg-[color:var(--primary-soft)] p-4 sm:p-5">
-                <p className="text-sm text-[var(--text-secondary)]">Resultado principal</p>
-                <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{result.profileTitle.replace('Perfil ', '')}</p>
-                <p className="mt-3 text-[var(--text-primary)]">{result.profileText}</p>
-              </div>
-
-              <p className="text-base leading-7 text-[var(--text-secondary)]">{result.profileDescription}</p>
-              <p className="text-base leading-7 text-[var(--text-secondary)]">
-                Pequenas despesas recorrentes podem consumir uma parte relevante da sua renda sem que você perceba.
-              </p>
-              <p className="text-base leading-7 text-[var(--text-primary)]">
-                A boa notícia é que isso pode ser corrigido quando você passa a enxergar seus gastos com clareza.
-              </p>
-
-              <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 sm:p-5">
-                <p className="text-sm text-[var(--text-secondary)]">Com base nas suas respostas:</p>
-                <ul className="mt-4 space-y-3 text-[var(--text-primary)]">
-                  {result.insights.map((insight, index) => (
-                    <motion.li
-                      key={insight}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.08 }}
-                      className="flex items-start gap-3"
-                    >
-                      <span className="mt-1 h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />
-                      <span>{insight}</span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="space-y-4"
-            >
-              <div className="rounded-3xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-4 sm:p-5">
-                <p className="text-sm text-[var(--text-secondary)]">Você pode estar perdendo até</p>
-                <p className="mt-2 text-[1.8rem] font-bold leading-tight text-[var(--text-primary)] sm:text-3xl">
-                  {formatCurrency(result.monthlyLossMin)} - {formatCurrency(result.monthlyLossMax)} por mês
-                </p>
-                <p className="mt-3 text-sm text-[var(--text-primary)]">
-                  Isso pode representar até {formatCurrency(result.annualLossMax)} por ano.
-                </p>
-                <p className="mt-4 text-xs text-[var(--text-secondary)]">
-                  Estimativa baseada nas suas respostas e em padrões financeiros comuns.
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 sm:p-5">
-                <p className="text-sm text-[var(--text-secondary)]">Comparando suas respostas com milhares de diagnósticos financeiros...</p>
-                <p className="mt-3 text-2xl font-bold text-[var(--text-primary)]">{result.totalScore} pontos</p>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--bg-surface)]/10">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, Math.max(12, result.totalScore * 10))}%` }}
-                    transition={{ duration: 0.55, ease: 'easeOut' }}
-                    className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] via-[var(--primary)] to-[var(--primary-hover)]"
-                  />
-                </div>
-              </div>
-            </motion.div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(212,99,99,.4)] bg-[rgba(212,99,99,.12)] px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--danger)] uppercase">
+            <TriangleAlert size={14} />
+            Diagnóstico concluído
           </div>
+
+          <h1 className="mt-4 text-[1.9rem] font-bold text-[var(--text-primary)] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+            Você está perdendo dinheiro sem perceber
+          </h1>
+
+          <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
+            Seu padrão financeiro mostra falta de visibilidade e decisões no escuro.
+          </p>
+
+          <div className="mt-5 rounded-3xl border border-[rgba(250,204,21,.35)] bg-[rgba(250,204,21,.1)] p-4 sm:p-5">
+            <p className="text-sm font-semibold text-[rgb(250,204,21)]">
+              Isso pode representar de {formatCurrency(result.monthlyLossMin)} até {formatCurrency(result.monthlyLossMax)} por mês.
+            </p>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              Em 12 meses, sua perda pode chegar a {formatCurrency(result.annualLossMax)} sem você notar.
+            </p>
+          </div>
+
+          <p className="mt-5 text-base leading-7 text-[var(--text-secondary)]">
+            Sem clareza, pequenos gastos e decisões erradas se acumulam e travam sua evolução financeira.
+          </p>
         </motion.section>
 
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.12 }}
-          className="rounded-[1.75rem] border border-[var(--border-default)] bg-[var(--bg-surface)]/65 p-5 sm:rounded-[2rem] sm:p-8"
+          transition={{ duration: 0.42, delay: 0.08 }}
+          className="rounded-[1.75rem] border border-[var(--border-default)] bg-[rgba(15,23,42,.64)] p-5 shadow-[0_20px_52px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
         >
           <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-            É exatamente para isso que criamos o Cote Finance AI.
+            O Cote Finance AI analisa seu comportamento e mostra
           </h2>
-          <p className="mt-4 text-[var(--text-secondary)]">O aplicativo analisa automaticamente suas finanças e mostra:</p>
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">Milhares de usuários já identificaram padrões de desperdício com esse diagnóstico.</p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
             {[
-              'para onde seu dinheiro está indo',
-              'quais categorias consomem mais renda',
-              'padrões invisíveis de gasto',
-              'oportunidades reais de economia',
+              'Onde você perde dinheiro',
+              'O que ajustar agora',
+              'Como evoluir mês a mês',
             ].map((item, index) => (
               <motion.div
                 key={item}
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.15 + index * 0.06 }}
-                whileHover={{ y: -3 }}
-                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 text-[var(--text-primary)]"
+                transition={{ duration: 0.35, delay: 0.12 + index * 0.06 }}
+                whileHover={{ y: -2 }}
+                className="rounded-2xl border border-[rgba(46,169,122,.35)] bg-[rgba(46,169,122,.1)] p-4"
               >
-                {item}
+                <div className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--success)]">
+                  <Check size={14} />
+                  {item}
+                </div>
               </motion.div>
             ))}
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-[var(--border-default)] bg-[rgba(5,7,13,.72)] p-5">
+            <p className="text-sm text-[var(--text-secondary)]">Sinais detectados no seu diagnóstico</p>
+            <ul className="mt-3 space-y-3 text-sm text-[var(--text-primary)]">
+              {result.insights.map((insight) => (
+                <li key={insight} className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-[var(--accent-cyan)]" />
+                  {insight}
+                </li>
+              ))}
+            </ul>
           </div>
         </motion.section>
 
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.2 }}
-          className="rounded-[1.75rem] border border-[var(--border-default)]/20 bg-[linear-gradient(180deg,rgba(16,185,129,0.14),rgba(15,23,42,0.94)_35%,rgba(2,6,23,0.98)_100%)] px-5 py-8 text-center sm:rounded-[2rem] sm:px-6 sm:py-10"
+          transition={{ duration: 0.42, delay: 0.16 }}
+          className="rounded-[1.75rem] border border-[var(--border-default)] bg-[rgba(15,23,42,.64)] px-5 py-8 text-center shadow-[0_20px_52px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:px-6 sm:py-10"
         >
-          <div className="mx-auto max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)]/30 bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-              <Sparkles size={14} />
-              Diagnóstico personalizado
-            </div>
-            <h2 className="mt-4 text-[1.9rem] font-bold text-[var(--text-primary)] md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Ver meu diagnóstico completo
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-[var(--text-primary)]">
-              Leve esse diagnóstico para dentro do aplicativo e veja seus gastos com clareza real.
-            </p>
-            <div className="mt-6 flex flex-col items-center gap-3">
-              <CTAButton
-                href="/signup"
-                onClick={() =>
-                  trackQuizEvent('quiz_signup_click', {
-                    profile: result.profileKey,
-                    score: result.totalScore,
-                  })
-                }
-              >
-                Ver meu diagnóstico completo
-              </CTAButton>
-              <p className="text-sm text-[var(--text-secondary)]">Crie sua conta em menos de 30 segundos.</p>
-            </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)]/35 bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--text-secondary)] uppercase">
+            <Sparkles size={14} />
+            Próximo passo
           </div>
+          <h2 className="mt-4 text-[1.9rem] font-bold text-[var(--text-primary)] md:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+            Ver meu diagnóstico completo
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-[var(--text-secondary)]">
+            Leve seu diagnóstico para dentro do app e transforme leitura financeira em decisão prática.
+          </p>
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <CTAButton
+              href="/signup"
+              onClick={() =>
+                trackQuizEvent('quiz_signup_click', {
+                  profile: result.profileKey,
+                  score: result.totalScore,
+                  source: 'quiz-primary-cta',
+                })
+              }
+            >
+              Ver meu diagnóstico completo
+            </CTAButton>
+
+            <Link
+              href="/signup"
+              onClick={() =>
+                trackQuizEvent('quiz_signup_click', {
+                  profile: result.profileKey,
+                  score: result.totalScore,
+                  source: 'quiz-secondary-cta',
+                })
+              }
+              className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-[var(--border-default)] px-6 py-3 text-sm font-semibold text-[var(--text-primary)] transition-[transform,border-color,background] duration-200 hover:scale-[1.02] hover:border-[var(--border-strong)] hover:bg-[rgba(15,23,42,.8)]"
+            >
+              Começar grátis agora
+            </Link>
+          </div>
+
+          <p className="mt-4 text-sm text-[var(--text-secondary)]">Sem cartão. Sem compromisso.</p>
         </motion.section>
       </div>
     </QuizContainer>

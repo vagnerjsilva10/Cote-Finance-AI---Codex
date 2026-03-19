@@ -1,17 +1,11 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
-import { Sparkles } from 'lucide-react';
+import { AlertTriangle, Sparkles } from 'lucide-react';
 import { Manrope, Space_Grotesk } from 'next/font/google';
-import {
-  AnalysisScreen,
-  AnswerButton,
-  ProgressBar,
-  QuestionCard,
-  QuizContainer,
-} from './quiz-components';
+import { AnswerButton, ProgressBar, QuestionCard, QuizContainer } from './quiz-components';
 import { trackQuizEvent } from './quiz-analytics';
 import { buildQuizResult, quizQuestions, type QuizAnswer } from './quiz-lib';
 import { clearQuizResult, saveQuizResult } from './quiz-storage';
@@ -19,24 +13,28 @@ import { clearQuizResult, saveQuizResult } from './quiz-storage';
 const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], variable: '--font-display' });
 const bodyFont = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
 
-const analysisMessages = [
-  'Analisando seus hábitos financeiros...',
-  'Comparando com milhares de diagnósticos...',
-  'Identificando padrões de gasto...',
-  'Gerando seu diagnóstico financeiro...',
+const progressStages = [
+  'Analisando seu comportamento financeiro...',
+  'Identificando possíveis desperdícios...',
+  'Detectando padrões invisíveis...',
+  'Gerando seu diagnóstico...',
 ];
 
-const suspenseMessages: Partial<Record<number, string>> = {
-  1: 'Estamos analisando seus hábitos financeiros...',
-  2: 'Estamos identificando padrões de gasto...',
-  3: 'Seu diagnóstico está quase pronto...',
+const questionAlerts: Partial<Record<number, string>> = {
+  0: '⚠️ A maioria das pessoas perde controle já nesse ponto',
+  1: '📉 Falta de revisão aumenta desperdícios invisíveis',
+  2: '🚨 Isso é um dos sinais mais claros de falta de visibilidade',
+  3: '⚠️ Sem isso, você não consegue melhorar',
+  4: '💡 Sem clareza, qualquer método quebra com o tempo',
 };
 
-const psychologicalAlerts: Partial<Record<number, string>> = {
-  1: '⚠ Estamos identificando um padrão comum de gastos invisíveis.',
-  2: '⚠ Muitas pessoas com respostas parecidas perdem dinheiro sem perceber.',
-  3: '⚠ Seu diagnóstico está revelando possíveis vazamentos financeiros.',
-};
+function getStageByQuestionIndex(index: number) {
+  const ratio = (index + 1) / quizQuestions.length;
+  if (ratio <= 0.25) return progressStages[0];
+  if (ratio <= 0.5) return progressStages[1];
+  if (ratio <= 0.8) return progressStages[2];
+  return progressStages[3];
+}
 
 export default function QuizClient() {
   const router = useRouter();
@@ -44,35 +42,33 @@ export default function QuizClient() {
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [answers, setAnswers] = React.useState<QuizAnswer[]>([]);
   const [selectedOptionId, setSelectedOptionId] = React.useState<string | null>(null);
-  const [feedback, setFeedback] = React.useState<string | null>(null);
-  const [progressMessage, setProgressMessage] = React.useState<string | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [responseAlert, setResponseAlert] = React.useState<string | null>(null);
+  const [showTensionScreen, setShowTensionScreen] = React.useState(false);
   const [analysisIndex, setAnalysisIndex] = React.useState(0);
+  const [analysisProgress, setAnalysisProgress] = React.useState(12);
 
   const questionTwoTracked = React.useRef(false);
   const questionFourTracked = React.useRef(false);
   const completedRef = React.useRef(false);
   const answerTimeoutRef = React.useRef<number | null>(null);
-  const analysisTimeoutRef = React.useRef<number | null>(null);
-  const analysisIntervalRef = React.useRef<number | null>(null);
+  const tensionIntervalRef = React.useRef<number | null>(null);
+  const tensionTimeoutRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     clearQuizResult();
   }, []);
 
   React.useEffect(() => {
-    if (!started || isAnalyzing) return;
-
+    if (!started || showTensionScreen) return;
     if (questionIndex === 1 && !questionTwoTracked.current) {
       trackQuizEvent('quiz_question_2');
       questionTwoTracked.current = true;
     }
-
     if (questionIndex === 3 && !questionFourTracked.current) {
       trackQuizEvent('quiz_question_4');
       questionFourTracked.current = true;
     }
-  }, [isAnalyzing, questionIndex, started]);
+  }, [questionIndex, showTensionScreen, started]);
 
   React.useEffect(() => {
     return () => {
@@ -86,24 +82,10 @@ export default function QuizClient() {
   }, [answers.length, questionIndex, started]);
 
   React.useEffect(() => {
-    if (!started) return;
-
-    const previousOverflow = document.body.style.overflow;
-    const previousOverflowX = document.body.style.overflowX;
-    document.body.style.overflow = 'auto';
-    document.body.style.overflowX = 'clip';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.overflowX = previousOverflowX;
-    };
-  }, [started]);
-
-  React.useEffect(() => {
     return () => {
       if (answerTimeoutRef.current) window.clearTimeout(answerTimeoutRef.current);
-      if (analysisTimeoutRef.current) window.clearTimeout(analysisTimeoutRef.current);
-      if (analysisIntervalRef.current) window.clearInterval(analysisIntervalRef.current);
+      if (tensionIntervalRef.current) window.clearInterval(tensionIntervalRef.current);
+      if (tensionTimeoutRef.current) window.clearTimeout(tensionTimeoutRef.current);
     };
   }, []);
 
@@ -112,14 +94,46 @@ export default function QuizClient() {
     setQuestionIndex(0);
     setAnswers([]);
     setSelectedOptionId(null);
-    setFeedback(null);
-    setProgressMessage(null);
+    setResponseAlert(null);
+    setShowTensionScreen(false);
+    setAnalysisIndex(0);
+    setAnalysisProgress(12);
     completedRef.current = false;
     trackQuizEvent('quiz_start');
   }, []);
 
   const currentQuestion = quizQuestions[questionIndex];
-  const diagnosisPercent = started ? Math.round(((questionIndex + 1) / quizQuestions.length) * 100) : 0;
+
+  const openTensionScreen = React.useCallback(
+    (finalAnswers: QuizAnswer[]) => {
+      setShowTensionScreen(true);
+      setAnalysisIndex(0);
+      setAnalysisProgress(18);
+      completedRef.current = true;
+      trackQuizEvent('quiz_complete', { totalScore: finalAnswers.reduce((sum, item) => sum + item.score, 0) });
+
+      tensionIntervalRef.current = window.setInterval(() => {
+        setAnalysisIndex((prev) => {
+          if (prev >= progressStages.length - 1) return prev;
+          return prev + 1;
+        });
+
+        setAnalysisProgress((prev) => {
+          if (prev >= 96) return 96;
+          return prev + 22;
+        });
+      }, 650);
+
+      tensionTimeoutRef.current = window.setTimeout(() => {
+        if (tensionIntervalRef.current) window.clearInterval(tensionIntervalRef.current);
+        setAnalysisProgress(100);
+        const result = buildQuizResult(finalAnswers);
+        saveQuizResult(result);
+        router.push('/quiz/result');
+      }, 3000);
+    },
+    [router]
+  );
 
   const handleAnswer = React.useCallback(
     (optionId: string) => {
@@ -138,39 +152,21 @@ export default function QuizClient() {
       const nextAnswers = [...answers, nextAnswer];
       setAnswers(nextAnswers);
       setSelectedOptionId(option.id);
-      setFeedback(option.feedback || 'Boa resposta 👍');
+      setResponseAlert(questionAlerts[questionIndex] || null);
 
       answerTimeoutRef.current = window.setTimeout(() => {
         setSelectedOptionId(null);
-        setFeedback(null);
+        setResponseAlert(null);
 
         if (questionIndex === quizQuestions.length - 1) {
-          setIsAnalyzing(true);
-          setAnalysisIndex(0);
-          setProgressMessage('Seu perfil financeiro está sendo identificado');
-          completedRef.current = true;
-          trackQuizEvent('quiz_complete', { totalScore: nextAnswers.reduce((sum, answer) => sum + answer.score, 0) });
-
-          analysisIntervalRef.current = window.setInterval(() => {
-            setAnalysisIndex((prev) => (prev + 1) % analysisMessages.length);
-          }, 700);
-
-          analysisTimeoutRef.current = window.setTimeout(() => {
-            if (analysisIntervalRef.current) window.clearInterval(analysisIntervalRef.current);
-            const result = buildQuizResult(nextAnswers);
-            saveQuizResult(result);
-            router.push('/quiz/result');
-          }, 2800);
-
+          openTensionScreen(nextAnswers);
           return;
         }
 
-        const nextQuestionIndex = questionIndex + 1;
-        setQuestionIndex(nextQuestionIndex);
-        setProgressMessage(suspenseMessages[nextQuestionIndex] || null);
-      }, 360);
+        setQuestionIndex((prev) => prev + 1);
+      }, 520);
     },
-    [answers, currentQuestion, questionIndex, router, selectedOptionId]
+    [answers, currentQuestion, openTensionScreen, questionIndex, selectedOptionId]
   );
 
   return (
@@ -184,121 +180,106 @@ export default function QuizClient() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -18 }}
               transition={{ duration: 0.35 }}
-              className="space-y-4 sm:space-y-5"
+              className="space-y-5"
             >
               <QuestionCard
-                eyebrow="Leva menos de 1 minuto"
-                title="Descubra em 30 segundos por que seu dinheiro some todo mês"
+                eyebrow="Diagnóstico inteligente em 60 segundos"
+                title="Descubra em 60 segundos se você está perdendo dinheiro sem perceber"
                 footer={
                   <button
                     type="button"
                     onClick={startQuiz}
-                    className="inline-flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3.5 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-[var(--primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] sm:w-auto"
+                    className="inline-flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3.5 text-sm font-bold text-[var(--text-primary)] transition-[transform,background] duration-200 hover:scale-[1.02] hover:bg-[var(--primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] sm:w-auto"
                   >
-                    Começar diagnóstico
+                    Começar agora
                   </button>
                 }
               >
                 <div className="space-y-4">
                   <p className="text-base leading-7 text-[var(--text-secondary)] sm:text-lg">
-                    Mais de 12.000 pessoas já fizeram esse diagnóstico financeiro.
+                    Responda algumas perguntas rápidas e veja o que está travando sua vida financeira.
                   </p>
-                  <div className="inline-flex max-w-full rounded-full border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold leading-5 text-[var(--text-secondary)]">
-                    8 em cada 10 pessoas descobrem gastos invisíveis ao finalizar este quiz.
+
+                  <div className="inline-flex max-w-full rounded-full border border-[var(--border-default)]/35 bg-[rgba(59,130,246,.14)] px-3 py-1 text-xs font-semibold leading-5 text-[var(--text-secondary)]">
+                    +12.000 pessoas já fizeram esse diagnóstico
                   </div>
 
-                  <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-                    <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar?" percentageLabel="Diagnóstico 0% concluído" />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-[1.1fr_.9fr]">
-                    <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5">
-                      <div className="space-y-3 text-sm leading-6 text-[var(--text-secondary)] sm:text-base">
-                        <p>No fim do mês parece que tudo aconteceu rápido demais.</p>
-                        <p>Esse quiz cruza padrões comuns de gastos invisíveis e mostra um pré-diagnóstico personalizado.</p>
-                        <p className="font-medium text-[var(--text-primary)]">Seu resultado sai em menos de 40 segundos.</p>
-                      </div>
+                  <div className="grid gap-4 md:grid-cols-[1.05fr_.95fr]">
+                    <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(5,7,13,.74)] p-5">
+                      <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar?" stageText={progressStages[0]} />
                     </div>
 
-                    <div className="rounded-3xl border border-[var(--border-default)]/20 bg-[color:var(--primary-soft)] p-5">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                    <div className="rounded-3xl border border-[rgba(250,204,21,.35)] bg-[rgba(250,204,21,.08)] p-5">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-[rgb(250,204,21)]">
                         <Sparkles size={16} />
-                        Experiência guiada
+                        Diagnóstico pessoal
                       </div>
                       <ul className="mt-4 space-y-3 text-sm leading-6 text-[var(--text-secondary)]">
-                        <li>5 perguntas rápidas</li>
-                        <li>Diagnóstico com perfil financeiro</li>
-                        <li>Estimativa de dinheiro perdido</li>
+                        <li>6 perguntas objetivas</li>
+                        <li>Análise de padrões invisíveis</li>
+                        <li>Resultado com direção prática</li>
                       </ul>
                     </div>
                   </div>
                 </div>
               </QuestionCard>
             </motion.div>
-          ) : isAnalyzing ? (
+          ) : showTensionScreen ? (
             <motion.div
-              key="quiz-analysis"
-              initial={{ opacity: 0, y: 22 }}
+              key="tension-screen"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.35 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.32 }}
             >
-              <AnalysisScreen
-                title="Seu diagnóstico financeiro está pronto"
-                text="Estamos cruzando suas respostas com padrões financeiros comuns para estimar onde o seu dinheiro pode estar escapando."
-                messages={analysisMessages}
-                activeIndex={analysisIndex}
-                statusLabel="Comparando suas respostas com milhares de diagnósticos financeiros..."
-                rewardLabel="Seu perfil financeiro foi identificado."
-              />
+              <QuestionCard eyebrow="Finalizando diagnóstico" title="⚠️ Detectamos padrões que indicam perda financeira recorrente">
+                <div className="space-y-6">
+                  <p className="text-base leading-7 text-[var(--text-secondary)]">Estamos finalizando seu diagnóstico...</p>
+
+                  <div className="rounded-3xl border border-[rgba(212,99,99,.35)] bg-[rgba(212,99,99,.08)] p-4">
+                    <motion.div
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ duration: 1.6, repeat: Infinity }}
+                      className="flex items-center gap-2 text-sm font-semibold text-[var(--danger)]"
+                    >
+                      <AlertTriangle size={16} />
+                      Sinal de atenção: decisões financeiras no escuro
+                    </motion.div>
+                  </div>
+
+                  <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(5,7,13,.74)] p-5">
+                    <ProgressBar current={Math.min(quizQuestions.length, quizQuestions.length)} total={quizQuestions.length} label="Processando respostas" stageText={progressStages[analysisIndex]} />
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,.08)]">
+                      <motion.div
+                        initial={{ width: '12%' }}
+                        animate={{ width: `${analysisProgress}%` }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className="h-full rounded-full bg-gradient-to-r from-[var(--danger)] via-[var(--primary)] to-[var(--accent-cyan)]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </QuestionCard>
             </motion.div>
           ) : (
             <motion.div
               key={currentQuestion.id}
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.32 }}
-              className="space-y-4 sm:space-y-5"
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-5"
             >
-              <div className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 sm:p-5">
+              <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(15,23,42,.62)] p-4 sm:p-5">
                 <ProgressBar
                   current={questionIndex + 1}
                   total={quizQuestions.length}
-                  label="Diagnóstico financeiro em andamento"
-                  percentageLabel={`Diagnóstico ${diagnosisPercent}% concluído`}
+                  label="Diagnóstico em andamento"
+                  stageText={getStageByQuestionIndex(questionIndex)}
                 />
-                <AnimatePresence mode="wait">
-                  {progressMessage ? (
-                    <motion.p
-                      key={progressMessage}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.22 }}
-                      className="mt-3 text-sm font-medium leading-6 text-[var(--text-secondary)]"
-                    >
-                      {progressMessage}
-                    </motion.p>
-                  ) : null}
-                </AnimatePresence>
-                <AnimatePresence mode="wait">
-                  {psychologicalAlerts[questionIndex] ? (
-                    <motion.p
-                      key={psychologicalAlerts[questionIndex]}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.22, delay: 0.04 }}
-                      className="mt-2 text-sm font-medium leading-6 text-[var(--text-secondary)]"
-                    >
-                      {psychologicalAlerts[questionIndex]}
-                    </motion.p>
-                  ) : null}
-                </AnimatePresence>
               </div>
 
-              <QuestionCard eyebrow="Pré-diagnóstico financeiro" title={currentQuestion.title}>
+              <QuestionCard eyebrow="Diagnóstico financeiro pessoal" title={currentQuestion.title}>
                 <div className="space-y-3">
                   {currentQuestion.options.map((option) => (
                     <AnswerButton
@@ -311,19 +292,21 @@ export default function QuizClient() {
                   ))}
                 </div>
 
-                <div className="mt-5 min-h-7">
-                  <AnimatePresence>
-                    {feedback ? (
-                      <motion.p
-                        key={feedback}
-                        initial={{ opacity: 0, y: 8 }}
+                <div className="mt-5 min-h-8">
+                  <AnimatePresence mode="wait">
+                    {responseAlert ? (
+                      <motion.div
+                        key={responseAlert}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-sm font-medium text-[var(--text-secondary)]"
+                        transition={{ duration: 0.22 }}
+                        className="rounded-2xl border border-[rgba(250,204,21,.34)] bg-[rgba(250,204,21,.08)] px-4 py-3 text-sm font-medium text-[rgb(250,204,21)]"
                       >
-                        {feedback}
-                      </motion.p>
+                        <motion.span animate={{ opacity: [0.85, 1, 0.85] }} transition={{ duration: 1.4, repeat: Infinity }}>
+                          {responseAlert}
+                        </motion.span>
+                      </motion.div>
                     ) : null}
                   </AnimatePresence>
                 </div>

@@ -8,16 +8,17 @@ import { Space_Grotesk } from 'next/font/google';
 import { motion } from 'motion/react';
 import {
   ArrowRight,
-  BarChart3,
   BrainCircuit,
   Check,
   CircleAlert,
-  CreditCard,
+  Compass,
+  LineChart,
   Lock,
   MessageCircle,
   Sparkles,
   Target,
   Wallet,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ButtonPrimary, ButtonSecondary, Container, Header, Section } from '@/components/ui/premium-primitives';
@@ -44,10 +45,10 @@ type Plan = {
 };
 
 const reveal = {
-  initial: { opacity: 0, y: 24 },
+  initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.45 },
+  viewport: { once: true, amount: 0.18 },
+  transition: { duration: 0.44 },
 } as const;
 
 const partners = ['Stripe', 'OpenAI', 'Supabase', 'Vercel', 'Meta', 'Recharts'];
@@ -62,15 +63,27 @@ const problemBullets = [
 const solutionChecks = [
   'Onde você está perdendo dinheiro',
   'O que ajustar agora',
-  'Como melhorar mês a mês',
+  'Como evoluir mês a mês',
 ];
 
 const benefits = [
-  'Veja seu dinheiro com contexto',
-  'Receba alertas antes do problema',
-  'Entenda padrões automaticamente',
-  'Tome decisões com segurança',
-  'Tenha um plano claro todo mês',
+  { icon: Compass, title: 'Contexto real', description: 'Veja seu dinheiro com contexto e entenda o impacto de cada decisão.' },
+  { icon: CircleAlert, title: 'Alertas antecipados', description: 'Receba sinais antes do problema virar descontrole.' },
+  { icon: BrainCircuit, title: 'Padrões invisíveis', description: 'A IA identifica repetições que passam despercebidas no dia a dia.' },
+  { icon: Target, title: 'Decisão com segurança', description: 'Saiba exatamente o que ajustar sem agir no escuro.' },
+  { icon: LineChart, title: 'Evolução mensal', description: 'Tenha um plano claro e acompanhe sua melhora ao longo dos meses.' },
+];
+
+const lossSources = [
+  { label: 'Assinaturas esquecidas', value: 'R$120/mês', hint: 'Pagamentos recorrentes sem uso real.' },
+  { label: 'Taxas invisíveis', value: 'R$80/mês', hint: 'Custos pequenos que se acumulam sem percepção.' },
+  { label: 'Pequenos gastos', value: 'R$220/mês', hint: 'Compras de baixo valor com alto impacto anual.' },
+];
+
+const aiFindings = [
+  'Seu pico de gasto ocorre na semana 3',
+  'Você pode economizar até R$680/mês',
+  'Seu padrão está desbalanceado em alimentação e recorrentes',
 ];
 
 const planFeatures = {
@@ -126,7 +139,7 @@ const planBlueprint = {
   PREMIUM: {
     name: 'Premium' as const,
     badge: 'Estratégico',
-    description: 'Para operações que querem IA sem limite mensal, previsões mais profundas e uma camada mais estratégica de inteligência financeira.',
+    description: 'Para quem busca IA sem limite mensal, previsões mais profundas e uma camada mais estratégica de inteligência financeira.',
     ctaLabel: 'Assinar Premium',
     href: '/signup?plan=premium',
     features: planFeatures.PREMIUM,
@@ -243,12 +256,50 @@ function alignPlanCopy(plan: Plan): Plan {
   };
 }
 
+function useNumberTicker(target: number, duration = 900) {
+  const [value, setValue] = React.useState(0);
+
+  React.useEffect(() => {
+    let frame = 0;
+    let raf = 0;
+    const start = performance.now();
+    const loop = (time: number) => {
+      const progress = Math.min((time - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const next = Math.round(target * eased);
+      if (next !== frame) {
+        frame = next;
+        setValue(next);
+      }
+      if (progress < 1) raf = window.requestAnimationFrame(loop);
+    };
+    raf = window.requestAnimationFrame(loop);
+    return () => window.cancelAnimationFrame(raf);
+  }, [target, duration]);
+
+  return value;
+}
+
+function CurrencyTicker({ target }: { target: number }) {
+  const value = useNumberTicker(target);
+  return (
+    <span>
+      {new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        maximumFractionDigits: 0,
+      }).format(value)}
+    </span>
+  );
+}
+
 function AnimatedChart() {
   const gradientA = React.useId();
   const gradientB = React.useId();
+  const glowId = React.useId();
 
   return (
-    <svg viewBox="0 0 360 130" className="h-32 w-full">
+    <svg viewBox="0 0 360 130" className="h-32 w-full" aria-hidden>
       <defs>
         <linearGradient id={gradientA} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="var(--primary)" />
@@ -258,14 +309,23 @@ function AnimatedChart() {
           <stop offset="0%" stopColor="var(--accent-indigo)" />
           <stop offset="100%" stopColor="var(--primary)" />
         </linearGradient>
+        <filter id={glowId} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.2" result="glow" />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
+
       <motion.path
         d="M0,106 C34,96 68,80 102,62 C136,46 170,48 204,61 C236,72 268,84 300,74 C326,66 344,50 360,36"
         fill="none"
         stroke={`url(#${gradientA})`}
-        strokeWidth="3.2"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
+        strokeWidth="3.1"
+        filter={`url(#${glowId})`}
+        initial={{ pathLength: 0, opacity: 0.72 }}
+        whileInView={{ pathLength: 1, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1.15 }}
       />
@@ -273,36 +333,46 @@ function AnimatedChart() {
         d="M0,120 C34,116 66,110 98,104 C134,98 170,94 206,88 C242,82 272,84 304,92 C328,98 345,104 360,108"
         fill="none"
         stroke={`url(#${gradientB})`}
-        strokeWidth="2.2"
-        strokeOpacity="0.7"
+        strokeWidth="2.1"
+        strokeOpacity="0.82"
         initial={{ pathLength: 0 }}
         whileInView={{ pathLength: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1.2, delay: 0.06 }}
       />
+      <motion.circle
+        cx="300"
+        cy="74"
+        r="3.8"
+        fill="var(--accent-cyan)"
+        animate={{ opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
+        transition={{ duration: 2.2, repeat: Infinity }}
+      />
     </svg>
   );
 }
 
-function HeroVisual({ offset }: { offset: number }) {
+function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax: boolean }) {
   return (
     <motion.div
-      className="landing-hero-cluster"
-      style={{ transform: `translate3d(0, ${offset * -1}px, 0)` }}
-      initial={{ opacity: 0, y: 18 }}
+      className="landing-hero-cluster relative"
+      style={{ transform: `translate3d(0, ${enableParallax ? offset * -1 : 0}px, 0)` }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55 }}
     >
       <div className="landing-panel landing-glass p-4 sm:p-5">
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Entradas', value: 'R$ 9.120' },
-            { label: 'Despesas', value: 'R$ 5.940' },
-            { label: 'Margem', value: '+R$ 3.180' },
+            { label: 'Entradas', value: 9120 },
+            { label: 'Despesas', value: 5940 },
+            { label: 'Margem', value: 3180 },
           ].map((item) => (
             <div key={item.label} className="landing-tile p-3">
               <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{item.label}</p>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{item.value}</p>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
+                <CurrencyTicker target={item.value} />
+              </p>
             </div>
           ))}
         </div>
@@ -314,16 +384,16 @@ function HeroVisual({ offset }: { offset: number }) {
       </div>
 
       <motion.div
-        className="landing-float-card landing-float-card-left landing-panel landing-glass p-3"
-        animate={{ y: [0, -7, 0] }}
-        transition={{ duration: 4.5, repeat: Infinity }}
+        className="landing-floating-chip landing-panel landing-glass p-3"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 5, repeat: Infinity }}
       >
         <p className="text-xs text-[var(--text-secondary)]">Despesas invisíveis</p>
-        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$ 680/mês</p>
+        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$680/mês</p>
       </motion.div>
 
       <motion.div
-        className="landing-float-card landing-float-card-right landing-panel landing-glass p-3"
+        className="landing-floating-chip-alt landing-panel landing-glass p-3"
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 5.3, repeat: Infinity }}
       >
@@ -338,6 +408,23 @@ export default function LandingPage() {
   const router = useRouter();
   const [plans, setPlans] = React.useState<Plan[]>(fallbackPlans.map(alignPlanCopy));
   const [scrollY, setScrollY] = React.useState(0);
+  const [enableParallax, setEnableParallax] = React.useState(true);
+
+  React.useEffect(() => {
+    const mediaMobile = window.matchMedia('(max-width: 768px)');
+    const mediaReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const sync = () => setEnableParallax(!(mediaMobile.matches || mediaReduce.matches));
+    sync();
+
+    mediaMobile.addEventListener('change', sync);
+    mediaReduce.addEventListener('change', sync);
+
+    return () => {
+      mediaMobile.removeEventListener('change', sync);
+      mediaReduce.removeEventListener('change', sync);
+    };
+  }, []);
 
   React.useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY || 0);
@@ -371,11 +458,11 @@ export default function LandingPage() {
     { label: 'FAQ', onClick: () => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }) },
   ];
 
-  const backgroundOffset = Math.min(scrollY * 0.09, 36);
-  const heroOffset = Math.min(scrollY * 0.05, 24);
+  const backgroundOffset = enableParallax ? Math.min(scrollY * 0.08, 34) : 0;
+  const heroOffset = enableParallax ? Math.min(scrollY * 0.045, 22) : 0;
 
   return (
-    <div className={`landing-premium-shell theme-landing-shell marketing-dark-shell min-h-screen ${displayFont.variable}`}>
+    <div className={`landing-premium-shell min-h-screen ${displayFont.variable}`}>
       <div className="landing-premium-backdrop pointer-events-none fixed inset-0 -z-20" style={{ transform: `translate3d(0, ${backgroundOffset * -1}px, 0)` }} />
       <div className="landing-noise pointer-events-none fixed inset-0 -z-10" />
       <div className="landing-grid-overlay pointer-events-none fixed inset-0 -z-10" />
@@ -401,13 +488,13 @@ export default function LandingPage() {
 
       <Container className="landing-page-flow">
         <Section className="pt-14 lg:pt-20">
-          <section id="produto" className="landing-hero-spotlight grid items-center gap-12 xl:gap-14 lg:grid-cols-[1.05fr_.95fr]">
+          <section id="produto" className="landing-hero-spotlight grid items-center gap-12 xl:gap-14 lg:grid-cols-[1.02fr_.98fr]">
             <motion.div {...reveal} className="space-y-6">
               <span className="badge-premium badge-premium-info px-4 py-2 text-xs">
                 <Sparkles size={13} /> IA aplicada ao seu financeiro
               </span>
 
-              <h1 className="max-w-4xl text-4xl font-bold leading-[1.05] tracking-tight text-[var(--text-primary)] md:text-6xl">
+              <h1 className="max-w-4xl text-4xl font-bold leading-[1.06] tracking-tight text-[var(--text-primary)] md:text-6xl">
                 Você não está sem dinheiro. Está sem visibilidade.
               </h1>
 
@@ -416,10 +503,10 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => router.push('/signup')}>
+                <ButtonPrimary className="px-6 py-3 text-sm hover:scale-[1.02]" onClick={() => router.push('/signup')}>
                   Começar grátis agora <ArrowRight size={16} />
                 </ButtonPrimary>
-                <ButtonSecondary className="px-6 py-3 text-sm" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>
+                <ButtonSecondary className="px-6 py-3 text-sm hover:scale-[1.02]" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>
                   Ver como funciona
                 </ButtonSecondary>
               </div>
@@ -434,7 +521,7 @@ export default function LandingPage() {
               </div>
             </motion.div>
 
-            <HeroVisual offset={heroOffset} />
+            <HeroVisual offset={heroOffset} enableParallax={enableParallax} />
           </section>
 
           <motion.div {...reveal} className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
@@ -459,7 +546,7 @@ export default function LandingPage() {
                   </p>
                 ))}
               </div>
-              <p className="text-sm leading-7 text-[var(--text-secondary)]">E o pior: quanto mais tempo passa, mais isso se acumula.</p>
+              <p className="text-sm leading-7 text-[var(--text-secondary)]">E quanto mais o tempo passa, mais isso se acumula.</p>
             </div>
 
             <div className="landing-panel landing-glass landing-depth-card p-6 sm:p-7">
@@ -481,6 +568,33 @@ export default function LandingPage() {
         </Section>
 
         <Section>
+          <motion.section {...reveal} className="space-y-6">
+            <div className="space-y-3 text-center">
+              <p className="label-premium">Você está perdendo dinheiro aqui</p>
+              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Pequenos vazamentos mensais viram uma perda grande no ano.
+              </h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {lossSources.map((item, index) => (
+                <motion.div
+                  key={item.label}
+                  className="landing-glow-card rounded-[var(--radius-lg)] p-5"
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.22 }}
+                  transition={{ duration: 0.36, delay: index * 0.05 }}
+                >
+                  <p className="label-premium">{item.label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{item.value}</p>
+                  <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{item.hint}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        </Section>
+
+        <Section>
           <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[.98fr_1.02fr]">
             <div className="landing-panel landing-glass landing-depth-card p-6 sm:p-7">
               <p className="label-premium">Sistema real em uso</p>
@@ -493,7 +607,7 @@ export default function LandingPage() {
 
               <div className="mt-4 landing-tile p-4">
                 <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Impacto estimado</p>
-                <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">+R$ 680/mês</p>
+                <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">+R$680/mês</p>
               </div>
 
               <div className="mt-4 landing-tile p-3">
@@ -504,9 +618,9 @@ export default function LandingPage() {
             <div className="space-y-4">
               <p className="label-premium">Solução</p>
               <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
-                Clareza financeira em minutos sem planilhas e sem esforço.
+                Clareza financeira em minutos, sem planilhas e sem esforço.
               </h2>
-              <p className="text-base leading-8 text-[var(--text-secondary)]">O Cote conecta seus dados e mostra:</p>
+              <p className="text-base leading-8 text-[var(--text-secondary)]">O Cote analisa seu comportamento e mostra:</p>
               <div className="space-y-2">
                 {solutionChecks.map((item) => (
                   <p key={item} className="inline-flex w-full items-center gap-2 text-sm leading-7 text-[var(--text-secondary)]">
@@ -521,28 +635,62 @@ export default function LandingPage() {
         </Section>
 
         <Section>
+          <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[1.04fr_.96fr]">
+            <div className="space-y-4">
+              <p className="label-premium">O que a IA vê que você não vê</p>
+              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Direcionamento claro com base em padrões reais, não em achismo.
+              </h2>
+              <div className="space-y-2">
+                {aiFindings.map((item) => (
+                  <p key={item} className="inline-flex w-full items-center gap-2 text-sm leading-7 text-[var(--text-secondary)]">
+                    <Zap size={15} className="text-[var(--accent-cyan)]" />
+                    {item}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div className="landing-panel landing-depth-card p-6 sm:p-7">
+              <div className="landing-tile p-4">
+                <p className="label-premium">Padrão detectado</p>
+                <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">Pico de despesa entre dia 19 e 24</p>
+                <p className="mt-1 text-sm leading-7 text-[var(--text-secondary)]">Concentração em alimentação e recorrentes no fim do ciclo.</p>
+              </div>
+              <div className="mt-4 landing-tile p-4">
+                <p className="label-premium">Simulação de correção</p>
+                <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">Economia potencial anual de R$8.160</p>
+                <div className="mt-3">
+                  <AnimatedChart />
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        </Section>
+
+        <Section>
           <div id="como-funciona" />
           <motion.section {...reveal} className="space-y-8">
             <div className="space-y-3 text-center">
               <p className="label-premium">Como funciona</p>
-              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Conecte. Entenda. Decida melhor.</h2>
+              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Organize. Entenda. Decida melhor.</h2>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
               {[
                 {
-                  title: '1. Conecte suas contas',
-                  desc: 'Centralize as informações em um só lugar.',
+                  title: '1. Organize suas informações financeiras',
+                  desc: 'Tenha tudo em um só lugar para enxergar o cenário completo.',
                   icon: Wallet,
                 },
                 {
-                  title: '2. O sistema analisa automaticamente',
-                  desc: 'A IA encontra padrões e desperdícios invisíveis.',
+                  title: '2. A IA analisa seu comportamento',
+                  desc: 'Identifica padrões e desperdícios invisíveis na rotina.',
                   icon: BrainCircuit,
                 },
                 {
-                  title: '3. Receba recomendações claras',
-                  desc: 'Aja com contexto real e acompanhe evolução.',
+                  title: '3. Receba direcionamento claro',
+                  desc: 'Saiba exatamente o que fazer para melhorar mês a mês.',
                   icon: Target,
                 },
               ].map((step) => (
@@ -559,48 +707,70 @@ export default function LandingPage() {
         </Section>
 
         <Section>
-          <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[1.02fr_.98fr]">
-            <div className="space-y-4">
+          <motion.section {...reveal} className="space-y-8">
+            <div className="space-y-3 text-center">
               <p className="label-premium">Benefícios</p>
-              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Tudo que você precisa para sair do modo tentativa e erro.</h2>
-              <div className="space-y-2">
-                {benefits.map((item) => (
-                  <p key={item} className="inline-flex w-full items-center gap-2 text-sm leading-7 text-[var(--text-secondary)]">
-                    <Check size={15} className="text-[var(--accent-cyan)]" />
-                    {item}
-                  </p>
-                ))}
+              <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Tudo que você precisa para sair do modo tentativa e erro.
+              </h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {benefits.map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  className="landing-glow-card rounded-[var(--radius-lg)] p-5"
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.36, delay: index * 0.04 }}
+                >
+                  <item.icon size={16} className="text-[var(--accent-cyan)]" />
+                  <p className="mt-3 text-lg font-semibold text-[var(--text-primary)]">{item.title}</p>
+                  <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        </Section>
+
+        <Section>
+          <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[1.05fr_.95fr]">
+            <div className="space-y-4">
+              <p className="label-premium">Simulação prática</p>
+              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Menos ansiedade, mais direção no mês.
+              </h2>
+              <p className="text-base leading-8 text-[var(--text-secondary)]">
+                Com visão centralizada e recomendações claras, você para de reagir no escuro e começa a executar um plano financeiro consistente.
+              </p>
+              <div className="space-y-2 text-sm leading-7 text-[var(--text-secondary)]">
+                <p className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" /> Acompanhamento de metas e dívidas com contexto
+                </p>
+                <p className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" /> Ajustes práticos priorizados por impacto
+                </p>
+                <p className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" /> Evolução mensurável sem aumentar complexidade
+                </p>
               </div>
             </div>
 
-            <div className="landing-hero-cluster">
-              <div className="landing-panel landing-glass landing-depth-card p-6 sm:p-7">
-                <p className="label-premium">Sistema real em uso</p>
-                <div className="mt-4 landing-tile p-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="landing-tile p-3">
-                      <p className="text-xs text-[var(--text-muted)]">Gasto mensal</p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$ 5.940</p>
-                    </div>
-                    <div className="landing-tile p-3">
-                      <p className="text-xs text-[var(--text-muted)]">Economia potencial</p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$ 680</p>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <AnimatedChart />
-                  </div>
+            <div className="landing-panel landing-depth-card p-6 sm:p-7">
+              <p className="label-premium">Painel de decisão</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="landing-tile p-3">
+                  <p className="text-xs text-[var(--text-muted)]">Gasto mensal</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$5.940</p>
+                </div>
+                <div className="landing-tile p-3">
+                  <p className="text-xs text-[var(--text-muted)]">Economia potencial</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$680</p>
                 </div>
               </div>
-
-              <motion.div
-                className="landing-float-card landing-benefits-float landing-panel landing-glass p-3"
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 5.4, repeat: Infinity }}
-              >
-                <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Projeção</p>
-                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">+R$ 8.160 ao ano</p>
-              </motion.div>
+              <div className="mt-4 landing-tile p-3">
+                <AnimatedChart />
+              </div>
             </div>
           </motion.section>
         </Section>
@@ -608,7 +778,7 @@ export default function LandingPage() {
         <Section>
           <motion.div {...reveal} className="landing-metrics-strip">
             {[
-              { label: 'Usuários', value: '+12.000' },
+              { label: 'Usuários ativos', value: '+12.000' },
               { label: 'Valor analisado', value: 'R$320 milhões' },
               { label: 'Relatam mais clareza', value: '94%' },
             ].map((metric) => (
@@ -632,8 +802,14 @@ export default function LandingPage() {
                 quote: 'Eu achava que precisava ganhar mais. Descobri que estava desperdiçando dinheiro.',
                 author: 'João',
               },
-              { quote: 'Agora sei exatamente onde cortar.', author: 'Mariana' },
-              { quote: 'Tenho um plano claro todo mês.', author: 'Carlos' },
+              {
+                quote: 'Agora sei exatamente onde cortar e o que manter.',
+                author: 'Mariana',
+              },
+              {
+                quote: 'Tenho um plano claro todo mês e parei de decidir no impulso.',
+                author: 'Carlos',
+              },
             ].map((item) => (
               <div key={item.author} className="landing-panel p-6">
                 <p className="text-base leading-7 text-[var(--text-primary)]">&ldquo;{item.quote}&rdquo;</p>
@@ -647,7 +823,9 @@ export default function LandingPage() {
           <div id="planos" />
           <motion.section {...reveal} className="space-y-3 text-center">
             <p className="label-premium">Planos</p>
-            <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Escolha o plano ideal para assumir o controle do seu dinheiro.</h2>
+            <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+              Escolha o plano ideal para assumir o controle do seu dinheiro.
+            </h2>
           </motion.section>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -668,7 +846,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={plan.href} className={plan.highlight ? 'button-primary mt-6 w-full px-4 py-3 text-sm font-semibold' : 'button-secondary mt-6 w-full px-4 py-3 text-sm font-semibold'}>
+                <Link href={plan.href} className={plan.highlight ? 'button-primary mt-6 w-full px-4 py-3 text-sm font-semibold hover:scale-[1.02]' : 'button-secondary mt-6 w-full px-4 py-3 text-sm font-semibold hover:scale-[1.02]'}>
                   {plan.ctaLabel}
                 </Link>
               </div>
@@ -686,6 +864,7 @@ export default function LandingPage() {
         </Section>
 
         <Section>
+          <div id="faq" />
           <motion.section {...reveal} className="grid gap-6 lg:grid-cols-2">
             <div className="landing-panel p-6">
               <h3 className="text-xl font-semibold text-[var(--text-primary)]">Funciona pra mim?</h3>
@@ -703,19 +882,16 @@ export default function LandingPage() {
               <h3 className="text-xl font-semibold text-[var(--text-primary)]">Segurança</h3>
               <div className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
                 <p className="inline-flex items-center gap-2">
-                  <Check size={14} className="text-[var(--accent-cyan)]" /> Nível bancário
+                  <Lock size={14} className="text-[var(--accent-cyan)]" /> Proteção de dados com criptografia
                 </p>
                 <p className="inline-flex items-center gap-2">
-                  <Check size={14} className="text-[var(--accent-cyan)]" /> Dados criptografados
+                  <MessageCircle size={14} className="text-[var(--accent-cyan)]" /> Suporte para decisões com mais confiança
                 </p>
               </div>
             </div>
           </motion.section>
-        </Section>
 
-        <Section>
-          <div id="faq" />
-          <motion.section {...reveal} className="space-y-3 text-center">
+          <motion.section {...reveal} className="mt-6 space-y-3 text-center">
             <p className="label-premium">FAQ</p>
             <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Objeções mais comuns.</h2>
           </motion.section>
@@ -750,10 +926,10 @@ export default function LandingPage() {
           <motion.div {...reveal} className="landing-final-cta">
             <h2 className="mx-auto max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-5xl">Pare de perder dinheiro sem perceber.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
-              Descubra hoje o que ajustar e mude sua vida financeira.
+              Descubra hoje o que está travando sua vida financeira e o que fazer para mudar isso.
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => router.push('/signup')}>
+              <ButtonPrimary className="px-6 py-3 text-sm hover:scale-[1.02]" onClick={() => router.push('/signup')}>
                 Começar grátis agora <ArrowRight size={16} />
               </ButtonPrimary>
             </div>
