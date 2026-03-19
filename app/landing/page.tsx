@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Space_Grotesk } from 'next/font/google';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import {
   ArrowRight,
   BrainCircuit,
@@ -45,10 +45,10 @@ type Plan = {
 };
 
 const reveal = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 14 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.18 },
-  transition: { duration: 0.44 },
+  viewport: { once: true, amount: 0.16 },
+  transition: { duration: 0.4, ease: 'easeOut' },
 } as const;
 
 const partners = ['Stripe', 'OpenAI', 'Supabase', 'Vercel', 'Meta', 'Recharts'];
@@ -299,6 +299,7 @@ function CurrencyTicker({ target }: { target: number }) {
 }
 
 function AnimatedChart() {
+  const shouldReduceMotion = useReducedMotion();
   const gradientA = React.useId();
   const gradientB = React.useId();
   const glowId = React.useId();
@@ -329,10 +330,10 @@ function AnimatedChart() {
         stroke={`url(#${gradientA})`}
         strokeWidth="3.1"
         filter={`url(#${glowId})`}
-        initial={{ pathLength: 0, opacity: 0.72 }}
-        whileInView={{ pathLength: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.15 }}
+        strokeLinecap="round"
+        initial={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 0.08, opacity: 0.2 }}
+        animate={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 1, opacity: [0.56, 1, 0.72] }}
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.05, ease: 'easeOut' }}
       />
       <motion.path
         d="M0,120 C34,116 66,110 98,104 C134,98 170,94 206,88 C242,82 272,84 304,92 C328,98 345,104 360,108"
@@ -340,18 +341,31 @@ function AnimatedChart() {
         stroke={`url(#${gradientB})`}
         strokeWidth="2.1"
         strokeOpacity="0.82"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.2, delay: 0.06 }}
+        strokeLinecap="round"
+        initial={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 0.08, opacity: 0.16 }}
+        animate={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 1, opacity: [0.42, 0.8, 0.58] }}
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.1, delay: 0.06, ease: 'easeOut' }}
       />
+      {shouldReduceMotion ? null : (
+        <motion.path
+          d="M0,106 C34,96 68,80 102,62 C136,46 170,48 204,61 C236,72 268,84 300,74 C326,66 344,50 360,36"
+          fill="none"
+          stroke="var(--accent-cyan)"
+          strokeWidth="1.1"
+          strokeLinecap="round"
+          strokeDasharray="5 11"
+          initial={{ strokeDashoffset: 0, opacity: 0 }}
+          animate={{ strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] }}
+          transition={{ duration: 3.4, repeat: Infinity, ease: 'linear' }}
+        />
+      )}
       <motion.circle
         cx="300"
         cy="74"
         r="3.8"
         fill="var(--accent-cyan)"
-        animate={{ opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
-        transition={{ duration: 2.2, repeat: Infinity }}
+        animate={shouldReduceMotion ? { opacity: 0.9, scale: 1 } : { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 2.2, repeat: Infinity }}
       />
     </svg>
   );
@@ -361,37 +375,38 @@ function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax
   return (
     <motion.div
       className="landing-hero-cluster relative"
-      style={{ transform: `translate3d(0, ${enableParallax ? offset * -1 : 0}px, 0)` }}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55 }}
     >
-      <div className="landing-panel landing-glass p-4 sm:p-5">
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { label: 'Entradas', value: 9120 },
-            { label: 'Despesas', value: 5940 },
-            { label: 'Margem', value: 3180 },
-          ].map((item) => (
-            <div key={item.label} className="landing-tile p-3">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{item.label}</p>
-              <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
-                <CurrencyTicker target={item.value} />
-              </p>
-            </div>
-          ))}
-        </div>
+      <motion.div style={enableParallax ? { y: offset * -1 } : undefined}>
+        <div className="landing-panel landing-glass p-4 sm:p-5">
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: 'Entradas', value: 9120 },
+              { label: 'Despesas', value: 5940 },
+              { label: 'Margem', value: 3180 },
+            ].map((item) => (
+              <div key={item.label} className="landing-tile p-3">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
+                  <CurrencyTicker target={item.value} />
+                </p>
+              </div>
+            ))}
+          </div>
 
-        <div className="mt-4 landing-tile p-3">
-          <p className="label-premium">Fluxo financeiro vivo</p>
-          <AnimatedChart />
+          <div className="mt-4 landing-tile p-3">
+            <p className="label-premium">Fluxo financeiro vivo</p>
+            <AnimatedChart />
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       <motion.div
         className="landing-floating-chip landing-panel landing-glass p-3"
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 5, repeat: Infinity }}
+        animate={enableParallax ? { y: [0, -6, 0] } : undefined}
+        transition={enableParallax ? { duration: 5, repeat: Infinity } : undefined}
       >
         <p className="text-xs text-[var(--text-secondary)]">Despesas invisíveis</p>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$680/mês</p>
@@ -399,8 +414,8 @@ function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax
 
       <motion.div
         className="landing-floating-chip-alt landing-panel landing-glass p-3"
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 5.3, repeat: Infinity }}
+        animate={enableParallax ? { y: [0, -8, 0] } : undefined}
+        transition={enableParallax ? { duration: 5.3, repeat: Infinity } : undefined}
       >
         <p className="text-xs text-[var(--text-secondary)]">Ação prioritária</p>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Cortar assinaturas</p>
@@ -473,50 +488,52 @@ export default function LandingPage() {
       <div className="landing-grid-overlay pointer-events-none fixed inset-0 -z-10" />
 
       <Header
+        className="landing-mobile-header"
         logo={
-          <Link href="/" className="flex items-center">
-            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={620} height={160} priority className="h-14 w-auto lg:h-16" />
+          <Link href="/" className="landing-header-logo flex items-center">
+            <Image src="/brand/cote-favicon.svg" alt="Cote Finance AI" width={40} height={40} priority className="size-9 sm:hidden" />
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={620} height={160} priority className="hidden h-11 w-auto sm:block lg:h-16" />
           </Link>
         }
         navItems={navItems}
         actions={
           <>
-            <ButtonSecondary className="px-4 py-2 text-sm" onClick={() => router.push('/app?auth=login')}>
+            <ButtonSecondary className="h-9 min-h-9 rounded-xl px-3 text-xs sm:h-auto sm:min-h-[44px] sm:px-4 sm:text-sm" onClick={() => router.push('/app?auth=login')}>
               Entrar
             </ButtonSecondary>
-            <ButtonPrimary className="px-4 py-2 text-sm" onClick={() => router.push('/signup')}>
-              Começar grátis agora
+            <ButtonPrimary className="h-9 min-h-9 rounded-xl px-3 text-xs sm:h-auto sm:min-h-[44px] sm:px-4 sm:text-sm" onClick={() => router.push('/signup')}>
+              Começar grátis
             </ButtonPrimary>
           </>
         }
       />
 
       <Container className="landing-page-flow">
-        <Section className="pt-14 lg:pt-20">
-          <section id="produto" className="landing-hero-spotlight grid items-center gap-12 xl:gap-14 lg:grid-cols-[1.02fr_.98fr]">
-            <motion.div {...reveal} className="space-y-6">
+        <Section className="pt-10 sm:pt-14 lg:pt-20">
+          <section id="produto" className="landing-hero-spotlight grid items-center gap-8 sm:gap-11 xl:gap-14 lg:grid-cols-[1.02fr_.98fr]">
+            <motion.div {...reveal} className="space-y-5 sm:space-y-6">
               <span className="badge-premium badge-premium-info px-4 py-2 text-xs">
                 <Sparkles size={13} /> IA aplicada ao seu financeiro
               </span>
 
-              <h1 className="max-w-4xl text-4xl font-bold leading-[1.06] tracking-tight text-[var(--text-primary)] md:text-6xl">
+              <h1 className="max-w-4xl text-[clamp(2rem,9vw,2.65rem)] font-bold leading-[1.08] tracking-tight text-[var(--text-primary)] sm:text-5xl md:text-6xl">
                 Você não está sem dinheiro. Está sem visibilidade.
               </h1>
 
-              <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)] md:text-lg">
+              <p className="max-w-2xl text-[15px] leading-7 text-[var(--text-secondary)] sm:text-base sm:leading-8 md:text-lg">
                 Descubra para onde seu dinheiro realmente vai, elimine desperdícios invisíveis e tome decisões financeiras com confiança em minutos.
               </p>
 
-              <div className="flex flex-wrap gap-3">
-                <ButtonPrimary className="px-6 py-3 text-sm hover:scale-[1.02]" onClick={() => router.push('/signup')}>
+              <div className="grid gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
+                <ButtonPrimary className="w-full px-5 py-3 text-sm hover:scale-[1.02] sm:w-auto sm:px-6" onClick={() => router.push('/signup')}>
                   Começar grátis agora <ArrowRight size={16} />
                 </ButtonPrimary>
-                <ButtonSecondary className="px-6 py-3 text-sm hover:scale-[1.02]" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>
+                <ButtonSecondary className="w-full px-5 py-3 text-sm hover:scale-[1.02] sm:w-auto sm:px-6" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>
                   Ver como funciona
                 </ButtonSecondary>
               </div>
 
-              <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--text-secondary)]">
+              <ul className="flex flex-wrap items-center gap-x-3 gap-y-2.5 text-[13px] text-[var(--text-secondary)] sm:gap-x-4 sm:text-sm">
                 <li className="inline-flex items-center gap-2">
                   <Check size={14} className="text-[var(--accent-cyan)]" />
                   <span>Sem cartão de crédito</span>
@@ -531,7 +548,7 @@ export default function LandingPage() {
             <HeroVisual offset={heroOffset} enableParallax={enableParallax} />
           </section>
 
-          <motion.div {...reveal} className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          <motion.div {...reveal} className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)] sm:mt-12 sm:gap-x-6 sm:text-xs sm:tracking-[0.18em]">
             {partners.map((partner) => (
               <span key={partner}>{partner}</span>
             ))}
