@@ -332,7 +332,8 @@ function AnimatedChart() {
         filter={`url(#${glowId})`}
         strokeLinecap="round"
         initial={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 0.08, opacity: 0.2 }}
-        animate={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 1, opacity: [0.56, 1, 0.72] }}
+        whileInView={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 1, opacity: [0.56, 1, 0.72] }}
+        viewport={{ once: true, amount: 0.45 }}
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.05, ease: 'easeOut' }}
       />
       <motion.path
@@ -343,7 +344,8 @@ function AnimatedChart() {
         strokeOpacity="0.82"
         strokeLinecap="round"
         initial={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 0.08, opacity: 0.16 }}
-        animate={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 1, opacity: [0.42, 0.8, 0.58] }}
+        whileInView={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 1, opacity: [0.42, 0.8, 0.58] }}
+        viewport={{ once: true, amount: 0.45 }}
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.1, delay: 0.06, ease: 'easeOut' }}
       />
       {shouldReduceMotion ? null : (
@@ -355,7 +357,8 @@ function AnimatedChart() {
           strokeLinecap="round"
           strokeDasharray="5 11"
           initial={{ strokeDashoffset: 0, opacity: 0 }}
-          animate={{ strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] }}
+          whileInView={{ strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] }}
+          viewport={{ once: false, amount: 0.45 }}
           transition={{ duration: 3.4, repeat: Infinity, ease: 'linear' }}
         />
       )}
@@ -364,7 +367,8 @@ function AnimatedChart() {
         cy="74"
         r="3.8"
         fill="var(--accent-cyan)"
-        animate={shouldReduceMotion ? { opacity: 0.9, scale: 1 } : { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
+        whileInView={shouldReduceMotion ? { opacity: 0.9, scale: 1 } : { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
+        viewport={{ once: false, amount: 0.45 }}
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 2.2, repeat: Infinity }}
       />
     </svg>
