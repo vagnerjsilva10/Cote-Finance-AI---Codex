@@ -2,6 +2,7 @@
 
 :root {
   --bg-app: #0b1220;
+  --bg-deep: #020617;
   --bg-app-secondary: #0f172a;
   --bg-surface: #0f172a;
   --bg-container: #111827;
@@ -22,6 +23,9 @@
   --primary-active: #1d4ed8;
   --primary-soft: rgba(59, 130, 246, 0.18);
   --secondary-highlight: #06b6d4;
+  --accent-indigo: #6366f1;
+  --accent-cyan: #06b6d4;
+  --accent-glow: rgba(99, 102, 241, 0.2);
 
   --success: #2ea97a;
   --success-soft: rgba(46, 169, 122, 0.14);
@@ -205,6 +209,91 @@ body {
       radial-gradient(circle at 18% 12%, rgba(59, 130, 246, 0.14), transparent 30%),
       radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.1), transparent 26%),
       radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.06), transparent 34%);
+  }
+
+  .landing-premium-shell {
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 14% 10%, rgba(59, 130, 246, 0.2), transparent 34%),
+      radial-gradient(circle at 86% 14%, rgba(99, 102, 241, 0.16), transparent 30%),
+      linear-gradient(170deg, var(--bg-deep) 0%, var(--bg-app) 36%, var(--bg-app-secondary) 68%, var(--bg-deep) 100%);
+    color: var(--text-primary);
+    overflow: hidden;
+  }
+
+  .landing-premium-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.16), transparent 42%),
+      radial-gradient(circle at 50% 115%, rgba(6, 182, 212, 0.08), transparent 40%);
+    pointer-events: none;
+    animation: landing-gradient-shift 18s ease-in-out infinite;
+  }
+
+  .landing-premium-backdrop {
+    background:
+      repeating-linear-gradient(
+        128deg,
+        transparent 0 52px,
+        color-mix(in srgb, var(--accent-indigo) 12%, transparent) 52px 53px
+      ),
+      radial-gradient(circle at 22% 12%, rgba(59, 130, 246, 0.18), transparent 36%),
+      radial-gradient(circle at 80% 16%, rgba(99, 102, 241, 0.14), transparent 34%);
+    opacity: 0.42;
+    mask-image: linear-gradient(180deg, black 0%, rgba(0, 0, 0, 0.68) 64%, transparent 100%);
+    animation: landing-beam-drift 22s linear infinite;
+  }
+
+  .landing-hero-spotlight {
+    position: relative;
+  }
+
+  .landing-hero-spotlight::after {
+    content: '';
+    position: absolute;
+    inset: -14% -8% auto -8%;
+    height: 72%;
+    background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0) 72%);
+    pointer-events: none;
+  }
+
+  .landing-glow-card {
+    border: 1px solid color-mix(in srgb, var(--border-default) 86%, transparent);
+    background:
+      linear-gradient(165deg, color-mix(in srgb, var(--bg-surface-elevated) 70%, transparent) 0%, color-mix(in srgb, var(--bg-surface) 92%, transparent) 100%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--border-default) 55%, transparent),
+      0 14px 40px rgba(2, 6, 23, 0.28);
+  }
+
+  .landing-glow-card:hover {
+    border-color: color-mix(in srgb, var(--primary) 32%, var(--border-default));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--primary) 24%, transparent),
+      0 18px 44px rgba(2, 6, 23, 0.36),
+      0 0 0 1px color-mix(in srgb, var(--primary) 22%, transparent);
+    transform: translateY(-2px);
+  }
+
+  .landing-mockup-shell {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: perspective(1400px) rotateX(7deg) rotateY(-6deg);
+    transition:
+      transform var(--transition-normal),
+      box-shadow var(--transition-normal),
+      border-color var(--transition-normal);
+  }
+
+  .landing-mockup-shell:hover {
+    transform: perspective(1400px) rotateX(4deg) rotateY(-2deg) translateY(-4px);
+  }
+
+  .landing-float {
+    animation: landing-float 8s ease-in-out infinite;
   }
 
   .public-light-backdrop,
@@ -582,6 +671,40 @@ body {
     color: var(--text-primary);
     background: color-mix(in srgb, var(--primary-soft) 74%, var(--bg-surface-elevated));
     border-color: color-mix(in srgb, var(--primary) 34%, transparent);
+  }
+}
+
+@keyframes landing-gradient-shift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate3d(0, -1.6%, 0) scale(1.02);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.75;
+  }
+}
+
+@keyframes landing-beam-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-42px, 10px, 0);
+  }
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }
 
