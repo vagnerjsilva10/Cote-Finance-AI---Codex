@@ -539,6 +539,28 @@ export default function LandingPage() {
   const [enableParallax, setEnableParallax] = React.useState(true);
 
   React.useEffect(() => {
+    if (window.location.hash) return;
+
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    if (!mobileQuery.matches) return;
+
+    const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    scrollToTop();
+
+    const raf = window.requestAnimationFrame(scrollToTop);
+    const delayed = window.setTimeout(scrollToTop, 140);
+
+    const onPageShow = () => scrollToTop();
+    window.addEventListener('pageshow', onPageShow);
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(delayed);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, []);
+
+  React.useEffect(() => {
     const mediaMobile = window.matchMedia('(max-width: 768px)');
     const mediaReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
