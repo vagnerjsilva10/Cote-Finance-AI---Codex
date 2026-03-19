@@ -300,9 +300,17 @@ function CurrencyTicker({ target }: { target: number }) {
 
 function AnimatedChart() {
   const shouldReduceMotion = useReducedMotion();
+  const [isIOS, setIsIOS] = React.useState(false);
   const gradientA = React.useId();
   const gradientB = React.useId();
   const glowId = React.useId();
+  const shouldUseViewportReveal = !shouldReduceMotion && !isIOS;
+
+  React.useEffect(() => {
+    const ua = window.navigator.userAgent || '';
+    const iOSLike = /iP(hone|ad|od)/i.test(ua) || (/Mac/i.test(ua) && 'ontouchend' in window);
+    setIsIOS(iOSLike);
+  }, []);
 
   return (
     <svg viewBox="0 0 360 130" className="h-32 w-full" aria-hidden>
@@ -331,10 +339,12 @@ function AnimatedChart() {
         strokeWidth="3.1"
         filter={`url(#${glowId})`}
         strokeLinecap="round"
+        pathLength={1}
         initial={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 0.08, opacity: 0.2 }}
-        whileInView={shouldReduceMotion ? { opacity: 0.95 } : { pathLength: 1, opacity: [0.56, 1, 0.72] }}
-        viewport={{ once: true, amount: 0.45 }}
-        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.05, ease: 'easeOut' }}
+        whileInView={shouldUseViewportReveal ? { pathLength: 1, opacity: [0.56, 1, 0.72] } : undefined}
+        viewport={shouldUseViewportReveal ? { once: true, amount: 0.22 } : undefined}
+        animate={shouldUseViewportReveal ? undefined : shouldReduceMotion ? { opacity: 0.95 } : { pathLength: [0.08, 1], opacity: [0.4, 0.95, 0.72] }}
+        transition={shouldReduceMotion ? { duration: 0 } : isIOS ? { duration: 1.15, ease: 'easeOut' } : { duration: 1.05, ease: 'easeOut' }}
       />
       <motion.path
         d="M0,120 C34,116 66,110 98,104 C134,98 170,94 206,88 C242,82 272,84 304,92 C328,98 345,104 360,108"
@@ -343,10 +353,12 @@ function AnimatedChart() {
         strokeWidth="2.1"
         strokeOpacity="0.82"
         strokeLinecap="round"
+        pathLength={1}
         initial={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 0.08, opacity: 0.16 }}
-        whileInView={shouldReduceMotion ? { opacity: 0.82 } : { pathLength: 1, opacity: [0.42, 0.8, 0.58] }}
-        viewport={{ once: true, amount: 0.45 }}
-        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.1, delay: 0.06, ease: 'easeOut' }}
+        whileInView={shouldUseViewportReveal ? { pathLength: 1, opacity: [0.42, 0.8, 0.58] } : undefined}
+        viewport={shouldUseViewportReveal ? { once: true, amount: 0.22 } : undefined}
+        animate={shouldUseViewportReveal ? undefined : shouldReduceMotion ? { opacity: 0.82 } : { pathLength: [0.08, 1], opacity: [0.3, 0.82, 0.58] }}
+        transition={shouldReduceMotion ? { duration: 0 } : isIOS ? { duration: 1.2, delay: 0.08, ease: 'easeOut' } : { duration: 1.1, delay: 0.06, ease: 'easeOut' }}
       />
       {shouldReduceMotion ? null : (
         <motion.path
@@ -357,8 +369,7 @@ function AnimatedChart() {
           strokeLinecap="round"
           strokeDasharray="5 11"
           initial={{ strokeDashoffset: 0, opacity: 0 }}
-          whileInView={{ strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] }}
-          viewport={{ once: false, amount: 0.45 }}
+          animate={{ strokeDashoffset: [-4, -68], opacity: [0.1, 0.38, 0.1] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: 'linear' }}
         />
       )}
@@ -367,8 +378,7 @@ function AnimatedChart() {
         cy="74"
         r="3.8"
         fill="var(--accent-cyan)"
-        whileInView={shouldReduceMotion ? { opacity: 0.9, scale: 1 } : { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
-        viewport={{ once: false, amount: 0.45 }}
+        animate={shouldReduceMotion ? { opacity: 0.9, scale: 1 } : { opacity: [0.55, 1, 0.55], scale: [0.96, 1.12, 0.96] }}
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 2.2, repeat: Infinity }}
       />
     </svg>

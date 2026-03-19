@@ -1029,3 +1029,53 @@ body {
     padding: 0;
   }
 }
+
+@media (max-width: 430px) {
+  .landing-mobile-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .landing-mobile-header .ds-container {
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+
+  .landing-mobile-header .ds-container > :last-child .ds-button-base {
+    min-height: 34px;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+    font-size: 0.72rem;
+    line-height: 1;
+  }
+
+  .landing-page-flow .ds-section {
+    gap: 1.2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .landing-page-flow h2 {
+    font-size: clamp(1.45rem, 8.1vw, 1.9rem);
+    line-height: 1.18;
+  }
+
+  .landing-hero-spotlight {
+    gap: 1.35rem;
+  }
+
+  .landing-hero-cluster .landing-panel {
+    padding: 0.82rem;
+  }
+
+  .landing-floating-chip,
+  .landing-floating-chip-alt {
+    margin-top: 0.62rem;
+  }
+
+  .landing-page-flow .landing-final-cta {
+    padding: 28px 14px;
+  }
+}
