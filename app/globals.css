@@ -215,9 +215,10 @@ body {
     position: relative;
     min-height: 100vh;
     background:
-      radial-gradient(circle at 14% 10%, rgba(59, 130, 246, 0.2), transparent 34%),
-      radial-gradient(circle at 86% 14%, rgba(99, 102, 241, 0.16), transparent 30%),
-      linear-gradient(170deg, var(--bg-deep) 0%, var(--bg-app) 36%, var(--bg-app-secondary) 68%, var(--bg-deep) 100%);
+      radial-gradient(circle at 14% 10%, rgba(59, 130, 246, 0.24), transparent 34%),
+      radial-gradient(circle at 86% 14%, rgba(99, 102, 241, 0.2), transparent 30%),
+      radial-gradient(circle at 50% 120%, rgba(6, 182, 212, 0.14), transparent 42%),
+      linear-gradient(168deg, var(--bg-deep) 0%, var(--bg-app) 35%, var(--bg-app-secondary) 70%, var(--bg-deep) 100%);
     color: var(--text-primary);
     overflow: hidden;
   }
@@ -238,13 +239,25 @@ body {
       repeating-linear-gradient(
         128deg,
         transparent 0 52px,
-        color-mix(in srgb, var(--accent-indigo) 12%, transparent) 52px 53px
+        color-mix(in srgb, var(--accent-indigo) 14%, transparent) 52px 53px
       ),
-      radial-gradient(circle at 22% 12%, rgba(59, 130, 246, 0.18), transparent 36%),
-      radial-gradient(circle at 80% 16%, rgba(99, 102, 241, 0.14), transparent 34%);
-    opacity: 0.42;
+      radial-gradient(circle at 22% 12%, rgba(59, 130, 246, 0.2), transparent 36%),
+      radial-gradient(circle at 80% 16%, rgba(99, 102, 241, 0.18), transparent 34%);
+    opacity: 0.48;
     mask-image: linear-gradient(180deg, black 0%, rgba(0, 0, 0, 0.68) 64%, transparent 100%);
     animation: landing-beam-drift 22s linear infinite;
+  }
+
+  .landing-noise {
+    background-image:
+      radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.055) 0.5px, transparent 0.7px),
+      radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.04) 0.5px, transparent 0.7px);
+    background-size:
+      140px 140px,
+      180px 180px;
+    opacity: 0.22;
+    mix-blend-mode: soft-light;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
   }
 
   .landing-hero-spotlight {
@@ -294,6 +307,26 @@ body {
 
   .landing-float {
     animation: landing-float 8s ease-in-out infinite;
+  }
+
+  .landing-depth-card {
+    background:
+      radial-gradient(circle at 5% -20%, color-mix(in srgb, var(--accent-indigo) 20%, transparent), transparent 52%),
+      radial-gradient(circle at 100% 130%, color-mix(in srgb, var(--accent-cyan) 12%, transparent), transparent 48%),
+      linear-gradient(165deg, color-mix(in srgb, var(--bg-surface-elevated) 74%, transparent) 0%, color-mix(in srgb, var(--bg-surface) 94%, transparent) 100%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--border-default) 65%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--accent-indigo) 12%, transparent),
+      0 18px 48px rgba(2, 6, 23, 0.38);
+  }
+
+  .landing-pricing-highlight {
+    background:
+      radial-gradient(circle at 85% 10%, color-mix(in srgb, var(--accent-indigo) 28%, transparent), transparent 42%),
+      linear-gradient(165deg, color-mix(in srgb, var(--primary-soft) 70%, var(--bg-surface-elevated)) 0%, color-mix(in srgb, var(--bg-surface) 88%, transparent) 100%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--primary) 24%, transparent),
+      0 22px 52px rgba(2, 6, 23, 0.42);
   }
 
   .public-light-backdrop,

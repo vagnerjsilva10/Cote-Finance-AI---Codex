@@ -6,19 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Space_Grotesk } from 'next/font/google';
 import { motion } from 'motion/react';
-import {
-  AlertTriangle,
-  ArrowRight,
-  BarChart3,
-  BrainCircuit,
-  Check,
-  EyeOff,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  Wallet,
-} from 'lucide-react';
+import { ArrowRight, BarChart3, BrainCircuit, Check, CircleAlert, Cpu, Gauge, Layers, Lock, MessageCircle, Sparkles, Wallet, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ButtonPrimary, ButtonSecondary, Card, Container, Header, Section } from '@/components/ui/premium-primitives';
 
@@ -26,14 +14,9 @@ const displayFont = Space_Grotesk({ subsets: ['latin'], weight: ['600', '700'], 
 
 type PublicPlanCatalogItem = {
   code: 'FREE' | 'PRO' | 'PREMIUM';
-  name: string;
   monthlyPrice: number;
-  annualPrice: number;
   trialDays: number;
-  description: string;
   features: string[];
-  trustBadges: string[];
-  default: boolean;
 };
 
 type Plan = {
@@ -44,41 +27,45 @@ type Plan = {
   ctaLabel: string;
   href: string;
   features: string[];
+  note: string;
   highlight?: boolean;
 };
 
-type FlowStep = {
+type VisualFlowStep = {
   step: string;
   title: string;
   description: string;
-  variant: 'connect' | 'analyze' | 'improve';
+  variant: 'connect' | 'analyze' | 'act';
 };
 
 const planCopy = {
   FREE: {
     name: 'Free' as const,
-    badge: 'Começo rápido',
-    description: 'Para começar a organizar sua vida financeira.',
+    badge: 'Entrada rápida',
+    description: 'Para organizar o básico e iniciar com clareza.',
     ctaLabel: 'Começar grátis',
     href: '/signup?plan=free',
-    features: ['Até 10 lançamentos por mês', 'Dashboard essencial', 'Organização inicial de gastos'],
+    features: ['Até 10 lançamentos por mês', 'Dashboard essencial', 'Categorias principais'],
+    note: 'Sem cartão de crédito',
   },
   PRO: {
     name: 'Pro' as const,
     badge: 'Mais escolhido',
-    description: 'Para quem quer controle real e decisões inteligentes.',
+    description: 'Para quem quer controle contínuo com IA prática.',
     ctaLabel: 'Começar grátis agora',
     href: '/signup?plan=pro&trial=true',
-    features: ['Lançamentos ilimitados', 'Insights automáticos com IA', 'Alertas e resumos no WhatsApp'],
+    features: ['Lançamentos ilimitados', 'Insights automáticos com IA', 'Alertas no WhatsApp'],
+    note: 'Teste grátis com ativação imediata',
     highlight: true,
   },
   PREMIUM: {
     name: 'Premium' as const,
-    badge: 'Máxima análise',
-    description: 'Para quem quer máximo nível de análise e evolução.',
+    badge: 'Nível avançado',
+    description: 'Para operar com máxima previsibilidade financeira.',
     ctaLabel: 'Assinar Premium',
     href: '/signup?plan=premium',
-    features: ['Tudo do Pro', 'IA ilimitada', 'Previsões e automações avançadas'],
+    features: ['Tudo do Pro', 'IA ilimitada', 'Previsões avançadas'],
+    note: 'Camada estratégica completa',
   },
 };
 
@@ -91,6 +78,7 @@ const fallbackPlans: Plan[] = [
     ctaLabel: planCopy.FREE.ctaLabel,
     href: planCopy.FREE.href,
     features: planCopy.FREE.features,
+    note: planCopy.FREE.note,
   },
   {
     name: planCopy.PRO.name,
@@ -100,6 +88,7 @@ const fallbackPlans: Plan[] = [
     ctaLabel: planCopy.PRO.ctaLabel,
     href: planCopy.PRO.href,
     features: planCopy.PRO.features,
+    note: planCopy.PRO.note,
     highlight: true,
   },
   {
@@ -110,113 +99,138 @@ const fallbackPlans: Plan[] = [
     ctaLabel: planCopy.PREMIUM.ctaLabel,
     href: planCopy.PREMIUM.href,
     features: planCopy.PREMIUM.features,
-  },
-];
-
-const painPoints = [
-  'Dinheiro “desaparece” no meio do mês',
-  'Decisões no impulso por falta de visão',
-  'Ansiedade constante por não saber o que ajustar',
-];
-
-const features = [
-  {
-    icon: Wallet,
-    title: 'Visão completa',
-    description: 'Veja tudo em um só lugar, sem confusão.',
-  },
-  {
-    icon: BrainCircuit,
-    title: 'IA que encontra padrões',
-    description: 'Descubra desperdícios e oportunidades antes que virem problema.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Controle de gastos inteligente',
-    description: 'Saiba exatamente onde cortar sem adivinhar.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Organização automática',
-    description: 'Sem planilhas, sem trabalho manual.',
-  },
-  {
-    icon: MessageCircle,
-    title: 'Alertas no WhatsApp',
-    description: 'Acompanhe seu mês sem depender só do dashboard.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Segurança real',
-    description: 'Dados protegidos com padrão bancário.',
-  },
-];
-
-const flowSteps: FlowStep[] = [
-  {
-    step: '01',
-    title: 'Conecte',
-    description: 'Centralize seus dados em um único lugar.',
-    variant: 'connect',
-  },
-  {
-    step: '02',
-    title: 'Entenda',
-    description: 'A IA analisa padrões e mostra onde ajustar.',
-    variant: 'analyze',
-  },
-  {
-    step: '03',
-    title: 'Melhore',
-    description: 'Tome decisões com clareza e consistência.',
-    variant: 'improve',
-  },
-];
-
-const testimonials = [
-  {
-    quote: 'Em poucas semanas, eu entendi para onde meu dinheiro estava indo e recuperei controle.',
-    author: 'João',
-    role: 'São Paulo',
-  },
-  {
-    quote: 'Antes era ansiedade no fim do mês. Hoje eu enxergo e decido com tranquilidade.',
-    author: 'Mariana',
-    role: 'Rio de Janeiro',
-  },
-  {
-    quote: 'A parte mais forte foi ver desperdícios invisíveis de forma clara e prática.',
-    author: 'Carlos',
-    role: 'Belo Horizonte',
-  },
-];
-
-const faqItems = [
-  {
-    question: 'Preciso saber finanças para usar?',
-    answer: 'Não. A interface foi pensada para simplificar a leitura e a ação.',
-  },
-  {
-    question: 'É seguro?',
-    answer: 'Sim. Seus dados ficam protegidos com padrão de segurança de nível bancário.',
-  },
-  {
-    question: 'Funciona mesmo?',
-    answer: 'Sim. O foco é mostrar o que você não está enxergando hoje para melhorar decisões.',
-  },
-  {
-    question: 'Posso cancelar quando quiser?',
-    answer: 'Sim. Você pode cancelar o plano pago a qualquer momento na sua área de assinatura.',
+    note: planCopy.PREMIUM.note,
   },
 ];
 
 const partners = ['Stripe', 'OpenAI', 'Supabase', 'Vercel', 'Meta', 'Recharts'];
 
+const painPoints = [
+  {
+    title: 'Dinheiro sai sem rastreio',
+    description: 'Sem visibilidade, o mês fecha com sensação de perda e nenhuma ação clara.',
+  },
+  {
+    title: 'Decisão no impulso',
+    description: 'Cada ajuste vira tentativa e erro porque faltam sinais objetivos.',
+  },
+  {
+    title: 'Ansiedade recorrente',
+    description: 'Sem padrão visual e analítico, o controle não estabiliza.',
+  },
+];
+
+const solutionPillars = [
+  {
+    icon: Wallet,
+    title: 'Centralização total',
+    description: 'Entradas, saídas, metas e contas em uma única superfície visual.',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'IA orientada por contexto',
+    description: 'O sistema aponta desperdícios e oportunidades com prioridade.',
+  },
+  {
+    icon: Gauge,
+    title: 'Ação com previsibilidade',
+    description: 'Você decide com cenário e impacto projetado.',
+  },
+];
+
+const features = [
+  {
+    icon: Layers,
+    title: 'Visão consolidada em tempo real',
+    description: 'Sem planilhas fragmentadas e sem leitura confusa.',
+  },
+  {
+    icon: Zap,
+    title: 'Recomendações acionáveis',
+    description: 'A IA indica o que cortar, manter e priorizar agora.',
+  },
+  {
+    icon: MessageCircle,
+    title: 'Alertas no momento certo',
+    description: 'Resumo estratégico no app e no WhatsApp.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Evolução por tendência',
+    description: 'Compare comportamento e ganho de margem mês a mês.',
+  },
+  {
+    icon: Cpu,
+    title: 'Fluxo financeiro inteligente',
+    description: 'Classificação e leitura de padrões com baixa fricção.',
+  },
+  {
+    icon: Lock,
+    title: 'Segurança padrão bancário',
+    description: 'Estrutura robusta para dados sensíveis com confiança.',
+  },
+];
+
+const visualFlow: VisualFlowStep[] = [
+  {
+    step: '01',
+    title: 'Conecte',
+    description: 'Centralize contas e categorias para criar base limpa de análise.',
+    variant: 'connect',
+  },
+  {
+    step: '02',
+    title: 'Analise',
+    description: 'A IA identifica ruídos, picos e padrões que drenam resultado.',
+    variant: 'analyze',
+  },
+  {
+    step: '03',
+    title: 'Aja',
+    description: 'Receba plano claro e acompanhe impacto real no mês.',
+    variant: 'act',
+  },
+];
+
+const testimonials = [
+  {
+    quote: 'Eu parei de apagar incêndio no fim do mês e passei a antecipar decisão com segurança.',
+    author: 'João, São Paulo',
+  },
+  {
+    quote: 'Em duas semanas reduzi gasto recorrente porque finalmente consegui enxergar os padrões.',
+    author: 'Mariana, Rio de Janeiro',
+  },
+  {
+    quote: 'O diferencial é receber recomendação pronta para agir sem interpretação confusa.',
+    author: 'Carlos, Belo Horizonte',
+  },
+];
+
+const faqItems = [
+  {
+    question: 'Preciso entender de finanças para usar?',
+    answer: 'Não. O produto traduz dados em decisões práticas com linguagem direta.',
+  },
+  {
+    question: 'Os dados estão protegidos?',
+    answer: 'Sim. A arquitetura usa padrões de segurança de nível bancário.',
+  },
+  {
+    question: 'Consigo cancelar quando quiser?',
+    answer: 'Sim. O cancelamento pode ser feito a qualquer momento na área de assinatura.',
+  },
+  {
+    question: 'Funciona para quem está começando?',
+    answer: 'Sim. O Free organiza a base e o Pro acelera decisões com IA.',
+  },
+];
+
 const reveal = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.45 },
+  transition: { duration: 0.44 },
 } as const;
 
 function mapPlan(plan: PublicPlanCatalogItem): Plan {
@@ -229,6 +243,7 @@ function mapPlan(plan: PublicPlanCatalogItem): Plan {
       ctaLabel: planCopy.FREE.ctaLabel,
       href: planCopy.FREE.href,
       features: plan.features.length > 0 ? plan.features.slice(0, 4) : planCopy.FREE.features,
+      note: planCopy.FREE.note,
     };
   }
 
@@ -241,6 +256,7 @@ function mapPlan(plan: PublicPlanCatalogItem): Plan {
       ctaLabel: planCopy.PREMIUM.ctaLabel,
       href: planCopy.PREMIUM.href,
       features: plan.features.length > 0 ? plan.features.slice(0, 4) : planCopy.PREMIUM.features,
+      note: planCopy.PREMIUM.note,
     };
   }
 
@@ -252,15 +268,16 @@ function mapPlan(plan: PublicPlanCatalogItem): Plan {
     ctaLabel: plan.trialDays > 0 ? 'Começar grátis agora' : 'Assinar Pro',
     href: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
     features: plan.features.length > 0 ? plan.features.slice(0, 4) : planCopy.PRO.features,
+    note: plan.trialDays > 0 ? `${plan.trialDays} dias de teste grátis` : planCopy.PRO.note,
     highlight: true,
   };
 }
 
-function FlowPanel({ variant }: { variant: FlowStep['variant'] }) {
+function FlowPanel({ variant }: { variant: VisualFlowStep['variant'] }) {
   if (variant === 'connect') {
     return (
-      <Card className="landing-glow-card p-5">
-        <p className="label-premium mb-3">Contas conectadas</p>
+      <Card className="landing-glow-card landing-depth-card p-5">
+        <p className="label-premium mb-3">Origens conectadas</p>
         <div className="grid gap-2 sm:grid-cols-3">
           {['Nubank', 'Itaú', 'Carteira'].map((item) => (
             <div key={item} className="app-surface-subtle rounded-xl p-3 text-sm font-semibold text-[var(--text-primary)]">
@@ -269,14 +286,14 @@ function FlowPanel({ variant }: { variant: FlowStep['variant'] }) {
           ))}
         </div>
         <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-container)] p-3">
-          <p className="text-xs text-[var(--text-muted)]">Sincronização de dados</p>
+          <p className="text-xs text-[var(--text-muted)]">Sincronização</p>
           <div className="mt-2 h-2 rounded-full bg-[var(--bg-surface-elevated)]">
             <motion.div
-              className="h-full rounded-full bg-[var(--primary)]"
-              initial={{ width: '30%' }}
-              whileInView={{ width: '84%' }}
+              className="h-full rounded-full bg-[linear-gradient(90deg,var(--primary),var(--accent-cyan))]"
+              initial={{ width: '20%' }}
+              whileInView={{ width: '86%' }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              transition={{ duration: 0.9, delay: 0.1 }}
             />
           </div>
         </div>
@@ -286,13 +303,13 @@ function FlowPanel({ variant }: { variant: FlowStep['variant'] }) {
 
   if (variant === 'analyze') {
     return (
-      <Card className="landing-glow-card p-5">
-        <p className="label-premium mb-3">Análise da IA</p>
+      <Card className="landing-glow-card landing-depth-card p-5">
+        <p className="label-premium mb-3">Diagnóstico da IA</p>
         <div className="space-y-3">
           {[
-            { label: 'Gastos evitáveis', value: 'R$ 680' },
-            { label: 'Categoria que mais subiu', value: 'Alimentação' },
-            { label: 'Ajuste sugerido', value: '-12% em assinaturas' },
+            { label: 'Despesas evitáveis', value: 'R$ 680' },
+            { label: 'Categoria crítica', value: 'Alimentação +18%' },
+            { label: 'Ajuste recomendado', value: 'Reduzir assinaturas em 12%' },
           ].map((item) => (
             <div key={item.label} className="app-surface-subtle rounded-xl p-3">
               <p className="text-xs text-[var(--text-secondary)]">{item.label}</p>
@@ -305,16 +322,16 @@ function FlowPanel({ variant }: { variant: FlowStep['variant'] }) {
   }
 
   return (
-    <Card className="landing-glow-card p-5">
+    <Card className="landing-glow-card landing-depth-card p-5">
       <p className="label-premium mb-3">Plano de ação</p>
       <div className="space-y-2">
         {[
           'Cortar despesas invisíveis da semana',
-          'Ajustar limite por categoria',
-          'Priorizar pagamento com maior impacto',
+          'Definir limite por categoria',
+          'Priorizar pagamentos com maior impacto',
         ].map((item) => (
           <div key={item} className="flex items-start gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-container)] p-3">
-            <Check size={14} className="mt-0.5 text-[var(--primary)]" />
+            <Check size={14} className="mt-0.5 text-[var(--accent-cyan)]" />
             <p className="text-sm text-[var(--text-secondary)]">{item}</p>
           </div>
         ))}
@@ -323,14 +340,43 @@ function FlowPanel({ variant }: { variant: FlowStep['variant'] }) {
   );
 }
 
+function DemoGraph() {
+  return (
+    <svg viewBox="0 0 360 150" className="h-36 w-full">
+      <defs>
+        <linearGradient id="landingLineA" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="var(--primary)" />
+          <stop offset="100%" stopColor="var(--accent-cyan)" />
+        </linearGradient>
+        <linearGradient id="landingLineB" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="var(--accent-indigo)" />
+          <stop offset="100%" stopColor="var(--primary)" />
+        </linearGradient>
+      </defs>
+      <path d="M0,120 C40,116 72,95 108,78 C140,62 173,63 206,72 C236,80 269,96 300,84 C326,74 344,50 360,32" fill="none" stroke="url(#landingLineA)" strokeWidth="3.4" />
+      <path d="M0,136 C34,132 70,124 104,118 C138,112 170,110 204,106 C238,102 270,98 302,104 C326,108 343,112 360,116" fill="none" stroke="url(#landingLineB)" strokeWidth="2.5" strokeOpacity="0.75" />
+      <circle cx="108" cy="78" r="4" fill="var(--accent-cyan)" />
+      <circle cx="206" cy="72" r="4" fill="var(--primary)" />
+      <circle cx="300" cy="84" r="4" fill="var(--accent-indigo)" />
+    </svg>
+  );
+}
+
 export default function LandingPage() {
   const router = useRouter();
   const [plans, setPlans] = React.useState<Plan[]>(fallbackPlans);
+  const [scrollY, setScrollY] = React.useState(0);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY || 0);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   React.useEffect(() => {
     let active = true;
-
-    const load = async () => {
+    const loadPlans = async () => {
       try {
         const response = await fetch('/api/public/plan-catalog', { cache: 'no-store' });
         const payload = (await response.json().catch(() => null)) as { plans?: PublicPlanCatalogItem[] } | null;
@@ -340,8 +386,7 @@ export default function LandingPage() {
         // mantém fallback local
       }
     };
-
-    void load();
+    void loadPlans();
     return () => {
       active = false;
     };
@@ -349,26 +394,23 @@ export default function LandingPage() {
 
   const navItems = [
     { label: 'Produto', onClick: () => document.getElementById('produto')?.scrollIntoView({ behavior: 'smooth' }) },
-    { label: 'Features', onClick: () => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) },
+    { label: 'Solução', onClick: () => document.getElementById('solucao')?.scrollIntoView({ behavior: 'smooth' }) },
     { label: 'Planos', onClick: () => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }) },
     { label: 'FAQ', onClick: () => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }) },
   ];
 
+  const backdropOffset = Math.min(scrollY * 0.09, 44);
+  const heroOffset = Math.min(scrollY * 0.05, 30);
+
   return (
     <div className={`landing-premium-shell theme-landing-shell marketing-dark-shell min-h-screen ${displayFont.variable}`}>
-      <div className="landing-premium-backdrop pointer-events-none fixed inset-0 -z-10" />
+      <div className="landing-premium-backdrop pointer-events-none fixed inset-0 -z-20" style={{ transform: `translate3d(0, ${backdropOffset * -1}px, 0)` }} />
+      <div className="landing-noise pointer-events-none fixed inset-0 -z-10" />
 
       <Header
         logo={
           <Link href="/" className="flex items-center">
-            <Image
-              src="/brand/cote-finance-ai-logo.svg"
-              alt="Cote Finance AI"
-              width={620}
-              height={160}
-              priority
-              className="h-16 w-auto lg:h-20"
-            />
+            <Image src="/brand/cote-finance-ai-logo.svg" alt="Cote Finance AI" width={620} height={160} priority className="h-16 w-auto lg:h-20" />
           </Link>
         }
         navItems={navItems}
@@ -385,30 +427,28 @@ export default function LandingPage() {
       />
 
       <Container>
-        <Section className="pt-16 lg:pt-22">
+        <Section className="pt-14 lg:pt-20">
           <section id="produto" className="landing-hero-spotlight grid items-center gap-10 lg:grid-cols-[1.02fr_.98fr]">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-6">
               <span className="badge-premium badge-premium-info px-4 py-2 text-xs">
-                <Sparkles size={13} /> IA aplicada ao seu dinheiro
+                <Sparkles size={13} /> Plataforma financeira com IA aplicada
               </span>
-              <h1 className="max-w-4xl text-4xl font-bold leading-[1.02] tracking-tight text-[var(--text-primary)] md:text-6xl">
-                Seu dinheiro não some.
-                <br />
-                Você só não vê.
+              <h1 className="max-w-4xl text-4xl font-bold leading-[1.05] tracking-tight text-[var(--text-primary)] md:text-6xl">
+                Pare de perder dinheiro sem perceber e passe a enxergar tudo com clareza total.
               </h1>
-              <p className="max-w-2xl text-base leading-8 text-[var(--text-secondary)] md:text-lg">
-                O Cote Finance AI organiza, analisa e mostra exatamente onde ajustar para você voltar ao controle.
+              <p className="max-w-2xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
+                Controle financeiro premium com leitura automática, diagnóstico inteligente e ação objetiva.
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => router.push('/signup')}>
                   Começar grátis <ArrowRight size={16} />
                 </ButtonPrimary>
-                <ButtonSecondary className="px-6 py-3 text-sm" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>
+                <ButtonSecondary className="px-6 py-3 text-sm" onClick={() => document.getElementById('solucao')?.scrollIntoView({ behavior: 'smooth' })}>
                   Ver como funciona
                 </ButtonSecondary>
               </div>
               <p className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                <Check size={14} className="text-[var(--primary)]" /> Mais de 12.000 pessoas já usam para organizar melhor as finanças
+                <Check size={14} className="text-[var(--accent-cyan)]" /> Mais de 12.000 pessoas já usam para organizar melhor as finanças
               </p>
             </motion.div>
 
@@ -417,37 +457,36 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08 }}
               className="relative landing-float"
+              style={{ transform: `translate3d(0, ${heroOffset * -1}px, 0)` }}
             >
-              <Card className="landing-mockup-shell landing-glow-card relative overflow-hidden p-6 md:p-7">
-                <div className="mb-5 flex items-center justify-between">
-                  <p className="label-premium">Dashboard ao vivo</p>
-                  <span className="badge-premium badge-premium-info px-3 py-1 text-[10px]">tempo real</span>
+              <Card className="landing-mockup-shell landing-depth-card relative overflow-hidden p-4 md:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <p className="label-premium">Dashboard em tempo real</p>
+                  <span className="badge-premium badge-premium-info px-3 py-1 text-[10px]">ao vivo</span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-container)] p-3">
+                  <video className="h-auto w-full rounded-lg" autoPlay loop muted playsInline preload="auto">
+                    <source src="/videos/cote-demo-v2.mp4" type="video/mp4" />
+                  </video>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {[
                     { label: 'Entradas', value: 'R$ 9.120' },
                     { label: 'Despesas', value: 'R$ 5.940' },
-                    { label: 'Potencial', value: 'R$ 1.180' },
+                    { label: 'Margem atual', value: 'R$ 3.180' },
                   ].map((item) => (
-                    <div key={item.label} className="app-surface-subtle rounded-xl p-4">
-                      <p className="text-xs text-[var(--text-secondary)]">{item.label}</p>
-                      <p className="mt-1.5 text-sm font-semibold text-[var(--text-primary)]">{item.value}</p>
+                    <div key={item.label} className="app-surface-subtle rounded-xl p-3">
+                      <p className="text-xs text-[var(--text-muted)]">{item.label}</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{item.value}</p>
                     </div>
                   ))}
-                </div>
-                <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-container)] p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-muted)]">Padrão de gastos</p>
-                  <svg viewBox="0 0 320 110" className="mt-3 h-28 w-full">
-                    <path d="M0,86 C24,80 52,67 84,50 C112,36 138,38 166,48 C194,58 220,71 248,66 C278,61 299,42 320,24" fill="none" stroke="var(--primary)" strokeWidth="3.2" />
-                    <path d="M0,100 C24,99 52,96 80,92 C110,88 137,89 166,86 C196,83 221,76 250,79 C278,82 300,89 320,92" fill="none" stroke="var(--accent-indigo)" strokeWidth="2.2" strokeOpacity="0.58" />
-                  </svg>
                 </div>
               </Card>
             </motion.div>
           </section>
 
-          <motion.section {...reveal} className="mt-12 space-y-5">
-            <p className="label-premium text-center">Usado por pessoas e times que tratam finanças com seriedade</p>
+          <motion.section {...reveal} className="mt-12 space-y-4">
+            <p className="label-premium text-center">Usado por pessoas e times que exigem controle financeiro de verdade</p>
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {partners.map((partner) => (
                 <Card key={partner} className="landing-glow-card p-4 text-center">
@@ -459,27 +498,50 @@ export default function LandingPage() {
         </Section>
 
         <Section>
-          <motion.section {...reveal} className="grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
-            <Card className="landing-glow-card p-6 md:p-8">
-              <p className="label-premium mb-3">A dor</p>
-              <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
-                Se o dinheiro “some”, o problema é falta de visão.
+          <motion.section {...reveal} className="grid gap-6 lg:grid-cols-[1.04fr_.96fr]">
+            <Card className="landing-glow-card landing-depth-card p-6 md:p-8">
+              <p className="label-premium mb-3">Dor real</p>
+              <h2 className="max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Se o dinheiro sempre some, o problema é falta de visibilidade operacional.
               </h2>
               <p className="mt-4 text-base leading-8 text-[var(--text-secondary)]">
-                Você recebe, paga algumas contas e no fim do mês sobra incerteza.
-              </p>
-              <p className="mt-4 text-base leading-8 text-[var(--text-secondary)]">
-                Sem clareza, você perde margem e decide no escuro.
+                Sem leitura contínua, você decide no escuro, perde margem e mantém ruído financeiro todo mês.
               </p>
             </Card>
             <div className="space-y-3">
               {painPoints.map((point) => (
-                <Card key={point} className="landing-glow-card p-5">
-                  <p className="flex items-start gap-3 text-sm leading-7 text-[var(--text-primary)]">
-                    <AlertTriangle size={16} className="mt-1 text-[var(--danger)]" />
-                    {point}
+                <Card key={point.title} className="landing-glow-card landing-depth-card p-5">
+                  <p className="flex items-start gap-3 text-sm font-semibold text-[var(--text-primary)]">
+                    <CircleAlert size={16} className="mt-1 text-[var(--accent-indigo)]" />
+                    {point.title}
                   </p>
+                  <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{point.description}</p>
                 </Card>
+              ))}
+            </div>
+          </motion.section>
+        </Section>
+
+        <Section>
+          <div id="solucao" />
+          <motion.section {...reveal} className="space-y-6">
+            <div className="space-y-3 text-center">
+              <p className="label-premium">Solução</p>
+              <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Uma camada inteligente que transforma confusão em decisão com clareza.
+              </h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {solutionPillars.map((pillar, index) => (
+                <motion.div key={pillar.title} {...reveal} transition={{ duration: 0.42, delay: index * 0.05 }}>
+                  <Card className="landing-glow-card landing-depth-card h-full p-6">
+                    <div className="inline-flex rounded-xl border border-[var(--border-default)] bg-[var(--primary-soft)] p-2.5 text-[var(--text-primary)]">
+                      <pillar.icon size={18} />
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">{pillar.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{pillar.description}</p>
+                  </Card>
+                </motion.div>
               ))}
             </div>
           </motion.section>
@@ -491,34 +553,31 @@ export default function LandingPage() {
             <div className="space-y-3 text-center">
               <p className="label-premium">Features</p>
               <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
-                Clareza, controle e ação em uma interface viva
+                Arquitetura visual premium para decisões melhores e mais rápidas.
               </h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {features.map((feature) => (
-                <Card key={feature.title} className="landing-glow-card p-6">
-                  <div className="inline-flex rounded-xl border border-[var(--border-default)] bg-[var(--primary-soft)] p-2.5 text-[var(--text-primary)]">
-                    <feature.icon size={18} />
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{feature.description}</p>
-                </Card>
+              {features.map((feature, index) => (
+                <motion.div key={feature.title} {...reveal} transition={{ duration: 0.42, delay: index * 0.04 }}>
+                  <Card className="landing-glow-card landing-depth-card h-full p-6">
+                    <div className="inline-flex rounded-xl border border-[var(--border-default)] bg-[var(--primary-soft)] p-2.5 text-[var(--text-primary)]">
+                      <feature.icon size={18} />
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">{feature.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{feature.description}</p>
+                  </Card>
+                </motion.div>
               ))}
             </div>
           </motion.section>
         </Section>
 
         <Section>
-          <div id="como-funciona" />
           <motion.div {...reveal} className="space-y-8">
-            <div className="space-y-3 text-center">
-              <p className="label-premium">Fluxo</p>
-              <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Conecta. Entende. Melhora.</h2>
-            </div>
-            {flowSteps.map((step, index) => (
+            {visualFlow.map((step, index) => (
               <section key={step.step} className="grid items-center gap-8 lg:grid-cols-2">
                 <div className={cn(index % 2 ? 'lg:order-2' : '')}>
-                  <Card className="landing-glow-card p-6 md:p-8">
+                  <Card className="landing-glow-card landing-depth-card p-6 md:p-8">
                     <span className="badge-premium px-3 py-1 text-[10px]">Passo {step.step}</span>
                     <h3 className="mt-3 text-3xl font-bold text-[var(--text-primary)] md:text-4xl">{step.title}</h3>
                     <p className="mt-4 text-base leading-8 text-[var(--text-secondary)]">{step.description}</p>
@@ -535,17 +594,56 @@ export default function LandingPage() {
         </Section>
 
         <Section>
+          <motion.section {...reveal} className="grid items-center gap-6 lg:grid-cols-[1.04fr_.96fr]">
+            <Card className="landing-glow-card landing-depth-card p-6 md:p-8">
+              <p className="label-premium">Demonstração do sistema</p>
+              <h2 className="mt-3 text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                Um cockpit financeiro completo para agir no mesmo lugar em que você analisa.
+              </h2>
+              <p className="mt-4 text-base leading-8 text-[var(--text-secondary)]">
+                Visualize padrões, valide recomendações e acompanhe impacto sem trocar de contexto.
+              </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {['Painel estratégico', 'Linha de tendência', 'Resumo operacional', 'Próximas ações'].map((item) => (
+                  <div key={item} className="app-surface-subtle rounded-xl p-3 text-sm text-[var(--text-primary)]">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </Card>
+            <Card className="landing-glow-card landing-depth-card p-5">
+              <p className="label-premium mb-2">Performance mensal</p>
+              <DemoGraph />
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Receita', value: '+8.2%' },
+                  { label: 'Despesa', value: '-4.1%' },
+                  { label: 'Margem', value: '+12.6%' },
+                ].map((metric) => (
+                  <div key={metric.label} className="app-surface-subtle rounded-lg p-3">
+                    <p className="text-[11px] text-[var(--text-muted)]">{metric.label}</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{metric.value}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.section>
+        </Section>
+
+        <Section>
           <motion.section {...reveal}>
-            <Card className="landing-glow-card p-6 md:p-8">
+            <Card className="landing-glow-card landing-depth-card p-6 md:p-8">
               <div className="mb-5 space-y-2">
-                <p className="label-premium">Prova social</p>
-                <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Resultados reais para quem decidiu enxergar melhor</h2>
+                <p className="label-premium">Resultados</p>
+                <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+                  Indicadores reais para quem quer controle com consistência.
+                </h2>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 {[
                   { label: 'Usuários ativos', value: '+12.000' },
-                  { label: 'Valor analisado', value: 'R$ 320 milhões' },
-                  { label: 'Relatam mais controle', value: '94%' },
+                  { label: 'Volume analisado', value: 'R$ 320 milhões' },
+                  { label: 'Mais controle percebido', value: '94%' },
                 ].map((metric) => (
                   <div key={metric.label} className="app-surface-subtle rounded-xl p-5">
                     <p className="label-premium">{metric.label}</p>
@@ -560,16 +658,15 @@ export default function LandingPage() {
         <Section>
           <motion.section {...reveal} className="space-y-3 text-center">
             <p className="label-premium">Depoimentos</p>
-            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Quem usa sente a diferença no mês</h2>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+              Quem usa no dia a dia percebe ganho de clareza imediatamente.
+            </h2>
           </motion.section>
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
             {testimonials.map((item) => (
-              <Card key={item.author} className="landing-glow-card p-6">
+              <Card key={item.author} className="landing-glow-card landing-depth-card p-6">
                 <p className="text-base leading-7 text-[var(--text-primary)]">&ldquo;{item.quote}&rdquo;</p>
-                <div className="mt-5 border-t border-[var(--border-default)] pt-4">
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">{item.author}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">{item.role}</p>
-                </div>
+                <p className="mt-5 border-t border-[var(--border-default)] pt-4 text-sm text-[var(--text-secondary)]">{item.author}</p>
               </Card>
             ))}
           </div>
@@ -579,15 +676,17 @@ export default function LandingPage() {
           <div id="planos" />
           <motion.section {...reveal} className="space-y-3 text-center">
             <p className="label-premium">Pricing</p>
-            <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Escolha seu nível de controle</h2>
+            <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+              Planos objetivos para cada nível de maturidade financeira.
+            </h2>
           </motion.section>
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
             {plans.map((plan) => (
               <Card
                 key={plan.name}
                 className={cn(
-                  'landing-glow-card p-6',
-                  plan.highlight && 'border-[color:var(--border-strong)] bg-[color:var(--primary-soft)]'
+                  'landing-glow-card landing-depth-card p-6',
+                  plan.highlight && 'landing-pricing-highlight border-[color:var(--border-strong)]'
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -598,10 +697,11 @@ export default function LandingPage() {
                 </div>
                 <p className="mt-3 text-3xl font-bold text-[var(--text-primary)]">{plan.price}</p>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{plan.description}</p>
+                <p className="mt-2 text-xs text-[var(--text-muted)]">{plan.note}</p>
                 <ul className="mt-5 space-y-2">
                   {plan.features.map((feature) => (
                     <li key={`${plan.name}-${feature}`} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                      <Check size={14} className="mt-0.5 text-[var(--primary)]" />
+                      <Check size={14} className="mt-0.5 text-[var(--accent-cyan)]" />
                       {feature}
                     </li>
                   ))}
@@ -625,11 +725,11 @@ export default function LandingPage() {
           <div id="faq" />
           <motion.section {...reveal} className="space-y-3 text-center">
             <p className="label-premium">FAQ</p>
-            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Dúvidas antes de começar</h2>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Perguntas frequentes antes de começar.</h2>
           </motion.section>
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             {faqItems.map((item) => (
-              <details key={item.question} className="ds-card landing-glow-card p-5">
+              <details key={item.question} className="ds-card landing-glow-card landing-depth-card p-5">
                 <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--text-primary)]">{item.question}</summary>
                 <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{item.answer}</p>
               </details>
@@ -639,14 +739,12 @@ export default function LandingPage() {
 
         <Section className="pt-4">
           <motion.div {...reveal}>
-            <Card className="landing-glow-card p-8 text-center md:p-10">
+            <Card className="landing-glow-card landing-depth-card p-8 text-center md:p-10">
               <h2 className="mx-auto max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-5xl">
-                Você não precisa ganhar mais.
-                <br />
-                Precisa enxergar melhor.
+                Comece hoje e transforme seu financeiro em um sistema de decisões claras.
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
-                Comece grátis hoje e veja para onde seu dinheiro realmente está indo.
+                Configure em minutos, visualize em tempo real e ajuste com confiança.
               </p>
               <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
                 <ButtonPrimary className="px-6 py-3 text-sm" onClick={() => router.push('/signup')}>
