@@ -68,14 +68,15 @@ const solutionChecks = [
 
 const benefits = [
   { icon: Compass, title: 'Contexto real', description: 'Veja seu dinheiro com contexto e entenda o impacto de cada decisão.' },
-  {
-    icon: CircleAlert,
-    title: 'Alertas antecipados',
-    description: 'Receba alertas financeiros no WhatsApp e aja antes que pequenos desvios virem descontrole.',
-  },
+  { icon: CircleAlert, title: 'Alertas antecipados', description: 'Receba sinais antes do problema virar descontrole.' },
   { icon: BrainCircuit, title: 'Padrões invisíveis', description: 'A IA identifica repetições que passam despercebidas no dia a dia.' },
   { icon: Target, title: 'Decisão com segurança', description: 'Saiba exatamente o que ajustar sem agir no escuro.' },
   { icon: LineChart, title: 'Evolução mensal', description: 'Tenha um plano claro e acompanhe sua melhora ao longo dos meses.' },
+  {
+    icon: MessageCircle,
+    title: 'Alertas no WhatsApp',
+    description: 'Receba alertas financeiros no WhatsApp e aja antes que pequenos desvios virem descontrole.',
+  },
 ];
 
 const lossSources = [
@@ -832,11 +833,6 @@ export default function LandingPage() {
             <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
               Escolha o plano ideal para assumir o controle do seu dinheiro.
             </h2>
-            <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[var(--border-default)] bg-[rgba(15,23,42,.58)] px-4 py-3 text-left sm:text-center">
-              <p className="text-xs leading-6 text-[var(--text-secondary)]">
-                No Pro: resumos e alertas. No Premium: automações financeiras avançadas.
-              </p>
-            </div>
           </motion.section>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
