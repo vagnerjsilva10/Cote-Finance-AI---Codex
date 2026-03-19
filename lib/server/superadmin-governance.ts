@@ -133,8 +133,8 @@ function getDefaultPlanCatalog(): EditablePlanConfig[] {
       trialDays: 0,
       description: 'Ideal para começar a organizar suas finanças e testar o produto.',
       features: [
-        'Até 15 lançamentos por mês',
-        'Até 15 interações com IA por mês',
+        'Até 10 lançamentos por mês',
+        'Até 10 interações com IA por mês',
         'Dashboard financeiro',
         'Categorias automáticas',
         'Análise básica de despesas',

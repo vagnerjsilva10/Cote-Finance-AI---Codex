@@ -117,7 +117,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-4' : 'p-6')}>
-          <Image src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo} alt="Cote Finance AI - By Cote Juros" width={isSidebarCollapsed ? 48 : 420} height={isSidebarCollapsed ? 48 : 112} className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-11' : 'w-full max-w-[280px]')} />
+          <Image src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo} alt="Cote Finance AI - By Cote Juros" width={isSidebarCollapsed ? 60 : 520} height={isSidebarCollapsed ? 60 : 140} className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-14' : 'w-full max-w-[320px]')} />
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setIsSidebarCollapsed((current) => !current)} className="button-secondary hidden h-10 w-10 p-0 lg:inline-flex" title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}>
               {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}

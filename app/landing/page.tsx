@@ -73,34 +73,64 @@ const benefits = [
   'Tenha um plano claro todo mês',
 ];
 
+const planFeatures = {
+  FREE: [
+    'Até 10 lançamentos por mês',
+    'Até 10 interações com IA por mês',
+    'Dashboard financeiro',
+    'Categorias automáticas',
+    'Análise básica de despesas',
+  ],
+  PRO: [
+    'Lançamentos ilimitados',
+    'Relatórios completos e gráficos avançados',
+    'Até 500 interações com IA por mês',
+    'Insights financeiros automáticos',
+    'Metas financeiras ilimitadas',
+    'Acompanhamento de dívidas',
+    'Controle de investimentos',
+    'Resumos e alertas no WhatsApp',
+    'Suporte por e-mail',
+  ],
+  PREMIUM: [
+    'Tudo do Pro',
+    'IA financeira sem limite mensal',
+    'Insights financeiros mais avançados',
+    'Previsão de saldo e alertas inteligentes',
+    'Análises profundas de despesas',
+    'Automação financeira no WhatsApp',
+    'Suporte por e-mail',
+  ],
+};
+
 const planBlueprint = {
   FREE: {
     name: 'Free' as const,
     badge: 'Entrada',
-    description: 'Para começar sem fricção',
-    ctaLabel: 'Começar grátis',
+    description: 'Ideal para começar a organizar suas finanças e testar o produto.',
+    ctaLabel: 'Criar conta grátis',
     href: '/signup?plan=free',
-    features: ['Até 10 lançamentos por mês', 'Visão consolidada inicial', 'Categorias essenciais'],
-    microcopy: 'Para começar sem fricção',
+    features: planFeatures.FREE,
+    microcopy: 'Sem cartão de crédito. Crie sua conta em segundos.',
   },
   PRO: {
     name: 'Pro' as const,
-    badge: 'Recomendado',
-    description: 'Controle total com IA e acompanhamento contínuo',
+    badge: 'Mais escolhido',
+    description: 'Para quem quer controle completo do dinheiro, análises úteis com IA e lançamentos ilimitados no dia a dia.',
     ctaLabel: 'Começar grátis agora',
     href: '/signup?plan=pro&trial=true',
-    features: ['Lançamentos ilimitados', 'Insights automáticos com IA', 'Alertas no app e WhatsApp'],
-    microcopy: 'Menos que um café por dia para ter controle total',
+    features: planFeatures.PRO,
+    microcopy: 'Teste grátis por 3 dias e evolua no seu ritmo.',
     highlight: true,
   },
   PREMIUM: {
     name: 'Premium' as const,
     badge: 'Estratégico',
-    description: 'Camada avançada para evolução financeira contínua',
+    description: 'Para operações que querem IA sem limite mensal, previsões mais profundas e uma camada mais estratégica de inteligência financeira.',
     ctaLabel: 'Assinar Premium',
     href: '/signup?plan=premium',
-    features: ['Tudo do Pro', 'IA ilimitada', 'Análises e previsões avançadas'],
-    microcopy: 'Para decisões financeiras estratégicas',
+    features: planFeatures.PREMIUM,
+    microcopy: 'Para quem quer acompanhar tudo com mais profundidade e automação.',
   },
 };
 
@@ -108,7 +138,7 @@ const fallbackPlans: Plan[] = [
   {
     name: planBlueprint.FREE.name,
     badge: planBlueprint.FREE.badge,
-    price: 'Grátis',
+    price: 'R$0/mês',
     description: planBlueprint.FREE.description,
     ctaLabel: planBlueprint.FREE.ctaLabel,
     href: planBlueprint.FREE.href,
@@ -143,11 +173,11 @@ function mapPlan(plan: PublicPlanCatalogItem): Plan {
     return {
       name: planBlueprint.FREE.name,
       badge: planBlueprint.FREE.badge,
-      price: 'Grátis',
+      price: 'R$0/mês',
       description: planBlueprint.FREE.description,
       ctaLabel: planBlueprint.FREE.ctaLabel,
       href: planBlueprint.FREE.href,
-      features: plan.features.length > 0 ? plan.features.slice(0, 4) : planBlueprint.FREE.features,
+      features: planBlueprint.FREE.features,
       microcopy: planBlueprint.FREE.microcopy,
     };
   }
@@ -160,7 +190,7 @@ function mapPlan(plan: PublicPlanCatalogItem): Plan {
       description: planBlueprint.PREMIUM.description,
       ctaLabel: planBlueprint.PREMIUM.ctaLabel,
       href: planBlueprint.PREMIUM.href,
-      features: plan.features.length > 0 ? plan.features.slice(0, 4) : planBlueprint.PREMIUM.features,
+      features: planBlueprint.PREMIUM.features,
       microcopy: planBlueprint.PREMIUM.microcopy,
     };
   }
@@ -172,7 +202,42 @@ function mapPlan(plan: PublicPlanCatalogItem): Plan {
     description: planBlueprint.PRO.description,
     ctaLabel: plan.trialDays > 0 ? 'Começar grátis agora' : 'Assinar Pro',
     href: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
-    features: plan.features.length > 0 ? plan.features.slice(0, 4) : planBlueprint.PRO.features,
+    features: planBlueprint.PRO.features,
+    microcopy: planBlueprint.PRO.microcopy,
+    highlight: true,
+  };
+}
+
+function alignPlanCopy(plan: Plan): Plan {
+  if (plan.name === 'Free') {
+    return {
+      ...plan,
+      badge: planBlueprint.FREE.badge,
+      price: 'R$0/mês',
+      description: planBlueprint.FREE.description,
+      ctaLabel: 'Criar conta grátis',
+      features: planBlueprint.FREE.features,
+      microcopy: planBlueprint.FREE.microcopy,
+    };
+  }
+
+  if (plan.name === 'Premium') {
+    return {
+      ...plan,
+      badge: planBlueprint.PREMIUM.badge,
+      price: 'R$49/mês',
+      description: planBlueprint.PREMIUM.description,
+      features: planBlueprint.PREMIUM.features,
+      microcopy: planBlueprint.PREMIUM.microcopy,
+    };
+  }
+
+  return {
+    ...plan,
+    badge: planBlueprint.PRO.badge,
+    price: 'R$29/mês',
+    description: planBlueprint.PRO.description,
+    features: planBlueprint.PRO.features,
     microcopy: planBlueprint.PRO.microcopy,
     highlight: true,
   };
@@ -248,12 +313,20 @@ function HeroVisual({ offset }: { offset: number }) {
         </div>
       </div>
 
-      <motion.div className="landing-float-card landing-panel p-3" animate={{ y: [0, -8, 0] }} transition={{ duration: 4.5, repeat: Infinity }}>
+      <motion.div
+        className="landing-float-card landing-float-card-left landing-panel landing-glass p-3"
+        animate={{ y: [0, -7, 0] }}
+        transition={{ duration: 4.5, repeat: Infinity }}
+      >
         <p className="text-xs text-[var(--text-secondary)]">Despesas invisíveis</p>
-        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$680/mês</p>
+        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$ 680/mês</p>
       </motion.div>
 
-      <motion.div className="landing-float-card right landing-panel p-3" animate={{ y: [0, -7, 0] }} transition={{ duration: 5.3, repeat: Infinity }}>
+      <motion.div
+        className="landing-float-card landing-float-card-right landing-panel landing-glass p-3"
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 5.3, repeat: Infinity }}
+      >
         <p className="text-xs text-[var(--text-secondary)]">Ação prioritária</p>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Cortar assinaturas</p>
       </motion.div>
@@ -263,7 +336,7 @@ function HeroVisual({ offset }: { offset: number }) {
 
 export default function LandingPage() {
   const router = useRouter();
-  const [plans, setPlans] = React.useState<Plan[]>(fallbackPlans);
+  const [plans, setPlans] = React.useState<Plan[]>(fallbackPlans.map(alignPlanCopy));
   const [scrollY, setScrollY] = React.useState(0);
 
   React.useEffect(() => {
@@ -280,7 +353,7 @@ export default function LandingPage() {
         const response = await fetch('/api/public/plan-catalog', { cache: 'no-store' });
         const payload = (await response.json().catch(() => null)) as { plans?: PublicPlanCatalogItem[] } | null;
         if (!response.ok || !payload?.plans?.length || !active) return;
-        setPlans(payload.plans.map(mapPlan));
+        setPlans(payload.plans.map(mapPlan).map(alignPlanCopy));
       } catch {
         // fallback local
       }
@@ -326,9 +399,9 @@ export default function LandingPage() {
         }
       />
 
-      <Container>
+      <Container className="landing-page-flow">
         <Section className="pt-14 lg:pt-20">
-          <section id="produto" className="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+          <section id="produto" className="landing-hero-spotlight grid items-center gap-12 xl:gap-14 lg:grid-cols-[1.05fr_.95fr]">
             <motion.div {...reveal} className="space-y-6">
               <span className="badge-premium badge-premium-info px-4 py-2 text-xs">
                 <Sparkles size={13} /> IA aplicada ao seu financeiro
@@ -372,7 +445,7 @@ export default function LandingPage() {
         </Section>
 
         <Section>
-          <motion.section {...reveal} className="grid items-center gap-12 lg:grid-cols-[1.04fr_.96fr]">
+          <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[1.04fr_.96fr]">
             <div className="space-y-4">
               <p className="label-premium">Problema</p>
               <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
@@ -389,15 +462,15 @@ export default function LandingPage() {
               <p className="text-sm leading-7 text-[var(--text-secondary)]">E o pior: quanto mais tempo passa, mais isso se acumula.</p>
             </div>
 
-            <div className="landing-panel landing-glass p-6">
+            <div className="landing-panel landing-glass landing-depth-card p-6 sm:p-7">
               <p className="label-premium">Diagnóstico rápido</p>
-              <div className="mt-3 space-y-3">
+              <div className="mt-4 space-y-3">
                 {[
                   { k: 'Despesas invisíveis', v: 'R$680' },
                   { k: 'Categoria mais crítica', v: 'Alimentação' },
-                  { k: 'Perda acumulada anual', v: 'R$8.160' },
+                  { k: 'Perda anual', v: 'R$8.160' },
                 ].map((row) => (
-                  <div key={row.k} className="landing-tile flex items-center justify-between p-3">
+                  <div key={row.k} className="landing-tile flex items-center justify-between p-3.5">
                     <span className="text-sm text-[var(--text-secondary)]">{row.k}</span>
                     <span className="text-sm font-semibold text-[var(--text-primary)]">{row.v}</span>
                   </div>
@@ -408,15 +481,32 @@ export default function LandingPage() {
         </Section>
 
         <Section>
-          <motion.section {...reveal} className="grid items-center gap-12 lg:grid-cols-[1fr_.95fr]">
+          <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[.98fr_1.02fr]">
+            <div className="landing-panel landing-glass landing-depth-card p-6 sm:p-7">
+              <p className="label-premium">Sistema real em uso</p>
+
+              <div className="mt-4 landing-tile p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Contexto em tempo real</p>
+                <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">Ajuste imediato</p>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">Reduzir recorrentes em 12%</p>
+              </div>
+
+              <div className="mt-4 landing-tile p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Impacto estimado</p>
+                <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">+R$ 680/mês</p>
+              </div>
+
+              <div className="mt-4 landing-tile p-3">
+                <AnimatedChart />
+              </div>
+            </div>
+
             <div className="space-y-4">
               <p className="label-premium">Solução</p>
               <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
                 Clareza financeira em minutos sem planilhas e sem esforço.
               </h2>
-              <p className="text-base leading-8 text-[var(--text-secondary)]">
-                O Cote conecta seus dados, analisa seu comportamento e mostra exatamente:
-              </p>
+              <p className="text-base leading-8 text-[var(--text-secondary)]">O Cote conecta seus dados e mostra:</p>
               <div className="space-y-2">
                 {solutionChecks.map((item) => (
                   <p key={item} className="inline-flex w-full items-center gap-2 text-sm leading-7 text-[var(--text-secondary)]">
@@ -426,20 +516,6 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-sm leading-7 text-[var(--text-secondary)]">Tudo com contexto real.</p>
-            </div>
-
-            <div className="landing-panel p-5">
-              <p className="label-premium">Contexto em tempo real</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="landing-tile p-4">
-                  <p className="text-xs text-[var(--text-muted)]">Ajuste imediato</p>
-                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">Reduzir recorrentes em 12%</p>
-                </div>
-                <div className="landing-tile p-4">
-                  <p className="text-xs text-[var(--text-muted)]">Impacto estimado</p>
-                  <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">+R$ 680/mês</p>
-                </div>
-              </div>
             </div>
           </motion.section>
         </Section>
@@ -483,7 +559,7 @@ export default function LandingPage() {
         </Section>
 
         <Section>
-          <motion.section {...reveal} className="grid items-center gap-12 lg:grid-cols-[1.02fr_.98fr]">
+          <motion.section {...reveal} className="grid items-center gap-12 xl:gap-16 lg:grid-cols-[1.02fr_.98fr]">
             <div className="space-y-4">
               <p className="label-premium">Benefícios</p>
               <h2 className="text-3xl font-bold text-[var(--text-primary)] md:text-4xl">Tudo que você precisa para sair do modo tentativa e erro.</h2>
@@ -497,23 +573,34 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="landing-panel p-5">
-              <p className="label-premium">Sistema real em uso</p>
-              <div className="mt-3 landing-tile p-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="landing-tile p-3">
-                    <p className="text-xs text-[var(--text-muted)]">Gasto mensal</p>
-                    <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$ 5.940</p>
+            <div className="landing-hero-cluster">
+              <div className="landing-panel landing-glass landing-depth-card p-6 sm:p-7">
+                <p className="label-premium">Sistema real em uso</p>
+                <div className="mt-4 landing-tile p-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="landing-tile p-3">
+                      <p className="text-xs text-[var(--text-muted)]">Gasto mensal</p>
+                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$ 5.940</p>
+                    </div>
+                    <div className="landing-tile p-3">
+                      <p className="text-xs text-[var(--text-muted)]">Economia potencial</p>
+                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$ 680</p>
+                    </div>
                   </div>
-                  <div className="landing-tile p-3">
-                    <p className="text-xs text-[var(--text-muted)]">Economia potencial</p>
-                    <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">R$ 680</p>
+                  <div className="mt-4">
+                    <AnimatedChart />
                   </div>
-                </div>
-                <div className="mt-4">
-                  <AnimatedChart />
                 </div>
               </div>
+
+              <motion.div
+                className="landing-float-card landing-benefits-float landing-panel landing-glass p-3"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 5.4, repeat: Infinity }}
+              >
+                <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">Projeção</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">+R$ 8.160 ao ano</p>
+              </motion.div>
             </div>
           </motion.section>
         </Section>

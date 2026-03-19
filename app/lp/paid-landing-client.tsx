@@ -30,13 +30,43 @@ type PaidPlan = {
   highlight?: boolean;
 };
 
+const planFeatures = {
+  FREE: [
+    'Até 10 lançamentos por mês',
+    'Até 10 interações com IA por mês',
+    'Dashboard financeiro',
+    'Categorias automáticas',
+    'Análise básica de despesas',
+  ],
+  PRO: [
+    'Lançamentos ilimitados',
+    'Relatórios completos e gráficos avançados',
+    'Até 500 interações com IA por mês',
+    'Insights financeiros automáticos',
+    'Metas financeiras ilimitadas',
+    'Acompanhamento de dívidas',
+    'Controle de investimentos',
+    'Resumos e alertas no WhatsApp',
+    'Suporte por e-mail',
+  ],
+  PREMIUM: [
+    'Tudo do Pro',
+    'IA financeira sem limite mensal',
+    'Insights financeiros mais avançados',
+    'Previsão de saldo e alertas inteligentes',
+    'Análises profundas de despesas',
+    'Automação financeira no WhatsApp',
+    'Suporte por e-mail',
+  ],
+};
+
 const fallbackPlans: PaidPlan[] = [
   {
     name: 'Free',
     price: 'R$0/mês',
     href: '/signup?plan=free',
     cta: 'Criar conta grátis',
-    features: ['Dashboard essencial', 'Controle inicial de gastos', 'Até 10 lançamentos por mês'],
+    features: planFeatures.FREE,
   },
   {
     name: 'Pro',
@@ -44,14 +74,14 @@ const fallbackPlans: PaidPlan[] = [
     href: '/signup?plan=pro&trial=true',
     cta: 'Testar Pro grátis',
     highlight: true,
-    features: ['Lançamentos ilimitados', 'IA aplicada em decisões', 'Alertas e resumos no WhatsApp'],
+    features: planFeatures.PRO,
   },
   {
     name: 'Premium',
     price: 'R$49/mês',
     href: '/signup?plan=premium',
     cta: 'Assinar Premium',
-    features: ['Tudo do Pro', 'IA ilimitada', 'Previsões e automações avançadas'],
+    features: planFeatures.PREMIUM,
   },
 ];
 
@@ -62,7 +92,7 @@ function mapPlan(plan: PublicPlanCatalogItem): PaidPlan {
       price: `R$${plan.monthlyPrice}/mês`,
       href: '/signup?plan=free',
       cta: 'Criar conta grátis',
-      features: plan.features,
+      features: planFeatures.FREE,
     };
   }
 
@@ -72,7 +102,7 @@ function mapPlan(plan: PublicPlanCatalogItem): PaidPlan {
       price: `R$${plan.monthlyPrice}/mês`,
       href: '/signup?plan=premium',
       cta: 'Assinar Premium',
-      features: plan.features,
+      features: planFeatures.PREMIUM,
     };
   }
 
@@ -81,7 +111,7 @@ function mapPlan(plan: PublicPlanCatalogItem): PaidPlan {
     price: `R$${plan.monthlyPrice}/mês`,
     href: plan.trialDays > 0 ? '/signup?plan=pro&trial=true' : '/signup?plan=pro',
     cta: plan.trialDays > 0 ? 'Testar Pro grátis' : 'Assinar Pro',
-    features: plan.features,
+    features: planFeatures.PRO,
     highlight: true,
   };
 }

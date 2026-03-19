@@ -878,29 +878,26 @@ function CheckoutPageContent() {
       ? 'Camada avançada de inteligência financeira para quem quer mais previsibilidade e acompanhamento proativo.'
       : 'Controle financeiro completo com inteligência artificial.');
   const checkoutBenefits =
-    checkoutData?.features?.length
-      ? checkoutData.features
-      : pixData?.features?.length
-        ? pixData.features
-        : plan === 'PREMIUM'
+    plan === 'PREMIUM'
       ? [
           'Tudo do plano Pro',
-          'Insights financeiros mais profundos',
+          'IA financeira sem limite mensal',
+          'Insights financeiros mais avançados',
           'Previsões de saldo e alertas inteligentes',
-          'Análises avançadas de despesas',
-          'Alertas e resumos automáticos no WhatsApp',
-          'Suporte prioritário com acompanhamento acelerado',
+          'Análises profundas de despesas',
+          'Automação financeira no WhatsApp',
+          'Suporte por e-mail',
         ]
       : [
           'Lançamentos ilimitados',
           'Relatórios completos e gráficos avançados',
-          'Análises inteligentes com IA',
+          'Até 500 interações com IA por mês',
           'Insights financeiros automáticos',
           'Metas financeiras ilimitadas',
           'Acompanhamento de dívidas',
           'Controle de investimentos',
           'Resumos e alertas no WhatsApp',
-          'Suporte prioritário por e-mail',
+          'Suporte por e-mail',
         ];
   const checkoutSecurityItems =
     checkoutData?.trustBadges?.length

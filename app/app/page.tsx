@@ -2399,12 +2399,13 @@ const IntegrationsView = ({
       annualPrice: 290,
       features: [
         'Lançamentos ilimitados',
-        'Análises inteligentes com IA',
         'Relatórios completos e gráficos avançados',
+        'Até 500 interações com IA por mês',
         'Insights financeiros automáticos',
         'Metas ilimitadas',
         'Investimentos',
         'Alertas e resumos no WhatsApp',
+        'Suporte por e-mail',
       ],
     },
     {
@@ -2418,7 +2419,7 @@ const IntegrationsView = ({
         'Previsões de saldo e alertas inteligentes',
         'Planejamento estratégico',
         'Automação financeira no WhatsApp',
-        'Suporte prioritário',
+        'Suporte por e-mail',
       ],
     },
   ];
@@ -11249,16 +11250,16 @@ React.useEffect(() => {
         className={cn(
           'sidebar-premium fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-[var(--border-default)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
-          isSidebarCollapsed ? 'w-[19rem] lg:w-24' : 'w-[19rem] lg:w-72'
+          isSidebarCollapsed ? 'w-[19rem] lg:w-24' : 'w-[19rem] lg:w-[19.75rem]'
         )}
       >
         <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-5' : 'px-7 py-8')} id="sidebar-logo">
           <Image
             src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo}
             alt="Cote Finance AI - By Cote Juros"
-            width={isSidebarCollapsed ? 64 : 640}
-            height={isSidebarCollapsed ? 64 : 176}
-            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-14' : 'w-full max-w-[380px]')}
+            width={isSidebarCollapsed ? 76 : 700}
+            height={isSidebarCollapsed ? 76 : 192}
+            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-16' : 'w-full max-w-[420px]')}
           />
           <div className="flex items-center gap-2">
             <button
