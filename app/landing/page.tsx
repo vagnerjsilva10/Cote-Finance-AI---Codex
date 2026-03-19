@@ -68,7 +68,11 @@ const solutionChecks = [
 
 const benefits = [
   { icon: Compass, title: 'Contexto real', description: 'Veja seu dinheiro com contexto e entenda o impacto de cada decisão.' },
-  { icon: CircleAlert, title: 'Alertas antecipados', description: 'Receba sinais antes do problema virar descontrole.' },
+  {
+    icon: CircleAlert,
+    title: 'Alertas antecipados',
+    description: 'Receba alertas financeiros no WhatsApp e aja antes que pequenos desvios virem descontrole.',
+  },
   { icon: BrainCircuit, title: 'Padrões invisíveis', description: 'A IA identifica repetições que passam despercebidas no dia a dia.' },
   { icon: Target, title: 'Decisão com segurança', description: 'Saiba exatamente o que ajustar sem agir no escuro.' },
   { icon: LineChart, title: 'Evolução mensal', description: 'Tenha um plano claro e acompanhe sua melhora ao longo dos meses.' },
@@ -511,14 +515,16 @@ export default function LandingPage() {
                 </ButtonSecondary>
               </div>
 
-              <div className="space-y-1 text-sm text-[var(--text-secondary)]">
-                <p className="inline-flex items-center gap-2">
-                  <Check size={14} className="text-[var(--accent-cyan)]" /> Sem cartão de crédito
-                </p>
-                <p className="inline-flex items-center gap-2">
-                  <Check size={14} className="text-[var(--accent-cyan)]" /> +12.000 pessoas já usam
-                </p>
-              </div>
+              <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--text-secondary)]">
+                <li className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" />
+                  <span>Sem cartão de crédito</span>
+                </li>
+                <li className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" />
+                  <span>+12.000 pessoas já usam</span>
+                </li>
+              </ul>
             </motion.div>
 
             <HeroVisual offset={heroOffset} enableParallax={enableParallax} />
@@ -826,10 +832,7 @@ export default function LandingPage() {
             <h2 className="mx-auto max-w-4xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
               Escolha o plano ideal para assumir o controle do seu dinheiro.
             </h2>
-            <div className="mx-auto mt-3 max-w-3xl space-y-2 rounded-2xl border border-[var(--border-default)] bg-[rgba(15,23,42,.58)] px-4 py-4 text-left sm:text-center">
-              <p className="text-sm font-medium leading-7 text-[var(--text-primary)]">
-                Receba alertas financeiros no WhatsApp e aja antes que pequenos desvios virem descontrole.
-              </p>
+            <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[var(--border-default)] bg-[rgba(15,23,42,.58)] px-4 py-3 text-left sm:text-center">
               <p className="text-xs leading-6 text-[var(--text-secondary)]">
                 No Pro: resumos e alertas. No Premium: automações financeiras avançadas.
               </p>
@@ -876,14 +879,16 @@ export default function LandingPage() {
           <motion.section {...reveal} className="grid gap-6 lg:grid-cols-2">
             <div className="landing-panel p-6">
               <h3 className="text-xl font-semibold text-[var(--text-primary)]">Funciona pra mim?</h3>
-              <div className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
-                <p className="inline-flex items-center gap-2">
-                  <Check size={14} className="text-[var(--accent-cyan)]" /> Não precisa entender finanças
-                </p>
-                <p className="inline-flex items-center gap-2">
-                  <Check size={14} className="text-[var(--accent-cyan)]" /> Funciona com qualquer renda
-                </p>
-              </div>
+              <ul className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--text-secondary)]">
+                <li className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" />
+                  <span>Não precisa entender finanças</span>
+                </li>
+                <li className="inline-flex items-center gap-2">
+                  <Check size={14} className="text-[var(--accent-cyan)]" />
+                  <span>Funciona com qualquer renda</span>
+                </li>
+              </ul>
             </div>
 
             <div className="landing-panel p-6">
