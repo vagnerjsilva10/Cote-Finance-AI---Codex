@@ -6158,6 +6158,30 @@ const TransactionModal = ({
     };
   }, [formData.description, isOpen, onSuggestCategory]);
 
+  React.useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+      body.style.paddingRight = previousBodyPaddingRight;
+    };
+  }, [isOpen]);
+
   const handleReceiptUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !onParseReceipt) return;
@@ -11953,7 +11977,12 @@ React.useEffect(() => {
             </div>
           </div>
 
-        <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.10)_0%,rgba(59,130,246,0)_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-5 lg:p-8 xl:p-10 custom-scrollbar">
+        <div
+          className={cn(
+            'flex-1 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.10)_0%,rgba(59,130,246,0)_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-5 lg:p-8 xl:p-10',
+            isTransactionModalOpen ? 'overflow-y-hidden' : 'overflow-y-auto custom-scrollbar'
+          )}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

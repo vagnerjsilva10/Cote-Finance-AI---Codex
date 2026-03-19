@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import LandingPage from '../landing/page';
 
 export const metadata: Metadata = {
-  title: 'Cote Finance AI | Descubra para onde seu dinheiro está indo',
+  title: 'Cote Finance AI | Clareza financeira com inteligência',
   description:
-    'Controle financeiro com IA para entender seus gastos, visualizar categorias, receber insights automáticos e alertas no WhatsApp.',
+    'Pare de adivinhar. Entenda para onde seu dinheiro está indo com IA, insights acionáveis e controle financeiro premium.',
 };
 
 export default function PaidLandingPage() {
