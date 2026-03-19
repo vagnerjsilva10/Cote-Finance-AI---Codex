@@ -391,15 +391,6 @@ function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax
         <p className="text-xs text-[var(--text-secondary)]">Despesas invisíveis</p>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$680/mês</p>
       </motion.div>
-
-      <motion.div
-        className="landing-floating-chip-alt landing-panel landing-glass p-3"
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 5.3, repeat: Infinity }}
-      >
-        <p className="text-xs text-[var(--text-secondary)]">Ação prioritária</p>
-        <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Cortar assinaturas</p>
-      </motion.div>
     </motion.div>
   );
 }
