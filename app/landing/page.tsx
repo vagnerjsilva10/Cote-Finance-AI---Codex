@@ -336,17 +336,17 @@ function alignPlanCopy(plan: Plan): Plan {
   };
 }
 
-function useNumberTicker(target: number, duration = 900, start = true) {
+function useNumberTicker(target: number, duration = 900, shouldStart = true) {
   const [value, setValue] = React.useState(0);
 
   React.useEffect(() => {
-    if (!start) return;
+    if (!shouldStart) return;
 
     let frame = 0;
     let raf = 0;
-    const start = performance.now();
+    const startTime = performance.now();
     const loop = (time: number) => {
-      const progress = Math.min((time - start) / duration, 1);
+      const progress = Math.min((time - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       const next = Math.round(target * eased);
       if (next !== frame) {
@@ -357,7 +357,7 @@ function useNumberTicker(target: number, duration = 900, start = true) {
     };
     raf = window.requestAnimationFrame(loop);
     return () => window.cancelAnimationFrame(raf);
-  }, [target, duration, start]);
+  }, [target, duration, shouldStart]);
 
   return value;
 }
