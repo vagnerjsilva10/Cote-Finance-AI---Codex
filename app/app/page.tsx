@@ -12723,17 +12723,17 @@ React.useEffect(() => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 right-0 z-[120] w-full sm:w-[420px] flex flex-col border-l border-[var(--border-default)] bg-[var(--bg-app)] backdrop-blur-xl shadow-2xl"
+            className="fixed inset-y-0 right-0 z-[120] w-full sm:w-[420px] flex flex-col border-l border-[var(--border-default)] bg-[linear-gradient(180deg,var(--bg-app-secondary)_0%,var(--bg-app)_100%)] backdrop-blur-xl shadow-2xl"
           >
             <div className="p-6 border-b border-[var(--border-default)] flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="size-2 rounded-full bg-[var(--primary)] animate-pulse" />
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Assistente Cote</h3>
+                  <div className="size-2 rounded-full bg-[var(--primary)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--primary)_22%,transparent)] animate-pulse" />
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Assistente Cote</h3>
                   {isWhatsAppConnected && (
-                    <div className="flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded bg-[color:var(--primary-soft)] border border-[color:var(--border-default)]">
-                      <MessageSquare size={8} className="text-[var(--text-secondary)]" />
-                      <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-widest">WhatsApp Ativo</span>
+                    <div className="flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded border border-[color:color-mix(in_srgb,var(--whatsapp)_40%,transparent)] bg-[var(--whatsapp-soft)]">
+                      <MessageSquare size={8} className="text-[var(--whatsapp)]" />
+                      <span className="text-[8px] font-black text-[var(--whatsapp)] uppercase tracking-widest">WhatsApp Ativo</span>
                     </div>
                   )}
                 </div>
@@ -12754,7 +12754,7 @@ React.useEffect(() => {
                         key={suggestion}
                         onClick={() => void handleSendMessage(suggestion)}
                         disabled={isLoading}
-                        className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--primary)] transition-all disabled:opacity-50"
+                        className="px-2.5 py-1.5 rounded-lg bg-[color:var(--primary-soft)] border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] text-[11px] text-[var(--primary)] hover:text-[var(--text-primary)] hover:bg-[color:color-mix(in_srgb,var(--primary-soft)_70%,var(--bg-surface-elevated))] transition-all disabled:opacity-50"
                       >
                         {suggestion}
                       </button>
@@ -12769,14 +12769,14 @@ React.useEffect(() => {
                     className={cn(
                       'p-4 rounded-2xl max-w-[90%]',
                       msg.role === 'user'
-                        ? 'bg-[var(--primary)] text-[var(--text-primary)] rounded-tr-none'
-                        : 'bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-secondary)] rounded-tl-none'
+                        ? 'bg-[var(--primary)] border border-[color:color-mix(in_srgb,var(--primary)_55%,transparent)] text-[var(--text-primary)] rounded-tr-none shadow-[0_10px_24px_color-mix(in_srgb,var(--primary)_28%,transparent)]'
+                        : 'bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-tl-none'
                     )}
                   >
                     {msg.role === 'model' && i > 0 && (
                       <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="text-[var(--text-secondary)]" size={14} />
-                        <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest">Análise Cote</span>
+                        <TrendingUp className="text-[var(--primary)]" size={14} />
+                        <span className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest">Análise Cote</span>
                       </div>
                     )}
                     {msg.role === 'model' ? (
@@ -12785,14 +12785,14 @@ React.useEffect(() => {
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>
                     )}
                   </div>
-                  <span className={cn('text-[10px] text-[var(--text-muted)] font-bold', msg.role === 'user' ? 'mr-1' : 'ml-1')}>
+                  <span className={cn('text-[10px] text-[var(--text-secondary)] font-bold', msg.role === 'user' ? 'mr-1' : 'ml-1')}>
                     {msg.time}
                   </span>
                 </div>
               ))}
 
               {isLoading && (
-                <div className="flex items-center gap-2 text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                <div className="flex items-center gap-2 text-[var(--primary)] text-[10px] font-bold uppercase tracking-widest animate-pulse">
                   <Sparkles size={12} /> Cote está pensando...
                 </div>
               )}
@@ -12811,12 +12811,12 @@ React.useEffect(() => {
                   }}
                   placeholder="Digite uma mensagem..."
                   disabled={isLoading}
-                  className="w-full bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-xl py-3 pl-4 pr-10 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)] transition-all disabled:opacity-50"
+                  className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-3 pl-4 pr-12 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--primary)_25%,transparent)] transition-all disabled:opacity-50"
                 />
                 <button
                   onClick={() => void handleSendMessage()}
                   disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors disabled:opacity-50"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-lg bg-[var(--primary)] text-[var(--text-primary)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
                 >
                   <Send size={16} />
                 </button>
@@ -12830,7 +12830,7 @@ React.useEffect(() => {
                   {aiLimitReached && (
                     <button
                       onClick={() => openUpgradeLimitModal('ai')}
-                      className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
+                      className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
                     >
                       Desbloquear IA
                     </button>
@@ -12838,7 +12838,7 @@ React.useEffect(() => {
                 </div>
               )}
 
-              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-[var(--whatsapp)] font-bold uppercase tracking-widest">
                 <Smartphone size={10} />
                 Integrado com WhatsApp
               </div>
@@ -12850,7 +12850,7 @@ React.useEffect(() => {
         {!isAssistantOpen && (
           <button
             onClick={() => setIsAssistantOpen(true)}
-            className="fixed bottom-8 right-8 size-14 bg-[var(--primary)] text-[var(--text-primary)] rounded-full shadow-2xl shadow-[color:var(--primary-soft)] flex items-center justify-center hover:scale-110 transition-all z-50"
+            className="fixed bottom-8 right-8 size-14 bg-[var(--primary)] text-[var(--text-primary)] rounded-full border border-[color:color-mix(in_srgb,var(--primary)_55%,transparent)] shadow-2xl shadow-[color:var(--primary-soft)] flex items-center justify-center hover:scale-110 hover:bg-[var(--primary-hover)] transition-all z-50"
           >
             <MessageSquare size={24} />
           </button>
@@ -12859,7 +12859,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
 
 
 
