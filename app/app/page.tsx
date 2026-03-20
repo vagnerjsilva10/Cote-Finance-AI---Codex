@@ -6629,6 +6629,7 @@ const LoginView = ({
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [pendingConfirmationEmail, setPendingConfirmationEmail] = React.useState('');
+  const AUTH_REQUEST_TIMEOUT_MS = 20000;
 
   React.useEffect(() => {
     setIsLogin(initialMode !== 'signup');
@@ -6655,15 +6656,41 @@ const LoginView = ({
       return 'A senha deve conter letras e números.';
     }
     if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
-  return null;
-};
+    return null;
+  };
+
+  const runWithTimeout = React.useCallback(
+    async <T,>(operation: Promise<T>, timeoutMessage: string): Promise<T> => {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(timeoutMessage));
+        }, AUTH_REQUEST_TIMEOUT_MS);
+      });
+
+      try {
+        return (await Promise.race([operation, timeoutPromise])) as T;
+      } finally {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
+      }
+    },
+    [AUTH_REQUEST_TIMEOUT_MS]
+  );
 
   const runSetupForToken = async (accessToken: string) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+
     const setupRes = await fetch('/api/setup-user', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      signal: controller.signal,
+    }).finally(() => {
+      clearTimeout(timeoutId);
     });
     const setupData = await setupRes.json().catch(() => ({}));
     if (!setupRes.ok && setupData.error) throw new Error(setupData.error);
@@ -6677,13 +6704,16 @@ const LoginView = ({
     setNotice(null);
 
     try {
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email: pendingConfirmationEmail,
-        options: {
-          emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
-        },
-      });
+      const { error: resendError } = await runWithTimeout(
+        supabase.auth.resend({
+          type: 'signup',
+          email: pendingConfirmationEmail,
+          options: {
+            emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
+          },
+        }),
+        'O reenvio do e-mail demorou demais. Verifique sua conexão e tente novamente.'
+      );
 
       if (resendError) throw resendError;
 
@@ -6700,12 +6730,15 @@ const LoginView = ({
       throw new Error('Informe seu e-mail para receber o código.');
     }
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email: normalizedEmail,
-      options: {
-        shouldCreateUser: false,
-      },
-    });
+    const { error: otpError } = await runWithTimeout(
+      supabase.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: {
+          shouldCreateUser: false,
+        },
+      }),
+      'O envio do código demorou demais. Verifique sua conexão e tente novamente.'
+    );
 
     if (otpError) {
       throw otpError;
@@ -6727,11 +6760,14 @@ const LoginView = ({
       throw new Error('Digite o código recebido no e-mail para continuar.');
     }
 
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      email: normalizedEmail,
-      token,
-      type: 'email',
-    });
+    const { data, error: verifyError } = await runWithTimeout(
+      supabase.auth.verifyOtp({
+        email: normalizedEmail,
+        token,
+        type: 'email',
+      }),
+      'A validação do código demorou demais. Tente novamente.'
+    );
 
     if (verifyError) {
       throw verifyError;
@@ -6778,20 +6814,26 @@ const LoginView = ({
 
       let result: any;
       if (isLogin) {
-        result = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+        result = await runWithTimeout(
+          supabase.auth.signInWithPassword({ email: normalizedEmail, password }),
+          'O login demorou demais. Verifique sua conexão e tente novamente.'
+        );
       } else {
-        result = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
-            data: {
-              first_name: firstName.trim(),
-              last_name: lastName.trim(),
-              full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        result = await runWithTimeout(
+          supabase.auth.signUp({
+            email: normalizedEmail,
+            password,
+            options: {
+              emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
+              data: {
+                first_name: firstName.trim(),
+                last_name: lastName.trim(),
+                full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+              },
             },
-          },
-        });
+          }),
+          'A criação da conta demorou demais. Verifique sua conexão e tente novamente.'
+        );
       }
 
       if (result.error) throw result.error;
