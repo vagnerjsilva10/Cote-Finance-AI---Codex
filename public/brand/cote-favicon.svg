@@ -6,10 +6,10 @@
     </linearGradient>
   </defs>
   <rect x="2" y="2" width="60" height="60" rx="16" fill="#0F1620" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
-  <path d="M14 41L24 33L33 36L47 22" stroke="url(#favBlueDark)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="14" cy="41" r="2.6" fill="#4C8DFF"/>
-  <circle cx="24" cy="33" r="2.6" fill="#4C8DFF" opacity="0.94"/>
-  <circle cx="33" cy="36" r="2.6" fill="#5D99FF" opacity="0.94"/>
-  <circle cx="47" cy="22" r="3.2" fill="#78AEFF"/>
-  <path d="M41 22H47V28" stroke="#78AEFF" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11.5 45.5L24.5 34L34.5 38L51 20.5" stroke="url(#favBlueDark)" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="11.5" cy="45.5" r="2.9" fill="#4C8DFF"/>
+  <circle cx="24.5" cy="34" r="2.9" fill="#4C8DFF" opacity="0.94"/>
+  <circle cx="34.5" cy="38" r="2.9" fill="#5D99FF" opacity="0.94"/>
+  <circle cx="51" cy="20.5" r="3.5" fill="#78AEFF"/>
+  <path d="M44.5 20.5H51V27" stroke="#78AEFF" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
