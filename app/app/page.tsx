@@ -6073,6 +6073,7 @@ const TransactionModal = ({
 
   const [formData, setFormData] = React.useState<TransactionFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
   const [suggestedCategory, setSuggestedCategory] = React.useState<string | null>(null);
   const [isLoadingSuggestion, setIsLoadingSuggestion] = React.useState(false);
   const [isParsingReceipt, setIsParsingReceipt] = React.useState(false);
@@ -6088,6 +6089,7 @@ const TransactionModal = ({
     if (!isOpen) return;
     setFormData(getInitialFormData());
     setIsSubmitting(false);
+    setHasAttemptedSubmit(false);
     setSuggestedCategory(null);
     setIsLoadingSuggestion(false);
     setIsParsingReceipt(false);
@@ -6217,17 +6219,29 @@ const TransactionModal = ({
 
   if (!isOpen) return null;
 
-  const isValid =
-    formData.description.trim().length > 0 &&
-    parseMoneyInput(formData.amount) > 0 &&
-    formData.category.trim().length > 0 &&
-    formData.wallet.trim().length > 0 &&
-    (formData.flowType !== 'Transferência' ||
-      (formData.destinationWallet.trim().length > 0 && formData.destinationWallet !== formData.wallet)) &&
-    formData.date.trim().length > 0;
+  const parsedAmount = parseMoneyInput(formData.amount);
+  const isTransferFlow = mapFlowTypeToBaseType(formData.flowType) === 'transfer';
+  const hasDescription = formData.description.trim().length > 0;
+  const hasCategory = formData.category.trim().length > 0;
+  const hasWallet = formData.wallet.trim().length > 0;
+  const hasDate = formData.date.trim().length > 0;
+  const hasValidDestinationWallet =
+    !isTransferFlow ||
+    (formData.destinationWallet.trim().length > 0 && formData.destinationWallet !== formData.wallet);
+
+  const isValid = hasDescription && parsedAmount > 0 && hasCategory && hasWallet && hasValidDestinationWallet && hasDate;
+
+  const amountInvalid = hasAttemptedSubmit && parsedAmount <= 0;
+  const descriptionInvalid = hasAttemptedSubmit && !hasDescription;
+  const categoryInvalid = hasAttemptedSubmit && !hasCategory;
+  const walletInvalid = hasAttemptedSubmit && !hasWallet;
+  const dateInvalid = hasAttemptedSubmit && !hasDate;
+  const destinationWalletInvalid = hasAttemptedSubmit && isTransferFlow && !hasValidDestinationWallet;
 
   const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+    if (isSubmitting) return;
+    setHasAttemptedSubmit(true);
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
@@ -6270,6 +6284,7 @@ const TransactionModal = ({
                 <button
                   key={flowType}
                   type="button"
+                  aria-pressed={formData.flowType === flowType}
                   onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
@@ -6286,10 +6301,8 @@ const TransactionModal = ({
                     }))
                   }
                   className={cn(
-                    'flex min-w-0 items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-bold transition-colors sm:px-4 sm:py-3.5',
-                    formData.flowType === flowType
-                      ? 'bg-[color:var(--primary-soft)] border-[var(--primary)] text-[var(--text-secondary)]'
-                      : 'bg-[var(--bg-surface-elevated)] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
+                    'app-selection-chip flex min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
+                    formData.flowType === flowType && 'is-selected'
                   )}
                 >
                   {React.createElement(getFlowTypeIcon(flowType), { size: 16 })}
@@ -6305,7 +6318,11 @@ const TransactionModal = ({
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
               placeholder="R$ 0,00"
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
+              className={cn(
+                'app-field w-full rounded-xl py-2 px-4 text-sm',
+                parsedAmount > 0 && 'app-field-filled',
+                amountInvalid && 'app-field-error'
+              )}
             />
           </div>
 
@@ -6316,7 +6333,11 @@ const TransactionModal = ({
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Ex: Supermercado"
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
+              className={cn(
+                'app-field w-full rounded-xl py-2 px-4 text-sm',
+                formData.description.trim().length > 0 && 'app-field-filled',
+                descriptionInvalid && 'app-field-error'
+              )}
             />
           </div>
 
@@ -6344,23 +6365,41 @@ const TransactionModal = ({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="min-w-0 overflow-hidden space-y-2">
               <label className="label-premium text-[var(--text-muted)]">Data</label>
-              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+              <div
+                className={cn(
+                  'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
+                  dateInvalid && 'border-[color:var(--danger)]'
+                )}
+              >
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-[var(--text-primary)] [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                  className={cn(
+                    'app-field block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-[var(--text-primary)] [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
+                    formData.date.trim().length > 0 && 'app-field-filled',
+                    dateInvalid && 'app-field-error'
+                  )}
                 />
               </div>
             </div>
 
             <div className="min-w-0 overflow-hidden space-y-2">
               <label className="label-premium text-[var(--text-muted)]">Categoria</label>
-              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+              <div
+                className={cn(
+                  'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
+                  categoryInvalid && 'border-[color:var(--danger)]'
+                )}
+              >
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                  className={cn(
+                    'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
+                    formData.category.trim().length > 0 && 'app-field-filled',
+                    categoryInvalid && 'app-field-error'
+                  )}
                 >
                   {availableCategories.map((category) => (
                     <option key={category} value={category}>
@@ -6382,7 +6421,7 @@ const TransactionModal = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
                 }
-                className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                className="app-field app-field-filled block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
               >
                 {PAYMENT_METHODS.map((method) => (
                   <option key={method} value={method}>
@@ -6431,11 +6470,20 @@ const TransactionModal = ({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="min-w-0 overflow-hidden space-y-2">
                 <label className="label-premium text-[var(--text-muted)]">Conta origem</label>
-                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <div
+                  className={cn(
+                    'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
+                    walletInvalid && 'border-[color:var(--danger)]'
+                  )}
+                >
                   <select
                     value={formData.wallet}
                     onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                    className={cn(
+                      'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
+                      formData.wallet.trim().length > 0 && 'app-field-filled',
+                      walletInvalid && 'app-field-error'
+                    )}
                   >
                     {walletChoices.map((wallet) => (
                       <option key={wallet} value={wallet}>
@@ -6447,11 +6495,20 @@ const TransactionModal = ({
               </div>
               <div className="min-w-0 overflow-hidden space-y-2">
                 <label className="label-premium text-[var(--text-muted)]">Conta destino</label>
-                <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+                <div
+                  className={cn(
+                    'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
+                    destinationWalletInvalid && 'border-[color:var(--danger)]'
+                  )}
+                >
                   <select
                     value={formData.destinationWallet}
                     onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
-                    className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                    className={cn(
+                      'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
+                      formData.destinationWallet.trim().length > 0 && 'app-field-filled',
+                      destinationWalletInvalid && 'app-field-error'
+                    )}
                   >
                     <option value="">Selecione</option>
                     {walletChoices.map((wallet) => (
@@ -6466,11 +6523,20 @@ const TransactionModal = ({
           ) : (
             <div className="space-y-2">
               <label className="label-premium text-[var(--text-muted)]">Conta / Carteira</label>
-              <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
+              <div
+                className={cn(
+                  'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
+                  walletInvalid && 'border-[color:var(--danger)]'
+                )}
+              >
                 <select
                   value={formData.wallet}
                   onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
-                  className="block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                  className={cn(
+                    'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
+                    formData.wallet.trim().length > 0 && 'app-field-filled',
+                    walletInvalid && 'app-field-error'
+                  )}
                 >
                   {walletChoices.map((wallet) => (
                     <option key={wallet} value={wallet}>
@@ -6490,16 +6556,16 @@ const TransactionModal = ({
 
           <button
             onClick={handleSubmit}
-            disabled={!isValid || isSubmitting}
-            className={cn(
-              'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
-              !isValid || isSubmitting
-                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
-            )}
+            disabled={isSubmitting}
+            className="app-cta-primary mt-2 w-full rounded-xl py-3 font-bold"
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
           </button>
+          {hasAttemptedSubmit && !isValid && (
+            <p className="text-xs text-[color:var(--danger)]">
+              Preencha os campos obrigatórios para continuar.
+            </p>
+          )}
         </div>
       </motion.div>
     </div>
@@ -11010,6 +11076,7 @@ React.useEffect(() => {
                     {(['Receita', 'Despesa'] as TransactionFlowType[]).map((flowType) => (
                       <button
                         key={flowType}
+                        aria-pressed={onboardingFirstRecord.flowType === flowType}
                         onClick={() =>
                           setOnboardingFirstRecord((prev) => ({
                             ...prev,
@@ -11018,10 +11085,8 @@ React.useEffect(() => {
                           }))
                         }
                         className={cn(
-                          'rounded-2xl border px-4 py-3 text-sm font-bold transition-colors',
-                          onboardingFirstRecord.flowType === flowType
-                            ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-                            : 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
+                          'app-selection-chip rounded-2xl px-4 py-3 text-sm font-bold',
+                          onboardingFirstRecord.flowType === flowType && 'is-selected'
                         )}
                       >
                         {flowType}
@@ -11041,7 +11106,10 @@ React.useEffect(() => {
                           }))
                         }
                         placeholder="R$ 0,00"
-                        className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-2 px-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
+                        className={cn(
+                          'app-field w-full rounded-xl py-2 px-4 text-sm',
+                          parseMoneyInput(onboardingFirstRecord.amount) > 0 && 'app-field-filled'
+                        )}
                       />
                     </div>
                     <div className="space-y-2">
@@ -11054,7 +11122,10 @@ React.useEffect(() => {
                             category: event.target.value,
                           }))
                         }
-                        className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-2 px-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
+                        className={cn(
+                          'app-field w-full rounded-xl py-2 px-4 text-sm',
+                          onboardingFirstRecord.category.trim().length > 0 && 'app-field-filled'
+                        )}
                       >
                         {TRANSACTION_CATEGORIES.filter((category) => category !== 'Auto (IA)').map((category) => (
                           <option key={category} value={category}>
@@ -11078,7 +11149,10 @@ React.useEffect(() => {
                         }))
                       }
                       placeholder="Ex: Mercado do mês"
-                      className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-2 px-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
+                      className={cn(
+                        'app-field w-full rounded-xl py-2 px-4 text-sm',
+                        onboardingFirstRecord.description.trim().length > 0 && 'app-field-filled'
+                      )}
                     />
                   </div>
 
@@ -11098,7 +11172,7 @@ React.useEffect(() => {
                     <button
                       onClick={() => void handleAddOnboardingFirstRecord()}
                       disabled={isSavingOnboardingRecord || parseMoneyInput(onboardingFirstRecord.amount) <= 0}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)] disabled:opacity-60"
+                      className="app-cta-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       {isSavingOnboardingRecord ? 'Adicionando...' : 'Adicionar registro'}
                     </button>
