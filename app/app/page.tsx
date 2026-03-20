@@ -1516,7 +1516,6 @@ type StatCardProps = {
   trendValue: string;
   icon: LucideIcon;
   trendType?: 'up' | 'down';
-  iconTone?: 'primary' | 'success' | 'danger' | 'warning';
 };
 
 const StatCard = ({
@@ -1526,22 +1525,12 @@ const StatCard = ({
   trendValue,
   icon: Icon,
   trendType = 'up',
-  iconTone = 'primary',
 }: StatCardProps) => {
-  const iconToneClass =
-    iconTone === 'success'
-      ? 'border-[color:color-mix(in_srgb,var(--success)_35%,transparent)] bg-[var(--success-soft)] text-[var(--success)]'
-      : iconTone === 'danger'
-        ? 'border-[color:color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[var(--danger-soft)] text-[var(--danger)]'
-        : iconTone === 'warning'
-          ? 'border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] text-[var(--warning)]'
-          : 'border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] text-[var(--primary)]';
-
   return (
     <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 sm:p-8 shadow-[var(--shadow-soft)]">
     <div className="mb-6 flex items-center justify-between">
       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</span>
-      <div className={cn('rounded-full border p-2.5 shadow-[0_8px_20px_rgba(2,6,23,.2)]', iconToneClass)}>
+      <div className="rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] p-2.5 text-[var(--primary)] shadow-[0_8px_20px_rgba(2,6,23,.2)]">
         <Icon size={17} />
       </div>
     </div>
@@ -1823,8 +1812,6 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
 
   const monthBalance = monthIncome - monthExpenses;
   const savingsRate = monthIncome > 0 ? (monthBalance / monthIncome) * 100 : 0;
-  const monthBalanceTone = monthBalance > 0 ? 'success' : monthBalance < 0 ? 'danger' : 'primary';
-  const savingsTone = savingsRate >= 20 ? 'success' : savingsRate >= 5 ? 'primary' : savingsRate >= 0 ? 'warning' : 'danger';
 
   const expenseByCategory = currentMonthTransactions.reduce((acc, tx) => {
     if (tx.type !== 'expense') return acc;
@@ -1897,7 +1884,6 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trend="transações de entrada"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'income').length}`}
           icon={TrendingUp}
-          iconTone="success"
         />
         <StatCard
           label="Despesas do mês"
@@ -1906,7 +1892,6 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'expense').length}`}
           icon={TrendingDown}
           trendType="down"
-          iconTone="danger"
         />
         <StatCard
           label="Saldo do mês"
@@ -1915,7 +1900,6 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trendValue={monthBalance >= 0 ? 'Positivo' : 'Negativo'}
           icon={Wallet}
           trendType={monthBalance >= 0 ? 'up' : 'down'}
-          iconTone={monthBalanceTone}
         />
         <StatCard
           label="Taxa de economia"
@@ -1924,7 +1908,6 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trendValue="No mês atual"
           icon={Gauge}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
-          iconTone={savingsTone}
         />
       </div>
 
@@ -3823,7 +3806,7 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={onAddWallet}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:border-[color:var(--border-default)] hover:bg-[color:var(--primary-soft)] hover:text-[var(--text-primary)]"
+              className="app-button-primary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold"
             >
               <Plus size={16} />
               Criar carteira
@@ -3831,25 +3814,25 @@ const PortfolioView = ({
             <button
               type="button"
               onClick={() => onTransferBalance()}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+              className="app-button-secondary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold"
             >
-              <Workflow size={16} />
+              <Workflow size={16} className="text-[var(--primary)]" />
               Transferir saldo
             </button>
             <button
               type="button"
               onClick={onAddInvestment}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+              className="app-button-secondary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold"
             >
-              <TrendingUp size={16} />
+              <TrendingUp size={16} className="text-[var(--primary)]" />
               Registrar investimento
             </button>
             <button
               type="button"
               onClick={onAddDebt}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+              className="app-button-secondary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold"
             >
-              <CreditCard size={16} />
+              <CreditCard size={16} className="text-[var(--primary)]" />
               Registrar dívida
             </button>
           </div>
@@ -4053,31 +4036,31 @@ const PortfolioView = ({
                   <button
                     type="button"
                     onClick={() => onViewWalletHistory(wallet.name)}
-                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                    className="app-button-secondary inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
                   >
-                    <ReceiptText size={14} />
+                    <ReceiptText size={14} className="text-[var(--primary)]" />
                     Ver histórico
                   </button>
                   <button
                     type="button"
                     onClick={() => onTransferBalance(wallet.name)}
-                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                    className="app-button-secondary inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
                   >
-                    <Workflow size={14} />
+                    <Workflow size={14} className="text-[var(--primary)]" />
                     Transferir
                   </button>
                   <button
                     type="button"
                     onClick={() => onAdjustWalletBalance(wallet.name)}
-                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                    className="app-button-secondary inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
                   >
-                    <Pencil size={14} />
+                    <Pencil size={14} className="text-[var(--primary)]" />
                     Ajustar saldo
                   </button>
                   <button
                     type="button"
                     onClick={() => onDeleteWallet(wallet)}
-                    className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] px-3 py-2 text-xs font-semibold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:bg-[color:var(--danger-soft)]"
+                    className="app-button-danger inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
                   >
                     <Trash2 size={14} />
                     Excluir
@@ -4117,9 +4100,9 @@ const PortfolioView = ({
                 <button
                   type="button"
                   onClick={onAddInvestment}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--primary)]/10 px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                  className="app-button-secondary mt-4 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
                 >
-                  <Plus size={14} />
+                  <Plus size={14} className="text-[var(--primary)]" />
                   Adicionar investimento
                 </button>
               </div>
@@ -4182,9 +4165,9 @@ const PortfolioView = ({
                 <button
                   type="button"
                   onClick={onAddDebt}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
+                  className="app-button-secondary mt-4 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
                 >
-                  <Plus size={14} />
+                  <Plus size={14} className="text-[var(--primary)]" />
                   Registrar dívida
                 </button>
               </div>
@@ -12796,10 +12779,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
-
-
 
 
 

@@ -762,6 +762,38 @@ body {
     background: transparent;
   }
 
+  .button-danger,
+  .app-button-danger,
+  .ds-button-danger {
+    border: 1px solid color-mix(in srgb, var(--danger) 34%, var(--border-default));
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger-soft) 70%, var(--bg-surface));
+  }
+
+  .button-danger:hover,
+  .app-button-danger:hover,
+  .ds-button-danger:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--danger) 46%, var(--border-default));
+    background: color-mix(in srgb, var(--danger-soft) 84%, var(--bg-surface));
+    color: color-mix(in srgb, var(--danger) 88%, white);
+  }
+
+  .button-danger:active,
+  .app-button-danger:active,
+  .ds-button-danger:active {
+    transform: translateY(0);
+    border-color: color-mix(in srgb, var(--danger) 54%, var(--border-default));
+  }
+
+  .button-danger:disabled,
+  .app-button-danger:disabled,
+  .ds-button-danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+    transform: none;
+  }
+
   .input-premium,
   .select-premium,
   .app-field,
