@@ -1008,6 +1008,23 @@ const getFlowTypeIcon = (flowType: TransactionFlowType) => {
   return ArrowDownRight;
 };
 
+const getBaseTypeColorClass = (baseType: 'income' | 'expense' | 'transfer') => {
+  if (baseType === 'income') return 'text-[var(--success)]';
+  if (baseType === 'expense') return 'text-[var(--danger)]';
+  return 'text-[var(--primary)]';
+};
+
+const getFlowTypeBadgeClass = (flowType: TransactionFlowType) => {
+  const baseType = mapFlowTypeToBaseType(flowType);
+  if (baseType === 'income') {
+    return 'border-[color:color-mix(in_srgb,var(--success)_35%,transparent)] bg-[var(--success-soft)] text-[var(--success)]';
+  }
+  if (baseType === 'expense') {
+    return 'border-[color:color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[var(--danger-soft)] text-[var(--danger)]';
+  }
+  return 'border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] text-[var(--primary)]';
+};
+
 const normalizePlan = (rawPlan: unknown): SubscriptionPlan => {
   const normalized = String(rawPlan || '')
     .trim()
@@ -1933,10 +1950,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="income"
                   name="income"
-                  stroke="var(--primary)"
+                  stroke="var(--success)"
                   strokeWidth={2.5}
                   dot={false}
-                  activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                  activeDot={{ r: 4, fill: 'var(--success)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
                 />
                 <Line
                   type="monotone"
@@ -2056,11 +2073,7 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   <td
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
-                      tx.type === 'income'
-                        ? 'text-[var(--success)]'
-                        : tx.type === 'expense'
-                          ? 'text-[var(--danger)]'
-                          : 'text-[var(--text-secondary)]'
+                      getBaseTypeColorClass(tx.type)
                     )}
                   >
                     {tx.amount}
@@ -2191,11 +2204,7 @@ const TransactionsView = ({
                 <p
                   className={cn(
                     'text-sm font-bold',
-                    baseType === 'income'
-                      ? 'text-[var(--success)]'
-                      : baseType === 'expense'
-                        ? 'text-[var(--danger)]'
-                        : 'text-[var(--text-secondary)]'
+                    getBaseTypeColorClass(baseType)
                   )}
                 >
                   {tx.amount}
@@ -2203,7 +2212,12 @@ const TransactionsView = ({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
+                <span
+                  className={cn(
+                    'px-2 py-1 rounded-md border text-[10px] font-bold uppercase tracking-wider',
+                    getFlowTypeBadgeClass(tx.flowType)
+                  )}
+                >
                   {tx.flowType}
                 </span>
                 <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
@@ -2212,7 +2226,7 @@ const TransactionsView = ({
                 <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
                   {getPaymentMethodIconLabel(tx.paymentMethod)}
                 </span>
-                <span className="text-[10px] text-[var(--success)]/80 font-bold uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest flex items-center gap-1">
                   <Wallet size={10} /> {tx.wallet}
                 </span>
                 {tx.flowType === 'Transferência' && tx.destinationWallet && (
@@ -2272,7 +2286,12 @@ const TransactionsView = ({
                   <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.date}</td>
                   <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{tx.desc}</td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
+                    <span
+                      className={cn(
+                        'px-2 py-1 rounded-md border text-[10px] font-bold uppercase tracking-wider',
+                        getFlowTypeBadgeClass(tx.flowType)
+                      )}
+                    >
                       {tx.flowType}
                     </span>
                   </td>
@@ -2285,11 +2304,7 @@ const TransactionsView = ({
                   <td
                     className={cn(
                       'px-6 py-4 text-sm font-bold text-right',
-                      baseType === 'income'
-                        ? 'text-[var(--success)]'
-                        : baseType === 'expense'
-                          ? 'text-[var(--danger)]'
-                          : 'text-[var(--text-secondary)]'
+                      getBaseTypeColorClass(baseType)
                     )}
                   >
                     {tx.amount}
@@ -2426,7 +2441,7 @@ const IntegrationsView = ({
 
   const feedbackToneClass =
     whatsAppFeedback?.tone === 'success'
-      ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+      ? 'border-[color:var(--border-default)] bg-[var(--whatsapp-soft)] text-[var(--whatsapp)]'
       : whatsAppFeedback?.tone === 'error'
       ? 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]'
       : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)]';
@@ -2496,7 +2511,7 @@ const IntegrationsView = ({
       <div className="app-surface-card rounded-3xl p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[color:var(--primary-soft)] p-3 text-[var(--text-secondary)]">
+            <div className="rounded-xl bg-[var(--whatsapp-soft)] p-3 text-[var(--whatsapp)]">
               <MessageSquare size={24} />
             </div>
             <div>
@@ -2509,9 +2524,9 @@ const IntegrationsView = ({
               'flex items-center gap-2 self-start rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest lg:self-center',
               hasWhatsAppAccess
                 ? connectionTone === 'success'
-                  ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                  ? 'bg-[var(--whatsapp-soft)] text-[var(--whatsapp)]'
                   : connectionTone === 'warning'
-                    ? 'bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
+                    ? 'bg-[color:var(--primary-soft)] text-[var(--primary)]'
                     : connectionTone === 'error'
                       ? 'bg-[var(--bg-app)] text-[var(--danger)]'
                       : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
@@ -2523,11 +2538,11 @@ const IntegrationsView = ({
                 'size-1.5 rounded-full animate-pulse',
                 hasWhatsAppAccess
                   ? connectionTone === 'success'
-                    ? 'bg-[var(--primary)]'
+                    ? 'bg-[var(--whatsapp)]'
                     : connectionTone === 'warning'
-                      ? 'bg-[color:var(--danger-soft)]'
+                      ? 'bg-[var(--primary)]'
                       : connectionTone === 'error'
-                        ? 'bg-[color:var(--danger-soft)]'
+                        ? 'bg-[var(--danger)]'
                         : 'bg-[var(--bg-surface-elevated)]'
                   : 'bg-[color:var(--danger-soft)]'
               )}
@@ -2805,9 +2820,9 @@ const IntegrationsView = ({
                 className={cn(
                   'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                   connectionTone === 'success'
-                    ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                    ? 'bg-[var(--whatsapp-soft)] text-[var(--whatsapp)]'
                     : connectionTone === 'warning'
-                    ? 'bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
+                    ? 'bg-[color:var(--primary-soft)] text-[var(--primary)]'
                     : connectionTone === 'error'
                     ? 'bg-[var(--bg-app)] text-[var(--danger)]'
                     : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
@@ -2863,7 +2878,7 @@ const IntegrationsView = ({
                       className={cn(
                         'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
                         whatsAppDiagnostic.validationResult === 'OK'
-                          ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
+                          ? 'bg-[var(--whatsapp-soft)] text-[var(--whatsapp)]'
                           : 'bg-[var(--bg-app)] text-[var(--danger)]'
                       )}
                     >
