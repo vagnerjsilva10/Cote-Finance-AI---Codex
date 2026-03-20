@@ -6629,7 +6629,8 @@ const LoginView = ({
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [pendingConfirmationEmail, setPendingConfirmationEmail] = React.useState('');
-  const AUTH_REQUEST_TIMEOUT_MS = 20000;
+  const AUTH_REQUEST_TIMEOUT_MS = 10000;
+  const AUTH_RETRY_ATTEMPTS = 2;
 
   React.useEffect(() => {
     setIsLogin(initialMode !== 'signup');
@@ -6659,6 +6660,20 @@ const LoginView = ({
     return null;
   };
 
+  const authDebug = React.useCallback((event: string, payload?: Record<string, unknown>) => {
+    console.log('AUTH DEBUG:', {
+      event,
+      timestamp: new Date().toISOString(),
+      ...(payload || {}),
+    });
+  }, []);
+
+  const shouldRetryAuthError = React.useCallback((message: string) => {
+    return /timeout|upstream request timeout|failed to fetch|network|fetch failed|temporarily unavailable/i.test(
+      message
+    );
+  }, []);
+
   const runWithTimeout = React.useCallback(
     async <T,>(operation: Promise<T>, timeoutMessage: string): Promise<T> => {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -6679,19 +6694,55 @@ const LoginView = ({
     [AUTH_REQUEST_TIMEOUT_MS]
   );
 
-  const runSetupForToken = async (accessToken: string) => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+  const runWithRetry = React.useCallback(
+    async <T,>(operationName: string, operationFactory: () => Promise<T>, timeoutMessage: string): Promise<T> => {
+      let attempt = 0;
+      let lastError: unknown = null;
 
-    const setupRes = await fetch('/api/setup-user', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+      while (attempt < AUTH_RETRY_ATTEMPTS) {
+        attempt += 1;
+        try {
+          authDebug(`${operationName}:start`, { attempt });
+          const result = await runWithTimeout(operationFactory(), timeoutMessage);
+          authDebug(`${operationName}:success`, { attempt });
+          return result;
+        } catch (error) {
+          lastError = error;
+          const message = error instanceof Error ? error.message : String(error || 'Erro desconhecido');
+          const retryable = shouldRetryAuthError(message);
+          authDebug(`${operationName}:error`, { attempt, retryable, message });
+
+          if (!retryable || attempt >= AUTH_RETRY_ATTEMPTS) {
+            break;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+        }
+      }
+
+      throw lastError instanceof Error ? lastError : new Error(timeoutMessage);
+    },
+    [AUTH_RETRY_ATTEMPTS, authDebug, runWithTimeout, shouldRetryAuthError]
+  );
+
+  const runSetupForToken = async (accessToken: string) => {
+    const setupRes = await runWithRetry(
+      'setup_user',
+      async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+        return fetch('/api/setup-user', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          signal: controller.signal,
+        }).finally(() => {
+          clearTimeout(timeoutId);
+        });
       },
-      signal: controller.signal,
-    }).finally(() => {
-      clearTimeout(timeoutId);
-    });
+      'Não foi possível finalizar sua sessão no servidor. Tente novamente.'
+    );
     const setupData = await setupRes.json().catch(() => ({}));
     if (!setupRes.ok && setupData.error) throw new Error(setupData.error);
   };
@@ -6704,21 +6755,26 @@ const LoginView = ({
     setNotice(null);
 
     try {
-      const { error: resendError } = await runWithTimeout(
-        supabase.auth.resend({
-          type: 'signup',
-          email: pendingConfirmationEmail,
-          options: {
-            emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
-          },
-        }),
+      authDebug('resend_confirmation:start', { email: pendingConfirmationEmail });
+      const { error: resendError } = await runWithRetry(
+        'resend_confirmation',
+        () =>
+          supabase.auth.resend({
+            type: 'signup',
+            email: pendingConfirmationEmail,
+            options: {
+              emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
+            },
+          }),
         'O reenvio do e-mail demorou demais. Verifique sua conexão e tente novamente.'
       );
 
       if (resendError) throw resendError;
 
+      authDebug('resend_confirmation:done', { email: pendingConfirmationEmail });
       setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
+      authDebug('resend_confirmation:failed', { message: String(err?.message || err || 'erro desconhecido') });
       setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
     } finally {
       setLoading(false);
@@ -6730,13 +6786,16 @@ const LoginView = ({
       throw new Error('Informe seu e-mail para receber o código.');
     }
 
-    const { error: otpError } = await runWithTimeout(
-      supabase.auth.signInWithOtp({
-        email: normalizedEmail,
-        options: {
-          shouldCreateUser: false,
-        },
-      }),
+    authDebug('otp_request:start', { email: normalizedEmail });
+    const { error: otpError } = await runWithRetry(
+      'otp_send_code',
+      () =>
+        supabase.auth.signInWithOtp({
+          email: normalizedEmail,
+          options: {
+            shouldCreateUser: false,
+          },
+        }),
       'O envio do código demorou demais. Verifique sua conexão e tente novamente.'
     );
 
@@ -6744,6 +6803,7 @@ const LoginView = ({
       throw otpError;
     }
 
+    authDebug('otp_request:done', { email: normalizedEmail });
     setOtpRequestedEmail(normalizedEmail);
     setOtpCode('');
     setNotice('Enviamos um código de acesso para o seu e-mail. Digite esse código para entrar.');
@@ -6760,12 +6820,15 @@ const LoginView = ({
       throw new Error('Digite o código recebido no e-mail para continuar.');
     }
 
-    const { data, error: verifyError } = await runWithTimeout(
-      supabase.auth.verifyOtp({
-        email: normalizedEmail,
-        token,
-        type: 'email',
-      }),
+    authDebug('otp_verify:start', { email: normalizedEmail, tokenLength: token.length });
+    const { data, error: verifyError } = await runWithRetry(
+      'otp_verify_code',
+      () =>
+        supabase.auth.verifyOtp({
+          email: normalizedEmail,
+          token,
+          type: 'email',
+        }),
       'A validação do código demorou demais. Tente novamente.'
     );
 
@@ -6781,6 +6844,7 @@ const LoginView = ({
       throw new Error('Não foi possível validar o código. Solicite um novo e tente novamente.');
     }
 
+    authDebug('otp_verify:done', { hasSession: Boolean(accessToken), hasUser: Boolean(resolvedUser) });
     await runSetupForToken(accessToken);
     onLoginSuccess(resolvedUser);
   };
@@ -6793,6 +6857,12 @@ const LoginView = ({
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
+      authDebug('auth_submit:start', {
+        mode: isLogin ? 'login' : 'signup',
+        method: loginMethod,
+        otpStage: otpRequestedEmail ? 'verify' : 'send',
+        email: normalizedEmail,
+      });
 
       if (isLogin && loginMethod === 'otp') {
         if (otpRequestedEmail) {
@@ -6814,24 +6884,27 @@ const LoginView = ({
 
       let result: any;
       if (isLogin) {
-        result = await runWithTimeout(
-          supabase.auth.signInWithPassword({ email: normalizedEmail, password }),
+        result = await runWithRetry(
+          'password_login',
+          () => supabase.auth.signInWithPassword({ email: normalizedEmail, password }),
           'O login demorou demais. Verifique sua conexão e tente novamente.'
         );
       } else {
-        result = await runWithTimeout(
-          supabase.auth.signUp({
-            email: normalizedEmail,
-            password,
-            options: {
-              emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
-              data: {
-                first_name: firstName.trim(),
-                last_name: lastName.trim(),
-                full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        result = await runWithRetry(
+          'signup',
+          () =>
+            supabase.auth.signUp({
+              email: normalizedEmail,
+              password,
+              options: {
+                emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
+                data: {
+                  first_name: firstName.trim(),
+                  last_name: lastName.trim(),
+                  full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+                },
               },
-            },
-          }),
+            }),
           'A criação da conta demorou demais. Verifique sua conexão e tente novamente.'
         );
       }
@@ -6860,8 +6933,11 @@ const LoginView = ({
 
       throw new Error('Não foi possível iniciar sessão. Tente novamente.');
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = String(err?.message || 'Não foi possível fazer login. Tente novamente.');
+      authDebug('auth_submit:failed', { message: errorMessage });
+      setError(errorMessage);
     } finally {
+      authDebug('auth_submit:finally', { loading: false });
       setLoading(false);
     }
   };
@@ -6872,19 +6948,27 @@ const LoginView = ({
     setLoading(true);
     try {
       const callbackUrl = buildClientRedirectUrl('/auth/callback');
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: callbackUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
+      authDebug('oauth_google:start', { callbackUrl, origin: window.location.origin });
+      const { error } = await runWithRetry(
+        'oauth_google',
+        () =>
+          supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: callbackUrl,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+              },
+            },
+          }),
+        'O login com Google demorou demais. Tente novamente.'
+      );
       if (error) throw error;
+      authDebug('oauth_google:redirecting', { callbackUrl });
     } catch (err: any) {
       const rawMessage = String(err?.message || '');
+      authDebug('oauth_google:failed', { message: rawMessage || 'erro desconhecido' });
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError(
           'Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'

@@ -8,6 +8,11 @@ export default function AuthConfirmPage() {
 
   React.useEffect(() => {
     const redirectUrl = `/auth/callback${window.location.search}${window.location.hash}`;
+    console.log('AUTH DEBUG:', {
+      event: 'confirm_redirect',
+      timestamp: new Date().toISOString(),
+      redirectUrl,
+    });
     router.replace(redirectUrl);
   }, [router]);
 
