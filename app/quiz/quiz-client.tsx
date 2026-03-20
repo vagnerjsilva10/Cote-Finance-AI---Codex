@@ -189,7 +189,7 @@ export default function QuizClient() {
                   <button
                     type="button"
                     onClick={startQuiz}
-                    className="inline-flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3.5 text-sm font-bold text-[var(--text-primary)] transition-[transform,background] duration-200 hover:scale-[1.02] hover:bg-[var(--primary-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] sm:w-auto"
+                    className="inline-flex min-h-[56px] w-full items-center justify-center rounded-xl border border-[rgba(255,255,255,.14)] bg-[linear-gradient(135deg,var(--cta-primary)_0%,var(--accent-premium)_100%)] px-7 py-3.5 text-sm font-bold text-white shadow-[0_10px_25px_rgba(79,140,255,.3)] transition-[transform,filter,box-shadow,background] duration-200 hover:-translate-y-[1px] hover:[background:linear-gradient(135deg,var(--cta-hover)_0%,var(--accent-premium)_100%)] hover:shadow-[0_14px_30px_rgba(79,140,255,.36)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--selected-glow)] active:translate-y-0 active:scale-[0.99] active:[background:linear-gradient(135deg,var(--cta-active)_0%,var(--accent-premium)_100%)] active:shadow-[0_6px_18px_rgba(60,123,224,.38)] sm:w-auto"
                   >
                     Começar agora
                   </button>
@@ -249,12 +249,12 @@ export default function QuizClient() {
 
                   <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(5,7,13,.74)] p-5">
                     <ProgressBar current={Math.min(quizQuestions.length, quizQuestions.length)} total={quizQuestions.length} label="Processando respostas" stageText={progressStages[analysisIndex]} />
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,.08)]">
+                    <div className="mt-4 h-3 overflow-hidden rounded-full border border-[rgba(255,255,255,.09)] bg-[rgba(255,255,255,.08)]">
                       <motion.div
                         initial={{ width: '12%' }}
                         animate={{ width: `${analysisProgress}%` }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className="h-full rounded-full bg-gradient-to-r from-[var(--danger)] via-[var(--primary)] to-[var(--accent-cyan)]"
+                        className="h-full rounded-full bg-[linear-gradient(90deg,var(--cta-primary)_0%,var(--accent-premium)_100%)] shadow-[0_0_16px_rgba(79,140,255,.48)]"
                       />
                     </div>
                   </div>
