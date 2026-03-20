@@ -173,7 +173,7 @@ type Goal = {
   category: string;
   deadline?: string | null;
   icon: LucideIcon;
-  color: string; // className ex: 'text-[var(--success)]'
+  color: string; // className ex: 'text-[var(--positive)]'
 };
 
 type Investment = {
@@ -1010,7 +1010,7 @@ const getFlowTypeIcon = (flowType: TransactionFlowType) => {
 };
 
 const getBaseTypeColorClass = (baseType: 'income' | 'expense' | 'transfer') => {
-  if (baseType === 'income') return 'text-[var(--success)]';
+  if (baseType === 'income') return 'text-[var(--positive)]';
   if (baseType === 'expense') return 'text-[var(--danger)]';
   return 'text-[var(--primary)]';
 };
@@ -1018,7 +1018,7 @@ const getBaseTypeColorClass = (baseType: 'income' | 'expense' | 'transfer') => {
 const getFlowTypeBadgeClass = (flowType: TransactionFlowType) => {
   const baseType = mapFlowTypeToBaseType(flowType);
   if (baseType === 'income') {
-    return 'border-[color:color-mix(in_srgb,var(--success)_35%,transparent)] bg-[var(--success-soft)] text-[var(--success)]';
+    return 'border-[color:color-mix(in_srgb,var(--positive)_35%,transparent)] bg-[var(--positive-soft)] text-[var(--positive)]';
   }
   if (baseType === 'expense') {
     return 'border-[color:color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[var(--danger-soft)] text-[var(--danger)]';
@@ -1971,10 +1971,10 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
                   type="monotone"
                   dataKey="income"
                   name="income"
-                  stroke="var(--success)"
+                  stroke="var(--positive)"
                   strokeWidth={2.5}
                   dot={false}
-                  activeDot={{ r: 4, fill: 'var(--success)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                  activeDot={{ r: 4, fill: 'var(--positive)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
                 />
                 <Line
                   type="monotone"
@@ -2177,7 +2177,7 @@ const TransactionsView = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Entradas totais</p>
-          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalIncome)}</p>
+          <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Saídas totais</p>
@@ -2185,7 +2185,7 @@ const TransactionsView = ({
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Saldo</p>
-          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
+          <p className={cn('text-2xl font-black', balance >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
             {formatCurrency(balance)}
           </p>
         </div>
@@ -3581,7 +3581,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Meta total</p>
-          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(targetTotal)}</p>
+          <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(targetTotal)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Valor acumulado</p>
@@ -3639,7 +3639,7 @@ const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProp
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-[var(--text-secondary)]">{formatCurrency(goal.current)} acumulado</span>
                   <span className="text-[var(--text-muted)]">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-[var(--success)] font-bold">{progress.toFixed(1)}%</span>
+                  <span className="text-[var(--positive)] font-bold">{progress.toFixed(1)}%</span>
                 </div>
 
                 <p className="text-xs text-[var(--text-muted)]">Faltam {formatCurrency(remaining)} para concluir.</p>
@@ -3769,7 +3769,7 @@ const PortfolioView = ({
   const assetMix = React.useMemo(
     () =>
       [
-        { name: 'Caixa', value: Math.max(totalBalance, 0), color: 'var(--success)' },
+        { name: 'Caixa', value: Math.max(totalBalance, 0), color: 'var(--positive)' },
         { name: 'Investimentos', value: Math.max(totalInvested, 0), color: 'var(--primary)' },
         { name: 'Dívidas', value: Math.max(totalDebt, 0), color: 'var(--danger)' },
       ],
@@ -3934,7 +3934,7 @@ const PortfolioView = ({
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Saldo em contas</p>
-          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalBalance)}</p>
+          <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalBalance)}</p>
           <p className="mt-3 text-xs text-[var(--text-muted)]">Veja o histórico e movimente saldo entre carteiras</p>
         </button>
         <button
@@ -4318,13 +4318,13 @@ const InvestmentsView = ({
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Rendimento</p>
-          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
+          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
             {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
           </p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
           <p className="label-premium mb-2 text-[var(--text-muted)]">Rentabilidade %</p>
-          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
+          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
             {profitPercentage.toFixed(2)}%
           </p>
         </div>
@@ -4370,10 +4370,10 @@ const InvestmentsView = ({
                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{item.walletName}</td>
                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{formatCurrency(item.invested)}</td>
                     <td className="px-6 py-4 text-sm text-[var(--text-primary)]">{formatCurrency(item.value)}</td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
                       {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
                     </td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
+                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
                       {itemProfitPct.toFixed(2)}%
                     </td>
                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{item.expectedReturnAnnual.toFixed(2)}%</td>
@@ -4523,7 +4523,7 @@ const ReportsView = ({
       expenseByCategory.set(key, (expenseByCategory.get(key) || 0) + parseCurrency(tx.amount));
     }
 
-    const palette = ['var(--primary)', 'var(--text-secondary)', 'var(--success)', 'var(--danger)', 'var(--text-muted)'];
+    const palette = ['var(--primary)', 'var(--text-secondary)', 'var(--positive)', 'var(--danger)', 'var(--text-muted)'];
     return Array.from(expenseByCategory.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([name, value], index) => ({
@@ -4754,7 +4754,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
             <p className="label-premium mb-1 text-[var(--text-muted)]">Receitas</p>
-            <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalIncome)}</p>
+            <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
             <p className="label-premium mb-1 text-[var(--text-muted)]">Despesas</p>
@@ -4843,7 +4843,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
           <p className="label-premium mb-1 text-[var(--text-muted)]">Receitas</p>
-          <p className="text-2xl font-black text-[var(--success)]">{formatCurrency(totalIncome)}</p>
+          <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
           <p className="label-premium mb-1 text-[var(--text-muted)]">Despesas</p>
@@ -5133,7 +5133,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   name === 'income' ? 'Receitas' : 'Despesas',
                 ]}
               />
-              <Line type="monotone" dataKey="income" name="income" stroke="var(--success)" strokeWidth={3} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="income" name="income" stroke="var(--positive)" strokeWidth={3} dot={{ r: 2 }} />
               <Line type="monotone" dataKey="expense" name="expense" stroke="var(--danger)" strokeWidth={3} dot={{ r: 2 }} />
             </LineChart>
           </ResponsiveContainer>
@@ -7930,7 +7930,7 @@ export default function App() {
           category: g.category || 'Outros',
           deadline: g.deadline || null,
           icon: Wallet,
-          color: 'text-[var(--success)]',
+          color: 'text-[var(--positive)]',
         })));
       } else {
         setGoals([]);
@@ -8022,7 +8022,7 @@ export default function App() {
                 category: g.category || 'Outros',
                 deadline: g.deadline || null,
                 icon: Wallet,
-                color: 'text-[var(--success)]',
+                color: 'text-[var(--positive)]',
               }))
             : [],
           investments: Array.isArray(data.investments)
@@ -12859,9 +12859,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
-
 
 
 

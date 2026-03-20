@@ -110,9 +110,9 @@ export default function ResultClient() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.12 + index * 0.06 }}
                 whileHover={{ y: -2 }}
-                className="rounded-2xl border border-[rgba(46,169,122,.35)] bg-[rgba(46,169,122,.1)] p-4"
+                className="rounded-2xl border border-[color:color-mix(in_srgb,var(--positive)_35%,transparent)] bg-[var(--positive-soft)] p-4"
               >
-                <div className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--success)]">
+                <div className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--positive)]">
                   <Check size={14} />
                   {item}
                 </div>

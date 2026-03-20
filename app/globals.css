@@ -44,7 +44,9 @@
   --whatsapp-soft: rgba(37, 211, 102, 0.18);
 
   --success: #22c55e;
-  --success-soft: rgba(34, 197, 94, 0.14);
+  --success-soft: rgba(34, 197, 94, 0.1);
+  --positive: #4fbf8a;
+  --positive-soft: rgba(79, 191, 138, 0.12);
   --danger: #ff5a5a;
   --danger-soft: rgba(255, 90, 90, 0.14);
   --warning: #f59e0b;
@@ -607,7 +609,7 @@ body {
   }
 
   .status-positive-premium {
-    color: color-mix(in srgb, var(--success) 78%, var(--text-secondary));
+    color: color-mix(in srgb, var(--positive) 78%, var(--text-secondary));
   }
 
   .status-negative-premium {
