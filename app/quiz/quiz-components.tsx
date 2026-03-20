@@ -125,28 +125,28 @@ export function AnswerButton({
       aria-pressed={selected}
       whileHover={disabled ? undefined : { y: -1 }}
       whileTap={disabled ? undefined : { scale: 0.98 }}
-      animate={selected ? { scale: [1, 0.985, 1] } : { scale: 1 }}
-      transition={{ duration: 0.18, ease: 'easeOut' }}
+      animate={selected ? { scale: [0.98, 1] } : { scale: 1 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
       onClick={onClick}
       disabled={disabled}
-      className={`flex min-h-[78px] w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-[15px] font-semibold leading-6 transition-[transform,border-color,background,box-shadow,color] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--selected-glow)] sm:min-h-[82px] sm:px-5 sm:text-base ${
+      className={`flex min-h-[78px] w-full cursor-pointer items-center justify-between rounded-2xl border px-4 py-4 text-left text-[15px] leading-6 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--selected-glow)] sm:min-h-[82px] sm:px-5 sm:text-base ${
         selected
-          ? 'border-[color:var(--selected-border)] bg-[color:var(--selected-bg)] text-white shadow-[0_0_0_1px_var(--selected-border),0_12px_28px_var(--selected-glow)]'
-          : 'border-[rgba(255,255,255,.12)] bg-[color:var(--bg-tertiary)] text-[var(--text-primary)] hover:border-[rgba(79,140,255,.58)] hover:bg-[rgba(30,47,82,.72)]'
+          ? 'border-[#4F8CFF] bg-[#1E2F52] text-white shadow-[0_0_0_2px_rgba(79,140,255,0.2)]'
+          : 'border-transparent bg-[#16233A] text-[var(--text-primary)] hover:border-[rgba(79,140,255,.48)] hover:bg-[#1A2A47]'
       } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
     >
-      <span className="pr-3 text-balance">{label}</span>
+      <span className={`pr-3 text-balance ${selected ? 'font-bold text-white' : 'font-semibold text-[var(--text-primary)]'}`}>{label}</span>
       <motion.span
         initial={false}
-        animate={selected ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0.8 }}
+        animate={selected ? { scale: 1, opacity: 1 } : { scale: 0.85, opacity: 0.7 }}
         transition={{ duration: 0.16, ease: 'easeOut' }}
-        className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+        className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
           selected
-            ? 'border-[color:var(--selected-border)] bg-[color:var(--cta-primary)] text-white shadow-[0_0_14px_rgba(79,140,255,.45)]'
-            : 'border-[rgba(255,255,255,.22)] bg-[rgba(11,18,32,.64)] text-transparent'
+            ? 'border-[#4F8CFF] bg-[#4F8CFF] text-white shadow-[0_8px_20px_rgba(79,140,255,.4)]'
+            : 'border-[rgba(255,255,255,.16)] bg-[rgba(11,18,32,.52)] text-transparent'
         }`}
       >
-        <Check size={14} />
+        <Check size={18} strokeWidth={3} />
       </motion.span>
     </motion.button>
   );
