@@ -10,9 +10,9 @@ const quizThemeVars = {
   '--bg-secondary': '#111A2E',
   '--bg-tertiary': '#16233A',
   '--cta-primary': '#4F8CFF',
-  '--cta-hover': '#6EA3FF',
-  '--cta-active': '#3C7BE0',
-  '--accent-premium': '#7B61FF',
+  '--cta-hover': '#1D4ED8',
+  '--cta-active': '#163EA6',
+  '--accent-premium': '#1D4ED8',
   '--highlight': '#FFC857',
   '--selected-bg': '#1E2F52',
   '--selected-border': '#4F8CFF',
@@ -22,7 +22,7 @@ const quizThemeVars = {
 export function QuizContainer({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <main style={quizThemeVars} className={`min-h-dvh overflow-x-clip bg-[var(--bg-primary)] text-[var(--text-primary)] ${className}`}>
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_14%_10%,rgba(79,140,255,.16),transparent_34%),radial-gradient(circle_at_86%_8%,rgba(123,97,255,.12),transparent_30%),radial-gradient(circle_at_55%_100%,rgba(79,140,255,.09),transparent_44%),linear-gradient(180deg,var(--bg-primary)_0%,var(--bg-secondary)_56%,var(--bg-primary)_100%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_14%_10%,rgba(79,140,255,.16),transparent_34%),radial-gradient(circle_at_86%_8%,rgba(29,78,216,.14),transparent_30%),radial-gradient(circle_at_55%_100%,rgba(79,140,255,.09),transparent_44%),linear-gradient(180deg,var(--bg-primary)_0%,var(--bg-secondary)_56%,var(--bg-primary)_100%)]" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,.05)_0.65px,transparent_0.8px),radial-gradient(circle_at_72%_56%,rgba(255,255,255,.035)_0.65px,transparent_0.8px)] [background-size:170px_170px,220px_220px] opacity-30 mix-blend-soft-light" />
       <div className="mx-auto w-full max-w-4xl px-4 py-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-9">{children}</div>
     </main>
@@ -96,7 +96,7 @@ export function QuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
       transition={{ duration: 0.32 }}
-      className="rounded-[1.6rem] border border-[var(--border-default)] bg-[linear-gradient(160deg,rgba(14,22,40,.9)_0%,rgba(20,30,52,.82)_62%,rgba(32,24,50,.74)_100%)] p-4 shadow-[0_20px_50px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
+      className="rounded-[1.6rem] border border-[var(--border-default)] bg-[linear-gradient(160deg,rgba(14,22,40,.9)_0%,rgba(20,30,52,.82)_62%,rgba(20,34,60,.74)_100%)] p-4 shadow-[0_20px_50px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
     >
       {eyebrow ? (
         <span

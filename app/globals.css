@@ -19,14 +19,14 @@
   --icon-muted: var(--text-muted);
 
   --primary: #4f8cff;
-  --primary-hover: #6ea3ff;
-  --primary-active: #3c7be0;
+  --primary-hover: #1d4ed8;
+  --primary-active: #163ea6;
   --primary-soft: rgba(79, 140, 255, 0.2);
   --secondary-highlight: #06b6d4;
-  --accent-indigo: #7b61ff;
+  --accent-indigo: #1d4ed8;
   --accent-cyan: #06b6d4;
-  --accent-glow: rgba(99, 102, 241, 0.2);
-  --button-primary-end: #7b61ff;
+  --accent-glow: rgba(29, 78, 216, 0.2);
+  --button-primary-end: #1d4ed8;
   --interactive-focus-ring: rgba(79, 140, 255, 0.3);
   --field-bg: #16233a;
   --field-bg-focus: #1a2a47;
@@ -228,7 +228,7 @@ body {
     min-height: 100vh;
     background:
       radial-gradient(circle at 16% 10%, rgba(59, 130, 246, 0.075), transparent 34%),
-      radial-gradient(circle at 84% 12%, rgba(99, 102, 241, 0.068), transparent 34%),
+      radial-gradient(circle at 84% 12%, rgba(29, 78, 216, 0.08), transparent 34%),
       radial-gradient(circle at 52% 115%, rgba(34, 211, 238, 0.04), transparent 42%),
       linear-gradient(168deg, #04060c 0%, #030409 42%, #040714 72%, #03050a 100%);
     color: var(--text-primary);
@@ -240,7 +240,7 @@ body {
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 50% -12%, rgba(99, 102, 241, 0.05), transparent 44%),
+      radial-gradient(circle at 50% -12%, rgba(29, 78, 216, 0.07), transparent 44%),
       radial-gradient(circle at 52% 118%, rgba(34, 211, 238, 0.03), transparent 44%);
     pointer-events: none;
     animation: landing-gradient-shift 18s ease-in-out infinite;
@@ -254,7 +254,7 @@ body {
         color-mix(in srgb, var(--accent-indigo) 9%, transparent) 64px 65px
       ),
       radial-gradient(circle at 24% 14%, rgba(59, 130, 246, 0.08), transparent 36%),
-      radial-gradient(circle at 78% 18%, rgba(99, 102, 241, 0.075), transparent 36%);
+      radial-gradient(circle at 78% 18%, rgba(29, 78, 216, 0.095), transparent 36%);
     opacity: 0.17;
     mask-image: linear-gradient(180deg, black 0%, rgba(0, 0, 0, 0.68) 64%, transparent 100%);
     animation: landing-beam-drift 22s linear infinite;
