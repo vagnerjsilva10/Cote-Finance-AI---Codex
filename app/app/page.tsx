@@ -1993,8 +1993,8 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="app-surface-card rounded-2xl p-5 sm:p-6">
           <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mês</h3>
           <div className="space-y-4">
-            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] p-5">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--warning)]">
+            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)] p-5">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--warning)]">
                 Alerta
               </div>
               <p className="label-premium text-[var(--text-muted)]">Maior gasto do mês</p>
@@ -4915,7 +4915,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                       alert.tone === 'error'
                         ? 'border-[color:color-mix(in_srgb,var(--danger)_36%,transparent)] bg-[var(--danger-soft)]'
                         : alert.tone === 'warning'
-                          ? 'border-[color:color-mix(in_srgb,var(--warning)_36%,transparent)] bg-[var(--warning-soft)]'
+                          ? 'border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)]'
                           : 'border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)]'
                     )}
                   >
@@ -12859,7 +12859,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
 
 
 

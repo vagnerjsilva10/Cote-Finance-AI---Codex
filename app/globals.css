@@ -49,8 +49,8 @@
   --positive-soft: rgba(79, 191, 138, 0.12);
   --danger: #ff5a5a;
   --danger-soft: rgba(255, 90, 90, 0.14);
-  --warning: #f59e0b;
-  --warning-soft: rgba(245, 158, 11, 0.14);
+  --warning: #d9a441;
+  --warning-soft: rgba(217, 164, 65, 0.1);
 
   --shadow-soft: 0 6px 18px rgba(2, 6, 23, 0.2);
   --shadow-card: 0 14px 32px rgba(2, 6, 23, 0.24);
