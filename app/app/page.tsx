@@ -1496,7 +1496,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
       'group flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-left transition-all duration-200',
       collapsed && 'justify-center px-2',
       active
-        ? 'border-[color:var(--border-default)] bg-[linear-gradient(180deg,rgba(76,141,255,0.14)_0%,rgba(76,141,255,0.08)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
+        ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
         : 'text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)]'
     )}
   >
@@ -2458,7 +2458,7 @@ const IntegrationsView = ({
             onClick={() => setBillingCycle('monthly')}
             className={cn(
               'rounded-lg px-6 py-2 text-sm font-bold transition-all',
-              billingCycle === 'monthly' ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
+              billingCycle === 'monthly' ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
             )}
           >
             Mensal
@@ -2467,7 +2467,7 @@ const IntegrationsView = ({
             onClick={() => setBillingCycle('annually')}
             className={cn(
               'rounded-lg px-6 py-2 text-sm font-bold transition-all',
-              billingCycle === 'annually' ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
+              billingCycle === 'annually' ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
             )}
           >
             Anual <span className="ml-1 text-[10px] opacity-70">(2 meses grátis)</span>
@@ -2679,7 +2679,7 @@ const IntegrationsView = ({
                         'flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all shadow-lg',
                         !canConnectWhatsApp
                           ? 'cursor-not-allowed bg-[var(--bg-surface-elevated)] text-[var(--text-muted)]'
-                          : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
+                          : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
                       )}
                     >
                       {isConnectingWhatsApp ? 'Conectando...' : isWhatsAppConnected ? 'Reconectar' : 'Conectar'}
@@ -3206,7 +3206,7 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'single'
-              ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
+              ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
@@ -3218,7 +3218,7 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'recurring'
-              ? 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
+              ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
@@ -5356,7 +5356,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
+                : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar meta'}
@@ -5533,7 +5533,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
               'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
+                : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
@@ -5732,7 +5732,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               'w-full mt-4 rounded-xl py-3 font-bold transition-all shadow-lg',
               !isValid || isSubmitting
                 ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
+                : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
             )}
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida única'}
@@ -5968,7 +5968,7 @@ const RecurringDebtModal = ({
             'mt-6 w-full rounded-xl py-3 font-bold transition-all shadow-lg',
             !isValid || isSubmitting
               ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-              : 'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:brightness-105'
+              : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
           )}
         >
           {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrência' : 'Criar recorrência'}
@@ -12783,7 +12783,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
 
 
 
