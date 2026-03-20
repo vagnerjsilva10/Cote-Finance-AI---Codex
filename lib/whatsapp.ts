@@ -88,8 +88,43 @@ type WhatsAppTemplateMessageParams = {
   to: string;
   name: string;
   languageCode?: string;
-  bodyParameters?: string[];
+  bodyParameters?: Array<string | number | null | undefined>;
 };
+
+export const TEMPLATE_CONFIG = {
+  cote_connect_success: 1,
+  cote_daily_digest: 5,
+} as const;
+
+type SupportedTemplateName = keyof typeof TEMPLATE_CONFIG;
+
+type SendWhatsAppTemplateParams = {
+  to: string;
+  templateName: string;
+  languageCode?: string;
+  variables?: Array<string | number | null | undefined>;
+};
+
+function normalizeTemplateName(templateName: string) {
+  return templateName.trim().toLowerCase();
+}
+
+function getExpectedTemplateParams(templateName: string): number | null {
+  const normalized = normalizeTemplateName(templateName);
+  if (Object.prototype.hasOwnProperty.call(TEMPLATE_CONFIG, normalized)) {
+    return TEMPLATE_CONFIG[normalized as SupportedTemplateName];
+  }
+  return null;
+}
+
+function normalizeTemplateVariables(variables: Array<string | number | null | undefined> | undefined) {
+  if (!Array.isArray(variables)) return [];
+  return variables.map((value) => {
+    if (value === null || typeof value === 'undefined') return '-';
+    const normalized = String(value).trim();
+    return normalized.length > 0 ? normalized : '-';
+  });
+}
 
 function cleanEnvValue(value: string | undefined | null) {
   if (!value) return '';
@@ -141,6 +176,12 @@ function parseErrorBody(rawText: string): ParsedWhatsAppError {
 }
 
 function categorizeWhatsAppError(params: { status: number; parsedError: ParsedWhatsAppError; context: WhatsAppRequestContext }) {
+  const templateErrorCodes = new Set([132000, 132001, 132007, 132012, 131058]);
+
+  if (typeof params.parsedError.code === 'number' && templateErrorCodes.has(params.parsedError.code)) {
+    return 'template' as const;
+  }
+
   if (params.status === 401 || params.status === 403) return 'auth' as const;
   if (params.status === 429) return 'rate_limit' as const;
   if (params.status >= 500) return 'temporary' as const;
@@ -407,13 +448,22 @@ export async function sendWhatsAppTextMessage(params: { to: string; text: string
 }
 
 export async function sendWhatsAppTemplateMessage(params: WhatsAppTemplateMessageParams) {
+  return sendWhatsAppTemplate({
+    to: params.to,
+    templateName: params.name,
+    languageCode: params.languageCode,
+    variables: params.bodyParameters,
+  });
+}
+
+export async function sendWhatsAppTemplate(params: SendWhatsAppTemplateParams) {
   const normalizedPhone = normalizeWhatsappPhone(params.to);
 
   if (!normalizedPhone) {
     throw new Error('Número de telefone inválido para envio no WhatsApp.');
   }
 
-  const templateName = params.name.trim();
+  const templateName = params.templateName.trim();
   const languageCode = (params.languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim();
 
   if (!templateName) {
@@ -424,41 +474,103 @@ export async function sendWhatsAppTemplateMessage(params: WhatsAppTemplateMessag
     throw new Error('Idioma do template do WhatsApp não configurado.');
   }
 
-  const bodyParameters =
-    params.bodyParameters?.filter((value) => typeof value === 'string' && value.trim().length > 0) ?? [];
+  const variables = normalizeTemplateVariables(params.variables);
+  const expectedParams = getExpectedTemplateParams(templateName);
+  const receivedParams = variables.length;
 
-  return sendWhatsAppRequest(
-    {
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to: normalizedPhone,
-      type: 'template',
+  console.log('WHATSAPP_TEMPLATE_SEND', {
+    templateName,
+    expectedParams,
+    receivedParams,
+    to: normalizedPhone,
+  });
+
+  if (expectedParams !== null && expectedParams !== receivedParams) {
+    const payloadPreview = {
       template: {
         name: templateName,
-        language: {
-          code: languageCode,
-        },
-        ...(bodyParameters.length > 0
-          ? {
-              components: [
-                {
-                  type: 'body',
-                  parameters: bodyParameters.map((text) => ({
-                    type: 'text',
-                    text,
-                  })),
-                },
-              ],
-            }
-          : {}),
+        language: { code: languageCode },
       },
+      components:
+        receivedParams > 0
+          ? [
+              {
+                type: 'body',
+                parameters: variables.map((text) => ({ type: 'text', text })),
+              },
+            ]
+          : undefined,
+    };
+
+    console.error('WHATSAPP_TEMPLATE_ERROR', {
+      templateName,
+      expectedParams,
+      receivedParams,
+      to: normalizedPhone,
+      error: `Template ${templateName} espera ${expectedParams} parâmetros, mas recebeu ${receivedParams}.`,
+      payload: payloadPreview,
+    });
+
+    throw new WhatsAppApiError({
+      message: `Template ${templateName} espera ${expectedParams} parâmetros, mas recebeu ${receivedParams}.`,
+      status: 400,
+      destination: normalizedPhone,
+      phoneNumberId: 'validation',
+      endpoint: 'validation://template',
+      templateName,
+      languageCode,
+      category: 'template',
+      rawBody: {
+        expectedParams,
+        receivedParams,
+        templateName,
+      },
+    });
+  }
+
+  const payload: Record<string, unknown> = {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to: normalizedPhone,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: {
+        code: languageCode,
+      },
+      ...(variables.length > 0
+        ? {
+            components: [
+              {
+                type: 'body',
+                parameters: variables.map((text) => ({
+                  type: 'text',
+                  text,
+                })),
+              },
+            ],
+          }
+        : {}),
     },
-    {
+  };
+
+  try {
+    return await sendWhatsAppRequest(payload, {
       source: 'template',
       destination: normalizedPhone,
       templateName,
       languageCode,
-    }
-  );
+    });
+  } catch (error) {
+    console.error('WHATSAPP_TEMPLATE_ERROR', {
+      templateName,
+      expectedParams,
+      receivedParams,
+      to: normalizedPhone,
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+      payload: payload.template,
+    });
+    throw error;
+  }
 }
 

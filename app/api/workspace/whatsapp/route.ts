@@ -5,7 +5,7 @@ import {
   getWhatsAppConfig,
   isValidE164Phone,
   normalizeWhatsappPhone,
-  sendWhatsAppTemplateMessage,
+  sendWhatsAppTemplate,
   sendWhatsAppTextMessage,
   verifyWhatsAppConnection,
   WhatsAppApiError,
@@ -81,7 +81,7 @@ function shouldFallbackToText(error: unknown) {
   if (error.category === 'template') return true;
   if (/template/i.test(error.message)) return true;
 
-  return [131058, 132001, 132007, 132012].includes(error.metaCode ?? -1);
+  return [131058, 132000, 132001, 132007, 132012].includes(error.metaCode ?? -1);
 }
 
 function buildValidationSummary(params: {
@@ -441,11 +441,11 @@ export async function POST(req: Request) {
       try {
         if (resolvedConfig.connectTemplateName) {
           try {
-            await sendWhatsAppTemplateMessage({
+            await sendWhatsAppTemplate({
               to: normalizedPhone,
-              name: resolvedConfig.connectTemplateName,
+              templateName: resolvedConfig.connectTemplateName,
               languageCode: resolvedConfig.templateLanguage,
-              bodyParameters: [activeWorkspaceName],
+              variables: [activeWorkspaceName],
             });
           } catch (error) {
             if (!shouldFallbackToText(error)) {

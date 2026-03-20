@@ -5,7 +5,7 @@ import { buildFinancialInsights } from '@/lib/server/financial-insights';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { ResolvedWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import {
-  sendWhatsAppTemplateMessage,
+  sendWhatsAppTemplate,
   sendWhatsAppTextMessage,
   WhatsAppApiError,
 } from '@/lib/whatsapp';
@@ -244,7 +244,7 @@ function shouldFallbackToText(error: unknown) {
   if (error.category === 'template') return true;
   if (/template/i.test(error.message)) return true;
 
-  return [131058, 132001, 132007, 132012].includes(error.metaCode ?? -1);
+  return [131058, 132000, 132001, 132007, 132012].includes(error.metaCode ?? -1);
 }
 
 export async function sendWorkspaceWhatsAppDigest(params: {
@@ -429,11 +429,11 @@ export async function sendWorkspaceWhatsAppDigest(params: {
 
   if (digestTemplateName) {
     try {
-      await sendWhatsAppTemplateMessage({
+      await sendWhatsAppTemplate({
         to: destinationPhone,
-        name: digestTemplateName,
+        templateName: digestTemplateName,
         languageCode: params.resolvedConfig?.templateLanguage,
-        bodyParameters: [
+        variables: [
           workspace.name,
           formatCurrency(totalBalance),
           formatCurrency(monthIncome),
