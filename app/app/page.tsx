@@ -6301,12 +6301,17 @@ const TransactionModal = ({
                     }))
                   }
                   className={cn(
-                    'app-selection-chip flex min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
+                    'app-selection-chip flex min-w-0 items-center justify-between gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
                     formData.flowType === flowType && 'is-selected'
                   )}
                 >
-                  {React.createElement(getFlowTypeIcon(flowType), { size: 16 })}
-                  {flowType}
+                  <span className="flex min-w-0 items-center gap-2">
+                    {React.createElement(getFlowTypeIcon(flowType), { size: 16 })}
+                    <span className="truncate">{flowType}</span>
+                  </span>
+                  <span className="app-selection-chip-check" aria-hidden="true">
+                    <CheckCircle2 size={12} />
+                  </span>
                 </button>
               ))}
             </div>
@@ -10946,7 +10951,7 @@ React.useEffect(() => {
                 </div>
                 <button
                   onClick={() => setIsWorkspaceOnboardingOpen(false)}
-                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  className="app-button-secondary rounded-xl px-3 py-1.5 text-xs font-bold"
                 >
                   Depois
                 </button>
@@ -10971,7 +10976,7 @@ React.useEffect(() => {
                   <div className="flex justify-end">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Começar
                     </button>
@@ -10991,28 +10996,31 @@ React.useEffect(() => {
                     {ONBOARDING_OBJECTIVES.map((objective) => (
                       <button
                         key={objective}
+                        type="button"
+                        aria-pressed={onboardingObjective === objective}
                         onClick={() => setOnboardingObjective(objective)}
                         className={cn(
-                          'rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors',
-                          onboardingObjective === objective
-                            ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-                            : 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
+                          'app-selection-chip flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold',
+                          onboardingObjective === objective && 'is-selected'
                         )}
                       >
-                        {objective}
+                        <span className="min-w-0 text-balance">{objective}</span>
+                        <span className="app-selection-chip-check" aria-hidden="true">
+                          <CheckCircle2 size={12} />
+                        </span>
                       </button>
                     ))}
                   </div>
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(0)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Continuar
                     </button>
@@ -11032,28 +11040,31 @@ React.useEffect(() => {
                     {ONBOARDING_USAGE_LEVELS.map((rangeLabel) => (
                       <button
                         key={rangeLabel}
+                        type="button"
+                        aria-pressed={onboardingProfile === rangeLabel}
                         onClick={() => setOnboardingProfile(rangeLabel)}
                         className={cn(
-                          'rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors',
-                          onboardingProfile === rangeLabel
-                            ? 'border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-                            : 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
+                          'app-selection-chip flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold',
+                          onboardingProfile === rangeLabel && 'is-selected'
                         )}
                       >
-                        {rangeLabel}
+                        <span className="min-w-0 text-balance">{rangeLabel}</span>
+                        <span className="app-selection-chip-check" aria-hidden="true">
+                          <CheckCircle2 size={12} />
+                        </span>
                       </button>
                     ))}
                   </div>
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(1)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Continuar
                     </button>
@@ -11085,11 +11096,14 @@ React.useEffect(() => {
                           }))
                         }
                         className={cn(
-                          'app-selection-chip rounded-2xl px-4 py-3 text-sm font-bold',
+                          'app-selection-chip flex items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-bold',
                           onboardingFirstRecord.flowType === flowType && 'is-selected'
                         )}
                       >
-                        {flowType}
+                        <span>{flowType}</span>
+                        <span className="app-selection-chip-check" aria-hidden="true">
+                          <CheckCircle2 size={12} />
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -11165,7 +11179,7 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(2)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
@@ -11198,13 +11212,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(3)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Continuar
                     </button>
@@ -11229,7 +11243,7 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(4)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
@@ -11238,7 +11252,7 @@ React.useEffect(() => {
                         setOnboardingInsightViewed(true);
                         setOnboardingStep(6);
                       }}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Entendi como funciona
                     </button>
@@ -11274,13 +11288,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(5)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Continuar
                     </button>
@@ -11304,13 +11318,13 @@ React.useEffect(() => {
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOnboardingStep(6)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
                     <button
                       onClick={() => setOnboardingStep(8)}
-                      className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)]"
+                      className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                       Ver análise completa
                     </button>
@@ -11346,7 +11360,7 @@ React.useEffect(() => {
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
                       onClick={() => setOnboardingStep(7)}
-                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)]"
+                      className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
                     >
                       Voltar
                     </button>
@@ -11354,14 +11368,14 @@ React.useEffect(() => {
                       <button
                         onClick={() => void handleCompleteWorkspaceOnboarding('FREE')}
                         disabled={isSavingOnboarding}
-                        className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-60"
+                        className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold disabled:opacity-60"
                       >
                         Continuar no Free
                       </button>
                       <button
                         onClick={() => void handleCompleteWorkspaceOnboarding('PRO')}
                         disabled={isSavingOnboarding}
-                        className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)] disabled:opacity-60"
+                        className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-60"
                       >
                         {isSavingOnboarding ? 'Preparando...' : 'Testar Pro gratuitamente por 3 dias'}
                       </button>
@@ -12754,6 +12768,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
 
