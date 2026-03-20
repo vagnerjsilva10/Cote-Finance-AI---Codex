@@ -61,7 +61,7 @@ export default function ResultClient() {
           transition={{ duration: 0.42 }}
           className="rounded-[1.75rem] border border-[var(--border-default)] bg-[rgba(15,23,42,.64)] p-5 shadow-[0_20px_52px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(212,99,99,.4)] bg-[rgba(212,99,99,.12)] px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--danger)] uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[var(--danger-soft)] px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--danger)] uppercase">
             <TriangleAlert size={14} />
             Diagnóstico concluído
           </div>
@@ -74,8 +74,8 @@ export default function ResultClient() {
             Seu padrão financeiro mostra falta de visibilidade e decisões no escuro.
           </p>
 
-          <div className="mt-5 rounded-3xl border border-[rgba(250,204,21,.35)] bg-[rgba(250,204,21,.1)] p-4 sm:p-5">
-            <p className="text-sm font-semibold text-[rgb(250,204,21)]">
+          <div className="mt-5 rounded-3xl border border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] p-4 sm:p-5">
+            <p className="text-sm font-semibold text-[var(--warning)]">
               Isso pode representar de {formatCurrency(result.monthlyLossMin)} até {formatCurrency(result.monthlyLossMax)} por mês.
             </p>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">

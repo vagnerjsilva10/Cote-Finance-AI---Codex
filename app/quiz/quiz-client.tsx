@@ -184,7 +184,7 @@ export default function QuizClient() {
             >
               <QuestionCard
                 eyebrow="Diagnóstico inteligente em 60 segundos"
-                eyebrowClassName="border-[rgba(79,140,255,.38)] bg-[rgba(79,140,255,.14)] text-[#B9D6FF]"
+                eyebrowClassName="border-[rgba(79,140,255,.38)] bg-[rgba(79,140,255,.14)] text-[var(--primary)]"
                 title="Descubra em 60 segundos se você está perdendo dinheiro sem perceber"
                 footer={
                   <button
@@ -210,8 +210,8 @@ export default function QuizClient() {
                       <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar?" stageText={progressStages[0]} />
                     </div>
 
-                    <div className="rounded-3xl border border-[rgba(250,204,21,.35)] bg-[rgba(250,204,21,.08)] p-5">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-[rgb(250,204,21)]">
+                    <div className="rounded-3xl border border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] p-5">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-[var(--warning)]">
                         <Sparkles size={16} />
                         Diagnóstico pessoal
                       </div>
@@ -237,7 +237,7 @@ export default function QuizClient() {
                 <div className="space-y-6">
                   <p className="text-base leading-7 text-[var(--text-secondary)]">Estamos finalizando seu diagnóstico...</p>
 
-                  <div className="rounded-3xl border border-[rgba(212,99,99,.35)] bg-[rgba(212,99,99,.08)] p-4">
+                  <div className="rounded-3xl border border-[color:color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[var(--danger-soft)] p-4">
                     <motion.div
                       animate={{ scale: [1, 1.02, 1] }}
                       transition={{ duration: 1.6, repeat: Infinity }}
@@ -302,7 +302,7 @@ export default function QuizClient() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.22 }}
-                        className="rounded-2xl border border-[rgba(250,204,21,.34)] bg-[rgba(250,204,21,.08)] px-4 py-3 text-sm font-medium text-[rgb(250,204,21)]"
+                        className="rounded-2xl border border-[color:color-mix(in_srgb,var(--warning)_34%,transparent)] bg-[var(--warning-soft)] px-4 py-3 text-sm font-medium text-[var(--warning)]"
                       >
                         <motion.span animate={{ opacity: [0.85, 1, 0.85] }} transition={{ duration: 1.4, repeat: Infinity }}>
                           {responseAlert}

@@ -7,7 +7,9 @@ import {
   LayoutDashboard,
   ReceiptText,
   Target,
+  Gauge,
   TrendingUp,
+  TrendingDown,
   PieChart,
   Sparkles,
   Settings,
@@ -15,7 +17,6 @@ import {
   Wallet,
   ArrowUpRight,
   ArrowDownRight,
-  ShoppingCart,
   Cloud,
   Home,
   Send,
@@ -1515,6 +1516,7 @@ type StatCardProps = {
   trendValue: string;
   icon: LucideIcon;
   trendType?: 'up' | 'down';
+  iconTone?: 'primary' | 'success' | 'danger' | 'warning';
 };
 
 const StatCard = ({
@@ -1524,18 +1526,22 @@ const StatCard = ({
   trendValue,
   icon: Icon,
   trendType = 'up',
-}: StatCardProps) => (
-  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 sm:p-8 shadow-[var(--shadow-soft)]">
+  iconTone = 'primary',
+}: StatCardProps) => {
+  const iconToneClass =
+    iconTone === 'success'
+      ? 'border-[color:color-mix(in_srgb,var(--success)_35%,transparent)] bg-[var(--success-soft)] text-[var(--success)]'
+      : iconTone === 'danger'
+        ? 'border-[color:color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[var(--danger-soft)] text-[var(--danger)]'
+        : iconTone === 'warning'
+          ? 'border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] text-[var(--warning)]'
+          : 'border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] text-[var(--primary)]';
+
+  return (
+    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 sm:p-8 shadow-[var(--shadow-soft)]">
     <div className="mb-6 flex items-center justify-between">
       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</span>
-      <div
-        className={cn(
-          'rounded-full border p-2.5',
-          trendType === 'up'
-            ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-            : 'border-[var(--border-default)] bg-[var(--bg-app-secondary)] text-[var(--danger)]'
-        )}
-      >
+      <div className={cn('rounded-full border p-2.5 shadow-[0_8px_20px_rgba(2,6,23,.2)]', iconToneClass)}>
         <Icon size={17} />
       </div>
     </div>
@@ -1548,7 +1554,8 @@ const StatCard = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // --- Views ---
 
@@ -1816,6 +1823,8 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
 
   const monthBalance = monthIncome - monthExpenses;
   const savingsRate = monthIncome > 0 ? (monthBalance / monthIncome) * 100 : 0;
+  const monthBalanceTone = monthBalance > 0 ? 'success' : monthBalance < 0 ? 'danger' : 'primary';
+  const savingsTone = savingsRate >= 20 ? 'success' : savingsRate >= 5 ? 'primary' : savingsRate >= 0 ? 'warning' : 'danger';
 
   const expenseByCategory = currentMonthTransactions.reduce((acc, tx) => {
     if (tx.type !== 'expense') return acc;
@@ -1888,14 +1897,16 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trend="transações de entrada"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'income').length}`}
           icon={TrendingUp}
+          iconTone="success"
         />
         <StatCard
           label="Despesas do mês"
           value={formatCurrency(monthExpenses)}
           trend="transações de saída"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'expense').length}`}
-          icon={ShoppingCart}
+          icon={TrendingDown}
           trendType="down"
+          iconTone="danger"
         />
         <StatCard
           label="Saldo do mês"
@@ -1904,14 +1915,16 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
           trendValue={monthBalance >= 0 ? 'Positivo' : 'Negativo'}
           icon={Wallet}
           trendType={monthBalance >= 0 ? 'up' : 'down'}
+          iconTone={monthBalanceTone}
         />
         <StatCard
           label="Taxa de economia"
           value={`${savingsRate.toFixed(1)}%`}
           trend="economia sobre receitas"
           trendValue="No mês atual"
-          icon={Target}
+          icon={Gauge}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
+          iconTone={savingsTone}
         />
       </div>
 
@@ -12783,11 +12796,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
-
-
-
 
 
 

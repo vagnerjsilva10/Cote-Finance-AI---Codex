@@ -13,7 +13,7 @@ const quizThemeVars = {
   '--cta-hover': '#3C7BE0',
   '--cta-active': '#2F6AD9',
   '--accent-premium': '#1D4ED8',
-  '--highlight': '#FFC857',
+  '--highlight': '#F59E0B',
   '--selected-bg': '#1E2F52',
   '--selected-border': '#4F8CFF',
   '--selected-glow': 'rgba(79, 140, 255, 0.35)',
@@ -100,7 +100,7 @@ export function QuestionCard({
     >
       {eyebrow ? (
         <span
-          className={`inline-flex max-w-full rounded-full border border-[rgba(79,140,255,.3)] bg-[rgba(79,140,255,.12)] px-3 py-1 text-[11px] font-semibold leading-5 tracking-[0.12em] text-[rgb(181,210,255)] uppercase ${eyebrowClassName || ''}`}
+          className={`inline-flex max-w-full rounded-full border border-[rgba(79,140,255,.3)] bg-[rgba(79,140,255,.12)] px-3 py-1 text-[11px] font-semibold leading-5 tracking-[0.12em] text-[var(--primary)] uppercase ${eyebrowClassName || ''}`}
         >
           {eyebrow}
         </span>
@@ -135,8 +135,8 @@ export function AnswerButton({
       disabled={disabled}
       className={`flex min-h-[78px] w-full cursor-pointer items-center justify-between rounded-2xl border px-4 py-4 text-left text-[15px] leading-6 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--selected-glow)] sm:min-h-[82px] sm:px-5 sm:text-base ${
         selected
-          ? 'border-[#4F8CFF] bg-[#1E2F52] text-white shadow-[0_0_0_2px_rgba(79,140,255,0.2)]'
-          : 'border-transparent bg-[#16233A] text-[var(--text-primary)] hover:border-[rgba(79,140,255,.48)] hover:bg-[#1A2A47]'
+          ? 'border-[var(--selected-border)] bg-[var(--selected-bg)] text-white shadow-[0_0_0_2px_rgba(79,140,255,0.2)]'
+          : 'border-transparent bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:border-[rgba(79,140,255,.48)] hover:bg-[var(--field-bg-focus)]'
       } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
     >
       <span className={`pr-3 text-balance ${selected ? 'font-bold text-white' : 'font-semibold text-[var(--text-primary)]'}`}>{label}</span>
@@ -146,7 +146,7 @@ export function AnswerButton({
         transition={{ duration: 0.16, ease: 'easeOut' }}
         className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
           selected
-            ? 'border-[#4F8CFF] bg-[#4F8CFF] text-white shadow-[0_8px_20px_rgba(79,140,255,.4)]'
+            ? 'border-[var(--selected-border)] bg-[var(--selected-border)] text-white shadow-[0_8px_20px_rgba(79,140,255,.4)]'
             : 'border-[rgba(255,255,255,.16)] bg-[rgba(11,18,32,.52)] text-transparent'
         }`}
       >
