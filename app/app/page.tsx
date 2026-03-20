@@ -1026,6 +1026,31 @@ const getFlowTypeBadgeClass = (flowType: TransactionFlowType) => {
   return 'border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] text-[var(--primary)]';
 };
 
+const extractInsightMetric = (text: string): string | null => {
+  const currencyMatch = text.match(/R\$\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?/);
+  if (currencyMatch) return currencyMatch[0];
+  const percentMatch = text.match(/\d+(?:[.,]\d+)?%/);
+  if (percentMatch) return percentMatch[0];
+  return null;
+};
+
+const getInsightActionHint = (insight: string) => {
+  const normalized = insight.toLowerCase();
+  if (normalized.includes('dívida') || normalized.includes('divida')) {
+    return 'Ação sugerida: priorize redução de dívidas com maior juros.';
+  }
+  if (normalized.includes('gasto') || normalized.includes('despesa')) {
+    return 'Ação sugerida: revise categorias que mais pressionam o caixa.';
+  }
+  if (normalized.includes('saldo') || normalized.includes('caixa')) {
+    return 'Ação sugerida: ajuste saídas recorrentes para proteger o saldo.';
+  }
+  if (normalized.includes('invest')) {
+    return 'Ação sugerida: rebalanceie os ativos de maior concentração.';
+  }
+  return 'Ação sugerida: valide este ponto e defina o próximo passo.';
+};
+
 const normalizePlan = (rawPlan: unknown): SubscriptionPlan => {
   const normalized = String(rawPlan || '')
     .trim()
@@ -1968,28 +1993,38 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
         <div className="app-surface-card rounded-2xl p-5 sm:p-6">
           <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mês</h3>
           <div className="space-y-4">
-            <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
-              <p className="label-premium mb-2 text-[var(--text-muted)]">
-                Maior gasto do mês
+            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] p-5">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[var(--warning-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--warning)]">
+                Alerta
+              </div>
+              <p className="label-premium text-[var(--text-muted)]">Maior gasto do mês</p>
+              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">
+                {largestExpenseEntry ? formatCurrency(largestExpenseEntry[1]) : formatCurrency(0)}
               </p>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">
-                {largestExpenseEntry
-                  ? `${largestExpenseEntry[0]} (${formatCurrency(largestExpenseEntry[1])})`
-                  : 'Sem despesas no mês atual'}
+              <p className="mt-2 text-sm text-[var(--text-primary)]">
+                {largestExpenseEntry ? largestExpenseEntry[0] : 'Sem despesas registradas no mês atual.'}
+              </p>
+              <p className="mt-3 text-xs font-semibold text-[var(--warning)]">
+                Ação sugerida: revise essa categoria e defina limite para os próximos 7 dias.
               </p>
             </div>
 
-            <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
-              <p className="label-premium mb-2 text-[var(--text-muted)]">
-                Resumo do mês
-              </p>
-              <p className="text-sm text-[var(--text-primary)]">
+            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--primary)]">
+                Tendência
+              </div>
+              <p className="label-premium text-[var(--text-muted)]">Despesas no mês</p>
+              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">{formatCurrency(monthExpenses)}</p>
+              <p className="mt-2 text-sm text-[var(--text-primary)]">
                 Você gastou <span className="font-bold text-[var(--danger)]">{formatCurrency(monthExpenses)}</span>{' '}
                 em{' '}
                 <span className="font-bold text-[var(--text-primary)]">
                   {currentMonthTransactions.filter((tx) => tx.type === 'expense').length}
                 </span>{' '}
-                transações.
+                transações no período atual.
+              </p>
+              <p className="mt-3 text-xs font-semibold text-[var(--primary)]">
+                Ação sugerida: acompanhe o relatório de categorias para conter desvios.
               </p>
             </div>
 
@@ -2014,12 +2049,15 @@ const DashboardView = ({ transactions, insights, onAddTransaction, currentPlan, 
               insights.map((insight, index) => (
                 <div
                   key={`${index}-${insight.slice(0, 24)}`}
-                  className="app-surface-subtle rounded-[var(--radius-md)] p-5"
+                  className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5"
                 >
-                  <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
-                    Insight automático
+                  <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--primary)]">
+                    Insight IA
                   </p>
-                  <p className="text-sm text-[var(--text-primary)]">{insight}</p>
+                  <p className="text-sm font-semibold text-[var(--text-muted)]">Leitura principal</p>
+                  <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem métrica numérica'}</p>
+                  <p className="mt-2 text-sm text-[var(--text-primary)]">{insight}</p>
+                  <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{getInsightActionHint(insight)}</p>
                 </div>
               ))
             )}
@@ -4205,12 +4243,15 @@ const PortfolioView = ({
         {hasPortfolioAiInsights ? (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             {portfolioInsights.map((insight, index) => (
-              <div key={`${index}-${insight}`} className="app-surface-subtle rounded-2xl p-4">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+              <div key={`${index}-${insight}`} className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-4">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--primary)]">
                   <Sparkles size={12} />
                   Insight
                 </div>
-                <p className="text-sm leading-relaxed text-[var(--text-primary)]">{insight}</p>
+                <p className="text-sm font-semibold text-[var(--text-muted)]">Leitura principal</p>
+                <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem métrica numérica'}</p>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-primary)]">{insight}</p>
+                <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{getInsightActionHint(insight)}</p>
               </div>
             ))}
           </div>
@@ -4373,6 +4414,7 @@ type ReportsViewProps = {
   accessLevel: ReportAccessLevel;
   currentPlan: SubscriptionPlan;
   onUpgrade: () => void;
+  onNavigateTab?: (tab: Tab) => void;
 };
 
 const ReportsView = ({
@@ -4386,6 +4428,7 @@ const ReportsView = ({
   accessLevel,
   currentPlan,
   onUpgrade,
+  onNavigateTab,
 }: ReportsViewProps) => {
   const [isGeneratingInsight, setIsGeneratingInsight] = React.useState(false);
   const [aiInsight, setAiInsight] = React.useState<string | null>(null);
@@ -4632,6 +4675,27 @@ const ReportsView = ({
     [goals, now, totalBalance, transactions]
   );
 
+  const trendDirectionLabel =
+    balanceForecast.trend === 'positive'
+      ? 'Direção de alta'
+      : balanceForecast.trend === 'negative'
+        ? 'Direção de queda'
+        : 'Direção estável';
+  const trendMetricValue = `${balanceForecast.dailyNetFlow >= 0 ? '+' : '-'}${formatCurrency(Math.abs(balanceForecast.dailyNetFlow))}/dia`;
+  const trendActionHint =
+    balanceForecast.trend === 'positive'
+      ? 'Ação sugerida: manter a cadência atual e ampliar reserva de segurança.'
+      : balanceForecast.trend === 'negative'
+        ? 'Ação sugerida: revisar despesas recorrentes e reduzir saídas nas próximas 2 semanas.'
+        : 'Ação sugerida: acompanhar os próximos 7 dias para confirmar estabilidade.';
+
+  const getAlertActionLabel = (tone: AppNotification['tone']) => {
+    if (tone === 'error') return 'Corrigir agora';
+    if (tone === 'warning') return 'Revisar agora';
+    if (tone === 'success') return 'Ver oportunidade';
+    return 'Ver detalhes';
+  };
+
   const generateAIInsight = async () => {
     if (onBeforeUseAI && !onBeforeUseAI()) {
       return;
@@ -4801,20 +4865,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   Projeção baseada no ritmo médio das suas movimentações dos últimos 60 dias.
                 </p>
               </div>
-              <div
-                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${
-                  balanceForecast.trend === 'positive'
-                    ? 'bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-                    : balanceForecast.trend === 'negative'
-                      ? 'bg-[var(--bg-app)] text-[var(--danger)]'
-                      : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)]'
-                }`}
-              >
-                {balanceForecast.trend === 'positive'
-                  ? 'Tendência positiva'
-                  : balanceForecast.trend === 'negative'
-                    ? 'Tendência de queda'
-                    : 'Tendência estável'}
+              <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-4 py-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Tendência</p>
+                <p className="mt-1 text-sm font-black text-[var(--text-primary)]">{trendMetricValue}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{trendDirectionLabel} • base 60 dias</p>
               </div>
             </div>
 
@@ -4822,13 +4876,12 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               {balanceForecast.projections.map((item) => (
                 <div
                   key={item.days}
-                  className="app-surface-subtle rounded-2xl p-5"
+                  className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5"
                 >
-                  <p className="label-premium mb-2 text-[var(--text-muted)]">
-                    Em {item.days} dias
-                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Tendência</p>
+                  <p className="mt-2 label-premium text-[var(--text-muted)]">Projeção em {item.days} dias</p>
                   <p
-                    className={`text-2xl font-black ${
+                    className={`mt-2 text-2xl font-black ${
                       item.projectedBalance >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]'
                     }`}
                   >
@@ -4839,6 +4892,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                       ? 'Mantendo o ritmo atual, seu caixa permanece saudável.'
                       : 'Se nada mudar, o saldo projetado fica negativo.'}
                   </p>
+                  <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{trendActionHint}</p>
                 </div>
               ))}
             </div>
@@ -4859,25 +4913,46 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     className={cn(
                       'rounded-2xl border p-4',
                       alert.tone === 'error'
-                        ? 'border-[var(--border-default)] bg-[var(--bg-app)]'
+                        ? 'border-[color:color-mix(in_srgb,var(--danger)_36%,transparent)] bg-[var(--danger-soft)]'
                         : alert.tone === 'warning'
-                          ? 'border-[var(--border-default)] bg-[color:var(--danger-soft)]/10'
-                          : 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)]'
+                          ? 'border-[color:color-mix(in_srgb,var(--warning)_36%,transparent)] bg-[var(--warning-soft)]'
+                          : 'border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)]'
                     )}
                   >
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Alerta</p>
                     <p
                       className={cn(
-                        'text-xs font-bold uppercase tracking-widest',
+                        'mt-2 text-xs font-bold uppercase tracking-widest',
                         alert.tone === 'error'
                           ? 'text-[var(--danger)]'
                           : alert.tone === 'warning'
-                            ? 'text-[var(--text-secondary)]'
-                            : 'text-[var(--text-secondary)]'
+                            ? 'text-[var(--warning)]'
+                            : 'text-[var(--primary)]'
                       )}
                     >
                       {alert.title}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-[var(--text-primary)]">{alert.message}</p>
+                    <div className="mt-3">
+                      {onNavigateTab && alert.targetTab ? (
+                        <button
+                          type="button"
+                          onClick={() => onNavigateTab(alert.targetTab!)}
+                          className={cn(
+                            'text-xs font-semibold underline-offset-4 hover:underline',
+                            alert.tone === 'error'
+                              ? 'text-[var(--danger)]'
+                              : alert.tone === 'warning'
+                                ? 'text-[var(--warning)]'
+                                : 'text-[var(--primary)]'
+                          )}
+                        >
+                          {getAlertActionLabel(alert.tone)}
+                        </button>
+                      ) : (
+                        <p className="text-xs font-semibold text-[var(--primary)]">{getAlertActionLabel(alert.tone)}</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -5161,18 +5236,22 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         </div>
         <div className="space-y-4">
           {aiInsight ? (
-            <div className="p-4 rounded-xl bg-[color:var(--primary-soft)] border border-[color:var(--border-default)]">
+            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5">
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={16} className="text-[var(--text-secondary)]" />
-                <span className="text-xs font-bold text-[var(--text-secondary)] uppercase">Análise personalizada</span>
+                <Sparkles size={16} className="text-[var(--primary)]" />
+                <span className="text-xs font-bold text-[var(--primary)] uppercase tracking-widest">Insight IA</span>
               </div>
-              <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm font-semibold text-[var(--text-muted)]">Análise personalizada</p>
+              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">{extractInsightMetric(aiInsight) ?? 'Sem métrica numérica'}</p>
+              <div className="mt-2 text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
                 {aiInsight}
               </div>
+              <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{getInsightActionHint(aiInsight)}</p>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center p-8">
-              <Sparkles size={32} className="text-[var(--text-secondary)] mb-4" />
+            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-8 text-center">
+              <Sparkles size={32} className="mx-auto mb-4 text-[var(--primary)]" />
+              <p className="text-xs font-bold uppercase tracking-widest text-[var(--primary)] mb-2">Insight IA</p>
               <p className="text-sm text-[var(--text-muted)]">
                 Clique em &quot;Atualizar Insights&quot; para a IA analisar seus dados financeiros.
               </p>
@@ -12329,6 +12408,7 @@ React.useEffect(() => {
                   accessLevel={reportAccessLevel}
                   currentPlan={currentPlan}
                   onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
                 />
               )}
               {activeTab === 'assistant' && (
@@ -12779,14 +12859,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
-
-
-
-
-
-
 
 
 
