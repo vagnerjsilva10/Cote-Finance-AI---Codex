@@ -26,6 +26,19 @@ type IncomingTextMessage = {
   body: string;
 };
 
+type IncomingMessageStatus = {
+  id: string;
+  status: string;
+  recipientId: string;
+  timestamp: string | null;
+  errors: Array<{
+    code: number | null;
+    title: string | null;
+    message: string | null;
+    details: string | null;
+  }>;
+};
+
 type ParsedFinancialCommand = {
   type: TransactionType;
   paymentMethod: PaymentMethod;
@@ -54,6 +67,9 @@ type WhatsAppActionIntent =
   | { type: 'edit_last_transaction'; commandText: string }
   | { type: 'list_recent_transactions' }
   | { type: 'remove_recent_transaction'; index: number };
+
+const DELIVERY_SUCCESS_STATUSES = new Set(['delivered', 'read']);
+const DELIVERY_FAILURE_STATUSES = new Set(['failed', 'undelivered']);
 
 const DEFAULT_HELP_MESSAGE =
   'Formato inválido. Envie, por exemplo: "gastei 50 mercado", "recebi 200 pix" ou "ajuda".';
@@ -458,7 +474,7 @@ async function saveWhatsAppPendingConfirmation(params: {
 }) {
   return saveWorkspaceWhatsAppConfig({
     workspaceId: params.workspaceId,
-    userId: params.workspaceId,
+    userId: null,
     pendingConfirmation: {
       action: params.action,
       transactionId: params.transactionId,
@@ -473,7 +489,7 @@ async function saveWhatsAppPendingConfirmation(params: {
 async function clearWhatsAppPendingConfirmation(workspaceId: string) {
   return saveWorkspaceWhatsAppConfig({
     workspaceId,
-    userId: workspaceId,
+    userId: null,
     pendingConfirmation: null,
   });
 }
@@ -1278,6 +1294,211 @@ function extractIncomingMessages(payload: any): IncomingTextMessage[] {
   return output;
 }
 
+function extractIncomingStatuses(payload: any): IncomingMessageStatus[] {
+  const output: IncomingMessageStatus[] = [];
+  const entries = Array.isArray(payload?.entry) ? payload.entry : [];
+
+  for (const entry of entries) {
+    const changes = Array.isArray(entry?.changes) ? entry.changes : [];
+    for (const change of changes) {
+      const value = change?.value;
+      const statuses = Array.isArray(value?.statuses) ? value.statuses : [];
+      for (const statusItem of statuses) {
+        if (!statusItem || typeof statusItem !== 'object') continue;
+        const raw = statusItem as Record<string, unknown>;
+        const id = typeof raw.id === 'string' ? raw.id.trim() : '';
+        const status = typeof raw.status === 'string' ? raw.status.trim().toLowerCase() : '';
+        const recipientId = typeof raw.recipient_id === 'string' ? raw.recipient_id.trim() : '';
+        const timestamp = typeof raw.timestamp === 'string' ? raw.timestamp.trim() : null;
+        const errors = Array.isArray(raw.errors) ? raw.errors : [];
+
+        if (!id || !status || !recipientId) continue;
+
+        output.push({
+          id,
+          status,
+          recipientId,
+          timestamp,
+          errors: errors.map((errorItem) => {
+            if (!errorItem || typeof errorItem !== 'object') {
+              return {
+                code: null,
+                title: null,
+                message: null,
+                details: null,
+              };
+            }
+            const item = errorItem as Record<string, unknown>;
+            return {
+              code: typeof item.code === 'number' ? item.code : null,
+              title: typeof item.title === 'string' ? item.title : null,
+              message: typeof item.message === 'string' ? item.message : null,
+              details: typeof item.error_data === 'object' && item.error_data && !Array.isArray(item.error_data)
+                ? typeof (item.error_data as Record<string, unknown>).details === 'string'
+                  ? ((item.error_data as Record<string, unknown>).details as string)
+                  : null
+                : null,
+            };
+          }),
+        });
+      }
+    }
+  }
+
+  return output;
+}
+
+function getStatusFailureReason(status: IncomingMessageStatus) {
+  const firstError = status.errors[0];
+  if (!firstError) return null;
+  return (
+    firstError.details ||
+    firstError.message ||
+    firstError.title ||
+    (typeof firstError.code === 'number' ? `Meta error ${firstError.code}` : null)
+  );
+}
+
+async function processIncomingStatus(status: IncomingMessageStatus) {
+  const recipient = normalizeWhatsappPhone(status.recipientId);
+  if (!recipient) return;
+
+  console.log('WHATSAPP_CONNECT_STATUS_WEBHOOK', {
+    messageId: status.id,
+    status: status.status,
+    recipient: recipient,
+    errorCode: status.errors[0]?.code ?? null,
+    errorMessage: getStatusFailureReason(status),
+  });
+
+  const candidates = await prisma.workspace.findMany({
+    where: {
+      whatsapp_phone_number: recipient,
+    },
+    select: {
+      id: true,
+      whatsapp_status: true,
+      whatsapp_phone_number: true,
+    },
+    orderBy: {
+      updated_at: 'desc',
+    },
+    take: 3,
+  });
+
+  if (candidates.length === 0) {
+    return;
+  }
+
+  const workspace = candidates.find((item) => item.whatsapp_status === 'CONNECTING') || candidates[0];
+  if (!workspace) return;
+
+  const workspaceConfig = await getWorkspaceWhatsAppConfig(workspace.id);
+  const pendingConnection = workspaceConfig.pendingConnection;
+  const pendingPhone = pendingConnection ? normalizeWhatsappPhone(pendingConnection.phoneNumber) : null;
+  const isPendingMatch =
+    pendingConnection &&
+    pendingPhone === recipient &&
+    (!pendingConnection.messageId || pendingConnection.messageId === status.id);
+
+  await logWorkspaceEventSafe({
+    workspaceId: workspace.id,
+    type: 'whatsapp.connect.status_webhook',
+    payload: {
+      messageId: status.id,
+      status: status.status,
+      recipient,
+      isPendingMatch: Boolean(isPendingMatch),
+      errors: status.errors,
+    },
+  });
+
+  if (!isPendingMatch && workspace.whatsapp_status !== 'CONNECTING') {
+    return;
+  }
+
+  if (DELIVERY_SUCCESS_STATUSES.has(status.status)) {
+    await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: {
+        whatsapp_status: 'CONNECTED',
+        whatsapp_phone_number: recipient,
+        whatsapp_connected_at: new Date(),
+      },
+    });
+
+    await saveWorkspaceWhatsAppConfig({
+      workspaceId: workspace.id,
+      userId: null,
+      lastConnectionState: 'connected',
+      lastErrorMessage: null,
+      lastErrorCategory: null,
+      lastValidatedAt: new Date().toISOString(),
+      pendingConnection: null,
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: workspace.id,
+      type: 'whatsapp.connect.delivered',
+      payload: {
+        messageId: status.id,
+        status: status.status,
+        recipient,
+      },
+    });
+
+    console.log('WHATSAPP_CONNECT_DELIVERED', {
+      workspaceId: workspace.id,
+      messageId: status.id,
+      status: status.status,
+      recipient,
+    });
+    return;
+  }
+
+  if (DELIVERY_FAILURE_STATUSES.has(status.status)) {
+    const failureReason = getStatusFailureReason(status) || 'A Meta retornou falha de entrega para a mensagem de conexão.';
+
+    await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: {
+        whatsapp_status: 'DISCONNECTED',
+        whatsapp_connected_at: null,
+      },
+    });
+
+    await saveWorkspaceWhatsAppConfig({
+      workspaceId: workspace.id,
+      userId: null,
+      lastConnectionState: 'error',
+      lastErrorMessage: failureReason,
+      lastErrorCategory: 'delivery',
+      lastValidatedAt: new Date().toISOString(),
+      pendingConnection: null,
+    });
+
+    await logWorkspaceEventSafe({
+      workspaceId: workspace.id,
+      type: 'whatsapp.connect.failed',
+      payload: {
+        messageId: status.id,
+        status: status.status,
+        recipient,
+        errors: status.errors,
+      },
+    });
+
+    console.error('WHATSAPP_CONNECT_FAILED', {
+      workspaceId: workspace.id,
+      messageId: status.id,
+      status: status.status,
+      recipient,
+      reason: failureReason,
+      errors: status.errors,
+    });
+  }
+}
+
 async function processIncomingMessage(message: IncomingTextMessage) {
   const sender = normalizeWhatsappPhone(message.from);
   if (!sender) return;
@@ -1644,9 +1865,23 @@ export async function POST(req: Request) {
     }
 
     const body = rawBody ? JSON.parse(rawBody) : {};
+    const incomingStatuses = extractIncomingStatuses(body);
     const incomingMessages = extractIncomingMessages(body);
-    if (incomingMessages.length > 0) {
+    if (incomingMessages.length > 0 || incomingStatuses.length > 0) {
       getWhatsAppConfig();
+    }
+
+    for (const status of incomingStatuses) {
+      try {
+        await processIncomingStatus(status);
+      } catch (error) {
+        console.error('WhatsApp status processing error:', {
+          messageId: status.id,
+          recipient: status.recipientId,
+          status: status.status,
+          error,
+        });
+      }
     }
 
     for (const message of incomingMessages) {

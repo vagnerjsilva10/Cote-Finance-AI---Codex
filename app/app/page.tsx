@@ -8458,7 +8458,12 @@ React.useEffect(() => {
         current
           ? {
               ...current,
-              connectionState: String(payload.status).toUpperCase() === 'CONNECTED' ? 'connected' : 'disconnected',
+              connectionState:
+                String(payload.status).toUpperCase() === 'CONNECTED'
+                  ? 'connected'
+                  : String(payload.status).toUpperCase() === 'CONNECTING'
+                    ? 'testing'
+                    : 'disconnected',
             }
           : null
       );
@@ -12859,7 +12864,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
 
 
 

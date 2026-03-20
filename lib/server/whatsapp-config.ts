@@ -35,6 +35,14 @@ export type WorkspaceWhatsAppConfig = {
     requestedAt: string;
     expiresAt: string;
   } | null;
+  pendingConnection: {
+    messageId: string | null;
+    phoneNumber: string;
+    templateName: string | null;
+    languageCode: string | null;
+    deliveryMode: 'template' | 'text';
+    requestedAt: string;
+  } | null;
   updatedAt: string | null;
 };
 
@@ -125,6 +133,32 @@ function normalizePendingConfirmation(
   };
 }
 
+function normalizePendingConnection(
+  value: unknown
+): WorkspaceWhatsAppConfig['pendingConnection'] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  const messageIdRaw = cleanValue(source.messageId);
+  const phoneNumber = normalizeWhatsappPhone(cleanValue(source.phoneNumber));
+  const templateName = normalizeTemplateName(source.templateName);
+  const languageCode = normalizeTemplateName(source.languageCode);
+  const requestedAt = cleanValue(source.requestedAt);
+  const deliveryMode = cleanValue(source.deliveryMode).toLowerCase();
+
+  if (!phoneNumber || !requestedAt || (deliveryMode !== 'template' && deliveryMode !== 'text')) {
+    return null;
+  }
+
+  return {
+    messageId: messageIdRaw || null,
+    phoneNumber,
+    templateName,
+    languageCode,
+    deliveryMode: deliveryMode as 'template' | 'text',
+    requestedAt,
+  };
+}
+
 function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
   const source =
     payload &&
@@ -156,6 +190,7 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
     lastTestSentAt:
       sourceRecord && typeof sourceRecord.lastTestSentAt === 'string' ? sourceRecord.lastTestSentAt : null,
     pendingConfirmation: sourceRecord ? normalizePendingConfirmation(sourceRecord.pendingConfirmation) : null,
+    pendingConnection: sourceRecord ? normalizePendingConnection(sourceRecord.pendingConnection) : null,
     updatedAt,
   };
 }
@@ -164,6 +199,7 @@ function cloneWorkspaceWhatsAppConfig(config: WorkspaceWhatsAppConfig): Workspac
   return {
     ...config,
     pendingConfirmation: config.pendingConfirmation ? { ...config.pendingConfirmation } : null,
+    pendingConnection: config.pendingConnection ? { ...config.pendingConnection } : null,
   };
 }
 
@@ -228,6 +264,7 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
       lastValidatedAt: null,
       lastTestSentAt: null,
       pendingConfirmation: null,
+      pendingConnection: null,
       updatedAt: null,
     };
     workspaceWhatsAppConfigCache.set(workspaceId, {
@@ -251,7 +288,7 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
 
 export async function saveWorkspaceWhatsAppConfig(params: {
   workspaceId: string;
-  userId: string;
+  userId?: string | null;
   connectTemplateName?: string | null;
   digestTemplateName?: string | null;
   templateLanguage?: string | null;
@@ -262,6 +299,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
   lastValidatedAt?: string | null;
   lastTestSentAt?: string | null;
   pendingConfirmation?: WorkspaceWhatsAppConfig['pendingConfirmation'] | null;
+  pendingConnection?: WorkspaceWhatsAppConfig['pendingConnection'] | null;
 }) {
   const currentConfig = await getWorkspaceWhatsAppConfig(params.workspaceId);
   const normalizedConfig: WorkspaceWhatsAppConfig = {
@@ -298,6 +336,8 @@ export async function saveWorkspaceWhatsAppConfig(params: {
       typeof params.pendingConfirmation === 'undefined'
         ? currentConfig.pendingConfirmation
         : params.pendingConfirmation,
+    pendingConnection:
+      typeof params.pendingConnection === 'undefined' ? currentConfig.pendingConnection : params.pendingConnection,
     updatedAt: new Date().toISOString(),
   };
 
@@ -330,7 +370,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
 
   await logWorkspaceEventSafe({
     workspaceId: params.workspaceId,
-    userId: params.userId,
+    userId: params.userId ?? null,
     type: WHATSAPP_CONFIG_EVENT_TYPE,
     payload: {
       version: 1,
@@ -346,6 +386,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         lastValidatedAt: normalizedConfig.lastValidatedAt,
         lastTestSentAt: normalizedConfig.lastTestSentAt,
         pendingConfirmation: normalizedConfig.pendingConfirmation,
+        pendingConnection: normalizedConfig.pendingConnection,
       },
     },
   });
@@ -390,6 +431,7 @@ export function resolveWorkspaceWhatsAppConfig(params: {
     lastValidatedAt: params.workspaceConfig.lastValidatedAt,
     lastTestSentAt: params.workspaceConfig.lastTestSentAt,
     pendingConfirmation: params.workspaceConfig.pendingConfirmation,
+    pendingConnection: params.workspaceConfig.pendingConnection,
     updatedAt: params.workspaceConfig.updatedAt,
     connectTemplateNameSource: params.workspaceConfig.connectTemplateName
       ? 'workspace'

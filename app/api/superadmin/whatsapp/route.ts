@@ -688,7 +688,7 @@ export async function PATCH(req: Request) {
       const updatedConfig = await saveWorkspaceWhatsAppConfig({
         workspaceId,
         userId: access.userId,
-        lastConnectionState: 'connected',
+        lastConnectionState: 'testing',
         lastErrorMessage: null,
         lastErrorCategory: null,
         lastTestSentAt: new Date().toISOString(),

@@ -66,6 +66,36 @@ function getMetaSummary(error: unknown) {
   };
 }
 
+function extractMetaMessageAcceptance(payload: unknown) {
+  const result = {
+    messageIds: [] as string[],
+    contactWaIds: [] as string[],
+  };
+
+  if (!payload || typeof payload !== 'object') return result;
+  const value = payload as Record<string, unknown>;
+  const messages = Array.isArray(value.messages) ? value.messages : [];
+  const contacts = Array.isArray(value.contacts) ? value.contacts : [];
+
+  for (const item of messages) {
+    if (!item || typeof item !== 'object') continue;
+    const id = (item as Record<string, unknown>).id;
+    if (typeof id === 'string' && id.trim()) {
+      result.messageIds.push(id.trim());
+    }
+  }
+
+  for (const item of contacts) {
+    if (!item || typeof item !== 'object') continue;
+    const waId = (item as Record<string, unknown>).wa_id;
+    if (typeof waId === 'string' && waId.trim()) {
+      result.contactWaIds.push(waId.trim());
+    }
+  }
+
+  return result;
+}
+
 function classifyHttpStatus(error: unknown) {
   if (!(error instanceof WhatsAppApiError)) return 500;
   if (error.category === 'auth') return 403;
@@ -266,6 +296,7 @@ export async function POST(req: Request) {
         lastConnectionState: validation.ok ? 'disconnected' : 'config_pending',
         lastErrorMessage: validation.ok ? null : validation.issues[0] ?? null,
         lastErrorCategory: validation.ok ? null : 'validation',
+        pendingConnection: null,
       });
 
       return jsonResponse({
@@ -304,6 +335,14 @@ export async function POST(req: Request) {
         });
       } catch (error) {
         const friendlyMessage = getFriendlyWhatsAppErrorMessage(error);
+        console.error('WHATSAPP_CONNECT_FAILED', {
+          workspaceId: context.workspaceId,
+          stage: 'health_check',
+          to: normalizedPhone,
+          phoneNumberId,
+          error: friendlyMessage,
+          meta: getMetaSummary(error),
+        });
         const updatedConfig = await saveWorkspaceWhatsAppConfig({
           workspaceId: context.workspaceId,
           userId: context.userId,
@@ -337,6 +376,7 @@ export async function POST(req: Request) {
         lastConnectionState: 'disconnected',
         lastErrorMessage: null,
         lastErrorCategory: null,
+        pendingConnection: null,
       });
 
       await prisma.workspace.update({
@@ -390,6 +430,35 @@ export async function POST(req: Request) {
         );
       }
 
+      let phoneNumberId: string | null = null;
+      try {
+        phoneNumberId = getWhatsAppConfig().phoneNumberId;
+      } catch {
+        phoneNumberId = null;
+      }
+
+      if (phoneNumberId && normalizedPhone === phoneNumberId) {
+        return jsonResponse(
+          {
+            error: 'O número de destino informado é igual ao phone_number_id da Meta. Informe o telefone do usuário em formato E.164.',
+            diagnostic: {
+              ...diagnosticBase,
+              numeroConectado: normalizedPhone,
+            },
+          },
+          400
+        );
+      }
+
+      console.log('WHATSAPP_CONNECT_START', {
+        workspaceId: context.workspaceId,
+        userId: context.userId,
+        to: normalizedPhone,
+        templateName: resolvedConfig.connectTemplateName,
+        languageCode: resolvedConfig.templateLanguage,
+        phoneNumberId,
+      });
+
       try {
         await verifyWhatsAppConnection();
       } catch (error) {
@@ -401,6 +470,7 @@ export async function POST(req: Request) {
           lastErrorMessage: friendlyMessage,
           lastErrorCategory: error instanceof WhatsAppApiError ? error.category : 'unknown',
           lastValidatedAt: new Date().toISOString(),
+          pendingConnection: null,
         });
 
         await prisma.workspace.update({
@@ -439,79 +509,158 @@ export async function POST(req: Request) {
         context.workspaces.find((workspace) => workspace.id === context.workspaceId)?.name || 'Meu Workspace';
 
       try {
+        let deliveryMode: 'template' | 'text' = 'text';
+        let sentTemplateName: string | null = null;
+        let metaResponse: unknown = null;
+
         if (resolvedConfig.connectTemplateName) {
           try {
-            await sendWhatsAppTemplate({
+            console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
+              workspaceId: context.workspaceId,
+              source: 'template',
+              to: normalizedPhone,
+              phoneNumberId,
+              templateName: resolvedConfig.connectTemplateName,
+              languageCode: resolvedConfig.templateLanguage,
+              parameterCount: 1,
+            });
+            metaResponse = await sendWhatsAppTemplate({
               to: normalizedPhone,
               templateName: resolvedConfig.connectTemplateName,
               languageCode: resolvedConfig.templateLanguage,
               variables: [activeWorkspaceName],
             });
+            deliveryMode = 'template';
+            sentTemplateName = resolvedConfig.connectTemplateName;
           } catch (error) {
             if (!shouldFallbackToText(error)) {
               throw error;
             }
 
-            await sendWhatsAppTextMessage({
+            console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
+              workspaceId: context.workspaceId,
+              source: 'text-fallback',
+              to: normalizedPhone,
+              phoneNumberId,
+              templateName: resolvedConfig.connectTemplateName,
+              languageCode: resolvedConfig.templateLanguage,
+            });
+            metaResponse = await sendWhatsAppTextMessage({
               to: normalizedPhone,
               text: `Atualização da conta: este número foi vinculado à sua conta do Cote Finance AI no workspace ${activeWorkspaceName}.`,
             });
+            deliveryMode = 'text';
+            sentTemplateName = null;
           }
         } else {
-          await sendWhatsAppTextMessage({
+          console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
+            workspaceId: context.workspaceId,
+            source: 'text',
+            to: normalizedPhone,
+            phoneNumberId,
+            templateName: null,
+            languageCode: null,
+          });
+          metaResponse = await sendWhatsAppTextMessage({
             to: normalizedPhone,
             text: `Atualização da conta: este número foi vinculado à sua conta do Cote Finance AI no workspace ${activeWorkspaceName}.`,
           });
         }
 
-        await prisma.workspace.update({
-          where: { id: context.workspaceId },
-          data: {
-            whatsapp_phone_number: normalizedPhone,
-            whatsapp_status: 'CONNECTED',
-            whatsapp_connected_at: new Date(),
-          },
+        const acceptance = extractMetaMessageAcceptance(metaResponse);
+        const connectMessageId = acceptance.messageIds[0] ?? null;
+
+        console.log('WHATSAPP_CONNECT_META_RESPONSE', {
+          workspaceId: context.workspaceId,
+          accepted: true,
+          httpStatus: 200,
+          to: normalizedPhone,
+          phoneNumberId,
+          templateName: sentTemplateName,
+          languageCode: sentTemplateName ? resolvedConfig.templateLanguage : null,
+          deliveryMode,
+          messageId: connectMessageId,
+          messageIds: acceptance.messageIds,
         });
 
         await logWorkspaceEventSafe({
           workspaceId: context.workspaceId,
           userId: context.userId,
-          type: 'whatsapp.connected',
+          type: 'whatsapp.connect.requested',
           payload: {
             phoneNumber: normalizedPhone,
-            templateName: resolvedConfig.connectTemplateName,
-            languageCode: resolvedConfig.templateLanguage,
+            templateName: sentTemplateName,
+            languageCode: sentTemplateName ? resolvedConfig.templateLanguage : null,
+            deliveryMode,
+            metaAccepted: true,
+            messageId: connectMessageId,
+            messageIds: acceptance.messageIds,
+            contactWaIds: acceptance.contactWaIds,
           },
         });
 
         const updatedConfig = await saveWorkspaceWhatsAppConfig({
           workspaceId: context.workspaceId,
           userId: context.userId,
-          lastConnectionState: 'connected',
+          lastConnectionState: 'testing',
           lastErrorMessage: null,
           lastErrorCategory: null,
           lastValidatedAt: new Date().toISOString(),
+          pendingConnection: {
+            messageId: connectMessageId,
+            phoneNumber: normalizedPhone,
+            templateName: sentTemplateName,
+            languageCode: sentTemplateName ? resolvedConfig.templateLanguage : null,
+            deliveryMode,
+            requestedAt: new Date().toISOString(),
+          },
         });
 
         return jsonResponse({
           success: true,
-          message: 'WhatsApp conectado com sucesso.',
-          status: 'CONNECTED',
+          message: 'Solicitação enviada. A conexão será confirmada quando a Meta retornar delivered/read no webhook.',
+          status: 'CONNECTING',
           phoneNumber: normalizedPhone,
           config: updatedConfig,
           diagnostic: {
             ...diagnosticBase,
             numeroConectado: normalizedPhone,
-            connectionState: 'connected',
+            connectionState: 'testing',
             lastValidatedAt: updatedConfig.lastValidatedAt,
             lastErrorMessage: null,
-            metaResult: resolvedConfig.connectTemplateName
-              ? 'Conexão validada com sucesso. Se o template falhar, o sistema envia fallback em texto.'
-              : 'Mensagem de texto de conexão enviada com sucesso.',
+            metaResult: {
+              accepted: true,
+              httpStatus: 200,
+              messageId: connectMessageId,
+              messageIds: acceptance.messageIds,
+              to: normalizedPhone,
+              phoneNumberId,
+            },
           },
         });
       } catch (error) {
         const friendlyMessage = getFriendlyWhatsAppErrorMessage(error);
+        const metaSummary = getMetaSummary(error);
+        console.error('WHATSAPP_CONNECT_META_RESPONSE', {
+          workspaceId: context.workspaceId,
+          accepted: false,
+          httpStatus: metaSummary?.status ?? null,
+          to: normalizedPhone,
+          phoneNumberId,
+          templateName: resolvedConfig.connectTemplateName,
+          languageCode: resolvedConfig.templateLanguage,
+          error: metaSummary?.message || friendlyMessage,
+          meta: metaSummary,
+        });
+        console.error('WHATSAPP_CONNECT_FAILED', {
+          workspaceId: context.workspaceId,
+          stage: 'send_message',
+          to: normalizedPhone,
+          phoneNumberId,
+          error: friendlyMessage,
+          meta: metaSummary,
+        });
+
         const updatedConfig = await saveWorkspaceWhatsAppConfig({
           workspaceId: context.workspaceId,
           userId: context.userId,
@@ -519,6 +668,7 @@ export async function POST(req: Request) {
           lastErrorMessage: friendlyMessage,
           lastErrorCategory: error instanceof WhatsAppApiError ? error.category : 'unknown',
           lastValidatedAt: new Date().toISOString(),
+          pendingConnection: null,
         });
 
         await prisma.workspace.update({
@@ -540,7 +690,7 @@ export async function POST(req: Request) {
               connectionState: 'error',
               lastValidatedAt: updatedConfig.lastValidatedAt,
               lastErrorMessage: updatedConfig.lastErrorMessage,
-              metaResult: getMetaSummary(error),
+              metaResult: metaSummary,
             },
           },
           classifyHttpStatus(error)
