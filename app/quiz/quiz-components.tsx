@@ -79,11 +79,13 @@ export function ProgressBar({
 
 export function QuestionCard({
   eyebrow,
+  eyebrowClassName,
   title,
   children,
   footer,
 }: {
   eyebrow?: string;
+  eyebrowClassName?: string;
   title: string;
   children: ReactNode;
   footer?: ReactNode;
@@ -94,10 +96,12 @@ export function QuestionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
       transition={{ duration: 0.32 }}
-      className="rounded-[1.6rem] border border-[var(--border-default)] bg-[rgba(17,26,46,.74)] p-4 shadow-[0_20px_50px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
+      className="rounded-[1.6rem] border border-[var(--border-default)] bg-[linear-gradient(160deg,rgba(14,22,40,.9)_0%,rgba(20,30,52,.82)_62%,rgba(32,24,50,.74)_100%)] p-4 shadow-[0_20px_50px_rgba(0,0,0,.36)] backdrop-blur-xl sm:rounded-[2rem] sm:p-8"
     >
       {eyebrow ? (
-        <span className="inline-flex max-w-full rounded-full border border-[var(--border-default)]/35 bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-semibold leading-5 tracking-[0.12em] text-[var(--text-secondary)] uppercase">
+        <span
+          className={`inline-flex max-w-full rounded-full border border-[rgba(79,140,255,.3)] bg-[rgba(79,140,255,.12)] px-3 py-1 text-[11px] font-semibold leading-5 tracking-[0.12em] text-[rgb(181,210,255)] uppercase ${eyebrowClassName || ''}`}
+        >
           {eyebrow}
         </span>
       ) : null}

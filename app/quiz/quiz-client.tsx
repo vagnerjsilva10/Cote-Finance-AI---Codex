@@ -184,6 +184,7 @@ export default function QuizClient() {
             >
               <QuestionCard
                 eyebrow="Diagnóstico inteligente em 60 segundos"
+                eyebrowClassName="border-[rgba(123,97,255,.42)] bg-[rgba(123,97,255,.16)] text-[#C8B2FF]"
                 title="Descubra em 60 segundos se você está perdendo dinheiro sem perceber"
                 footer={
                   <button
@@ -200,12 +201,12 @@ export default function QuizClient() {
                     Responda algumas perguntas rápidas e veja o que está travando sua vida financeira.
                   </p>
 
-                  <div className="inline-flex max-w-full rounded-full border border-[var(--border-default)]/35 bg-[rgba(59,130,246,.14)] px-3 py-1 text-xs font-semibold leading-5 text-[var(--text-secondary)]">
+                  <div className="inline-flex max-w-full rounded-full border border-[rgba(123,97,255,.32)] bg-[rgba(123,97,255,.1)] px-3 py-1 text-xs font-bold leading-5 text-[#4F8CFF]">
                     +12.000 pessoas já fizeram esse diagnóstico
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-[1.05fr_.95fr]">
-                    <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(5,7,13,.74)] p-5">
+                    <div className="rounded-3xl border border-[var(--border-default)] bg-[linear-gradient(155deg,rgba(8,12,22,.9)_0%,rgba(18,29,50,.82)_100%)] p-5">
                       <ProgressBar current={0} total={quizQuestions.length} label="Pronto para começar?" stageText={progressStages[0]} />
                     </div>
 
@@ -247,7 +248,7 @@ export default function QuizClient() {
                     </motion.div>
                   </div>
 
-                  <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(5,7,13,.74)] p-5">
+                  <div className="rounded-3xl border border-[var(--border-default)] bg-[linear-gradient(155deg,rgba(8,12,22,.88)_0%,rgba(20,30,52,.82)_68%,rgba(32,24,50,.74)_100%)] p-5">
                     <ProgressBar current={Math.min(quizQuestions.length, quizQuestions.length)} total={quizQuestions.length} label="Processando respostas" stageText={progressStages[analysisIndex]} />
                     <div className="mt-4 h-3 overflow-hidden rounded-full border border-[rgba(255,255,255,.09)] bg-[rgba(255,255,255,.08)]">
                       <motion.div
@@ -270,7 +271,7 @@ export default function QuizClient() {
               transition={{ duration: 0.3 }}
               className="space-y-5"
             >
-              <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(15,23,42,.62)] p-4 sm:p-5">
+              <div className="rounded-3xl border border-[var(--border-default)] bg-[linear-gradient(160deg,rgba(15,23,42,.68)_0%,rgba(19,30,54,.7)_60%,rgba(30,24,48,.58)_100%)] p-4 sm:p-5">
                 <ProgressBar
                   current={questionIndex + 1}
                   total={quizQuestions.length}
