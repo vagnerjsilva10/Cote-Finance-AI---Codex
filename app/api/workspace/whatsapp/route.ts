@@ -274,24 +274,6 @@ export async function POST(req: Request) {
         });
       }
 
-      await prisma.workspace.update({
-        where: { id: context.workspaceId },
-        data: {
-          whatsapp_phone_number: normalizedPhone,
-          whatsapp_status: 'CONNECTING',
-          whatsapp_connected_at: null,
-        },
-      });
-
-      await saveWorkspaceWhatsAppConfig({
-        workspaceId: context.workspaceId,
-        userId: context.userId,
-        lastConnectionState: 'connecting',
-        lastErrorMessage: null,
-        lastErrorCategory: null,
-        pendingConnection: null,
-      });
-
       try {
         await verifyWhatsAppConnection();
       } catch (error) {
@@ -304,14 +286,6 @@ export async function POST(req: Request) {
           lastErrorCategory: error instanceof WhatsAppApiError ? error.category : 'unknown',
           lastValidatedAt: new Date().toISOString(),
           pendingConnection: null,
-        });
-
-        await prisma.workspace.update({
-          where: { id: context.workspaceId },
-          data: {
-            whatsapp_status: 'DISCONNECTED',
-            whatsapp_connected_at: null,
-          },
         });
 
         return jsonResponse(
@@ -330,6 +304,25 @@ export async function POST(req: Request) {
           userError.status
         );
       }
+
+      await prisma.workspace.update({
+        where: { id: context.workspaceId },
+        data: {
+          whatsapp_phone_number: normalizedPhone,
+          whatsapp_status: 'CONNECTED',
+          whatsapp_connected_at: new Date(),
+        },
+      });
+
+      await saveWorkspaceWhatsAppConfig({
+        workspaceId: context.workspaceId,
+        userId: context.userId,
+        lastConnectionState: 'connected',
+        lastErrorMessage: null,
+        lastErrorCategory: null,
+        lastValidatedAt: new Date().toISOString(),
+        pendingConnection: null,
+      });
 
       const activeWorkspaceName =
         context.workspaces.find((workspace) => workspace.id === context.workspaceId)?.name || 'Meu Workspace';
@@ -364,30 +357,23 @@ export async function POST(req: Request) {
         const updatedConfig = await saveWorkspaceWhatsAppConfig({
           workspaceId: context.workspaceId,
           userId: context.userId,
-          lastConnectionState: 'connecting',
+          lastConnectionState: 'connected',
           lastErrorMessage: null,
           lastErrorCategory: null,
           lastValidatedAt: new Date().toISOString(),
-          pendingConnection: {
-            messageId: connectMessageId,
-            phoneNumber: normalizedPhone,
-            templateName: WHATSAPP_TEMPLATES.CONNECT.name,
-            languageCode: WHATSAPP_TEMPLATES.CONNECT.language,
-            deliveryMode: 'template',
-            requestedAt: new Date().toISOString(),
-          },
+          pendingConnection: null,
         });
 
         return jsonResponse({
           success: true,
-          message: 'Conectando... estamos aguardando a confirmação de entrega no WhatsApp.',
-          status: 'CONNECTING',
+          message: 'WhatsApp conectado com sucesso.',
+          status: 'CONNECTED',
           phoneNumber: normalizedPhone,
           config: updatedConfig,
           diagnostic: {
             ...diagnosticBase,
             numeroConectado: normalizedPhone,
-            connectionState: 'connecting',
+            connectionState: 'connected',
             lastValidatedAt: updatedConfig.lastValidatedAt,
             lastErrorMessage: null,
             metaResult: {
@@ -403,6 +389,8 @@ export async function POST(req: Request) {
       } catch (error) {
         const userError = getUserFacingWhatsAppError(error);
         const metaSummary = getMetaSummary(error);
+        const warningMessage =
+          'WhatsApp conectado com sucesso, mas nao foi possivel enviar a mensagem de confirmacao agora.';
 
         if (userError.shouldLogInternalDetailsOnly) {
           console.error('WHATSAPP_TEMPLATE_INTERNAL_ERROR', {
@@ -425,7 +413,7 @@ export async function POST(req: Request) {
         await logWorkspaceEventSafe({
           workspaceId: context.workspaceId,
           userId: context.userId,
-          type: 'whatsapp.connect.failed_request',
+          type: 'whatsapp.connect.welcome_failed',
           payload: {
             phoneNumber: normalizedPhone,
             templateName: WHATSAPP_TEMPLATES.CONNECT.name,
@@ -440,37 +428,29 @@ export async function POST(req: Request) {
         const updatedConfig = await saveWorkspaceWhatsAppConfig({
           workspaceId: context.workspaceId,
           userId: context.userId,
-          lastConnectionState: 'failed',
+          lastConnectionState: 'connected',
           lastErrorMessage: userError.message,
           lastErrorCategory: error instanceof WhatsAppApiError ? error.category : 'unknown',
           lastValidatedAt: new Date().toISOString(),
           pendingConnection: null,
         });
 
-        await prisma.workspace.update({
-          where: { id: context.workspaceId },
-          data: {
-            whatsapp_phone_number: normalizedPhone,
-            whatsapp_status: 'DISCONNECTED',
-            whatsapp_connected_at: null,
+        return jsonResponse({
+          success: true,
+          warning: warningMessage,
+          warningDetails: userError.message,
+          status: 'CONNECTED',
+          phoneNumber: normalizedPhone,
+          config: updatedConfig,
+          diagnostic: {
+            ...diagnosticBase,
+            numeroConectado: normalizedPhone,
+            connectionState: 'connected',
+            lastValidatedAt: updatedConfig.lastValidatedAt,
+            lastErrorMessage: updatedConfig.lastErrorMessage,
+            metaResult: userError.shouldLogInternalDetailsOnly ? null : metaSummary,
           },
         });
-
-        return jsonResponse(
-          {
-            error: userError.message,
-            config: updatedConfig,
-            diagnostic: {
-              ...diagnosticBase,
-              numeroConectado: normalizedPhone,
-              connectionState: 'failed',
-              lastValidatedAt: updatedConfig.lastValidatedAt,
-              lastErrorMessage: updatedConfig.lastErrorMessage,
-              metaResult: userError.shouldLogInternalDetailsOnly ? null : metaSummary,
-            },
-          },
-          userError.status
-        );
       }
     }
 
@@ -555,10 +535,12 @@ export async function POST(req: Request) {
       });
     } catch (error) {
       const userError = getUserFacingWhatsAppError(error);
+      const keepConnectedState = currentWorkspace?.whatsapp_status === 'CONNECTED';
+      const nextConnectionState = keepConnectedState ? 'connected' : 'failed';
       const updatedConfig = await saveWorkspaceWhatsAppConfig({
         workspaceId: context.workspaceId,
         userId: context.userId,
-        lastConnectionState: 'failed',
+        lastConnectionState: nextConnectionState,
         lastErrorMessage: userError.message,
         lastErrorCategory: error instanceof WhatsAppApiError ? error.category : 'unknown',
       });
@@ -569,7 +551,7 @@ export async function POST(req: Request) {
           config: updatedConfig,
           diagnostic: {
             ...diagnosticBase,
-            connectionState: 'failed',
+            connectionState: nextConnectionState,
             lastErrorMessage: updatedConfig.lastErrorMessage,
             metaResult: null,
           },
@@ -600,4 +582,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

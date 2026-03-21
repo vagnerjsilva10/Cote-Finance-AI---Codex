@@ -510,6 +510,32 @@ const normalizeWhatsAppConnectionState = (value: unknown): WhatsAppDiagnostic['c
   return 'idle';
 };
 
+const resolveWhatsAppConnectionState = (params: {
+  statusValue?: unknown;
+  diagnosticValue?: unknown;
+}): WhatsAppDiagnostic['connectionState'] => {
+  const statusState = normalizeWhatsAppConnectionState(params.statusValue);
+  const diagnosticState = normalizeWhatsAppConnectionState(params.diagnosticValue);
+
+  if (statusState === 'connected' || statusState === 'connecting') {
+    return statusState;
+  }
+
+  if (diagnosticState === 'failed') {
+    return 'failed';
+  }
+
+  if (statusState === 'disconnected') {
+    return 'disconnected';
+  }
+
+  if (diagnosticState === 'connected' || diagnosticState === 'connecting' || diagnosticState === 'disconnected') {
+    return diagnosticState;
+  }
+
+  return 'idle';
+};
+
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 const getAgendaDayDiff = (date: Date, reference = new Date()) =>
@@ -2367,12 +2393,14 @@ type IntegrationsViewProps = {
   currentPlan: SubscriptionPlan;
   isWhatsAppConnected: boolean;
   isConnectingWhatsApp: boolean;
+  isDisconnectingWhatsApp: boolean;
   isSendingWhatsAppTest: boolean;
   whatsAppPhoneNumber: string;
   whatsAppFeedback: WhatsAppFeedback;
   whatsAppDiagnostic: WhatsAppDiagnostic | null;
   onWhatsAppPhoneNumberChange: (value: string) => void;
   onConnectWhatsApp: () => void;
+  onDisconnectWhatsApp: () => void;
   onSendWhatsAppTest: () => void;
 };
 
@@ -2381,12 +2409,14 @@ const IntegrationsView = ({
   currentPlan,
   isWhatsAppConnected,
   isConnectingWhatsApp,
+  isDisconnectingWhatsApp,
   isSendingWhatsAppTest,
   whatsAppPhoneNumber,
   whatsAppFeedback,
   whatsAppDiagnostic,
   onWhatsAppPhoneNumberChange,
   onConnectWhatsApp,
+  onDisconnectWhatsApp,
   onSendWhatsAppTest,
 }: IntegrationsViewProps) => {
   const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annually'>('monthly');
@@ -2395,8 +2425,15 @@ const IntegrationsView = ({
   const connectionLabel = getWhatsAppConnectionLabel(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
   const connectionTone = getWhatsAppConnectionTone(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
   const connectionDescription = getWhatsAppConnectionDescription(connectionState, isWhatsAppConnected, whatsAppDiagnostic?.lastErrorMessage);
-  const canSendWhatsAppTest = Boolean(whatsAppPhoneNumber.trim()) && !isSendingWhatsAppTest;
-  const canConnectWhatsApp = Boolean(whatsAppPhoneNumber.trim()) && !isConnectingWhatsApp;
+  const canSendWhatsAppTest =
+    isWhatsAppConnected &&
+    Boolean(whatsAppPhoneNumber.trim()) &&
+    !isSendingWhatsAppTest &&
+    !isDisconnectingWhatsApp;
+  const canConnectWhatsApp =
+    Boolean(whatsAppPhoneNumber.trim()) &&
+    !isConnectingWhatsApp &&
+    !isDisconnectingWhatsApp;
 
   const plans = [
     {
@@ -2610,7 +2647,7 @@ const IntegrationsView = ({
                 )}
 
                 <div className="flex flex-col gap-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-3">
                     <button
                       onClick={onConnectWhatsApp}
                       disabled={!canConnectWhatsApp}
@@ -2622,6 +2659,19 @@ const IntegrationsView = ({
                       )}
                     >
                       {isConnectingWhatsApp ? 'Conectando...' : 'Conectar WhatsApp'}
+                    </button>
+
+                    <button
+                      onClick={onDisconnectWhatsApp}
+                      disabled={!isWhatsAppConnected || isDisconnectingWhatsApp || isConnectingWhatsApp}
+                      className={cn(
+                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
+                        !isWhatsAppConnected || isDisconnectingWhatsApp || isConnectingWhatsApp
+                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
+                          : 'border-[color:var(--danger-soft)] bg-[var(--bg-app)] text-[var(--danger)] hover:border-[var(--danger)]'
+                      )}
+                    >
+                      {isDisconnectingWhatsApp ? 'Desconectando...' : 'Desconectar WhatsApp'}
                     </button>
 
                     <button
@@ -7560,10 +7610,10 @@ export default function App() {
         } else {
           setWorkspaceWhatsAppPhoneNumber('');
         }
-        const dashboardState =
-          typeof data.workspace.whatsapp_last_connection_state === 'string'
-            ? normalizeWhatsAppConnectionState(data.workspace.whatsapp_last_connection_state)
-            : normalizeWhatsAppConnectionState(workspaceStatus);
+        const dashboardState = resolveWhatsAppConnectionState({
+          statusValue: workspaceStatus,
+          diagnosticValue: data.workspace.whatsapp_last_connection_state,
+        });
         setWhatsAppDiagnostic((current) => ({
           numeroConectado:
             typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
@@ -7832,6 +7882,7 @@ export default function App() {
   const [recurringDebtDraft, setRecurringDebtDraft] = React.useState<Partial<RecurringDebtFormData> | null>(null);
   const [isWhatsAppConnected, setIsWhatsAppConnected] = React.useState(false);
   const [isConnectingWhatsApp, setIsConnectingWhatsApp] = React.useState(false);
+  const [isDisconnectingWhatsApp, setIsDisconnectingWhatsApp] = React.useState(false);
   const [isSendingWhatsAppTest, setIsSendingWhatsAppTest] = React.useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
@@ -7980,6 +8031,7 @@ export default function App() {
   const workspaceDashboardCacheRef = React.useRef<Record<string, WorkspaceDashboardSnapshot>>({});
 
   const applyDashboardSnapshot = React.useCallback((snapshot: WorkspaceDashboardSnapshot) => {
+    setIsDisconnectingWhatsApp(false);
     setTotalBalance(snapshot.totalBalance);
     setCurrentPlan(snapshot.currentPlan);
     setReportAccessLevel(snapshot.reportAccessLevel);
@@ -8018,6 +8070,7 @@ export default function App() {
       setCurrentMonthTransactionCount(0);
       setAiUsageCount(0);
       setIsWhatsAppConnected(false);
+      setIsDisconnectingWhatsApp(false);
       setWorkspaceWhatsAppPhoneNumber('');
       setWhatsAppFeedback(null);
       setWhatsAppDiagnostic(null);
@@ -8085,7 +8138,10 @@ React.useEffect(() => {
       setWorkspaceWhatsAppPhoneNumber('');
     }
 
-    const fallbackState = normalizeWhatsAppConnectionState(payload.status);
+    const fallbackState = resolveWhatsAppConnectionState({
+      statusValue: payload.status,
+      diagnosticValue: null,
+    });
 
     if (payload.diagnostic && typeof payload.diagnostic === 'object') {
       const diagnostic = payload.diagnostic as Record<string, unknown>;
@@ -8094,7 +8150,10 @@ React.useEffect(() => {
           typeof diagnostic.numeroConectado === 'string'
             ? diagnostic.numeroConectado
             : current?.numeroConectado ?? null,
-        connectionState: normalizeWhatsAppConnectionState(diagnostic.connectionState ?? fallbackState),
+        connectionState: resolveWhatsAppConnectionState({
+          statusValue: payload.status,
+          diagnosticValue: diagnostic.connectionState ?? fallbackState,
+        }),
         lastValidatedAt:
           typeof diagnostic.lastValidatedAt === 'string' ? diagnostic.lastValidatedAt : current?.lastValidatedAt ?? null,
         lastTestSentAt:
@@ -8152,17 +8211,18 @@ React.useEffect(() => {
       });
       const payload = await parseWhatsAppResponse(response);
       applyWhatsAppPayload(payload);
-      const connectStatus = String(payload?.status || '').toUpperCase();
-      const isPendingConfirmation = connectStatus === 'CONNECTING';
+      const hasWarning = typeof payload?.warning === 'string' && payload.warning.trim().length > 0;
       setWhatsAppFeedback({
-        tone: isPendingConfirmation ? 'info' : 'success',
-        title: isPendingConfirmation ? 'Conectando' : 'WhatsApp conectado',
+        tone: hasWarning ? 'info' : 'success',
+        title: hasWarning ? 'Conectado com aviso' : 'WhatsApp conectado',
         message:
-          typeof payload?.message === 'string'
-            ? payload.message
-            : isPendingConfirmation
-              ? 'Conectando... aguarde alguns segundos.'
-              : 'O WhatsApp foi conectado com sucesso.',
+          hasWarning && typeof payload?.warningDetails === 'string'
+            ? payload.warningDetails
+            : hasWarning && typeof payload?.warning === 'string'
+              ? payload.warning
+              : typeof payload?.message === 'string'
+                ? payload.message
+                : 'O WhatsApp foi conectado com sucesso.',
       });
       void fetchDashboardData({ silent: true });
     } catch (error: any) {
@@ -8182,6 +8242,46 @@ React.useEffect(() => {
       setIsConnectingWhatsApp(false);
     }
   }, [applyWhatsAppPayload, fetchDashboardData, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
+
+  const handleDisconnectWhatsApp = React.useCallback(async () => {
+    setIsDisconnectingWhatsApp(true);
+    setWhatsAppFeedback(null);
+    try {
+      const response = await fetch('/api/workspace/whatsapp', {
+        method: 'POST',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({
+          action: 'disconnect',
+        }),
+      });
+      const payload = await parseWhatsAppResponse(response);
+      applyWhatsAppPayload(payload);
+      setWhatsAppFeedback({
+        tone: 'info',
+        title: 'WhatsApp desconectado',
+        message:
+          typeof payload?.message === 'string'
+            ? payload.message
+            : 'A integração do WhatsApp foi desconectada com sucesso.',
+      });
+      void fetchDashboardData({ silent: true });
+    } catch (error: any) {
+      const message =
+        typeof error?.payload?.error === 'string'
+          ? error.payload.error
+          : 'Não foi possível desconectar o WhatsApp.';
+      if (error?.payload?.diagnostic) {
+        applyWhatsAppPayload({ diagnostic: error.payload.diagnostic, status: 'FAILED' });
+      }
+      setWhatsAppFeedback({
+        tone: 'error',
+        title: 'Falha ao desconectar',
+        message,
+      });
+    } finally {
+      setIsDisconnectingWhatsApp(false);
+    }
+  }, [applyWhatsAppPayload, fetchDashboardData, getAuthHeaders, parseWhatsAppResponse]);
 
   const handleSendWhatsAppTest = React.useCallback(async () => {
     setIsSendingWhatsAppTest(true);
@@ -11956,12 +12056,14 @@ React.useEffect(() => {
                   currentPlan={currentPlan}
                   isWhatsAppConnected={isWhatsAppConnected}
                   isConnectingWhatsApp={isConnectingWhatsApp}
+                  isDisconnectingWhatsApp={isDisconnectingWhatsApp}
                   isSendingWhatsAppTest={isSendingWhatsAppTest}
                   whatsAppPhoneNumber={workspaceWhatsAppPhoneNumber}
                   whatsAppFeedback={whatsAppFeedback}
                   whatsAppDiagnostic={whatsAppDiagnostic}
                   onWhatsAppPhoneNumberChange={setWorkspaceWhatsAppPhoneNumber}
                   onConnectWhatsApp={handleConnectWhatsApp}
+                  onDisconnectWhatsApp={handleDisconnectWhatsApp}
                   onSendWhatsAppTest={handleSendWhatsAppTest}
                 />
               )}

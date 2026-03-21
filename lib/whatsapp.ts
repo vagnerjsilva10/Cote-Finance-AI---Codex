@@ -239,6 +239,7 @@ export function getFriendlyWhatsAppErrorMessage(error: unknown) {
 }
 
 type UserFacingWhatsAppErrorCode =
+  | 'test_mode_recipient_not_allowed'
   | 'window_24h'
   | 'invalid_number'
   | 'template_internal'
@@ -274,6 +275,14 @@ function isInvalidDestinationNumberError(error: WhatsAppApiError) {
   );
 }
 
+function isTestModeRecipientNotAllowedError(error: WhatsAppApiError) {
+  const message = error.message.toLowerCase();
+  return (
+    error.metaCode === 131026 &&
+    (/allowed list/.test(message) || /test mode/.test(message))
+  );
+}
+
 export function getUserFacingWhatsAppError(error: unknown): UserFacingWhatsAppError {
   if (!(error instanceof WhatsAppApiError)) {
     return {
@@ -289,6 +298,16 @@ export function getUserFacingWhatsAppError(error: unknown): UserFacingWhatsAppEr
       code: 'window_24h',
       message:
         'Não foi possível enviar mensagem. Estamos iniciando a conexão com seu WhatsApp. Tente novamente em alguns segundos.',
+      status: 409,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  if (isTestModeRecipientNotAllowedError(error)) {
+    return {
+      code: 'test_mode_recipient_not_allowed',
+      message:
+        'Este número ainda não está liberado no modo de teste da Meta. Adicione-o na lista de destinatários de teste e tente novamente.',
       status: 409,
       shouldLogInternalDetailsOnly: false,
     };
