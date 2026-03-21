@@ -218,6 +218,10 @@ export function getFriendlyWhatsAppErrorMessage(error: unknown) {
     return 'O WhatsApp está indisponível no momento. Tente novamente em alguns instantes.';
   }
 
+  if (/24\s*hours/i.test(error.message) || /outside the allowed window/i.test(error.message)) {
+    return 'A Meta bloqueou envio fora da janela de 24h. Configure e use um template aprovado para iniciar a conversa.';
+  }
+
   return `Falha ao enviar mensagem no WhatsApp (HTTP ${error.status}). ${error.message}`;
 }
 

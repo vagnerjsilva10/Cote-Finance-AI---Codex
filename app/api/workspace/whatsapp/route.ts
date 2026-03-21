@@ -6,7 +6,6 @@ import {
   isValidE164Phone,
   normalizeWhatsappPhone,
   sendWhatsAppTemplate,
-  sendWhatsAppTextMessage,
   verifyWhatsAppConnection,
   WhatsAppApiError,
   WHATSAPP_CONFIG_MISSING_ERROR,
@@ -103,15 +102,6 @@ function classifyHttpStatus(error: unknown) {
   if (error.category === 'rate_limit') return 429;
   if (error.category === 'temporary') return 503;
   return error.status || 500;
-}
-
-function shouldFallbackToText(error: unknown) {
-  if (!(error instanceof WhatsAppApiError)) return false;
-
-  if (error.category === 'template') return true;
-  if (/template/i.test(error.message)) return true;
-
-  return [131058, 132000, 132001, 132007, 132012].includes(error.metaCode ?? -1);
 }
 
 function buildValidationSummary(params: {
@@ -456,6 +446,21 @@ export async function POST(req: Request) {
         );
       }
 
+      if (!resolvedConfig.connectTemplateName) {
+        return jsonResponse(
+          {
+            error:
+              'Template de conexão não configurado. Para iniciar conversa no WhatsApp fora da janela de 24h, configure um template aprovado na Meta.',
+            diagnostic: {
+              ...diagnosticBase,
+              numeroConectado: normalizedPhone,
+              connectionState: 'config_pending',
+            },
+          },
+          400
+        );
+      }
+
       console.log('WHATSAPP_CONNECT_START', {
         workspaceId: context.workspaceId,
         userId: context.userId,
@@ -515,63 +520,24 @@ export async function POST(req: Request) {
         context.workspaces.find((workspace) => workspace.id === context.workspaceId)?.name || 'Meu Workspace';
 
       try {
-        let deliveryMode: 'template' | 'text' = 'text';
-        let sentTemplateName: string | null = null;
+        let deliveryMode: 'template' | 'text' = 'template';
+        const sentTemplateName = resolvedConfig.connectTemplateName;
         let metaResponse: unknown = null;
-
-        if (resolvedConfig.connectTemplateName) {
-          try {
-            console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
-              workspaceId: context.workspaceId,
-              source: 'template',
-              to: normalizedPhone,
-              phoneNumberId,
-              templateName: resolvedConfig.connectTemplateName,
-              languageCode: resolvedConfig.templateLanguage,
-              parameterCount: 1,
-            });
-            metaResponse = await sendWhatsAppTemplate({
-              to: normalizedPhone,
-              templateName: resolvedConfig.connectTemplateName,
-              languageCode: resolvedConfig.templateLanguage,
-              variables: [activeWorkspaceName],
-            });
-            deliveryMode = 'template';
-            sentTemplateName = resolvedConfig.connectTemplateName;
-          } catch (error) {
-            if (!shouldFallbackToText(error)) {
-              throw error;
-            }
-
-            console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
-              workspaceId: context.workspaceId,
-              source: 'text-fallback',
-              to: normalizedPhone,
-              phoneNumberId,
-              templateName: resolvedConfig.connectTemplateName,
-              languageCode: resolvedConfig.templateLanguage,
-            });
-            metaResponse = await sendWhatsAppTextMessage({
-              to: normalizedPhone,
-              text: `Atualização da conta: este número foi vinculado à sua conta do Cote Finance AI no workspace ${activeWorkspaceName}.`,
-            });
-            deliveryMode = 'text';
-            sentTemplateName = null;
-          }
-        } else {
-          console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
-            workspaceId: context.workspaceId,
-            source: 'text',
-            to: normalizedPhone,
-            phoneNumberId,
-            templateName: null,
-            languageCode: null,
-          });
-          metaResponse = await sendWhatsAppTextMessage({
-            to: normalizedPhone,
-            text: `Atualização da conta: este número foi vinculado à sua conta do Cote Finance AI no workspace ${activeWorkspaceName}.`,
-          });
-        }
+        console.log('WHATSAPP_CONNECT_PAYLOAD_READY', {
+          workspaceId: context.workspaceId,
+          source: 'template',
+          to: normalizedPhone,
+          phoneNumberId,
+          templateName: resolvedConfig.connectTemplateName,
+          languageCode: resolvedConfig.templateLanguage,
+          parameterCount: 1,
+        });
+        metaResponse = await sendWhatsAppTemplate({
+          to: normalizedPhone,
+          templateName: resolvedConfig.connectTemplateName,
+          languageCode: resolvedConfig.templateLanguage,
+          variables: [activeWorkspaceName],
+        });
 
         const acceptance = extractMetaMessageAcceptance(metaResponse);
         const connectMessageId = acceptance.messageIds[0] ?? null;

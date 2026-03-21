@@ -475,7 +475,7 @@ const getWhatsAppConnectionLabel = (
     case 'testing':
       return 'Testando';
     case 'error':
-      return 'Erro de autenticação';
+      return 'Erro na conexão';
     case 'disconnected':
       return 'Desconectado';
     case 'config_pending':
@@ -508,7 +508,7 @@ const getWhatsAppConnectionDescription = (
   hasValidationIssues: boolean
 ) => {
   if (state === 'error') {
-    return 'A conexão com a Meta falhou. Revise token, permissões e os dados deste workspace.';
+    return 'A conexão com a Meta falhou. Revise template, permissões, token e a regra de janela de 24h.';
   }
   if (state === 'connected' || isConnected) {
     return 'Configuração pronta para envio. Você já pode disparar um teste com segurança.';
@@ -8589,13 +8589,17 @@ React.useEffect(() => {
       });
       const payload = await parseWhatsAppResponse(response);
       applyWhatsAppPayload(payload);
+      const connectStatus = String(payload?.status || '').toUpperCase();
+      const isPendingConfirmation = connectStatus === 'CONNECTING';
       setWhatsAppFeedback({
-        tone: 'success',
-        title: 'WhatsApp conectado',
+        tone: isPendingConfirmation ? 'info' : 'success',
+        title: isPendingConfirmation ? 'Solicitação enviada' : 'WhatsApp conectado',
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'O WhatsApp deste workspace foi conectado com sucesso.',
+            : isPendingConfirmation
+              ? 'Aguardando confirmação de entrega da Meta para concluir a conexão.'
+              : 'O WhatsApp deste workspace foi conectado com sucesso.',
       });
       void fetchDashboardData({ silent: true });
     } catch (error: any) {
@@ -12864,6 +12868,4 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
 
