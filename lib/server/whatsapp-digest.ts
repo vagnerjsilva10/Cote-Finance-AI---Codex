@@ -6,6 +6,7 @@ import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
 import { ResolvedWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import {
+  extractMetaMessageAcceptance,
   sendWhatsAppTemplate,
   sendWhatsAppTextMessage,
   WHATSAPP_TEMPLATES,
@@ -34,6 +35,9 @@ export type WhatsAppDigestResult =
       workspaceId: string;
       phoneNumber: string;
       deliveryMode: 'template' | 'text';
+      messageId: string | null;
+      messageIds: string[];
+      templateName: string | null;
       reason?: never;
     }
   | {
@@ -448,14 +452,18 @@ export async function sendWorkspaceWhatsAppDigest(params: {
   });
 
   let deliveryMode: 'template' | 'text' = 'text';
+  let acceptanceMessageIds: string[] = [];
+  let templateName: string | null = null;
 
   try {
-    await sendWhatsAppTemplate({
+    const templateResponse = await sendWhatsAppTemplate({
       to: destinationPhone,
       templateName: WHATSAPP_TEMPLATES.DIGEST.name,
       languageCode: WHATSAPP_TEMPLATES.DIGEST.language,
       variables: [
+        'cliente',
         workspace.name,
+        periodLabel,
         formatCurrency(totalBalance),
         formatCurrency(monthIncome),
         formatCurrency(monthExpenses),
@@ -470,16 +478,20 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       ],
     });
     deliveryMode = 'template';
+    templateName = WHATSAPP_TEMPLATES.DIGEST.name;
+    acceptanceMessageIds = extractMetaMessageAcceptance(templateResponse).messageIds;
   } catch (error) {
     if (!shouldFallbackToText(error)) {
       throw error;
     }
 
-    await sendWhatsAppTextMessage({
+    const textResponse = await sendWhatsAppTextMessage({
       to: destinationPhone,
       text: preview,
     });
     deliveryMode = 'text';
+    templateName = null;
+    acceptanceMessageIds = extractMetaMessageAcceptance(textResponse).messageIds;
   }
 
   await logWorkspaceEventSafe({
@@ -494,6 +506,7 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       agendaCount: upcomingItems.length,
       deliveryMode,
       phoneNumber: destinationPhone,
+      messageIds: acceptanceMessageIds,
     },
   });
 
@@ -503,6 +516,9 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     phoneNumber: destinationPhone,
     preview,
     deliveryMode,
+    messageId: acceptanceMessageIds[0] ?? null,
+    messageIds: acceptanceMessageIds,
+    templateName,
   } satisfies WhatsAppDigestResult;
 }
 

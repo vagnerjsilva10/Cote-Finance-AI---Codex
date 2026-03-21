@@ -13,6 +13,7 @@ import {
 } from '@/lib/whatsapp';
 import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
 import { getWorkspaceWhatsAppConfig, saveWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
+import { logWhatsAppOperationalEvent } from '@/lib/server/whatsapp-observability';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 
 export const dynamic = 'force-dynamic';
@@ -1360,17 +1361,53 @@ function getStatusFailureReason(status: IncomingMessageStatus) {
   );
 }
 
+type PendingDeliveryKind = 'connect' | 'test';
+
+type PendingDeliveryMatch = {
+  kind: PendingDeliveryKind;
+  templateName: string | null;
+  deliveryMode: 'template' | 'text';
+};
+
+function resolvePendingDeliveryMatch(
+  workspaceConfig: Awaited<ReturnType<typeof getWorkspaceWhatsAppConfig>>,
+  recipient: string,
+  messageId: string
+): PendingDeliveryMatch | null {
+  const candidates: Array<{
+    kind: PendingDeliveryKind;
+    pending:
+      | NonNullable<Awaited<ReturnType<typeof getWorkspaceWhatsAppConfig>>['pendingConnection']>
+      | NonNullable<Awaited<ReturnType<typeof getWorkspaceWhatsAppConfig>>['pendingTest']>;
+  }> = [];
+
+  if (workspaceConfig.pendingConnection) {
+    candidates.push({ kind: 'connect', pending: workspaceConfig.pendingConnection });
+  }
+
+  if (workspaceConfig.pendingTest) {
+    candidates.push({ kind: 'test', pending: workspaceConfig.pendingTest });
+  }
+
+  for (const candidate of candidates) {
+    const pendingPhone = normalizeWhatsappPhone(candidate.pending.phoneNumber);
+    const matchesRecipient = pendingPhone === recipient;
+    const matchesMessageId = !candidate.pending.messageId || candidate.pending.messageId === messageId;
+    if (!matchesRecipient || !matchesMessageId) continue;
+
+    return {
+      kind: candidate.kind,
+      templateName: candidate.pending.templateName,
+      deliveryMode: candidate.pending.deliveryMode,
+    };
+  }
+
+  return null;
+}
+
 async function processIncomingStatus(status: IncomingMessageStatus) {
   const recipient = normalizeWhatsappPhone(status.recipientId);
   if (!recipient) return;
-
-  console.log('WHATSAPP_CONNECT_STATUS_WEBHOOK', {
-    messageId: status.id,
-    status: status.status,
-    recipient: recipient,
-    errorCode: status.errors[0]?.code ?? null,
-    errorMessage: getStatusFailureReason(status),
-  });
 
   const candidates = await prisma.workspace.findMany({
     where: {
@@ -1391,44 +1428,54 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
     return;
   }
 
-  const workspace = candidates.find((item) => item.whatsapp_status === 'CONNECTING') || candidates[0];
+  const resolvedCandidates = await Promise.all(
+    candidates.map(async (workspace) => {
+      const workspaceConfig = await getWorkspaceWhatsAppConfig(workspace.id);
+      return {
+        workspace,
+        workspaceConfig,
+        pendingMatch: resolvePendingDeliveryMatch(workspaceConfig, recipient, status.id),
+      };
+    })
+  );
+
+  const matchedCandidate = resolvedCandidates.find((item) => item.pendingMatch);
+  const workspace = matchedCandidate?.workspace || candidates[0];
   if (!workspace) return;
 
-  const workspaceConfig = await getWorkspaceWhatsAppConfig(workspace.id);
-  const pendingConnection = workspaceConfig.pendingConnection;
-  const pendingPhone = pendingConnection ? normalizeWhatsappPhone(pendingConnection.phoneNumber) : null;
-  const isPendingMatch =
-    pendingConnection &&
-    pendingPhone === recipient &&
-    (!pendingConnection.messageId || pendingConnection.messageId === status.id);
+  const workspaceConfig = matchedCandidate?.workspaceConfig || (await getWorkspaceWhatsAppConfig(workspace.id));
+  const pendingMatch = matchedCandidate?.pendingMatch || null;
 
   await logWorkspaceEventSafe({
     workspaceId: workspace.id,
-    type: 'whatsapp.connect.status_webhook',
+    type: pendingMatch ? `whatsapp.${pendingMatch.kind}.status_webhook` : 'whatsapp.status_webhook',
     payload: {
       messageId: status.id,
       status: status.status,
       recipient,
-      isPendingMatch: Boolean(isPendingMatch),
+      isPendingMatch: Boolean(pendingMatch),
+      matchKind: pendingMatch?.kind ?? null,
       errors: status.errors,
     },
   });
 
   // Evita falso positivo/negativo: só a mensagem pendente de conexão pode
   // transicionar o estado de CONNECTING -> CONNECTED/FAILED.
-  if (!isPendingMatch) {
+  if (!pendingMatch) {
     return;
   }
 
   if (DELIVERY_SUCCESS_STATUSES.has(status.status)) {
-    await prisma.workspace.update({
-      where: { id: workspace.id },
-      data: {
-        whatsapp_status: 'CONNECTED',
-        whatsapp_phone_number: recipient,
-        whatsapp_connected_at: new Date(),
-      },
-    });
+    if (pendingMatch.kind === 'connect') {
+      await prisma.workspace.update({
+        where: { id: workspace.id },
+        data: {
+          whatsapp_status: 'CONNECTED',
+          whatsapp_phone_number: recipient,
+          whatsapp_connected_at: new Date(),
+        },
+      });
+    }
 
     await saveWorkspaceWhatsAppConfig({
       workspaceId: workspace.id,
@@ -1437,12 +1484,13 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
       lastErrorMessage: null,
       lastErrorCategory: null,
       lastValidatedAt: new Date().toISOString(),
-      pendingConnection: null,
+      pendingConnection: pendingMatch.kind === 'connect' ? null : workspaceConfig.pendingConnection,
+      pendingTest: pendingMatch.kind === 'test' ? null : workspaceConfig.pendingTest,
     });
 
     await logWorkspaceEventSafe({
       workspaceId: workspace.id,
-      type: 'whatsapp.connect.delivered',
+      type: `whatsapp.${pendingMatch.kind}.delivered`,
       payload: {
         messageId: status.id,
         status: status.status,
@@ -1450,22 +1498,65 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
       },
     });
 
-    console.log('WHATSAPP_CONNECT_DELIVERED', {
-      workspaceId: workspace.id,
-      messageId: status.id,
-      status: status.status,
-      recipient,
-    });
+    logWhatsAppOperationalEvent(
+      pendingMatch.kind === 'connect' ? 'WHATSAPP_CONNECT_WEBHOOK_DELIVERED' : 'WHATSAPP_TEST_WEBHOOK_DELIVERED',
+      {
+        workspaceId: workspace.id,
+        destination: recipient,
+        templateName: pendingMatch.templateName,
+        messageId: status.id,
+        statusFinal: status.status,
+        failureReason: null,
+        deliveryMode: pendingMatch.deliveryMode,
+      }
+    );
     return;
   }
 
   if (DELIVERY_FAILURE_STATUSES.has(status.status)) {
+    if (pendingMatch.kind === 'test') {
+      const failureReason =
+        getStatusFailureReason(status) || 'A Meta retornou falha de entrega para o teste de WhatsApp.';
+
+      await saveWorkspaceWhatsAppConfig({
+        workspaceId: workspace.id,
+        userId: null,
+        lastConnectionState: 'connected',
+        lastErrorMessage: failureReason,
+        lastErrorCategory: 'delivery',
+        lastValidatedAt: new Date().toISOString(),
+        pendingConnection: workspaceConfig.pendingConnection,
+        pendingTest: null,
+      });
+
+      await logWorkspaceEventSafe({
+        workspaceId: workspace.id,
+        type: 'whatsapp.test.failed',
+        payload: {
+          messageId: status.id,
+          status: status.status,
+          recipient,
+          errors: status.errors,
+        },
+      });
+
+      logWhatsAppOperationalEvent('WHATSAPP_TEST_WEBHOOK_FAILED', {
+        workspaceId: workspace.id,
+        destination: recipient,
+        templateName: pendingMatch.templateName,
+        messageId: status.id,
+        statusFinal: status.status,
+        failureReason,
+        deliveryMode: pendingMatch.deliveryMode,
+      });
+      return;
+    }
     const failureReason = getStatusFailureReason(status) || 'A Meta retornou falha de entrega para a mensagem de conexão.';
 
     await prisma.workspace.update({
       where: { id: workspace.id },
       data: {
-        whatsapp_status: 'DISCONNECTED',
+        whatsapp_status: 'FAILED',
         whatsapp_connected_at: null,
       },
     });
@@ -1478,6 +1569,7 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
       lastErrorCategory: 'delivery',
       lastValidatedAt: new Date().toISOString(),
       pendingConnection: null,
+      pendingTest: workspaceConfig.pendingTest,
     });
 
     await logWorkspaceEventSafe({
@@ -1491,13 +1583,14 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
       },
     });
 
-    console.error('WHATSAPP_CONNECT_FAILED', {
+    logWhatsAppOperationalEvent('WHATSAPP_CONNECT_WEBHOOK_FAILED', {
       workspaceId: workspace.id,
+      destination: recipient,
+      templateName: pendingMatch.templateName,
       messageId: status.id,
-      status: status.status,
-      recipient,
-      reason: failureReason,
-      errors: status.errors,
+      statusFinal: status.status,
+      failureReason,
+      deliveryMode: pendingMatch.deliveryMode,
     });
   }
 }

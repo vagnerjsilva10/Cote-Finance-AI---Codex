@@ -7,6 +7,10 @@ export const WHATSAPP_CONFIG_MISSING_ERROR =
   'WhatsApp não configurado. Defina WHATSAPP_ACCESS_TOKEN e WHATSAPP_PHONE_NUMBER_ID.';
 export const WHATSAPP_VERIFY_TOKEN_MISSING_ERROR =
   'WhatsApp não configurado. Defina WHATSAPP_VERIFY_TOKEN.';
+export const WHATSAPP_TEST_NUMBER_BLOCKED_ERROR =
+  'WhatsApp configurado com o Test Number da Meta. Substitua WHATSAPP_PHONE_NUMBER_ID pelo phone_number_id do numero comercial real.';
+export const WHATSAPP_EXPECTED_DISPLAY_PHONE_MISSING_ERROR =
+  'WhatsApp nao configurado para producao. Defina WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER com o numero comercial.';
 
 export const WHATSAPP_TEMPLATES = {
   CONNECT: {
@@ -24,9 +28,13 @@ export type WhatsAppTemplateKey = keyof typeof WHATSAPP_TEMPLATES;
 type WhatsAppConfig = {
   accessToken: string;
   phoneNumberId: string;
+  businessAccountId?: string;
   verifyToken: string;
   apiVersion: string;
   appSecret?: string;
+  expectedDisplayPhoneNumber?: string;
+  expectedVerifiedName?: string;
+  allowTestNumber: boolean;
 };
 
 type ParsedWhatsAppError = {
@@ -50,6 +58,32 @@ export type WhatsAppConnectionHealth = {
   verifiedName: string | null;
   qualityRating: string | null;
 };
+
+type WhatsAppSenderIdentity = {
+  phoneNumberId: string;
+  displayPhoneNumber: string | null;
+  verifiedName: string | null;
+  qualityRating: string | null;
+  codeVerificationStatus: string | null;
+  nameStatus: string | null;
+  status: string | null;
+};
+
+type WhatsAppSenderIdentityCacheEntry = {
+  cacheKey: string;
+  expiresAt: number;
+  value: WhatsAppSenderIdentity;
+};
+
+type WhatsAppBusinessPhoneListCacheEntry = {
+  cacheKey: string;
+  expiresAt: number;
+  phoneNumberIds: string[];
+};
+
+const WHATSAPP_SENDER_IDENTITY_CACHE_TTL_MS = 5 * 60_000;
+let whatsAppSenderIdentityCache: WhatsAppSenderIdentityCacheEntry | null = null;
+let whatsAppBusinessPhoneListCache: WhatsAppBusinessPhoneListCacheEntry | null = null;
 
 export class WhatsAppApiError extends Error {
   status: number;
@@ -105,8 +139,8 @@ type WhatsAppTemplateMessageParams = {
 };
 
 export const TEMPLATE_CONFIG = {
-  [WHATSAPP_TEMPLATES.CONNECT.name]: 1,
-  [WHATSAPP_TEMPLATES.DIGEST.name]: 5,
+  [WHATSAPP_TEMPLATES.CONNECT.name]: 2,
+  [WHATSAPP_TEMPLATES.DIGEST.name]: 7,
 } as const;
 
 type SupportedTemplateName = keyof typeof TEMPLATE_CONFIG;
@@ -255,6 +289,11 @@ export type UserFacingWhatsAppError = {
   shouldLogInternalDetailsOnly: boolean;
 };
 
+export type WhatsAppMessageAcceptance = {
+  messageIds: string[];
+  contactWaIds: string[];
+};
+
 function is24HourWindowError(error: WhatsAppApiError) {
   const message = error.message.toLowerCase();
   return (
@@ -331,6 +370,15 @@ export function getUserFacingWhatsAppError(error: unknown): UserFacingWhatsAppEr
     };
   }
 
+  if (error.category === 'config') {
+    return {
+      code: 'generic',
+      message: error.message,
+      status: 500,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
   if (error.category === 'auth') {
     return {
       code: 'auth',
@@ -366,8 +414,246 @@ export function getUserFacingWhatsAppError(error: unknown): UserFacingWhatsAppEr
   };
 }
 
+function createWhatsAppConfigError(params: {
+  message: string;
+  phoneNumberId: string;
+  endpoint: string;
+  rawBody?: unknown;
+}) {
+  return new WhatsAppApiError({
+    message: params.message,
+    status: 500,
+    destination: 'config-validation',
+    phoneNumberId: params.phoneNumberId,
+    endpoint: params.endpoint,
+    category: 'config',
+    rawBody: params.rawBody,
+  });
+}
+
+function normalizeExpectedDisplayPhoneNumber(value: string | undefined) {
+  const normalized = normalizeWhatsappPhone(cleanEnvValue(value));
+  return normalized || '';
+}
+
+function isMetaTestNumberSender(identity: WhatsAppSenderIdentity) {
+  const verifiedName = cleanEnvValue(identity.verifiedName).toLowerCase();
+  const digits = cleanEnvValue(identity.displayPhoneNumber).replace(/\D/g, '');
+  return verifiedName === 'test number' || digits.startsWith('1555');
+}
+
+async function fetchConfiguredWhatsAppSenderIdentity(config: WhatsAppConfig): Promise<WhatsAppSenderIdentity> {
+  const cacheKey = [
+    config.apiVersion,
+    config.phoneNumberId,
+    config.businessAccountId || '',
+    config.expectedDisplayPhoneNumber || '',
+    config.expectedVerifiedName || '',
+    config.allowTestNumber ? 'allow-test' : 'block-test',
+  ].join(':');
+
+  if (
+    whatsAppSenderIdentityCache &&
+    whatsAppSenderIdentityCache.cacheKey === cacheKey &&
+    whatsAppSenderIdentityCache.expiresAt > Date.now()
+  ) {
+    return whatsAppSenderIdentityCache.value;
+  }
+
+  const endpoint =
+    `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}` +
+    '?fields=id,display_phone_number,verified_name,quality_rating,code_verification_status,name_status,status';
+
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${config.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  const rawBody = await response.text();
+
+  if (!response.ok) {
+    const parsedError = parseErrorBody(rawBody);
+    throw new WhatsAppApiError({
+      message: parsedError.message,
+      status: response.status,
+      destination: 'sender-identity',
+      phoneNumberId: config.phoneNumberId,
+      endpoint,
+      metaCode: parsedError.code,
+      metaSubcode: parsedError.errorSubcode,
+      metaType: parsedError.type,
+      fbtraceId: parsedError.fbtraceId,
+      category: 'config',
+      rawBody: parsedError.rawBody,
+    });
+  }
+
+  const parsedBody = rawBody ? safeParseBody(rawBody) : {};
+  const data = parsedBody && typeof parsedBody === 'object' ? (parsedBody as Record<string, unknown>) : {};
+  const identity: WhatsAppSenderIdentity = {
+    phoneNumberId: typeof data.id === 'string' ? data.id : config.phoneNumberId,
+    displayPhoneNumber: typeof data.display_phone_number === 'string' ? data.display_phone_number : null,
+    verifiedName: typeof data.verified_name === 'string' ? data.verified_name : null,
+    qualityRating: typeof data.quality_rating === 'string' ? data.quality_rating : null,
+    codeVerificationStatus:
+      typeof data.code_verification_status === 'string' ? data.code_verification_status : null,
+    nameStatus: typeof data.name_status === 'string' ? data.name_status : null,
+    status: typeof data.status === 'string' ? data.status : null,
+  };
+
+  whatsAppSenderIdentityCache = {
+    cacheKey,
+    expiresAt: Date.now() + WHATSAPP_SENDER_IDENTITY_CACHE_TTL_MS,
+    value: identity,
+  };
+
+  return identity;
+}
+
+async function fetchConfiguredBusinessPhoneIds(config: WhatsAppConfig): Promise<string[]> {
+  if (!config.businessAccountId) {
+    return [];
+  }
+
+  const cacheKey = [config.apiVersion, config.businessAccountId, config.phoneNumberId].join(':');
+  if (
+    whatsAppBusinessPhoneListCache &&
+    whatsAppBusinessPhoneListCache.cacheKey === cacheKey &&
+    whatsAppBusinessPhoneListCache.expiresAt > Date.now()
+  ) {
+    return whatsAppBusinessPhoneListCache.phoneNumberIds;
+  }
+
+  const endpoint =
+    `https://graph.facebook.com/${config.apiVersion}/${config.businessAccountId}` +
+    '/phone_numbers?fields=id,display_phone_number,verified_name,status';
+
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${config.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  const rawBody = await response.text();
+  if (!response.ok) {
+    const parsedError = parseErrorBody(rawBody);
+    throw new WhatsAppApiError({
+      message: parsedError.message,
+      status: response.status,
+      destination: 'business-phone-list',
+      phoneNumberId: config.phoneNumberId,
+      endpoint,
+      metaCode: parsedError.code,
+      metaSubcode: parsedError.errorSubcode,
+      metaType: parsedError.type,
+      fbtraceId: parsedError.fbtraceId,
+      category: 'config',
+      rawBody: parsedError.rawBody,
+    });
+  }
+
+  const parsedBody = rawBody ? safeParseBody(rawBody) : {};
+  const data =
+    parsedBody &&
+    typeof parsedBody === 'object' &&
+    Array.isArray((parsedBody as Record<string, unknown>).data)
+      ? ((parsedBody as Record<string, unknown>).data as Array<Record<string, unknown>>)
+      : [];
+  const phoneNumberIds = data
+    .map((item) => (typeof item.id === 'string' ? item.id.trim() : ''))
+    .filter(Boolean);
+
+  whatsAppBusinessPhoneListCache = {
+    cacheKey,
+    expiresAt: Date.now() + WHATSAPP_SENDER_IDENTITY_CACHE_TTL_MS,
+    phoneNumberIds,
+  };
+
+  return phoneNumberIds;
+}
+
+async function assertConfiguredWhatsAppSender(config: WhatsAppConfig) {
+  if (process.env.NODE_ENV === 'production' && !config.expectedDisplayPhoneNumber && !config.allowTestNumber) {
+    throw createWhatsAppConfigError({
+      message: WHATSAPP_EXPECTED_DISPLAY_PHONE_MISSING_ERROR,
+      phoneNumberId: config.phoneNumberId,
+      endpoint: 'config://expected-display-phone',
+    });
+  }
+
+  const identity = await fetchConfiguredWhatsAppSenderIdentity(config);
+
+  if (!config.allowTestNumber && isMetaTestNumberSender(identity)) {
+    throw createWhatsAppConfigError({
+      message: WHATSAPP_TEST_NUMBER_BLOCKED_ERROR,
+      phoneNumberId: config.phoneNumberId,
+      endpoint: 'config://test-number-guard',
+      rawBody: identity,
+    });
+  }
+
+  if (config.businessAccountId) {
+    const businessPhoneIds = await fetchConfiguredBusinessPhoneIds(config);
+    if (!businessPhoneIds.includes(config.phoneNumberId)) {
+      throw createWhatsAppConfigError({
+        message: 'WHATSAPP_PHONE_NUMBER_ID nao pertence a WHATSAPP_BUSINESS_ACCOUNT_ID.',
+        phoneNumberId: config.phoneNumberId,
+        endpoint: 'config://business-account-binding',
+        rawBody: {
+          businessAccountId: config.businessAccountId,
+          configuredPhoneNumberId: config.phoneNumberId,
+          businessPhoneIds,
+        },
+      });
+    }
+  }
+
+  if (config.expectedDisplayPhoneNumber) {
+    const actualDisplayPhoneNumber = normalizeExpectedDisplayPhoneNumber(identity.displayPhoneNumber || '');
+    if (actualDisplayPhoneNumber !== config.expectedDisplayPhoneNumber) {
+      throw createWhatsAppConfigError({
+        message: 'WHATSAPP_PHONE_NUMBER_ID nao corresponde ao numero comercial esperado.',
+        phoneNumberId: config.phoneNumberId,
+        endpoint: 'config://display-phone-mismatch',
+        rawBody: {
+          expectedDisplayPhoneNumber: config.expectedDisplayPhoneNumber,
+          actualDisplayPhoneNumber,
+          identity,
+        },
+      });
+    }
+  }
+
+  if (config.expectedVerifiedName) {
+    const expectedVerifiedName = config.expectedVerifiedName.trim().toLowerCase();
+    const actualVerifiedName = cleanEnvValue(identity.verifiedName).toLowerCase();
+    if (actualVerifiedName !== expectedVerifiedName) {
+      throw createWhatsAppConfigError({
+        message: 'WHATSAPP_PHONE_NUMBER_ID nao corresponde ao verified_name esperado.',
+        phoneNumberId: config.phoneNumberId,
+        endpoint: 'config://verified-name-mismatch',
+        rawBody: {
+          expectedVerifiedName: config.expectedVerifiedName,
+          actualVerifiedName: identity.verifiedName,
+          identity,
+        },
+      });
+    }
+  }
+
+  return identity;
+}
+
 async function sendWhatsAppRequest(payload: Record<string, unknown>, context: WhatsAppRequestContext) {
   const config = getWhatsAppConfig();
+  await assertConfiguredWhatsAppSender(config);
   const endpoint = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}/messages`;
 
   const response = await fetch(endpoint, {
@@ -430,54 +716,12 @@ async function sendWhatsAppRequest(payload: Record<string, unknown>, context: Wh
 
 export async function verifyWhatsAppConnection(): Promise<WhatsAppConnectionHealth> {
   const config = getWhatsAppConfig();
-  const endpoint = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}?fields=display_phone_number,verified_name,quality_rating`;
-
-  const response = await fetch(endpoint, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${config.accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    cache: 'no-store',
-  });
-
-  const rawBody = await response.text();
-  const parsedBody = rawBody ? safeParseBody(rawBody) : {};
-
-  if (!response.ok) {
-    const parsedError = parseErrorBody(rawBody);
-    const category = categorizeWhatsAppError({
-      status: response.status,
-      parsedError,
-      context: {
-        source: 'text',
-        destination: 'health-check',
-      },
-    });
-
-    console.error('WhatsApp API health-check failure', {
-      status: response.status,
-      endpoint,
-      meta_error: parsedError.rawBody ?? parsedError.message,
-    });
-
-    throw new WhatsAppApiError({
-      message: parsedError.message,
-      status: response.status,
-      destination: 'health-check',
-      phoneNumberId: config.phoneNumberId,
-      endpoint,
-      category,
-      rawBody: parsedError.rawBody,
-    });
-  }
-
-  const data = parsedBody && typeof parsedBody === 'object' ? (parsedBody as Record<string, unknown>) : {};
+  const identity = await assertConfiguredWhatsAppSender(config);
 
   return {
-    displayPhoneNumber: typeof data.display_phone_number === 'string' ? data.display_phone_number : null,
-    verifiedName: typeof data.verified_name === 'string' ? data.verified_name : null,
-    qualityRating: typeof data.quality_rating === 'string' ? data.quality_rating : null,
+    displayPhoneNumber: identity.displayPhoneNumber,
+    verifiedName: identity.verifiedName,
+    qualityRating: identity.qualityRating,
   };
 }
 
@@ -487,6 +731,36 @@ function safeParseBody(rawBody: string) {
   } catch {
     return { raw: rawBody };
   }
+}
+
+export function extractMetaMessageAcceptance(payload: unknown): WhatsAppMessageAcceptance {
+  const result: WhatsAppMessageAcceptance = {
+    messageIds: [],
+    contactWaIds: [],
+  };
+
+  if (!payload || typeof payload !== 'object') return result;
+  const value = payload as Record<string, unknown>;
+  const messages = Array.isArray(value.messages) ? value.messages : [];
+  const contacts = Array.isArray(value.contacts) ? value.contacts : [];
+
+  for (const item of messages) {
+    if (!item || typeof item !== 'object') continue;
+    const id = (item as Record<string, unknown>).id;
+    if (typeof id === 'string' && id.trim()) {
+      result.messageIds.push(id.trim());
+    }
+  }
+
+  for (const item of contacts) {
+    if (!item || typeof item !== 'object') continue;
+    const waId = (item as Record<string, unknown>).wa_id;
+    if (typeof waId === 'string' && waId.trim()) {
+      result.contactWaIds.push(waId.trim());
+    }
+  }
+
+  return result;
 }
 
 export function normalizeWhatsappPhone(phone: string) {
@@ -517,11 +791,17 @@ export function isValidE164Phone(phone: string) {
 export function getWhatsAppConfig(): WhatsAppConfig {
   const accessToken = cleanEnvValue(process.env.WHATSAPP_ACCESS_TOKEN);
   const phoneNumberId = cleanEnvValue(process.env.WHATSAPP_PHONE_NUMBER_ID);
+  const businessAccountId = cleanEnvValue(process.env.WHATSAPP_BUSINESS_ACCOUNT_ID);
   const verifyToken = cleanEnvValue(process.env.WHATSAPP_VERIFY_TOKEN);
   const apiVersion = normalizeApiVersion(
     cleanEnvValue(process.env.WHATSAPP_API_VERSION) || DEFAULT_WHATSAPP_API_VERSION
   );
   const appSecret = cleanEnvValue(process.env.WHATSAPP_APP_SECRET);
+  const expectedDisplayPhoneNumber = normalizeExpectedDisplayPhoneNumber(
+    process.env.WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER
+  );
+  const expectedVerifiedName = cleanEnvValue(process.env.WHATSAPP_EXPECTED_VERIFIED_NAME);
+  const allowTestNumber = cleanEnvValue(process.env.WHATSAPP_ALLOW_TEST_NUMBER).toLowerCase() === 'true';
 
   if (!accessToken || !phoneNumberId) {
     throw new Error(WHATSAPP_CONFIG_MISSING_ERROR);
@@ -534,9 +814,13 @@ export function getWhatsAppConfig(): WhatsAppConfig {
   return {
     accessToken,
     phoneNumberId,
+    businessAccountId: businessAccountId || undefined,
     verifyToken,
     apiVersion,
     appSecret: appSecret || undefined,
+    expectedDisplayPhoneNumber: expectedDisplayPhoneNumber || undefined,
+    expectedVerifiedName: expectedVerifiedName || undefined,
+    allowTestNumber,
   };
 }
 

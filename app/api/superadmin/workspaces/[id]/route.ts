@@ -17,7 +17,7 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ALLOWED_WHATSAPP_STATUSES = new Set(['CONNECTED', 'CONNECTING', 'DISCONNECTED']);
+const ALLOWED_WHATSAPP_STATUSES = new Set(['CONNECTED', 'CONNECTING', 'DISCONNECTED', 'FAILED']);
 
 function toIso(value: Date | null | undefined) {
   return value ? value.toISOString() : null;
@@ -650,7 +650,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           whatsapp_connected_at:
             nextWhatsappStatus === 'CONNECTED'
               ? workspace.whatsapp_connected_at || new Date()
-              : nextWhatsappStatus === 'DISCONNECTED'
+              : nextWhatsappStatus === 'DISCONNECTED' || nextWhatsappStatus === 'FAILED'
                 ? null
                 : workspace.whatsapp_connected_at,
         },

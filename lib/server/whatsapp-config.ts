@@ -17,6 +17,15 @@ type WorkspaceWhatsAppConfigCacheEntry = {
 
 const workspaceWhatsAppConfigCache = new Map<string, WorkspaceWhatsAppConfigCacheEntry>();
 
+type PendingWhatsAppDelivery = {
+  messageId: string | null;
+  phoneNumber: string;
+  templateName: string | null;
+  languageCode: string | null;
+  deliveryMode: 'template' | 'text';
+  requestedAt: string;
+};
+
 export type WorkspaceWhatsAppConfig = {
   connectTemplateName: string | null;
   digestTemplateName: string | null;
@@ -44,6 +53,14 @@ export type WorkspaceWhatsAppConfig = {
     expiresAt: string;
   } | null;
   pendingConnection: {
+    messageId: string | null;
+    phoneNumber: string;
+    templateName: string | null;
+    languageCode: string | null;
+    deliveryMode: 'template' | 'text';
+    requestedAt: string;
+  } | null;
+  pendingTest: {
     messageId: string | null;
     phoneNumber: string;
     templateName: string | null;
@@ -131,9 +148,7 @@ function normalizePendingConfirmation(
   };
 }
 
-function normalizePendingConnection(
-  value: unknown
-): WorkspaceWhatsAppConfig['pendingConnection'] {
+function normalizePendingDelivery(value: unknown): PendingWhatsAppDelivery | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const source = value as Record<string, unknown>;
   const messageIdRaw = cleanValue(source.messageId);
@@ -186,7 +201,8 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
     lastTestSentAt:
       sourceRecord && typeof sourceRecord.lastTestSentAt === 'string' ? sourceRecord.lastTestSentAt : null,
     pendingConfirmation: sourceRecord ? normalizePendingConfirmation(sourceRecord.pendingConfirmation) : null,
-    pendingConnection: sourceRecord ? normalizePendingConnection(sourceRecord.pendingConnection) : null,
+    pendingConnection: sourceRecord ? normalizePendingDelivery(sourceRecord.pendingConnection) : null,
+    pendingTest: sourceRecord ? normalizePendingDelivery(sourceRecord.pendingTest) : null,
     updatedAt,
   };
 }
@@ -196,6 +212,7 @@ function cloneWorkspaceWhatsAppConfig(config: WorkspaceWhatsAppConfig): Workspac
     ...config,
     pendingConfirmation: config.pendingConfirmation ? { ...config.pendingConfirmation } : null,
     pendingConnection: config.pendingConnection ? { ...config.pendingConnection } : null,
+    pendingTest: config.pendingTest ? { ...config.pendingTest } : null,
   };
 }
 
@@ -261,6 +278,7 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
       lastTestSentAt: null,
       pendingConfirmation: null,
       pendingConnection: null,
+      pendingTest: null,
       updatedAt: null,
     };
     workspaceWhatsAppConfigCache.set(workspaceId, {
@@ -296,6 +314,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
   lastTestSentAt?: string | null;
   pendingConfirmation?: WorkspaceWhatsAppConfig['pendingConfirmation'] | null;
   pendingConnection?: WorkspaceWhatsAppConfig['pendingConnection'] | null;
+  pendingTest?: WorkspaceWhatsAppConfig['pendingTest'] | null;
 }) {
   const currentConfig = await getWorkspaceWhatsAppConfig(params.workspaceId);
   const normalizedConfig: WorkspaceWhatsAppConfig = {
@@ -326,6 +345,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         : params.pendingConfirmation,
     pendingConnection:
       typeof params.pendingConnection === 'undefined' ? currentConfig.pendingConnection : params.pendingConnection,
+    pendingTest: typeof params.pendingTest === 'undefined' ? currentConfig.pendingTest : params.pendingTest,
     updatedAt: new Date().toISOString(),
   };
 
@@ -375,6 +395,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         lastTestSentAt: normalizedConfig.lastTestSentAt,
         pendingConfirmation: normalizedConfig.pendingConfirmation,
         pendingConnection: normalizedConfig.pendingConnection,
+        pendingTest: normalizedConfig.pendingTest,
       },
     },
   });
@@ -410,6 +431,7 @@ export function resolveWorkspaceWhatsAppConfig(params: {
     lastTestSentAt: params.workspaceConfig.lastTestSentAt,
     pendingConfirmation: params.workspaceConfig.pendingConfirmation,
     pendingConnection: params.workspaceConfig.pendingConnection,
+    pendingTest: params.workspaceConfig.pendingTest,
     updatedAt: params.workspaceConfig.updatedAt,
     connectTemplateNameSource: 'system',
     digestTemplateNameSource: 'system',

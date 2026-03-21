@@ -596,9 +596,13 @@ export type SuperadminWhatsappResponse = {
     ready: boolean;
     accessTokenConfigured: boolean;
     phoneNumberIdConfigured: boolean;
+    businessAccountIdConfigured: boolean;
     verifyTokenConfigured: boolean;
     appSecretConfigured: boolean;
     apiVersionConfigured: boolean;
+    expectedDisplayPhoneConfigured: boolean;
+    expectedVerifiedNameConfigured: boolean;
+    allowTestNumber: boolean;
   };
   summary: {
     total: number;

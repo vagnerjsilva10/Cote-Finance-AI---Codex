@@ -54,6 +54,14 @@ function validateCronEnv(): CronEnvValidation {
     warnings.push('WHATSAPP_API_VERSION ausente (fallback padrão v21.0 em uso).');
   }
 
+  if (!process.env.WHATSAPP_BUSINESS_ACCOUNT_ID?.trim()) {
+    warnings.push('WHATSAPP_BUSINESS_ACCOUNT_ID ausente (sem validação explícita da WABA).');
+  }
+
+  if (!process.env.WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER?.trim()) {
+    warnings.push('WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER ausente (sem trava explícita do número comercial).');
+  }
+
   return {
     ok: missingRequired.length === 0,
     missingRequired,

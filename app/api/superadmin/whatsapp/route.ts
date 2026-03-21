@@ -67,22 +67,32 @@ function buildWorkspaceReadiness(params: {
 function getEnvironmentReadiness() {
   const accessTokenConfigured = Boolean(process.env.WHATSAPP_ACCESS_TOKEN);
   const phoneNumberIdConfigured = Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID);
+  const businessAccountIdConfigured = Boolean(process.env.WHATSAPP_BUSINESS_ACCOUNT_ID);
   const verifyTokenConfigured = Boolean(process.env.WHATSAPP_VERIFY_TOKEN);
   const appSecretConfigured = Boolean(process.env.WHATSAPP_APP_SECRET);
   const apiVersionConfigured = Boolean(process.env.WHATSAPP_API_VERSION || 'v21.0');
+  const expectedDisplayPhoneConfigured = Boolean(process.env.WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER);
+  const expectedVerifiedNameConfigured = Boolean(process.env.WHATSAPP_EXPECTED_VERIFIED_NAME);
+  const allowTestNumber = String(process.env.WHATSAPP_ALLOW_TEST_NUMBER || '').trim().toLowerCase() === 'true';
 
   return {
     ready:
       accessTokenConfigured &&
       phoneNumberIdConfigured &&
+      businessAccountIdConfigured &&
       verifyTokenConfigured &&
       appSecretConfigured &&
-      apiVersionConfigured,
+      apiVersionConfigured &&
+      expectedDisplayPhoneConfigured,
     accessTokenConfigured,
     phoneNumberIdConfigured,
+    businessAccountIdConfigured,
     verifyTokenConfigured,
     appSecretConfigured,
     apiVersionConfigured,
+    expectedDisplayPhoneConfigured,
+    expectedVerifiedNameConfigured,
+    allowTestNumber,
   };
 }
 export async function GET(req: Request) {

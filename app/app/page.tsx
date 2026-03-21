@@ -71,7 +71,6 @@ import {
 // --- Types ---
 
 type LucideIcon = React.ComponentType<{ size?: number; className?: string }>;
-const DEFAULT_WHATSAPP_NUMBER = '';
 
 type Tab =
   | 'dashboard'
@@ -467,6 +466,27 @@ const getWhatsAppConnectionLabel = (
   }
 };
 
+const getWhatsAppPrimaryActionLabel = (
+  state: WhatsAppDiagnostic['connectionState'],
+  isConnected: boolean,
+  isConnecting: boolean
+) => {
+  if (isConnecting || state === 'connecting') {
+    return 'Conectando...';
+  }
+
+  switch (state) {
+    case 'connected':
+      return 'Conectado';
+    case 'failed':
+      return 'Tentar novamente';
+    case 'disconnected':
+    case 'idle':
+    default:
+      return isConnected ? 'Conectado' : 'Conectar';
+  }
+};
+
 const getWhatsAppConnectionTone = (
   state: WhatsAppDiagnostic['connectionState'],
   isConnected: boolean,
@@ -490,15 +510,15 @@ const getWhatsAppConnectionDescription = (
   lastErrorMessage?: string | null
 ) => {
   if (state === 'failed') {
-    return lastErrorMessage || 'Falha ao conectar seu WhatsApp. Tente novamente.';
+    return lastErrorMessage || 'Não foi possível confirmar a entrega da mensagem. Revise o número e tente novamente.';
   }
   if (state === 'connecting') {
-    return 'Conectando... estamos aguardando confirmação de entrega.';
+    return 'A Meta aceitou a solicitação. Estamos aguardando a confirmação real de entrega.';
   }
   if (state === 'connected' || isConnected) {
-    return 'WhatsApp conectado e pronto para envio.';
+    return 'Entrega confirmada. O WhatsApp está pronto para testes e resumos.';
   }
-  return 'Informe o número e clique em Conectar WhatsApp.';
+  return 'Informe o número e clique em Conectar.';
 };
 
 const normalizeWhatsAppConnectionState = (value: unknown): WhatsAppDiagnostic['connectionState'] => {
@@ -517,7 +537,7 @@ const resolveWhatsAppConnectionState = (params: {
   const statusState = normalizeWhatsAppConnectionState(params.statusValue);
   const diagnosticState = normalizeWhatsAppConnectionState(params.diagnosticValue);
 
-  if (statusState === 'connected' || statusState === 'connecting') {
+  if (statusState === 'connected' || statusState === 'connecting' || statusState === 'failed') {
     return statusState;
   }
 
@@ -535,6 +555,8 @@ const resolveWhatsAppConnectionState = (params: {
 
   return 'idle';
 };
+
+const normalizePhoneDigits = (value?: string | null) => String(value || '').replace(/\D/g, '');
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -1091,6 +1113,17 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'onboarding.completed': 'Onboarding concluído',
     'workspace.whatsapp.connected': 'WhatsApp conectado',
     'workspace.whatsapp.disconnected': 'WhatsApp desconectado',
+    'whatsapp.connect.requested': 'Conexão de WhatsApp iniciada',
+    'whatsapp.connect.delivered': 'Conexão de WhatsApp confirmada',
+    'whatsapp.connect.failed': 'Falha na conexão do WhatsApp',
+    'whatsapp.connect.welcome_failed': 'Falha no envio de conexão do WhatsApp',
+    'whatsapp.test.requested': 'Teste de WhatsApp iniciado',
+    'whatsapp.test.delivered': 'Teste de WhatsApp entregue',
+    'whatsapp.test.failed': 'Falha no teste de WhatsApp',
+    'whatsapp.connect.status_webhook': 'Webhook da conexão do WhatsApp',
+    'whatsapp.test.status_webhook': 'Webhook do teste do WhatsApp',
+    'whatsapp.status_webhook': 'Webhook de status do WhatsApp',
+    'whatsapp.disconnected': 'WhatsApp desconectado',
     'stripe.checkout.created': 'Checkout iniciado',
     'stripe.portal.created': 'Portal de assinatura aberto',
     'stripe.customer.subscription.created': 'Assinatura criada',
@@ -1114,6 +1147,17 @@ const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
     'onboarding.completed': 'Sua configuração inicial foi concluída com sucesso.',
     'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
     'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
+    'whatsapp.connect.requested': 'A solicitação de conexão foi aceita e aguarda confirmação real de entrega.',
+    'whatsapp.connect.delivered': 'A mensagem de conexão foi entregue e o WhatsApp está validado.',
+    'whatsapp.connect.failed': 'A conexão não foi confirmada pela Meta e precisa de uma nova tentativa.',
+    'whatsapp.connect.welcome_failed': 'A mensagem inicial de conexão não foi aceita pela Meta.',
+    'whatsapp.test.requested': 'Um teste foi enviado para validação e aguarda confirmação de entrega.',
+    'whatsapp.test.delivered': 'O teste foi entregue com sucesso no número conectado.',
+    'whatsapp.test.failed': 'O teste falhou após a aceitação inicial da Meta.',
+    'whatsapp.connect.status_webhook': 'Recebemos uma atualização de status da tentativa de conexão.',
+    'whatsapp.test.status_webhook': 'Recebemos uma atualização de status do teste enviado.',
+    'whatsapp.status_webhook': 'Recebemos uma atualização de status do WhatsApp.',
+    'whatsapp.disconnected': 'A integração do WhatsApp foi desconectada deste workspace.',
     'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
     'stripe.portal.created': 'A área de gerenciamento da assinatura foi aberta.',
     'stripe.customer.subscription.created': 'Sua assinatura foi criada e está sendo preparada para uso.',
@@ -2423,17 +2467,53 @@ const IntegrationsView = ({
   const hasWhatsAppAccess = currentPlan === 'PRO' || currentPlan === 'PREMIUM';
   const connectionState = whatsAppDiagnostic?.connectionState;
   const connectionLabel = getWhatsAppConnectionLabel(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
+  const primaryActionLabel = getWhatsAppPrimaryActionLabel(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
   const connectionTone = getWhatsAppConnectionTone(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
   const connectionDescription = getWhatsAppConnectionDescription(connectionState, isWhatsAppConnected, whatsAppDiagnostic?.lastErrorMessage);
+  const linkedPhoneNumber = whatsAppDiagnostic?.numeroConectado || (whatsAppPhoneNumber.trim() ? whatsAppPhoneNumber : null);
+  const normalizedLinkedPhone = normalizePhoneDigits(linkedPhoneNumber);
+  const normalizedInputPhone = normalizePhoneDigits(whatsAppPhoneNumber);
+  const isEditingAnotherNumber =
+    Boolean(normalizedInputPhone) &&
+    Boolean(normalizedLinkedPhone) &&
+    normalizedInputPhone !== normalizedLinkedPhone;
+  const isConnectionConfirmed = connectionState === 'connected' || isWhatsAppConnected;
+  const canDisconnectWhatsApp =
+    !isDisconnectingWhatsApp &&
+    !isConnectingWhatsApp &&
+    (connectionState === 'connected' ||
+      connectionState === 'connecting' ||
+      connectionState === 'failed' ||
+      Boolean(normalizedLinkedPhone));
   const canSendWhatsAppTest =
-    isWhatsAppConnected &&
+    isConnectionConfirmed &&
     Boolean(whatsAppPhoneNumber.trim()) &&
     !isSendingWhatsAppTest &&
-    !isDisconnectingWhatsApp;
+    !isDisconnectingWhatsApp &&
+    !isConnectingWhatsApp;
   const canConnectWhatsApp =
     Boolean(whatsAppPhoneNumber.trim()) &&
     !isConnectingWhatsApp &&
-    !isDisconnectingWhatsApp;
+    !isDisconnectingWhatsApp &&
+    connectionState !== 'connecting' &&
+    (connectionState !== 'connected' || isEditingAnotherNumber);
+  const nextActionLabel =
+    connectionState === 'connected' && !isEditingAnotherNumber
+      ? 'Testar envio'
+      : connectionState === 'connecting'
+        ? 'Aguardar confirmação'
+        : connectionState === 'failed'
+          ? 'Revisar número e tentar novamente'
+          : 'Informar número e conectar';
+  const lastAttemptLabel = whatsAppDiagnostic?.lastValidatedAt
+    ? formatEventTimestamp(whatsAppDiagnostic.lastValidatedAt)
+    : 'Ainda não registrada';
+  const lastTestLabel = whatsAppDiagnostic?.lastTestSentAt
+    ? formatEventTimestamp(whatsAppDiagnostic.lastTestSentAt)
+    : 'Nenhum teste confirmado';
+  const lastErrorLabel =
+    whatsAppDiagnostic?.lastErrorMessage ||
+    (connectionState === 'failed' ? connectionDescription : 'Nenhum erro registrado');
 
   const plans = [
     {
@@ -2470,6 +2550,8 @@ const IntegrationsView = ({
   const feedbackToneClass =
     whatsAppFeedback?.tone === 'success'
       ? 'border-[color:var(--border-default)] bg-[var(--whatsapp-soft)] text-[var(--whatsapp)]'
+      : whatsAppFeedback?.tone === 'info'
+      ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)]'
       : whatsAppFeedback?.tone === 'error'
       ? 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]'
       : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)]';
@@ -2543,8 +2625,8 @@ const IntegrationsView = ({
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="page-title-premium text-[var(--text-primary)]">Conectar WhatsApp</h3>
-              <p className="text-sm text-[var(--text-muted)]">Receba alertas e resumos financeiros no seu número</p>
+              <h3 className="page-title-premium text-[var(--text-primary)]">WhatsApp</h3>
+              <p className="text-sm text-[var(--text-muted)]">Conecte um número e acompanhe a entrega real das mensagens</p>
             </div>
           </div>
           <div
@@ -2612,7 +2694,7 @@ const IntegrationsView = ({
             ) : (
               <>
                 <p className="leading-relaxed text-[var(--text-secondary)]">
-                  Informe seu número, conecte e envie um teste.
+                  Informe seu número, valide a conexão e libere o teste apenas após a confirmação real de entrega.
                 </p>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -2646,6 +2728,27 @@ const IntegrationsView = ({
                   </div>
                 )}
 
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {[
+                    { label: 'Número vinculado', value: linkedPhoneNumber || 'Nenhum número salvo' },
+                    { label: 'Status atual', value: connectionLabel },
+                    { label: 'Última tentativa', value: lastAttemptLabel },
+                    { label: 'Último teste', value: lastTestLabel },
+                    { label: 'Último erro', value: lastErrorLabel },
+                    { label: 'Ação disponível', value: nextActionLabel },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="app-surface-subtle rounded-2xl border border-[var(--border-default)] px-4 py-3"
+                    >
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-[var(--text-primary)]">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="flex flex-col gap-4">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <button
@@ -2658,21 +2761,27 @@ const IntegrationsView = ({
                           : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
                       )}
                     >
-                      {isConnectingWhatsApp ? 'Conectando...' : 'Conectar WhatsApp'}
+                      {connectionState === 'connected' && isEditingAnotherNumber ? 'Conectar' : primaryActionLabel}
                     </button>
 
-                    <button
-                      onClick={onDisconnectWhatsApp}
-                      disabled={!isWhatsAppConnected || isDisconnectingWhatsApp || isConnectingWhatsApp}
-                      className={cn(
-                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
-                        !isWhatsAppConnected || isDisconnectingWhatsApp || isConnectingWhatsApp
-                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
-                          : 'border-[color:var(--danger-soft)] bg-[var(--bg-app)] text-[var(--danger)] hover:border-[var(--danger)]'
-                      )}
-                    >
-                      {isDisconnectingWhatsApp ? 'Desconectando...' : 'Desconectar WhatsApp'}
-                    </button>
+                    {connectionState === 'disconnected' || connectionState === 'idle' ? (
+                      <div className="flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-5 py-3 text-sm font-bold text-[var(--text-muted)]">
+                        Desconectado
+                      </div>
+                    ) : (
+                      <button
+                        onClick={onDisconnectWhatsApp}
+                        disabled={!canDisconnectWhatsApp}
+                        className={cn(
+                          'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
+                          !canDisconnectWhatsApp
+                            ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
+                            : 'border-[color:var(--danger-soft)] bg-[var(--bg-app)] text-[var(--danger)] hover:border-[var(--danger)]'
+                        )}
+                      >
+                        {isDisconnectingWhatsApp ? 'Desconectando...' : 'Desconectar'}
+                      </button>
+                    )}
 
                     <button
                       onClick={onSendWhatsAppTest}
@@ -2727,7 +2836,7 @@ const IntegrationsView = ({
             </div>
 
             <p className="mt-4 text-xs leading-relaxed text-[var(--text-muted)]">
-              Depois de conectar, o workspace passa a receber um resumo automático por dia e você ainda pode disparar um teste manual imediatamente.
+              Depois da confirmação de entrega, o workspace passa a receber um resumo automático por dia e o teste manual fica liberado.
             </p>
           </div>
         </div>
@@ -7895,7 +8004,6 @@ export default function App() {
   const [settingsEmail, setSettingsEmail] = React.useState('');
   const [settingsAvatarUrl, setSettingsAvatarUrl] = React.useState('');
   const [isAvatarProcessing, setIsAvatarProcessing] = React.useState(false);
-  const [settingsWhatsApp, setSettingsWhatsApp] = React.useState('');
   const [workspaceWhatsAppPhoneNumber, setWorkspaceWhatsAppPhoneNumber] = React.useState('');
   const [whatsAppFeedback, setWhatsAppFeedback] = React.useState<WhatsAppFeedback>(null);
   const [whatsAppDiagnostic, setWhatsAppDiagnostic] = React.useState<WhatsAppDiagnostic | null>(null);
@@ -8211,18 +8319,19 @@ React.useEffect(() => {
       });
       const payload = await parseWhatsAppResponse(response);
       applyWhatsAppPayload(payload);
-      const hasWarning = typeof payload?.warning === 'string' && payload.warning.trim().length > 0;
+      const connectionState = resolveWhatsAppConnectionState({
+        statusValue: payload?.status,
+        diagnosticValue: payload?.diagnostic?.connectionState,
+      });
       setWhatsAppFeedback({
-        tone: hasWarning ? 'info' : 'success',
-        title: hasWarning ? 'Conectado com aviso' : 'WhatsApp conectado',
+        tone: connectionState === 'connected' ? 'success' : 'info',
+        title: connectionState === 'connected' ? 'WhatsApp conectado' : 'Conexão em validação',
         message:
-          hasWarning && typeof payload?.warningDetails === 'string'
-            ? payload.warningDetails
-            : hasWarning && typeof payload?.warning === 'string'
-              ? payload.warning
-              : typeof payload?.message === 'string'
-                ? payload.message
-                : 'O WhatsApp foi conectado com sucesso.',
+          typeof payload?.message === 'string'
+            ? payload.message
+            : connectionState === 'connected'
+              ? 'O WhatsApp foi conectado com sucesso.'
+              : 'A Meta aceitou a conexão. Agora falta a confirmação de entrega pelo webhook.',
       });
       void fetchDashboardData({ silent: true });
     } catch (error: any) {
@@ -8298,13 +8407,14 @@ React.useEffect(() => {
       const payload = await parseWhatsAppResponse(response);
       applyWhatsAppPayload(payload);
       setWhatsAppFeedback({
-        tone: 'success',
-        title: 'Teste enviado',
+        tone: 'info',
+        title: 'Teste em validação',
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A mensagem de teste foi enviada para o WhatsApp.',
+            : 'A Meta aceitou o teste. Agora falta a confirmação de entrega pelo webhook.',
       });
+      void fetchDashboardData({ silent: true });
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
@@ -8321,7 +8431,7 @@ React.useEffect(() => {
     } finally {
       setIsSendingWhatsAppTest(false);
     }
-  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
+  }, [applyWhatsAppPayload, fetchDashboardData, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
 
   const derivedAgendaBills = React.useMemo<Bill[]>(() => {
     const now = new Date();
@@ -8743,9 +8853,6 @@ React.useEffect(() => {
     setSettingsName((prev) => prev || getUserDisplayName(user));
     setSettingsEmail((prev) => prev || user.email || '');
     setSettingsAvatarUrl(getUserAvatarUrl(user) || '');
-    setSettingsWhatsApp((prev) =>
-      prev !== DEFAULT_WHATSAPP_NUMBER ? prev : user.user_metadata?.phone || ''
-    );
     setOnboardingWorkspaceName((prev) =>
       prev !== 'Minha Conta' ? prev : user.user_metadata?.company_name || prev
     );
@@ -8891,9 +8998,7 @@ React.useEffect(() => {
   const handleSaveSettings = async () => {
     if (isAvatarProcessing) return;
 
-    const normalizedPhone = settingsWhatsApp.replace(/[^\d+]/g, '');
     const normalizedAvatarUrl = settingsAvatarUrl.trim();
-    setSettingsWhatsApp(normalizedPhone || '');
 
     if (!isValidAvatarUrl(normalizedAvatarUrl)) {
       alert('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https válida.');
@@ -8905,13 +9010,11 @@ React.useEffect(() => {
         email?: string;
         data?: {
           full_name?: string | null;
-          phone?: string | null;
           avatar_url?: string | null;
         };
       } = {
         data: {
           full_name: settingsName.trim() || null,
-          phone: normalizedPhone || null,
           avatar_url: normalizedAvatarUrl || null,
         },
       };
@@ -12210,44 +12313,6 @@ React.useEffect(() => {
                     >
                       {isFreePlan ? 'Fazer upgrade' : 'Gerenciar assinatura'}
                     </button>
-                  </div>
-
-                  <div className="app-surface-card rounded-2xl p-6 space-y-4">
-                    <h4 className="label-premium text-[var(--text-primary)]">WhatsApp</h4>
-                    {isFreePlan ? (
-                      <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-4 space-y-3">
-                        <p className="text-sm font-semibold text-[var(--text-secondary)]">
-                          Alertas e resumos no WhatsApp fazem parte do plano Pro.
-                        </p>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          Faça upgrade para receber lembretes financeiros e resumos automáticos no celular.
-                        </p>
-                        <button
-                          onClick={() => void handleUpgrade('Pro Mensal')}
-                          className="app-button-primary inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-bold transition-all"
-                        >
-                          Liberar WhatsApp no Pro
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="space-y-2">
-                          <label className="label-premium text-[var(--text-muted)]">Número</label>
-                          <input
-                            type="text"
-                            value={settingsWhatsApp}
-                            onChange={(e) => setSettingsWhatsApp(e.target.value)}
-                            placeholder="+551199999999"
-                            className="app-field w-full rounded-xl py-2 px-4 text-sm"
-                          />
-                        </div>
-                        <div className="app-surface-subtle rounded-xl p-4 space-y-2">
-                          <p className="text-xs text-[var(--text-secondary)]">Exemplos de mensagens:</p>
-                          <p className="text-sm text-[var(--text-primary)]">&quot;gastei R$ 50 mercado&quot;</p>
-                          <p className="text-sm text-[var(--text-primary)]">&quot;recebi R$ 200 pix&quot;</p>
-                        </div>
-                      </>
-                    )}
                   </div>
 
                   <div className="app-surface-card rounded-2xl p-6 space-y-4">
