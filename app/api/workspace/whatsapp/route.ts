@@ -335,6 +335,12 @@ export async function POST(req: Request) {
         });
       } catch (error) {
         const friendlyMessage = getFriendlyWhatsAppErrorMessage(error);
+        let phoneNumberId: string | null = null;
+        try {
+          phoneNumberId = getWhatsAppConfig().phoneNumberId;
+        } catch {
+          phoneNumberId = null;
+        }
         console.error('WHATSAPP_CONNECT_FAILED', {
           workspaceId: context.workspaceId,
           stage: 'health_check',
