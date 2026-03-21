@@ -109,7 +109,7 @@ export async function POST(req: Request) {
     const action = body.action;
 
     if (!action || !['connect', 'disconnect', 'send_test'].includes(action)) {
-      return jsonResponse({ error: 'AÃ§Ã£o do WhatsApp invÃ¡lida.' }, 400);
+      return jsonResponse({ error: 'Ação do WhatsApp inválida.' }, 400);
     }
 
     const workspacePlan = await getWorkspacePlan(context.workspaceId, context.userId);
@@ -203,7 +203,7 @@ export async function POST(req: Request) {
       if (!normalizedPhone) {
         return jsonResponse(
           {
-            error: 'Informe um nÃºmero vÃ¡lido para conectar o WhatsApp.',
+            error: 'Informe um número válido para conectar o WhatsApp.',
             diagnostic: diagnosticBase,
           },
           400
@@ -213,7 +213,7 @@ export async function POST(req: Request) {
       if (!isValidE164Phone(normalizedPhone)) {
         return jsonResponse(
           {
-            error: 'NÃºmero invÃ¡lido. Verifique o formato com DDD.',
+            error: 'Número inválido. Verifique o formato com DDD.',
             diagnostic: diagnosticBase,
           },
           400
@@ -230,7 +230,7 @@ export async function POST(req: Request) {
       if (phoneNumberId && normalizedPhone === phoneNumberId) {
         return jsonResponse(
           {
-            error: 'NÃºmero invÃ¡lido. Verifique o formato com DDD.',
+            error: 'Número inválido. Verifique o formato com DDD.',
             diagnostic: {
               ...diagnosticBase,
               numeroConectado: normalizedPhone,
@@ -346,7 +346,7 @@ export async function POST(req: Request) {
 
         return jsonResponse({
           success: true,
-          message: 'Conectando... estamos aguardando a confirmaÃ§Ã£o de entrega no WhatsApp.',
+          message: 'Conectando... estamos aguardando a confirmação de entrega no WhatsApp.',
           status: 'CONNECTING',
           phoneNumber: normalizedPhone,
           config: updatedConfig,
@@ -461,8 +461,8 @@ export async function POST(req: Request) {
             : result.reason === 'not_connected'
               ? 'Conecte o WhatsApp antes de enviar um teste.'
               : result.reason === 'no_content'
-                ? 'Ainda nÃ£o hÃ¡ dados suficientes para montar um resumo de teste.'
-                : 'NÃ£o foi possÃ­vel enviar o teste agora.';
+                ? 'Ainda não há dados suficientes para montar um resumo de teste.'
+                : 'Não foi possível enviar o teste agora.';
 
         return jsonResponse(
           {
@@ -545,7 +545,7 @@ export async function POST(req: Request) {
 
     return jsonResponse(
       {
-        error: error instanceof Error ? error.message : 'Falha ao processar a integraÃ§Ã£o do WhatsApp.',
+        error: error instanceof Error ? error.message : 'Falha ao processar a integração do WhatsApp.',
       },
       500
     );
