@@ -55,6 +55,9 @@ function getMetaSummary(error: unknown) {
     status: error.status,
     category: error.category,
     message: error.message,
+    metaCode: error.metaCode ?? null,
+    metaSubcode: error.metaSubcode ?? null,
+    fbtraceId: error.fbtraceId ?? null,
     templateName: error.templateName ?? null,
     languageCode: error.languageCode ?? null,
     destination: error.destination,
@@ -240,6 +243,37 @@ export async function POST(req: Request) {
         );
       }
 
+      // Idempotência: evita novo envio/template quando já está conectado no mesmo número.
+      if (
+        currentWorkspace?.whatsapp_status === 'CONNECTED' &&
+        currentWorkspace?.whatsapp_phone_number === normalizedPhone
+      ) {
+        const updatedConfig = await saveWorkspaceWhatsAppConfig({
+          workspaceId: context.workspaceId,
+          userId: context.userId,
+          lastConnectionState: 'connected',
+          lastErrorMessage: null,
+          lastErrorCategory: null,
+          lastValidatedAt: new Date().toISOString(),
+        });
+
+        return jsonResponse({
+          success: true,
+          message: 'WhatsApp já está conectado neste número.',
+          status: 'CONNECTED',
+          phoneNumber: normalizedPhone,
+          config: updatedConfig,
+          diagnostic: {
+            ...diagnosticBase,
+            numeroConectado: normalizedPhone,
+            connectionState: 'connected',
+            lastValidatedAt: updatedConfig.lastValidatedAt,
+            lastErrorMessage: null,
+            metaResult: null,
+          },
+        });
+      }
+
       await prisma.workspace.update({
         where: { id: context.workspaceId },
         data: {
@@ -386,6 +420,21 @@ export async function POST(req: Request) {
           phoneNumberId,
           error: userError.message,
           meta: metaSummary,
+        });
+
+        await logWorkspaceEventSafe({
+          workspaceId: context.workspaceId,
+          userId: context.userId,
+          type: 'whatsapp.connect.failed_request',
+          payload: {
+            phoneNumber: normalizedPhone,
+            templateName: WHATSAPP_TEMPLATES.CONNECT.name,
+            languageCode: WHATSAPP_TEMPLATES.CONNECT.language,
+            userFacingCode: userError.code,
+            userFacingStatus: userError.status,
+            shouldLogInternalDetailsOnly: userError.shouldLogInternalDetailsOnly,
+            meta: metaSummary,
+          },
         });
 
         const updatedConfig = await saveWorkspaceWhatsAppConfig({

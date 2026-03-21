@@ -1414,7 +1414,9 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
     },
   });
 
-  if (!isPendingMatch && workspace.whatsapp_status !== 'CONNECTING') {
+  // Evita falso positivo/negativo: só a mensagem pendente de conexão pode
+  // transicionar o estado de CONNECTING -> CONNECTED/FAILED.
+  if (!isPendingMatch) {
     return;
   }
 
