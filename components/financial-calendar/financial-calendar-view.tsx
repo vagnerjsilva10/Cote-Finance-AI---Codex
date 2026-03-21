@@ -57,6 +57,38 @@ type CalendarCell = {
 
 const WEEKDAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
 
+const LEGEND_ITEMS = [
+  {
+    label: 'Entradas',
+    className:
+      'border-[rgba(79,191,138,0.18)] bg-[rgba(79,191,138,0.07)] text-[color:color-mix(in_srgb,var(--positive)_74%,white)]',
+  },
+  {
+    label: 'Sa\u00eddas fixas',
+    className: 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)]',
+  },
+  {
+    label: 'Faturas e parcelas',
+    className:
+      'border-[rgba(217,164,65,0.18)] bg-[rgba(217,164,65,0.07)] text-[color:color-mix(in_srgb,var(--warning)_78%,white)]',
+  },
+  {
+    label: 'Vence logo',
+    className:
+      'border-[rgba(217,164,65,0.14)] bg-[rgba(217,164,65,0.05)] text-[color:color-mix(in_srgb,var(--warning)_74%,white)]',
+  },
+  {
+    label: 'Vencidos',
+    className:
+      'border-[rgba(255,90,90,0.14)] bg-[rgba(255,90,90,0.05)] text-[color:color-mix(in_srgb,var(--danger)_78%,white)]',
+  },
+  {
+    label: 'Datas cr\u00edticas',
+    className:
+      'border-[rgba(255,90,90,0.16)] bg-[rgba(255,90,90,0.06)] text-[color:color-mix(in_srgb,var(--danger)_76%,white)]',
+  },
+] as const;
+
 function formatCurrency(value: number | null | undefined) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -196,18 +228,18 @@ function getEventTone(event: FinancialCalendarOccurrence) {
 
 function getAlertEyebrow(alert: FinancialCalendarAlert) {
   if (alert.kind === 'overdue') return 'Eventos vencidos';
-  if (alert.kind === 'upcoming_due') return 'Vencimento proximo';
+  if (alert.kind === 'upcoming_due') return 'Vencimento pr\u00f3ximo';
   if (alert.kind === 'tight_balance') return 'Saldo previsto';
-  if (alert.kind === 'outflow_cluster') return 'Concentracao de saidas';
-  return 'Ponto critico';
+  if (alert.kind === 'outflow_cluster') return 'Concentra\u00e7\u00e3o de sa\u00eddas';
+  return 'Ponto cr\u00edtico';
 }
 
 function derivePrimaryAlert(snapshot: FinancialCalendarSnapshot | null) {
   if (!snapshot) {
     return {
-      eyebrow: 'Panorama do periodo',
+      eyebrow: 'Panorama do per\u00edodo',
       title: 'Carregando leitura financeira',
-      message: 'Estamos montando o mes a partir de entradas, saidas e vencimentos sincronizados.',
+      message: 'Estamos montando o m\u00eas a partir de entradas, sa\u00eddas e vencimentos sincronizados.',
       tone: 'neutral' as const,
       dayKey: null as string | null,
     };
@@ -230,9 +262,9 @@ function derivePrimaryAlert(snapshot: FinancialCalendarSnapshot | null) {
   }
 
   return {
-    eyebrow: 'Mes organizado',
-    title: 'Nenhuma data critica no radar',
-    message: 'Seu calendario financeiro esta limpo e com folga visual para o restante do periodo.',
+    eyebrow: 'M\u00eas organizado',
+    title: 'Nenhuma data cr\u00edtica no radar',
+    message: 'Seu calend\u00e1rio financeiro est\u00e1 limpo e com folga visual para o restante do per\u00edodo.',
     tone: 'positive' as const,
     dayKey: null as string | null,
   };
@@ -255,7 +287,7 @@ function formatAlertWindow(alert: FinancialCalendarAlert) {
   if (alert.startDate) {
     return formatDayNumber(alert.startDate);
   }
-  return 'Radar do periodo';
+  return 'Radar do per\u00edodo';
 }
 
 function getCellAriaLabel(cell: CalendarCell) {
@@ -266,7 +298,7 @@ function getCellAriaLabel(cell: CalendarCell) {
   }).format(cell.date);
 
   if (!cell.isCurrentMonth) {
-    return `${dateLabel}. Fora do mes em foco.`;
+    return `${dateLabel}. Fora do m\u00eas em foco.`;
   }
 
   if (cell.group.events.length === 0) {
@@ -327,23 +359,23 @@ function buildDayInsights(day: FinancialCalendarDayGroup | null, snapshot: Finan
   const isCritical = snapshot.criticalDays.some((item) => toDateKey(parseCalendarValue(item.date)) === dayKey);
 
   if (isCritical || day.pressureLevel === 'high') {
-    insights.push('Este e um dos dias mais pesados do mes.');
+    insights.push('Este \u00e9 um dos dias mais pesados do m\u00eas.');
   }
 
   if (day.outflow > day.inflow) {
-    insights.push('Voce tera mais saidas do que entradas nesta data.');
+    insights.push('Voc\u00ea ter\u00e1 mais sa\u00eddas do que entradas nesta data.');
   }
 
   if (day.pendingCount >= 2 || day.overdueCount > 0 || day.events.some((event) => event.status === 'OVERDUE')) {
-    insights.push('Ha vencimentos proximos que exigem atencao.');
+    insights.push('H\u00e1 vencimentos pr\u00f3ximos que exigem aten\u00e7\u00e3o.');
   }
 
   if ((day.projectedBalance ?? 0) < 0) {
-    insights.push('O saldo pode ficar apertado apos este dia.');
+    insights.push('O saldo pode ficar apertado ap\u00f3s este dia.');
   }
 
   if (insights.length === 0 && day.events.length > 0) {
-    insights.push('O fluxo deste dia esta distribuido e sob controle visual.');
+    insights.push('O fluxo deste dia est\u00e1 distribu\u00eddo e sob controle visual.');
   }
 
   return insights.slice(0, 4);
@@ -430,12 +462,12 @@ export function FinancialCalendarView({
         });
         const payload = await response.json().catch(() => null);
         if (!response.ok) {
-          throw new Error(payload?.error || `Falha ao carregar calendario (HTTP ${response.status}).`);
+          throw new Error(payload?.error || `Falha ao carregar calend\u00e1rio (HTTP ${response.status}).`);
         }
         setSnapshot(payload as FinancialCalendarSnapshot);
       } catch (fetchError) {
         setNotice(null);
-        setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar calendario financeiro.');
+        setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar calend\u00e1rio financeiro.');
       } finally {
         setIsLoading(false);
       }
@@ -546,7 +578,7 @@ export function FinancialCalendarView({
         setEditingEvent(null);
         setNotice({
           tone: 'success',
-          message: composerMode === 'edit' ? 'Evento manual atualizado no calendario.' : 'Evento manual adicionado ao mes financeiro.',
+          message: composerMode === 'edit' ? 'Evento manual atualizado no calend\u00e1rio.' : 'Evento manual adicionado ao m\u00eas financeiro.',
         });
         await loadMonth(monthCursor, { silent: true });
       } catch (submitError) {
@@ -608,7 +640,7 @@ export function FinancialCalendarView({
         }
         setNotice({
           tone: 'info',
-          message: event.isRecurring ? 'Ocorrencia cancelada neste dia.' : 'Evento removido do calendario.',
+          message: event.isRecurring ? 'Ocorr\u00eancia cancelada neste dia.' : 'Evento removido do calend\u00e1rio.',
         });
         await loadMonth(monthCursor, { silent: true });
       } catch (deleteError) {
@@ -638,12 +670,12 @@ export function FinancialCalendarView({
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div className="space-y-4">
               <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">Feature Pro</p>
-              <h3 className="page-title-premium max-w-3xl text-[var(--text-primary)]">Calendario Financeiro Inteligente</h3>
+              <h3 className="page-title-premium max-w-3xl text-[var(--text-primary)]">{'Calend\u00e1rio Financeiro Inteligente'}</h3>
               <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
-                Veja o mes como fluxo financeiro, com pressao por dia, vencimentos proximos, saldo previsto e pontos onde a decisao precisa acontecer antes do aperto.
+                {'Veja o m\u00eas como fluxo financeiro, com press\u00e3o por dia, vencimentos pr\u00f3ximos, saldo previsto e pontos onde a decis\u00e3o precisa acontecer antes do aperto.'}
               </p>
               <div className="flex flex-wrap gap-2">
-                {['Entradas previstas', 'Contas fixas', 'Datas criticas', 'Saldo projetado'].map((item) => (
+                {['Entradas previstas', 'Contas fixas', 'Datas\u0020cr\u00edticas', 'Saldo projetado'].map((item) => (
                   <span key={item} className="badge-premium bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]">
                     {item}
                   </span>
@@ -695,10 +727,10 @@ export function FinancialCalendarView({
     return (
       <section className="app-surface-card rounded-[2rem] p-6 sm:p-8">
         <div className="max-w-2xl space-y-3">
-          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">Calendario Financeiro Inteligente</p>
-          <h3 className="page-title-premium text-[var(--text-primary)]">Selecione um workspace para ler o mes financeiro</h3>
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">{'Calend\u00e1rio Financeiro Inteligente'}</p>
+          <h3 className="page-title-premium text-[var(--text-primary)]">{'Selecione um workspace para ler o m\u00eas financeiro'}</h3>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
-            O calendario precisa de um contexto ativo para carregar entradas, saidas, vencimentos e alertas do periodo.
+            {'O calend\u00e1rio precisa de um contexto ativo para carregar entradas, sa\u00eddas, vencimentos e alertas do per\u00edodo.'}
           </p>
         </div>
       </section>
@@ -707,30 +739,39 @@ export function FinancialCalendarView({
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">Calendario Financeiro Inteligente</p>
-          <h3 className="page-title-premium text-[var(--text-primary)]">Mapa financeiro do mes antes dele acontecer</h3>
-          <p className="max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
-            Leia entradas, saidas, concentracoes de vencimento e pressao de caixa sem cair na logica de agenda generica.
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <div className="space-y-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)] sm:text-[11px]">
+            {'Calend\u00e1rio Financeiro Inteligente'}
           </p>
+          <div className="max-w-[44rem] space-y-3">
+            <h3 className="page-title-premium max-w-[11ch] text-4xl leading-[0.94] tracking-[-0.05em] text-[var(--text-primary)] sm:text-5xl xl:text-[4.3rem]">
+              {'Mapa financeiro do m\u00eas antes dele acontecer'}
+            </h3>
+            <p className="max-w-[34rem] text-sm leading-7 text-[var(--text-secondary)] sm:text-[1.02rem]">
+              {'Visualize entradas, sa\u00eddas e dias de press\u00e3o com clareza, sem cair na l\u00f3gica de uma agenda gen\u00e9rica.'}
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ButtonSecondary className="rounded-2xl px-4" onClick={() => handleMonthShift(-1)}>
+        <div className="flex flex-wrap items-center gap-2.5 lg:justify-end">
+          <ButtonSecondary className="min-h-11 rounded-2xl px-4" onClick={() => handleMonthShift(-1)}>
             <ChevronLeft size={16} />
-            Mes anterior
+            {'M\u00eas anterior'}
           </ButtonSecondary>
-          <div data-testid="financial-calendar-month-label" className="rounded-2xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm font-bold capitalize text-[var(--text-primary)]">
+          <div
+            data-testid="financial-calendar-month-label"
+            className="min-h-11 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-4 py-3 text-sm font-semibold capitalize text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+          >
             {formatMonthLabel(monthCursor)}
           </div>
-          <ButtonSecondary className="rounded-2xl px-4" onClick={() => handleMonthShift(1)}>
-            Proximo mes
+          <ButtonSecondary className="min-h-11 rounded-2xl px-4" onClick={() => handleMonthShift(1)}>
+            {'Pr\u00f3ximo m\u00eas'}
             <ChevronRight size={16} />
           </ButtonSecondary>
-          <ButtonSecondary className="rounded-2xl px-4" onClick={handleGoToToday}>
+          <ButtonSecondary className="min-h-11 rounded-2xl px-4" onClick={handleGoToToday}>
             Hoje
           </ButtonSecondary>
-          <ButtonPrimary data-testid="financial-calendar-new-event" className="rounded-2xl px-4" onClick={() => handleOpenComposer()}>
+          <ButtonPrimary data-testid="financial-calendar-new-event" className="min-h-11 rounded-2xl px-5" onClick={() => handleOpenComposer()}>
             <Plus size={16} />
             Novo evento
           </ButtonPrimary>
@@ -767,7 +808,7 @@ export function FinancialCalendarView({
         ) : null}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-12">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.82fr))]">
         <button
           type="button"
           onClick={() => {
@@ -777,63 +818,79 @@ export function FinancialCalendarView({
           }}
           disabled={!primaryAlert.dayKey}
           className={cn(
-            'app-surface-card group relative overflow-hidden rounded-[2rem] p-5 text-left xl:col-span-6 disabled:cursor-default disabled:opacity-100',
+            'app-surface-card group relative overflow-hidden rounded-[2rem] px-5 py-5 text-left xl:min-h-[220px] xl:px-7 xl:py-6 disabled:cursor-default disabled:opacity-100',
             primaryAlert.tone === 'danger'
-              ? 'border-[rgba(255,90,90,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.12),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+              ? 'border-[rgba(255,90,90,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
               : primaryAlert.tone === 'warning'
-                ? 'border-[rgba(217,164,65,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(217,164,65,0.14),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+                ? 'border-[rgba(217,164,65,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(217,164,65,0.11),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
                 : primaryAlert.tone === 'positive'
-                  ? 'border-[rgba(79,191,138,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(79,191,138,0.12),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
-                  : 'border-[rgba(79,140,255,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(79,140,255,0.14),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+                  ? 'border-[rgba(79,191,138,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(79,191,138,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+                  : 'border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top_right,rgba(79,140,255,0.12),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
           )}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">{primaryAlert.eyebrow}</p>
-              <h4 className="max-w-2xl text-2xl font-black tracking-[-0.03em] text-[var(--text-primary)]">
-                {primaryAlert.title}
-              </h4>
-              <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">{primaryAlert.message}</p>
+          <div className="flex h-full items-start justify-between gap-5">
+            <div className="flex h-full flex-col justify-between space-y-6">
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">{primaryAlert.eyebrow}</p>
+                <h4 className="max-w-[18ch] text-[clamp(1.75rem,2.8vw,2.8rem)] font-black leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)]">
+                  {primaryAlert.title}
+                </h4>
+              </div>
+              <div className="space-y-2">
+                <p className="max-w-[34rem] text-sm leading-7 text-[var(--text-secondary)]">{primaryAlert.message}</p>
+                {primaryAlert.dayKey ? (
+                  <p className="text-xs font-medium text-[var(--text-muted)]">Toque para abrir o dia com mais contexto.</p>
+                ) : null}
+              </div>
             </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.05)] text-[var(--text-primary)]">
-              <Sparkles size={20} />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.035)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <Sparkles size={18} />
             </div>
           </div>
         </button>
 
-        <div className="app-surface-card rounded-[2rem] p-5 xl:col-span-2">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Entradas previstas</p>
-          <p className="mt-3 text-2xl font-black text-[var(--positive)]">
-            {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedInflow)}
-          </p>
-          <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+        <div className="app-surface-card flex min-h-[220px] flex-col justify-between rounded-[2rem] px-5 py-5 xl:px-6 xl:py-6">
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">Entradas previstas</p>
+            <p className="text-[clamp(1.9rem,2.5vw,2.75rem)] font-black tracking-[-0.04em] text-[var(--positive)]">
+              {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedInflow)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium leading-relaxed text-[var(--text-secondary)]">
             <ArrowDownRight size={14} className="text-[var(--positive)]" />
             Caixa esperado para entrar
           </div>
         </div>
 
-        <div className="app-surface-card rounded-[2rem] p-5 xl:col-span-2">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Saidas previstas</p>
-          <p className="mt-3 text-2xl font-black text-[var(--text-primary)]">
-            {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedOutflow)}
-          </p>
-          <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+        <div className="app-surface-card flex min-h-[220px] flex-col justify-between rounded-[2rem] px-5 py-5 xl:px-6 xl:py-6">
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">{'Sa\u00eddas previstas'}</p>
+            <p className="text-[clamp(1.9rem,2.5vw,2.75rem)] font-black tracking-[-0.04em] text-[var(--text-primary)]">
+              {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedOutflow)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium leading-relaxed text-[var(--text-secondary)]">
             <ReceiptText size={14} className="text-[var(--warning)]" />
-            Compromissos mapeados no periodo
+            {'Compromissos mapeados no per\u00edodo'}
           </div>
         </div>
 
-        <div className="app-surface-card rounded-[2rem] p-5 xl:col-span-2">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Saldo previsto</p>
-          <p className={cn('mt-3 text-2xl font-black', Number(snapshot?.summary.projectedBalance || 0) >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
-            {isLoading ? '--' : formatCurrency(snapshot?.summary.projectedBalance)}
-          </p>
-          <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+        <div className="app-surface-card flex min-h-[220px] flex-col justify-between rounded-[2rem] px-5 py-5 xl:px-6 xl:py-6">
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">Saldo previsto</p>
+            <p className={cn(
+              'text-[clamp(1.9rem,2.5vw,2.75rem)] font-black tracking-[-0.04em]',
+              Number(snapshot?.summary.projectedBalance || 0) >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]'
+            )}>
+              {isLoading ? '--' : formatCurrency(snapshot?.summary.projectedBalance)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium leading-relaxed text-[var(--text-secondary)]">
             <Wallet size={14} className="text-[var(--primary)]" />
             Abertura + movimentos previstos
           </div>
         </div>
-            </div>
+      </div>
 
       {topAlerts.length > 0 ? (
         <div className="grid gap-3 lg:grid-cols-3">
@@ -848,7 +905,7 @@ export function FinancialCalendarView({
               }}
               disabled={!alert.dayKey}
               className={cn(
-                'rounded-[1.6rem] border p-4 text-left transition hover:-translate-y-0.5 hover:border-[var(--border-strong)] disabled:cursor-default',
+                'rounded-[1.6rem] border bg-[rgba(255,255,255,0.02)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[var(--border-strong)] disabled:cursor-default',
                 getAlertCardTone(alert)
               )}
             >
@@ -859,7 +916,7 @@ export function FinancialCalendarView({
                   </p>
                   <p className="mt-2 text-sm font-bold leading-relaxed text-[var(--text-primary)]">{alert.title}</p>
                 </div>
-                <span className="rounded-full border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.05)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+                <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2.5 py-1 text-[10px] font-semibold tracking-[0.08em] text-[var(--text-secondary)]">
                   {formatAlertWindow(alert)}
                 </span>
               </div>
@@ -870,51 +927,56 @@ export function FinancialCalendarView({
       ) : null}
 
       <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.018)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]">
-        <div className="flex flex-col gap-4 border-b border-[var(--border-default)] px-4 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Visao mensal</p>
-            <h4 className="mt-2 text-xl font-black capitalize tracking-[-0.03em] text-[var(--text-primary)]">
+        <div className="flex flex-col gap-5 border-b border-[var(--border-default)] px-4 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">{'Vis\u00e3o mensal'}</p>
+            <h4 className="text-[1.6rem] font-black capitalize tracking-[-0.04em] text-[var(--text-primary)] sm:text-[1.8rem]">
               {formatMonthLabel(monthCursor)}
             </h4>
+            <p className="max-w-[32rem] text-sm leading-7 text-[var(--text-secondary)]">
+              {'Leia o m\u00eas como um canvas financeiro: vencimentos, concentra\u00e7\u00e3o de sa\u00eddas e dias que merecem aten\u00e7\u00e3o.'}
+            </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em]">
-            <span className="rounded-full border border-[rgba(79,191,138,0.24)] bg-[rgba(79,191,138,0.10)] px-3 py-1 text-[color:color-mix(in_srgb,var(--positive)_82%,white)]">Entradas</span>
-            <span className="rounded-full border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--text-secondary)]">Saidas fixas</span>
-            <span className="rounded-full border border-[rgba(217,164,65,0.24)] bg-[rgba(217,164,65,0.10)] px-3 py-1 text-[color:color-mix(in_srgb,var(--warning)_82%,white)]">Faturas e parcelas</span>
-            <span className="rounded-full border border-[rgba(217,164,65,0.18)] bg-[rgba(217,164,65,0.08)] px-3 py-1 text-[color:color-mix(in_srgb,var(--warning)_80%,white)]">Vence logo</span>
-            <span className="rounded-full border border-[rgba(255,90,90,0.18)] bg-[rgba(255,90,90,0.08)] px-3 py-1 text-[color:color-mix(in_srgb,var(--danger)_82%,white)]">Vencidos</span>
-            <span className="rounded-full border border-[rgba(255,90,90,0.22)] bg-[rgba(255,90,90,0.10)] px-3 py-1 text-[color:color-mix(in_srgb,var(--danger)_82%,white)]">Datas criticas</span>
+          <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-semibold tracking-[0.06em]">
+            {LEGEND_ITEMS.map((item) => (
+              <span key={item.label} className={cn('rounded-full border px-3 py-1.5', item.className)}>
+                {item.label}
+              </span>
+            ))}
           </div>
         </div>
 
         <div className="px-3 pb-3 pt-4 sm:px-5 sm:pb-5">
           <div data-testid="financial-calendar-grid-scroll" className="overflow-x-auto overscroll-x-contain pb-1">
-            <div className="min-w-[720px]">
-              <div className="mb-3 grid grid-cols-7 gap-2 text-center text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)] sm:mb-4 sm:gap-3">
+            <div className="min-w-[720px] rounded-[1.7rem] border border-[rgba(255,255,255,0.05)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),rgba(7,12,21,0.74)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-4">
+              <div className="mb-3 grid grid-cols-7 gap-2.5 text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:mb-4 sm:gap-3">
                 {WEEKDAY_LABELS.map((label) => (
                   <div key={label}>{label}</div>
                 ))}
               </div>
 
               {isLoading ? (
-                <div className="grid grid-cols-7 gap-2 sm:gap-3" aria-hidden="true">
+                <div className="grid grid-cols-7 gap-2.5 sm:gap-3" aria-hidden="true">
                   {Array.from({ length: 35 }).map((_, index) => (
-                    <div key={index} className="min-h-[102px] animate-pulse rounded-[1.4rem] border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] p-3 sm:min-h-[128px]" />
+                    <div key={index} className="min-h-[110px] animate-pulse rounded-[1.55rem] border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] p-3 sm:min-h-[136px]" />
                   ))}
                 </div>
               ) : !hasMonthEvents ? (
-                <div className="rounded-[1.8rem] border border-dashed border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] px-6 py-12 text-center">
-                  <p className="text-base font-bold text-[var(--text-primary)]">Nenhum evento financeiro neste mes</p>
-                  <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
-                    O mes ainda esta limpo. Adicione um evento manual ou aguarde a sincronizacao de despesas, receitas, metas e recorrencias.
+                <div className="rounded-[1.85rem] border border-dashed border-[rgba(79,140,255,0.16)] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.08),transparent_42%),rgba(255,255,255,0.03)] px-6 py-14 text-center sm:px-10">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(79,140,255,0.14)] bg-[rgba(79,140,255,0.08)] text-[var(--primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                    <Sparkles size={20} />
+                  </div>
+                  <p className="mt-5 text-[1.15rem] font-black tracking-[-0.03em] text-[var(--text-primary)]">{'Seu m\u00eas ainda est\u00e1 limpo'}</p>
+                  <p className="mx-auto mt-3 max-w-[32rem] text-sm leading-7 text-[var(--text-secondary)] sm:text-[0.98rem]">
+                    {'Adicione eventos e comece a visualizar seu fluxo financeiro no tempo, com mais clareza sobre entradas, sa\u00eddas e vencimentos.'}
                   </p>
-                  <ButtonPrimary data-testid="financial-calendar-empty-create" className="mt-5 rounded-2xl px-5" onClick={() => handleOpenComposer(monthCursor)}>
+                  <ButtonPrimary data-testid="financial-calendar-empty-create" className="mt-6 min-h-11 rounded-2xl px-6" onClick={() => handleOpenComposer(monthCursor)}>
                     <Plus size={16} />
                     Adicionar primeiro evento
                   </ButtonPrimary>
                 </div>
               ) : (
-                <div className="grid grid-cols-7 gap-2 sm:gap-3">
+                <div className="grid grid-cols-7 gap-2.5 sm:gap-3">
                   {cells.map((cell) => {
                     const summaryDots = getCellSummary(cell.group);
                     const netIsPositive = cell.group.net >= 0;
@@ -934,10 +996,10 @@ export function FinancialCalendarView({
                           setSelectedDayKey(cell.key);
                         }}
                         className={cn(
-                          'group relative min-h-[102px] overflow-hidden rounded-[1.35rem] border p-2.5 text-left transition-all sm:min-h-[128px] sm:p-3',
+                          'group relative min-h-[110px] overflow-hidden rounded-[1.55rem] border p-3 text-left transition-all duration-200 sm:min-h-[136px] sm:p-3.5',
                           cell.isCurrentMonth
-                            ? 'border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.92)] hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:bg-[rgba(16,24,39,0.98)]'
-                            : 'border-[rgba(255,255,255,0.04)] bg-[rgba(255,255,255,0.02)] text-[var(--text-muted)]',
+                            ? 'border-[rgba(255,255,255,0.07)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:-translate-y-0.5 hover:border-[rgba(79,140,255,0.18)] hover:bg-[rgba(14,22,36,0.98)]'
+                            : 'border-[rgba(255,255,255,0.04)] bg-[rgba(255,255,255,0.018)] text-[var(--text-muted)]',
                           cell.isCritical && cell.isCurrentMonth && 'border-[rgba(255,90,90,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.96)]',
                           cell.hasOverdue && !cell.isCritical && cell.isCurrentMonth && 'border-[rgba(255,90,90,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.94)]',
                           cell.hasDueSoon && !cell.hasOverdue && !cell.isCritical && cell.isCurrentMonth && 'border-[rgba(217,164,65,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(217,164,65,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.94)]',
@@ -945,35 +1007,45 @@ export function FinancialCalendarView({
                           isSelected && 'ring-2 ring-[rgba(79,140,255,0.24)]'
                         )}
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <span className={cn('text-sm font-black', cell.isCurrentMonth ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]')}>
-                            {cell.label}
-                          </span>
+                        <div className="flex items-start justify-between gap-2.5">
+                          <div className="space-y-1">
+                            <span className={cn('text-sm font-black tracking-[-0.02em]', cell.isCurrentMonth ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]')}>
+                              {cell.label}
+                            </span>
+                            {cell.isToday && cell.isCurrentMonth ? (
+                              <span className="inline-flex rounded-full border border-[rgba(79,140,255,0.18)] bg-[rgba(79,140,255,0.08)] px-2 py-0.5 text-[9px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--primary)_80%,white)]">
+                                Hoje
+                              </span>
+                            ) : null}
+                          </div>
                           {cell.group.events.length > 0 ? (
-                            <span className="rounded-full border border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[10px] font-black text-[var(--text-secondary)]">
+                            <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
                               {cell.group.events.length}
                             </span>
                           ) : null}
                         </div>
 
                         {cell.isCurrentMonth ? (
-                          <div className="mt-4 flex h-[calc(100%-1.5rem)] flex-col justify-between">
-                            <div className="flex flex-wrap gap-1">
+                          <div className="mt-4 flex h-[calc(100%-2rem)] flex-col justify-between">
+                            <div className="flex min-h-5 flex-wrap gap-1.5">
                               {summaryDots.length > 0 ? (
                                 summaryDots.map((tone, index) => (
-                                  <span key={`${cell.key}-${index}`} className={cn('h-1.5 rounded-full', tone.dot, index === 0 ? 'w-8' : index === 1 ? 'w-5' : 'w-3')} />
+                                  <span
+                                    key={`${cell.key}-${index}`}
+                                    className={cn('h-1.5 rounded-full opacity-90', tone.dot, index === 0 ? 'w-9' : index === 1 ? 'w-6' : 'w-3.5')}
+                                  />
                                 ))
                               ) : (
-                                <span className="text-[10px] font-semibold text-[var(--text-muted)]">Sem eventos</span>
+                                <span className="text-[10px] font-medium text-[var(--text-muted)]">Dia livre</span>
                               )}
                             </div>
 
-                            <div className="space-y-1.5">
-                              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                                <span>{cell.isCritical ? 'Pressao' : cell.hasOverdue ? 'Vencido' : cell.hasDueSoon ? 'Vence logo' : 'Fluxo'}</span>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                                <span>{cell.isCritical ? 'Press\u00e3o' : cell.hasOverdue ? 'Vencido' : cell.hasDueSoon ? 'Vence logo' : 'Fluxo'}</span>
                                 {cell.isCritical ? <TriangleAlert size={11} className="text-[var(--danger)]" /> : cell.hasOverdue ? <TriangleAlert size={11} className="text-[var(--danger)]" /> : cell.hasDueSoon ? <Bell size={11} className="text-[var(--warning)]" /> : null}
                               </div>
-                              <p className={cn('text-xs font-black sm:text-sm', netIsPositive ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
+                              <p className={cn('text-sm font-black tracking-[-0.03em]', netIsPositive ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
                                 {formatCompactCurrency(cell.group.net)}
                               </p>
                             </div>

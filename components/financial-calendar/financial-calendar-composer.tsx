@@ -65,8 +65,8 @@ const EVENT_TYPE_OPTIONS = [
 ] as const;
 
 const RECURRENCE_OPTIONS = [
-  { value: 'NONE', label: 'Nao recorrente' },
-  { value: 'DAILY', label: 'Diaria' },
+  { value: 'NONE', label: 'N\u00e3o recorrente' },
+  { value: 'DAILY', label: 'Di\u00e1ria' },
   { value: 'WEEKLY', label: 'Semanal' },
   { value: 'MONTHLY', label: 'Mensal' },
   { value: 'YEARLY', label: 'Anual' },
@@ -106,7 +106,7 @@ function getStatusOptions(type: string) {
   if (isIncomeType(type)) {
     return [
       { value: 'PENDING', label: 'A receber' },
-      { value: 'RECEIVED', label: 'Ja recebido' },
+      { value: 'RECEIVED', label: 'J\u00e1 recebido' },
       { value: 'CANCELED', label: 'Cancelado' },
     ];
   }
@@ -120,18 +120,18 @@ function getStatusOptions(type: string) {
 
   return [
     { value: 'PENDING', label: 'Pendente' },
-    { value: 'PAID', label: 'Ja pago' },
+    { value: 'PAID', label: 'J\u00e1 pago' },
     { value: 'CANCELED', label: 'Cancelado' },
   ];
 }
 
 function getTypeHelperText(type: string) {
-  if (type === 'EXPECTED_INCOME') return 'Entradas previstas aparecem como reforco de caixa no dia configurado.';
-  if (type === 'CARD_BILL') return 'Use para vencimentos relevantes do cartao ou consolidacoes importantes.';
-  if (type === 'INSTALLMENT') return 'Ideal para parcelas manuais que ainda nao tenham origem automatica.';
-  if (type === 'GOAL_DEADLINE') return 'Bom para metas com data limite e valor de referencia.';
+  if (type === 'EXPECTED_INCOME') return 'Entradas previstas aparecem como refor\u00e7o de caixa no dia configurado.';
+  if (type === 'CARD_BILL') return 'Use para vencimentos relevantes do cart\u00e3o ou consolida\u00e7\u00f5es importantes.';
+  if (type === 'INSTALLMENT') return 'Ideal para parcelas manuais que ainda n\u00e3o tenham origem autom\u00e1tica.';
+  if (type === 'GOAL_DEADLINE') return 'Bom para metas com data limite e valor de refer\u00eancia.';
   if (type === 'FINANCIAL_REMINDER' || type === 'MANUAL_ALERT') {
-    return 'Funciona melhor para lembretes sem obrigacao financeira automatica por tras.';
+    return 'Funciona melhor para lembretes sem obriga\u00e7\u00e3o financeira autom\u00e1tica por tr\u00e1s.';
   }
   return 'Escolha o tipo que melhor representa o impacto financeiro do evento.';
 }
@@ -140,7 +140,7 @@ function validateForm(form: FinancialCalendarComposerValues) {
   const errors: Partial<Record<ComposerField, string>> = {};
 
   if (!form.title.trim()) {
-    errors.title = 'Informe um titulo claro para o evento.';
+    errors.title = 'Informe um t\u00edtulo claro para o evento.';
   }
 
   if (!form.type) {
@@ -148,7 +148,7 @@ function validateForm(form: FinancialCalendarComposerValues) {
   }
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
-    errors.date = 'Escolha uma data valida.';
+    errors.date = 'Escolha uma data v\u00e1lida.';
   }
 
   if (form.amount.trim()) {
@@ -161,7 +161,7 @@ function validateForm(form: FinancialCalendarComposerValues) {
   if (form.reminderEnabled) {
     const parsed = Number(form.reminderDaysBefore);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 30) {
-      errors.reminderDaysBefore = 'Use um numero inteiro entre 0 e 30.';
+      errors.reminderDaysBefore = 'Use um n\u00famero inteiro entre 0 e 30.';
     }
   }
 
@@ -269,15 +269,15 @@ export function FinancialCalendarComposer({
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] px-5 py-5 sm:px-6">
               <div className="space-y-2">
                 <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--text-muted)]">
-                  {isEdit ? 'Edicao manual' : 'Novo evento financeiro'}
+                  {isEdit ? 'Edi\u00e7\u00e3o manual' : 'Novo evento financeiro'}
                 </p>
                 <h3 id={headingId} className="text-2xl font-black tracking-[-0.03em] text-[var(--text-primary)]">
-                  {isEdit ? 'Ajustar evento do mes' : 'Adicionar ao mes financeiro'}
+                  {isEdit ? 'Ajustar evento do m\u00eas' : 'Adicionar ao m\u00eas financeiro'}
                 </h3>
                 <p id={descriptionId} className="max-w-xl text-sm leading-relaxed text-[var(--text-secondary)]">
                   {isEdit
-                    ? 'Atualize o evento manual sem quebrar a leitura financeira do calendario. Em eventos recorrentes, a alteracao afeta a serie.'
-                    : 'Ao salvar, o evento entra no calendario e recalcula o resumo do periodo imediatamente.'}
+                    ? 'Atualize o evento manual sem quebrar a leitura financeira do calend\u00e1rio. Em eventos recorrentes, a altera\u00e7\u00e3o afeta a s\u00e9rie.'
+                    : 'Ao salvar, o evento entra no calend\u00e1rio e recalcula o resumo do per\u00edodo imediatamente.'}
                 </p>
               </div>
               <button
@@ -316,12 +316,12 @@ export function FinancialCalendarComposer({
               }}
             >
               <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm text-[var(--text-secondary)]">
-                Preencha apenas o necessario. Campos opcionais ajudam a enriquecer a leitura do dia sem poluir o calendario.
+                {'Preencha apenas o necess\u00e1rio. Campos opcionais ajudam a enriquecer a leitura do dia sem poluir o calend\u00e1rio.'}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
-                  <label className="label-premium" htmlFor={titleId}>Titulo</label>
+                  <label className="label-premium" htmlFor={titleId}>{'T\u00edtulo'}</label>
                   <input
                     ref={titleInputRef}
                     id={titleId}
@@ -329,13 +329,13 @@ export function FinancialCalendarComposer({
                     value={form.title}
                     onChange={(event) => updateField('title', event.target.value)}
                     className={cn('app-field rounded-2xl px-4 py-3', validationErrors.title && 'app-field-error')}
-                    placeholder="Ex.: Fatura principal do cartao"
+                    placeholder={'Ex.: Fatura principal do cart\u00e3o'}
                     maxLength={120}
                     aria-invalid={Boolean(validationErrors.title)}
                     aria-describedby={validationErrors.title ? `${titleId}-error` : `${titleId}-hint`}
                     required
                   />
-                  <p id={`${titleId}-hint`} className="text-xs text-[var(--text-muted)]">Obrigatorio. Use um nome curto e facil de reconhecer no mes.</p>
+                  <p id={`${titleId}-hint`} className="text-xs text-[var(--text-muted)]">{'Obrigat\u00f3rio. Use um nome curto e f\u00e1cil de reconhecer no m\u00eas.'}</p>
                   {validationErrors.title ? <div id={`${titleId}-error`}>{renderFieldError('title')}</div> : null}
                 </div>
 
@@ -374,7 +374,7 @@ export function FinancialCalendarComposer({
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-[var(--text-muted)]">Define como o item entra no calendario e nos resumos.</p>
+                  <p className="text-xs text-[var(--text-muted)]">{'Define como o item entra no calend\u00e1rio e nos resumos.'}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -419,14 +419,14 @@ export function FinancialCalendarComposer({
                     value={form.category}
                     onChange={(event) => updateField('category', event.target.value)}
                     className="app-field rounded-2xl px-4 py-3"
-                    placeholder="Ex.: Moradia, Cartao, Receita"
+                    placeholder={'Ex.: Moradia, Cart\u00e3o, Receita'}
                     maxLength={60}
                   />
                   <p className="text-xs text-[var(--text-muted)]">Opcional. Ajuda a organizar o contexto financeiro do dia.</p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="label-premium" htmlFor={recurrenceId}>Recorrencia</label>
+                  <label className="label-premium" htmlFor={recurrenceId}>{'Recorr\u00eancia'}</label>
                   <select
                     id={recurrenceId}
                     value={form.recurrence}
@@ -439,11 +439,11 @@ export function FinancialCalendarComposer({
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-[var(--text-muted)]">A recorrencia expande o evento no periodo visivel sem gerar duplicacao de dados.</p>
+                  <p className="text-xs text-[var(--text-muted)]">{'A recorr\u00eancia expande o evento no per\u00edodo vis\u00edvel sem gerar duplica\u00e7\u00e3o de dados.'}</p>
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
-                  <label className="label-premium" htmlFor={descriptionFieldId}>Descricao</label>
+                  <label className="label-premium" htmlFor={descriptionFieldId}>{'Descri\u00e7\u00e3o'}</label>
                   <textarea
                     id={descriptionFieldId}
                     value={form.description}
@@ -452,7 +452,7 @@ export function FinancialCalendarComposer({
                     placeholder="Contexto curto para facilitar a leitura financeira do dia."
                     maxLength={240}
                   />
-                  <p className="text-xs text-[var(--text-muted)]">Opcional. Bom para lembrar regra, observacao ou decisao esperada.</p>
+                  <p className="text-xs text-[var(--text-muted)]">{'Opcional. Bom para lembrar regra, observa\u00e7\u00e3o ou decis\u00e3o esperada.'}</p>
                 </div>
               </div>
 
@@ -460,7 +460,7 @@ export function FinancialCalendarComposer({
                 <div>
                   <p className="text-sm font-bold text-[var(--text-primary)]">Ativar lembrete</p>
                   <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                    Mantem o evento preparado para notificacoes futuras sem poluir a interface.
+                    {'Mant\u00e9m o evento preparado para notifica\u00e7\u00f5es futuras sem poluir a interface.'}
                   </p>
                 </div>
                 <button
@@ -494,7 +494,7 @@ export function FinancialCalendarComposer({
               </label>
 
               <div className="space-y-2">
-                <label className="label-premium" htmlFor={`${reminderId}-days`}>Lembrar com antecedencia</label>
+                <label className="label-premium" htmlFor={`${reminderId}-days`}>{'Lembrar com anteced\u00eancia'}</label>
                 <input
                   id={`${reminderId}-days`}
                   value={form.reminderDaysBefore}
@@ -524,7 +524,7 @@ export function FinancialCalendarComposer({
                 </ButtonSecondary>
                 <ButtonPrimary data-testid="financial-calendar-submit" type="submit" className="rounded-2xl px-5" disabled={isSubmitting}>
                   {isEdit ? <Pencil size={16} /> : <Plus size={16} />}
-                  {isSubmitting ? 'Salvando...' : isEdit ? 'Salvar alteracoes' : 'Adicionar evento'}
+                  {isSubmitting ? 'Salvando...' : isEdit ? 'Salvar altera\u00e7\u00f5es' : 'Adicionar evento'}
                 </ButtonPrimary>
               </div>
             </form>

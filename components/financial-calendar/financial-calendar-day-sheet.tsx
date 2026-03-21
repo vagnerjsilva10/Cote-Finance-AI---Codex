@@ -148,21 +148,21 @@ function resolveOriginMeta(event: FinancialCalendarOccurrence) {
 
   if (event.sourceType === 'INCOME') {
     return {
-      label: 'Receita sincronizada a partir do modulo de lancamentos.',
+      label: 'Receita sincronizada a partir do m\u00f3dulo de lan\u00e7amentos.',
       actionLabel: 'Abrir receita',
     };
   }
 
   if (event.sourceType === 'EXPENSE' || event.sourceType === 'CARD_BILL' || event.sourceType === 'INSTALLMENT') {
     return {
-      label: 'Lancamento sincronizado a partir da base financeira principal.',
+      label: 'Lan\u00e7amento sincronizado a partir da base financeira principal.',
       actionLabel: 'Abrir origem',
     };
   }
 
   if (event.sourceType === 'SUBSCRIPTION') {
     return {
-      label: 'Recorrencia conectada a despesas assinadas ou fixas.',
+      label: 'Recorr\u00eancia conectada a despesas assinadas ou fixas.',
       actionLabel: 'Abrir origem',
     };
   }
@@ -173,11 +173,11 @@ function buildEventObservations(event: FinancialCalendarOccurrence) {
   const notes: string[] = [];
 
   if (event.status === 'OVERDUE') {
-    notes.push('Ja passou do vencimento e pede acao imediata.');
+    notes.push('J\u00e1 passou do vencimento e pede a\u00e7\u00e3o imediata.');
   }
 
   if (event.isRecurring) {
-    notes.push(`Recorrencia ${event.recurrence.toLowerCase()} ativa na serie.`);
+    notes.push(`Recorr\u00eancia ${event.recurrence.toLowerCase()} ativa na s\u00e9rie.`);
   }
 
   if (event.reminderEnabled) {
@@ -185,7 +185,7 @@ function buildEventObservations(event: FinancialCalendarOccurrence) {
   }
 
   if (event.isDerived) {
-    notes.push('Mantem sincronizacao com a origem do dado.');
+    notes.push('Mant\u00e9m sincroniza\u00e7\u00e3o com a origem do dado.');
   }
 
   return notes;
@@ -246,14 +246,14 @@ export function FinancialCalendarDaySheet({
           >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] px-5 py-4 sm:px-6">
               <div className="space-y-2">
-                <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--text-muted)]">
-                  Leitura diaria
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">
+                  {'Leitura di\u00e1ria'}
                 </p>
                 <h3 id={headingId} className="text-xl font-black capitalize tracking-[-0.03em] text-[var(--text-primary)] sm:text-2xl">
                   {formatDayTitle(day.date)}
                 </h3>
-                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
-                  <span className="rounded-full border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] px-3 py-1">
+                <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-[var(--text-secondary)]">
+                  <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-1">
                     {day.events.length} evento{day.events.length === 1 ? '' : 's'}
                   </span>
                   <span
@@ -266,7 +266,7 @@ export function FinancialCalendarDaySheet({
                           : 'border-[rgba(79,191,138,0.2)] bg-[rgba(79,191,138,0.10)] text-[var(--positive)]'
                     )}
                   >
-                    Pressao {day.pressureLevel === 'high' ? 'alta' : day.pressureLevel === 'medium' ? 'moderada' : 'baixa'}
+                    Press\u00e3o {day.pressureLevel === 'high' ? 'alta' : day.pressureLevel === 'medium' ? 'moderada' : 'baixa'}
                   </span>
                 </div>
               </div>
@@ -282,22 +282,22 @@ export function FinancialCalendarDaySheet({
 
             <div className="custom-scrollbar flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] sm:px-6">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(79,191,138,0.07)] p-4">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(79,191,138,0.06)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Entradas</p>
                   <p className="mt-3 text-2xl font-black text-[var(--positive)]">{formatCurrency(day.inflow)}</p>
                 </div>
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,90,90,0.06)] p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Saidas</p>
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,90,90,0.05)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">{'Sa\u00eddas'}</p>
                   <p className="mt-3 text-2xl font-black text-[var(--danger)]">{formatCurrency(day.outflow)}</p>
                 </div>
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(79,140,255,0.07)] p-4">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(79,140,255,0.06)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Impacto no saldo</p>
                   <p className={cn('mt-3 text-2xl font-black', day.net >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
                     {day.net >= 0 ? '+' : ''}
                     {formatCurrency(day.net)}
                   </p>
                 </div>
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] p-4">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.035)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Saldo projetado</p>
                   <p className={cn('mt-3 text-2xl font-black', (day.projectedBalance || 0) >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
                     {formatCurrency(day.projectedBalance)}
@@ -306,7 +306,7 @@ export function FinancialCalendarDaySheet({
               </div>
 
               {(insights.length > 0 || day.reasons.length > 0) && (
-                <div className="rounded-3xl border border-[rgba(217,164,65,0.18)] bg-[rgba(217,164,65,0.08)] p-4 text-sm text-[var(--text-secondary)]">
+                <div className="rounded-3xl border border-[rgba(217,164,65,0.16)] bg-[rgba(217,164,65,0.07)] p-4 text-sm text-[var(--text-secondary)]">
                   <div className="flex items-center gap-2 text-[var(--warning)]">
                     <TriangleAlert size={16} />
                     <span className="text-xs font-black uppercase tracking-[0.22em]">Insights do dia</span>
@@ -330,10 +330,10 @@ export function FinancialCalendarDaySheet({
               )}
 
               {day.events.length === 0 ? (
-                <div className="rounded-[1.6rem] border border-dashed border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] px-5 py-10 text-center">
+                <div className="rounded-[1.7rem] border border-dashed border-[rgba(79,140,255,0.16)] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.08),transparent_42%),rgba(255,255,255,0.03)] px-5 py-10 text-center">
                   <p className="text-base font-bold text-[var(--text-primary)]">Nenhum evento financeiro neste dia</p>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-                    Use este espaco para avaliar folga de caixa, reservar saldo ou criar um novo evento financeiro manual.
+                    {'Use este espa\u00e7o para avaliar folga de caixa, reservar saldo ou criar um novo evento financeiro manual.'}
                   </p>
                 </div>
               ) : (
@@ -391,7 +391,7 @@ export function FinancialCalendarDaySheet({
 
                             {observations.length > 0 ? (
                               <div className="mt-3 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[var(--text-secondary)]">
-                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Observacoes relevantes</p>
+                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">{'Observa\u00e7\u00f5es relevantes'}</p>
                                 <div className="mt-2 flex flex-wrap gap-2">
                                   {observations.map((note) => (
                                     <span
@@ -405,11 +405,11 @@ export function FinancialCalendarDaySheet({
                               </div>
                             ) : null}
 
-                            <div className="mt-4 flex flex-wrap gap-2">
+                            <div className="mt-4 flex flex-wrap gap-2.5">
                               {canSettle && event.flow === 'out' ? (
                                 <ButtonPrimary
                                   data-testid={`financial-calendar-event-${event.id}-paid`}
-                                  className="min-h-10 rounded-xl px-4 text-xs font-black uppercase tracking-[0.18em]"
+                                  className="min-h-10 rounded-xl px-4 text-xs font-semibold"
                                   onClick={() => onMarkPaid(event)}
                                   disabled={isBusy}
                                 >
@@ -420,7 +420,7 @@ export function FinancialCalendarDaySheet({
                               {canSettle && event.flow === 'in' ? (
                                 <ButtonPrimary
                                   data-testid={`financial-calendar-event-${event.id}-received`}
-                                  className="min-h-10 rounded-xl px-4 text-xs font-black uppercase tracking-[0.18em]"
+                                  className="min-h-10 rounded-xl px-4 text-xs font-semibold"
                                   onClick={() => onMarkReceived(event)}
                                   disabled={isBusy}
                                 >
@@ -431,7 +431,7 @@ export function FinancialCalendarDaySheet({
                               {event.isManual ? (
                                 <ButtonSecondary
                                   data-testid={`financial-calendar-event-${event.id}-edit`}
-                                  className="min-h-10 rounded-xl px-4 text-xs font-black uppercase tracking-[0.18em]"
+                                  className="min-h-10 rounded-xl px-4 text-xs font-semibold"
                                   onClick={() => onEdit(event)}
                                   disabled={isBusy}
                                 >
@@ -443,18 +443,18 @@ export function FinancialCalendarDaySheet({
                               {event.isManual ? (
                                 <ButtonSecondary
                                   data-testid={`financial-calendar-event-${event.id}-delete`}
-                                  className="min-h-10 rounded-xl px-4 text-xs font-black uppercase tracking-[0.18em]"
+                                  className="min-h-10 rounded-xl px-4 text-xs font-semibold"
                                   onClick={() => onDelete(event)}
                                   disabled={isBusy}
                                 >
                                   <Trash2 size={14} />
-                                  {event.isRecurring ? 'Cancelar ocorrencia' : 'Excluir evento'}
+                                  {event.isRecurring ? 'Cancelar ocorr\u00eancia' : 'Excluir evento'}
                                 </ButtonSecondary>
                               ) : null}
 
                               {originMeta ? (
                                 <ButtonSecondary
-                                  className="min-h-10 rounded-xl px-4 text-xs font-black uppercase tracking-[0.18em]"
+                                  className="min-h-10 rounded-xl px-4 text-xs font-semibold"
                                   onClick={() => onOpenOrigin(event)}
                                   disabled={isBusy}
                                 >

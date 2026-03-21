@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+﻿const { test, expect } = require('@playwright/test');
 
 const FIXED_NOW_ISO = '2026-03-21T12:00:00-03:00';
 const OPENING_BALANCE = 5000;
@@ -455,9 +455,9 @@ test('cria evento manual e atualiza calendario e resumo do mes', async ({ page }
   await page.getByLabel('Valor').fill('450');
   await page.getByLabel('Categoria').fill('Operacao');
   await page.getByTestId('financial-calendar-date').fill('2026-03-27');
-  await page.getByRole('button', { name: 'Adicionar evento' }).click();
+  await page.getByTestId('financial-calendar-submit').click();
 
-  await expect(page.getByTestId('financial-calendar-feedback')).toContainText('Evento manual adicionado ao mes financeiro.');
+  await expect(page.getByTestId('financial-calendar-feedback')).toContainText(/Evento manual adicionado ao m.s financeiro./i);
   await expect(page.getByTestId('financial-calendar-day-sheet')).toBeVisible();
   await expect(page.getByText('Seguro empresarial')).toBeVisible();
   await expect(page.getByTestId('financial-calendar-day-sheet')).toContainText('R$ 450,00');
@@ -473,9 +473,9 @@ test('edita evento manual existente', async ({ page }) => {
   await expect(page.getByTestId('financial-calendar-composer')).toBeVisible();
   await page.getByTestId('financial-calendar-title').fill('Aluguel revisado');
   await page.getByLabel('Valor').fill('1950');
-  await page.getByRole('button', { name: 'Salvar alteracoes' }).click();
+  await page.getByTestId('financial-calendar-submit').click();
 
-  await expect(page.getByTestId('financial-calendar-feedback')).toContainText('Evento manual atualizado no calendario.');
+  await expect(page.getByTestId('financial-calendar-feedback')).toContainText(/Evento manual atualizado no calend.rio./i);
   await expect(page.getByTestId('financial-calendar-day-sheet')).toContainText('Aluguel revisado');
   await expect(page.getByTestId('financial-calendar-day-sheet')).toContainText('R$ 1.950,00');
 });
@@ -506,11 +506,11 @@ test('cancela ocorrencia recorrente sem remover a serie inteira', async ({ page 
   await page.getByTestId('financial-calendar-day-2026-03-20').click();
   await page.getByTestId('financial-calendar-event-occ-manual-subscription-2026-03-20-delete').click();
 
-  await expect(page.getByTestId('financial-calendar-feedback')).toContainText('Ocorrencia cancelada neste dia.');
+  await expect(page.getByTestId('financial-calendar-feedback')).toContainText(/Ocorr.ncia cancelada neste dia./i);
   await expect(page.getByText('Nenhum evento financeiro neste dia')).toBeVisible();
 
   await page.getByRole('button', { name: 'Fechar painel do dia' }).click();
-  await page.getByRole('button', { name: 'Proximo mes' }).click();
+  await page.getByRole('button', { name: /Pr.+ximo m.+s/i }).click();
   await page.getByTestId('financial-calendar-day-2026-04-20').click();
   await expect(page.getByText('Assinatura premium')).toBeVisible();
 });
@@ -519,13 +519,13 @@ test('navega entre meses sem perder a leitura financeira', async ({ page }) => {
   await mountCalendar(page);
 
   await expect(page.getByTestId('financial-calendar-month-label')).toContainText(/mar/i);
-  await page.getByRole('button', { name: 'Proximo mes' }).click();
+  await page.getByRole('button', { name: /Pr.+ximo m.+s/i }).click();
   await expect(page.getByTestId('financial-calendar-month-label')).toContainText(/abr/i);
   await page.getByTestId('financial-calendar-day-2026-04-05').click();
   await expect(page.getByText('Salario abril')).toBeVisible();
 
   await page.getByRole('button', { name: 'Fechar painel do dia' }).click();
-  await page.getByRole('button', { name: 'Mes anterior' }).click();
+  await page.getByRole('button', { name: /M.+s anterior/i }).click();
   await expect(page.getByTestId('financial-calendar-month-label')).toContainText(/mar/i);
 });
 
@@ -551,3 +551,4 @@ test.describe('mobile', () => {
     await expect(page.getByTestId('financial-calendar-title')).toBeFocused();
   });
 });
+
