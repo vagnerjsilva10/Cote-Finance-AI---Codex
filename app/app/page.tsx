@@ -276,10 +276,6 @@ type WorkspaceDashboardSnapshot = {
   dashboardInsights: string[];
   isWhatsAppConnected: boolean;
   workspaceWhatsAppPhoneNumber: string;
-  workspaceWhatsAppTestPhoneNumber: string;
-  workspaceWhatsAppConnectTemplateName: string;
-  workspaceWhatsAppDigestTemplateName: string;
-  workspaceWhatsAppTemplateLanguage: string;
 };
 
 const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 1;
@@ -414,23 +410,11 @@ type WhatsAppMetaDiagnostic = {
 };
 
 type WhatsAppDiagnostic = {
-  templateConfigured: string | null;
-  connectTemplateConfigured: string | null;
-  idiomaConfigurado: string;
-  destinoTeste: string | null;
   numeroConectado: string | null;
-  connectionState?: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
+  connectionState?: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'failed';
   lastValidatedAt?: string | null;
   lastTestSentAt?: string | null;
   lastErrorMessage?: string | null;
-  validationResult: 'OK' | 'ERRO';
-  validationIssues: string[];
-  configSources?: {
-    connectTemplateName: string;
-    digestTemplateName: string;
-    templateLanguage: string;
-    testPhoneNumber: string;
-  };
   metaResult?: string | WhatsAppMetaDiagnostic | null;
 };
 
@@ -466,22 +450,20 @@ const getWhatsAppConnectionLabel = (
   isConnecting: boolean
 ) => {
   if (isConnecting) {
-    return 'Validando conexão';
+    return 'Conectando...';
   }
 
   switch (state) {
+    case 'connecting':
+      return 'Conectando...';
     case 'connected':
       return 'Conectado';
-    case 'testing':
-      return 'Testando';
-    case 'error':
-      return 'Erro na conexão';
+    case 'failed':
+      return 'Falha ao conectar';
     case 'disconnected':
       return 'Desconectado';
-    case 'config_pending':
-      return 'Aguardando configuração';
     default:
-      return isConnected ? 'Conectado' : 'Aguardando configuração';
+      return isConnected ? 'Conectado' : 'Desconectado';
   }
 };
 
@@ -490,10 +472,10 @@ const getWhatsAppConnectionTone = (
   isConnected: boolean,
   isConnecting: boolean
 ) => {
-  if (isConnecting || state === 'testing') {
+  if (isConnecting || state === 'connecting') {
     return 'warning';
   }
-  if (state === 'error') {
+  if (state === 'failed') {
     return 'error';
   }
   if (state === 'connected' || isConnected) {
@@ -505,18 +487,27 @@ const getWhatsAppConnectionTone = (
 const getWhatsAppConnectionDescription = (
   state: WhatsAppDiagnostic['connectionState'],
   isConnected: boolean,
-  hasValidationIssues: boolean
+  lastErrorMessage?: string | null
 ) => {
-  if (state === 'error') {
-    return 'A conexão com a Meta falhou. Revise template, permissões, token e a regra de janela de 24h.';
+  if (state === 'failed') {
+    return lastErrorMessage || 'Falha ao conectar seu WhatsApp. Tente novamente.';
+  }
+  if (state === 'connecting') {
+    return 'Conectando... estamos aguardando confirmação de entrega.';
   }
   if (state === 'connected' || isConnected) {
-    return 'Configuração pronta para envio. Você já pode disparar um teste com segurança.';
+    return 'WhatsApp conectado e pronto para envio.';
   }
-  if (hasValidationIssues) {
-    return 'Há ajustes pendentes antes de ativar o envio deste workspace.';
-  }
-  return 'Preencha os dados do workspace, valide a conexão e depois envie um teste.';
+  return 'Informe o número e clique em Conectar WhatsApp.';
+};
+
+const normalizeWhatsAppConnectionState = (value: unknown): WhatsAppDiagnostic['connectionState'] => {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'connected') return 'connected';
+  if (normalized === 'connecting' || normalized === 'testing') return 'connecting';
+  if (normalized === 'failed' || normalized === 'error') return 'failed';
+  if (normalized === 'disconnected' || normalized === 'config_pending') return 'disconnected';
+  return 'idle';
 };
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -2377,23 +2368,11 @@ type IntegrationsViewProps = {
   isWhatsAppConnected: boolean;
   isConnectingWhatsApp: boolean;
   isSendingWhatsAppTest: boolean;
-  isSavingWhatsAppConfig: boolean;
   whatsAppPhoneNumber: string;
-  whatsAppTestPhoneNumber: string;
-  whatsAppConnectTemplateName: string;
-  whatsAppDigestTemplateName: string;
-  whatsAppTemplateLanguage: string;
   whatsAppFeedback: WhatsAppFeedback;
   whatsAppDiagnostic: WhatsAppDiagnostic | null;
   onWhatsAppPhoneNumberChange: (value: string) => void;
-  onWhatsAppTestPhoneNumberChange: (value: string) => void;
-  onWhatsAppConnectTemplateNameChange: (value: string) => void;
-  onWhatsAppDigestTemplateNameChange: (value: string) => void;
-  onWhatsAppTemplateLanguageChange: (value: string) => void;
-  onSaveWhatsAppConfig: () => void;
-  onRunWhatsAppDiagnostic: () => void;
   onConnectWhatsApp: () => void;
-  onDisconnectWhatsApp: () => void;
   onSendWhatsAppTest: () => void;
 };
 
@@ -2403,42 +2382,20 @@ const IntegrationsView = ({
   isWhatsAppConnected,
   isConnectingWhatsApp,
   isSendingWhatsAppTest,
-  isSavingWhatsAppConfig,
   whatsAppPhoneNumber,
-  whatsAppTestPhoneNumber,
-  whatsAppConnectTemplateName,
-  whatsAppDigestTemplateName,
-  whatsAppTemplateLanguage,
   whatsAppFeedback,
   whatsAppDiagnostic,
   onWhatsAppPhoneNumberChange,
-  onWhatsAppTestPhoneNumberChange,
-  onWhatsAppConnectTemplateNameChange,
-  onWhatsAppDigestTemplateNameChange,
-  onWhatsAppTemplateLanguageChange,
-  onSaveWhatsAppConfig,
-  onRunWhatsAppDiagnostic,
   onConnectWhatsApp,
-  onDisconnectWhatsApp,
   onSendWhatsAppTest,
 }: IntegrationsViewProps) => {
   const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'annually'>('monthly');
-  const [showAdvancedWhatsAppSettings, setShowAdvancedWhatsAppSettings] = React.useState(false);
-  const [showWhatsAppConnectionDetails, setShowWhatsAppConnectionDetails] = React.useState(false);
   const hasWhatsAppAccess = currentPlan === 'PRO' || currentPlan === 'PREMIUM';
-  const hasWhatsAppValidationIssues = Boolean(
-    whatsAppDiagnostic &&
-      (whatsAppDiagnostic.validationIssues.length > 0 || whatsAppDiagnostic.validationResult === 'ERRO')
-  );
   const connectionState = whatsAppDiagnostic?.connectionState;
   const connectionLabel = getWhatsAppConnectionLabel(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
   const connectionTone = getWhatsAppConnectionTone(connectionState, isWhatsAppConnected, isConnectingWhatsApp);
-  const connectionDescription = getWhatsAppConnectionDescription(
-    connectionState,
-    isWhatsAppConnected,
-    hasWhatsAppValidationIssues
-  );
-  const canSendWhatsAppTest = Boolean(whatsAppPhoneNumber.trim() && whatsAppTestPhoneNumber.trim()) && !isSendingWhatsAppTest;
+  const connectionDescription = getWhatsAppConnectionDescription(connectionState, isWhatsAppConnected, whatsAppDiagnostic?.lastErrorMessage);
+  const canSendWhatsAppTest = Boolean(whatsAppPhoneNumber.trim()) && !isSendingWhatsAppTest;
   const canConnectWhatsApp = Boolean(whatsAppPhoneNumber.trim()) && !isConnectingWhatsApp;
 
   const plans = [
@@ -2549,8 +2506,8 @@ const IntegrationsView = ({
               <MessageSquare size={24} />
             </div>
             <div>
-              <h3 className="page-title-premium text-[var(--text-primary)]">Integração com WhatsApp</h3>
-              <p className="text-sm text-[var(--text-muted)]">Alertas e resumos automáticos direto no celular do workspace</p>
+              <h3 className="page-title-premium text-[var(--text-primary)]">Conectar WhatsApp</h3>
+              <p className="text-sm text-[var(--text-muted)]">Receba alertas e resumos financeiros no seu número</p>
             </div>
           </div>
           <div
@@ -2618,28 +2575,13 @@ const IntegrationsView = ({
             ) : (
               <>
                 <p className="leading-relaxed text-[var(--text-secondary)]">
-                  Configure o WhatsApp deste workspace para receber resumos, alertas e confirmações em um canal rápido e confiável.
+                  Informe seu número, conecte e envie um teste.
                 </p>
-
-                <div className="space-y-4">
-                  {[
-                    'Informe o número que vai receber os avisos',
-                    'Conecte o WhatsApp deste workspace',
-                    'Envie um teste e confirme que a mensagem chegou',
-                  ].map((step, index) => (
-                    <div key={index} className="flex items-start gap-4">
-                      <div className="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--bg-surface-elevated)] text-xs font-bold text-[var(--text-muted)]">
-                        {index + 1}
-                      </div>
-                      <p className="text-sm text-[var(--text-secondary)]">{step}</p>
-                    </div>
-                  ))}
-                </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2 sm:col-span-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      Número do WhatsApp do workspace
+                      Número do WhatsApp
                     </label>
                     <input
                       type="tel"
@@ -2652,20 +2594,7 @@ const IntegrationsView = ({
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      Número para teste
-                    </label>
-                    <input
-                      type="tel"
-                      value={whatsAppTestPhoneNumber}
-                      onChange={(e) => onWhatsAppTestPhoneNumberChange(e.target.value)}
-                      placeholder="+55 (11) 99999-9999"
-                      className="app-field w-full rounded-xl px-4 py-3"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      Status da configuração
+                      Status da conexão
                     </label>
                     <div className="flex min-h-[52px] items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 text-sm text-[var(--text-secondary)]">
                       {connectionDescription}
@@ -2680,32 +2609,8 @@ const IntegrationsView = ({
                   </div>
                 )}
 
-                {hasWhatsAppValidationIssues && whatsAppDiagnostic?.validationIssues.length ? (
-                  <div className="app-surface-subtle rounded-2xl px-4 py-3">
-                    <p className="text-sm font-bold text-[var(--text-primary)]">Revisão necessária</p>
-                    <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
-                      {whatsAppDiagnostic.validationIssues.map((issue) => (
-                        <li key={issue}>{issue}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
                 <div className="flex flex-col gap-4">
-                  <div className="grid gap-3 sm:grid-cols-4">
-                    <button
-                      onClick={onSaveWhatsAppConfig}
-                      disabled={isSavingWhatsAppConfig}
-                      className={cn(
-                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
-                        isSavingWhatsAppConfig
-                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
-                          : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]'
-                      )}
-                    >
-                      {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar números'}
-                    </button>
-
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <button
                       onClick={onConnectWhatsApp}
                       disabled={!canConnectWhatsApp}
@@ -2716,7 +2621,7 @@ const IntegrationsView = ({
                           : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
                       )}
                     >
-                      {isConnectingWhatsApp ? 'Conectando...' : isWhatsAppConnected ? 'Reconectar' : 'Conectar'}
+                      {isConnectingWhatsApp ? 'Conectando...' : 'Conectar WhatsApp'}
                     </button>
 
                     <button
@@ -2731,115 +2636,8 @@ const IntegrationsView = ({
                     >
                       {isSendingWhatsAppTest ? 'Enviando teste...' : 'Testar envio'}
                     </button>
-
-                    <button
-                      onClick={onDisconnectWhatsApp}
-                      disabled={!isWhatsAppConnected}
-                      className={cn(
-                        'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all',
-                        !isWhatsAppConnected
-                          ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
-                          : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)]'
-                      )}
-                    >
-                      Desconectar
-                    </button>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowAdvancedWhatsAppSettings((current) => !current)}
-                      className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
-                    >
-                      {showAdvancedWhatsAppSettings ? 'Ocultar ajustes avançados' : 'Mostrar ajustes avançados'}
-                    </button>
-                    {(hasWhatsAppValidationIssues ||
-                      whatsAppDiagnostic?.metaResult ||
-                      whatsAppDiagnostic?.lastErrorMessage ||
-                      whatsAppDiagnostic?.lastValidatedAt ||
-                      whatsAppDiagnostic?.lastTestSentAt) && (
-                      <button
-                        type="button"
-                        onClick={() => setShowWhatsAppConnectionDetails((current) => !current)}
-                        className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
-                      >
-                        {showWhatsAppConnectionDetails ? 'Ocultar detalhes da validação' : 'Ver detalhes da validação'}
-                      </button>
-                    )}
                   </div>
                 </div>
-
-                {showAdvancedWhatsAppSettings && (
-                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
-                    <div className="mb-4">
-                      <p className="text-sm font-bold text-[var(--text-primary)]">Ajustes avançados</p>
-                      <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">
-                        Use este bloco apenas se você precisar revisar templates ou idioma do WhatsApp.
-                      </p>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                          Template de conexão
-                        </label>
-                        <input
-                          type="text"
-                          value={whatsAppConnectTemplateName}
-                          onChange={(e) => onWhatsAppConnectTemplateNameChange(e.target.value)}
-                          placeholder="cote_connect_success"
-                          className="app-field w-full rounded-xl px-4 py-3"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                          Idioma do template
-                        </label>
-                        <input
-                          type="text"
-                          value={whatsAppTemplateLanguage}
-                          onChange={(e) => onWhatsAppTemplateLanguageChange(e.target.value)}
-                          placeholder="pt_BR"
-                          className="app-field w-full rounded-xl px-4 py-3"
-                        />
-                      </div>
-
-                      <div className="space-y-2 sm:col-span-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                          Template de resumo
-                        </label>
-                        <input
-                          type="text"
-                          value={whatsAppDigestTemplateName}
-                          onChange={(e) => onWhatsAppDigestTemplateNameChange(e.target.value)}
-                          placeholder="cote_daily_digest"
-                          className="app-field w-full rounded-xl px-4 py-3"
-                        />
-                      </div>
-
-                      <button
-                        onClick={onSaveWhatsAppConfig}
-                        disabled={isSavingWhatsAppConfig}
-                        className={cn(
-                          'flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all sm:col-span-1',
-                          isSavingWhatsAppConfig
-                            ? 'cursor-not-allowed border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-muted)]'
-                            : 'border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]'
-                        )}
-                      >
-                        {isSavingWhatsAppConfig ? 'Salvando...' : 'Salvar ajustes'}
-                      </button>
-
-                      <button
-                        onClick={onRunWhatsAppDiagnostic}
-                        className="app-surface-subtle flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-[var(--text-primary)] transition-all hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)] sm:col-span-1"
-                      >
-                        Validar configuração
-                      </button>
-                    </div>
-                  </div>
-                )}
               </>
             )}
           </div>
@@ -2877,72 +2675,6 @@ const IntegrationsView = ({
                 Exemplo: <span className="font-semibold text-[var(--text-primary)]">Maior gasto do mês</span>, contas próximas do vencimento e um resumo do que merece atenção no caixa.
               </div>
             </div>
-
-            {showWhatsAppConnectionDetails && whatsAppDiagnostic && (
-              <div className="app-surface-card mt-5 rounded-2xl">
-                <div className="border-b border-[var(--border-default)] px-4 py-3 text-sm font-bold text-[var(--text-primary)]">
-                  Detalhes da validação
-                </div>
-                <div className="p-4">
-                  <div className="grid gap-3 text-sm text-[var(--text-secondary)] sm:grid-cols-2">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Template conexão</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.connectTemplateConfigured || 'Não configurado'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Template resumo</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.templateConfigured || 'Não configurado'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Idioma</p>
-                      <p className="mt-1">{whatsAppDiagnostic.idiomaConfigurado}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Destino de teste</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.destinoTeste || 'Não configurado'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Número conectado</p>
-                      <p className="mt-1 break-all">{whatsAppDiagnostic.numeroConectado || 'Não configurado'}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-2">
-                    <span
-                      className={cn(
-                        'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]',
-                        whatsAppDiagnostic.validationResult === 'OK'
-                          ? 'bg-[var(--whatsapp-soft)] text-[var(--whatsapp)]'
-                          : 'bg-[var(--bg-app)] text-[var(--danger)]'
-                      )}
-                    >
-                      {whatsAppDiagnostic.validationResult}
-                    </span>
-                  </div>
-
-                  {whatsAppDiagnostic.validationIssues.length > 0 && (
-                    <ul className="mt-4 space-y-2">
-                      {whatsAppDiagnostic.validationIssues.map((issue) => (
-                        <li key={issue} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--danger)]">
-                          {issue}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {whatsAppDiagnostic.metaResult && (
-                    <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-xs text-[var(--text-secondary)]">
-                      <p className="font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Resultado da validação</p>
-                      <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-[var(--text-secondary)]">
-                        {typeof whatsAppDiagnostic.metaResult === 'string'
-                          ? whatsAppDiagnostic.metaResult
-                          : JSON.stringify(whatsAppDiagnostic.metaResult, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             <p className="mt-4 text-xs leading-relaxed text-[var(--text-muted)]">
               Depois de conectar, o workspace passa a receber um resumo automático por dia e você ainda pode disparar um teste manual imediatamente.
@@ -7828,53 +7560,16 @@ export default function App() {
         } else {
           setWorkspaceWhatsAppPhoneNumber('');
         }
-        setWorkspaceWhatsAppConnectTemplateName(
-          typeof data.workspace.whatsapp_connect_template_name === 'string'
-            ? data.workspace.whatsapp_connect_template_name
-            : ''
-        );
-        setWorkspaceWhatsAppDigestTemplateName(
-          typeof data.workspace.whatsapp_digest_template_name === 'string'
-            ? data.workspace.whatsapp_digest_template_name
-            : ''
-        );
-        setWorkspaceWhatsAppTemplateLanguage(
-          typeof data.workspace.whatsapp_template_language === 'string' && data.workspace.whatsapp_template_language
-            ? data.workspace.whatsapp_template_language
-            : 'pt_BR'
-        );
-        setWorkspaceWhatsAppTestPhoneNumber(
-          typeof data.workspace.whatsapp_test_phone_number === 'string' && data.workspace.whatsapp_test_phone_number
-            ? `+${data.workspace.whatsapp_test_phone_number}`
-            : ''
-        );
+        const dashboardState =
+          typeof data.workspace.whatsapp_last_connection_state === 'string'
+            ? normalizeWhatsAppConnectionState(data.workspace.whatsapp_last_connection_state)
+            : normalizeWhatsAppConnectionState(workspaceStatus);
         setWhatsAppDiagnostic((current) => ({
-          templateConfigured:
-            typeof data.workspace.whatsapp_digest_template_name === 'string'
-              ? data.workspace.whatsapp_digest_template_name
-              : current?.templateConfigured ?? null,
-          connectTemplateConfigured:
-            typeof data.workspace.whatsapp_connect_template_name === 'string'
-              ? data.workspace.whatsapp_connect_template_name
-              : current?.connectTemplateConfigured ?? null,
-          idiomaConfigurado:
-            typeof data.workspace.whatsapp_template_language === 'string' && data.workspace.whatsapp_template_language
-              ? data.workspace.whatsapp_template_language
-              : current?.idiomaConfigurado ?? 'pt_BR',
-          destinoTeste:
-            typeof data.workspace.whatsapp_test_phone_number === 'string' && data.workspace.whatsapp_test_phone_number
-              ? `+${data.workspace.whatsapp_test_phone_number}`
-              : null,
           numeroConectado:
             typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
               ? `+${data.workspace.whatsapp_phone_number}`
               : null,
-          connectionState:
-            typeof data.workspace.whatsapp_last_connection_state === 'string'
-              ? (data.workspace.whatsapp_last_connection_state as WhatsAppDiagnostic['connectionState'])
-              : workspaceStatus === 'CONNECTED'
-                ? 'connected'
-                : 'config_pending',
+          connectionState: dashboardState,
           lastValidatedAt:
             typeof data.workspace.whatsapp_last_validated_at === 'string'
               ? data.workspace.whatsapp_last_validated_at
@@ -7887,15 +7582,6 @@ export default function App() {
             typeof data.workspace.whatsapp_last_error_message === 'string'
               ? data.workspace.whatsapp_last_error_message
               : null,
-          validationResult:
-            typeof data.workspace.whatsapp_last_error_message === 'string' && data.workspace.whatsapp_last_error_message
-              ? 'ERRO'
-              : 'OK',
-          validationIssues:
-            typeof data.workspace.whatsapp_last_error_message === 'string' && data.workspace.whatsapp_last_error_message
-              ? [data.workspace.whatsapp_last_error_message]
-              : [],
-          configSources: current?.configSources,
           metaResult: current?.metaResult ?? null,
         }));
       }
@@ -8098,26 +7784,6 @@ export default function App() {
             data.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
               ? `+${data.workspace.whatsapp_phone_number}`
               : '',
-          workspaceWhatsAppTestPhoneNumber:
-            data.workspace &&
-            typeof data.workspace.whatsapp_test_phone_number === 'string' &&
-            data.workspace.whatsapp_test_phone_number
-              ? `+${data.workspace.whatsapp_test_phone_number}`
-              : '',
-          workspaceWhatsAppConnectTemplateName:
-            data.workspace && typeof data.workspace.whatsapp_connect_template_name === 'string'
-              ? data.workspace.whatsapp_connect_template_name
-              : '',
-          workspaceWhatsAppDigestTemplateName:
-            data.workspace && typeof data.workspace.whatsapp_digest_template_name === 'string'
-              ? data.workspace.whatsapp_digest_template_name
-              : '',
-          workspaceWhatsAppTemplateLanguage:
-            data.workspace &&
-            typeof data.workspace.whatsapp_template_language === 'string' &&
-            data.workspace.whatsapp_template_language
-              ? data.workspace.whatsapp_template_language
-              : 'pt_BR',
         };
         workspaceDashboardCacheRef.current[resolvedWorkspaceId] = workspaceSnapshot;
         if (user?.id) {
@@ -8167,7 +7833,6 @@ export default function App() {
   const [isWhatsAppConnected, setIsWhatsAppConnected] = React.useState(false);
   const [isConnectingWhatsApp, setIsConnectingWhatsApp] = React.useState(false);
   const [isSendingWhatsAppTest, setIsSendingWhatsAppTest] = React.useState(false);
-  const [isSavingWhatsAppConfig, setIsSavingWhatsAppConfig] = React.useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = React.useState(false);
@@ -8181,10 +7846,6 @@ export default function App() {
   const [isAvatarProcessing, setIsAvatarProcessing] = React.useState(false);
   const [settingsWhatsApp, setSettingsWhatsApp] = React.useState('');
   const [workspaceWhatsAppPhoneNumber, setWorkspaceWhatsAppPhoneNumber] = React.useState('');
-  const [workspaceWhatsAppTestPhoneNumber, setWorkspaceWhatsAppTestPhoneNumber] = React.useState('');
-  const [workspaceWhatsAppConnectTemplateName, setWorkspaceWhatsAppConnectTemplateName] = React.useState('');
-  const [workspaceWhatsAppDigestTemplateName, setWorkspaceWhatsAppDigestTemplateName] = React.useState('');
-  const [workspaceWhatsAppTemplateLanguage, setWorkspaceWhatsAppTemplateLanguage] = React.useState('pt_BR');
   const [whatsAppFeedback, setWhatsAppFeedback] = React.useState<WhatsAppFeedback>(null);
   const [whatsAppDiagnostic, setWhatsAppDiagnostic] = React.useState<WhatsAppDiagnostic | null>(null);
   const [settingsSavedAt, setSettingsSavedAt] = React.useState<string | null>(null);
@@ -8333,10 +7994,6 @@ export default function App() {
     setDashboardInsights(snapshot.dashboardInsights);
     setIsWhatsAppConnected(snapshot.isWhatsAppConnected);
     setWorkspaceWhatsAppPhoneNumber(snapshot.workspaceWhatsAppPhoneNumber);
-    setWorkspaceWhatsAppTestPhoneNumber(snapshot.workspaceWhatsAppTestPhoneNumber);
-    setWorkspaceWhatsAppConnectTemplateName(snapshot.workspaceWhatsAppConnectTemplateName);
-    setWorkspaceWhatsAppDigestTemplateName(snapshot.workspaceWhatsAppDigestTemplateName);
-    setWorkspaceWhatsAppTemplateLanguage(snapshot.workspaceWhatsAppTemplateLanguage);
   }, []);
 
   React.useEffect(() => {
@@ -8362,10 +8019,6 @@ export default function App() {
       setAiUsageCount(0);
       setIsWhatsAppConnected(false);
       setWorkspaceWhatsAppPhoneNumber('');
-      setWorkspaceWhatsAppTestPhoneNumber('');
-      setWorkspaceWhatsAppConnectTemplateName('');
-      setWorkspaceWhatsAppDigestTemplateName('');
-      setWorkspaceWhatsAppTemplateLanguage('pt_BR');
       setWhatsAppFeedback(null);
       setWhatsAppDiagnostic(null);
       setMessages([
@@ -8432,60 +8085,47 @@ React.useEffect(() => {
       setWorkspaceWhatsAppPhoneNumber('');
     }
 
-    if (payload.config && typeof payload.config === 'object') {
-      setWorkspaceWhatsAppConnectTemplateName(
-        typeof payload.config.connectTemplateName === 'string' ? payload.config.connectTemplateName : ''
-      );
-      setWorkspaceWhatsAppDigestTemplateName(
-        typeof payload.config.digestTemplateName === 'string' ? payload.config.digestTemplateName : ''
-      );
-      setWorkspaceWhatsAppTemplateLanguage(
-        typeof payload.config.templateLanguage === 'string' && payload.config.templateLanguage
-          ? payload.config.templateLanguage
-          : 'pt_BR'
-      );
-      setWorkspaceWhatsAppTestPhoneNumber(
-        typeof payload.config.testPhoneNumber === 'string' && payload.config.testPhoneNumber
-          ? `+${String(payload.config.testPhoneNumber).replace(/^\+/, '')}`
-          : ''
-      );
-    }
+    const fallbackState = normalizeWhatsAppConnectionState(payload.status);
 
     if (payload.diagnostic && typeof payload.diagnostic === 'object') {
-      setWhatsAppDiagnostic(payload.diagnostic as WhatsAppDiagnostic);
+      const diagnostic = payload.diagnostic as Record<string, unknown>;
+      setWhatsAppDiagnostic((current) => ({
+        numeroConectado:
+          typeof diagnostic.numeroConectado === 'string'
+            ? diagnostic.numeroConectado
+            : current?.numeroConectado ?? null,
+        connectionState: normalizeWhatsAppConnectionState(diagnostic.connectionState ?? fallbackState),
+        lastValidatedAt:
+          typeof diagnostic.lastValidatedAt === 'string' ? diagnostic.lastValidatedAt : current?.lastValidatedAt ?? null,
+        lastTestSentAt:
+          typeof diagnostic.lastTestSentAt === 'string' ? diagnostic.lastTestSentAt : current?.lastTestSentAt ?? null,
+        lastErrorMessage:
+          typeof diagnostic.lastErrorMessage === 'string'
+            ? diagnostic.lastErrorMessage
+            : current?.lastErrorMessage ?? null,
+        metaResult:
+          typeof diagnostic.metaResult === 'string' || (diagnostic.metaResult && typeof diagnostic.metaResult === 'object')
+            ? (diagnostic.metaResult as WhatsAppDiagnostic['metaResult'])
+            : current?.metaResult ?? null,
+      }));
     } else if ('status' in payload) {
       setWhatsAppDiagnostic((current) =>
         current
           ? {
               ...current,
-              connectionState:
-                String(payload.status).toUpperCase() === 'CONNECTED'
-                  ? 'connected'
-                  : String(payload.status).toUpperCase() === 'CONNECTING'
-                    ? 'testing'
-                    : 'disconnected',
+              connectionState: fallbackState,
             }
-          : null
+          : {
+              numeroConectado: null,
+              connectionState: fallbackState,
+              lastValidatedAt: null,
+              lastTestSentAt: null,
+              lastErrorMessage: null,
+              metaResult: null,
+            }
       );
     }
   }, []);
-
-  const buildWhatsAppPayload = React.useCallback(
-    () => ({
-      phoneNumber: workspaceWhatsAppPhoneNumber,
-      testPhoneNumber: workspaceWhatsAppTestPhoneNumber,
-      connectTemplateName: workspaceWhatsAppConnectTemplateName,
-      digestTemplateName: workspaceWhatsAppDigestTemplateName,
-      templateLanguage: workspaceWhatsAppTemplateLanguage,
-    }),
-    [
-      workspaceWhatsAppConnectTemplateName,
-      workspaceWhatsAppDigestTemplateName,
-      workspaceWhatsAppPhoneNumber,
-      workspaceWhatsAppTemplateLanguage,
-      workspaceWhatsAppTestPhoneNumber,
-    ]
-  );
 
   const parseWhatsAppResponse = React.useCallback(async (response: Response) => {
     const payload = await response.json().catch(() => ({}));
@@ -8498,83 +8138,6 @@ React.useEffect(() => {
     return payload;
   }, []);
 
-  const handleSaveWhatsAppConfig = React.useCallback(async () => {
-    setIsSavingWhatsAppConfig(true);
-    setWhatsAppFeedback(null);
-    try {
-      const response = await fetch('/api/workspace/whatsapp', {
-        method: 'POST',
-        headers: await getAuthHeaders(true),
-        body: JSON.stringify({
-          action: 'save_config',
-          ...buildWhatsAppPayload(),
-        }),
-      });
-      const payload = await parseWhatsAppResponse(response);
-      applyWhatsAppPayload(payload);
-      setWhatsAppFeedback({
-        tone: 'success',
-        title: 'Configuração salva',
-        message:
-          typeof payload?.message === 'string'
-            ? payload.message
-            : 'As configurações do WhatsApp deste workspace foram salvas.',
-      });
-    } catch (error: any) {
-      const message =
-        typeof error?.payload?.error === 'string'
-          ? error.payload.error
-          : 'Não foi possível salvar a configuração do WhatsApp.';
-      if (error?.payload?.diagnostic) {
-        setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
-      }
-      setWhatsAppFeedback({
-        tone: 'error',
-        title: 'Falha ao salvar',
-        message,
-      });
-    } finally {
-      setIsSavingWhatsAppConfig(false);
-    }
-  }, [applyWhatsAppPayload, buildWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse]);
-
-  const handleRunWhatsAppDiagnostic = React.useCallback(async () => {
-    setWhatsAppFeedback(null);
-    try {
-      const response = await fetch('/api/workspace/whatsapp', {
-        method: 'POST',
-        headers: await getAuthHeaders(true),
-        body: JSON.stringify({
-          action: 'diagnose',
-          ...buildWhatsAppPayload(),
-        }),
-      });
-      const payload = await parseWhatsAppResponse(response);
-      applyWhatsAppPayload(payload);
-      setWhatsAppFeedback({
-        tone: payload?.success ? 'success' : 'info',
-        title: payload?.success ? 'Validação concluída' : 'Revisão necessária',
-        message:
-          typeof payload?.message === 'string'
-            ? payload.message
-            : 'A validação do WhatsApp foi concluída.',
-      });
-    } catch (error: any) {
-      const message =
-        typeof error?.payload?.error === 'string'
-          ? error.payload.error
-          : 'Não foi possível validar a configuração do WhatsApp.';
-      if (error?.payload?.diagnostic) {
-        setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
-      }
-      setWhatsAppFeedback({
-        tone: 'error',
-        title: 'Falha na validação',
-        message,
-      });
-    }
-  }, [applyWhatsAppPayload, buildWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse]);
-
   const handleConnectWhatsApp = React.useCallback(async () => {
     setIsConnectingWhatsApp(true);
     setWhatsAppFeedback(null);
@@ -8584,7 +8147,7 @@ React.useEffect(() => {
         headers: await getAuthHeaders(true),
         body: JSON.stringify({
           action: 'connect',
-          ...buildWhatsAppPayload(),
+          phoneNumber: workspaceWhatsAppPhoneNumber,
         }),
       });
       const payload = await parseWhatsAppResponse(response);
@@ -8593,13 +8156,13 @@ React.useEffect(() => {
       const isPendingConfirmation = connectStatus === 'CONNECTING';
       setWhatsAppFeedback({
         tone: isPendingConfirmation ? 'info' : 'success',
-        title: isPendingConfirmation ? 'Solicitação enviada' : 'WhatsApp conectado',
+        title: isPendingConfirmation ? 'Conectando' : 'WhatsApp conectado',
         message:
           typeof payload?.message === 'string'
             ? payload.message
             : isPendingConfirmation
-              ? 'Aguardando confirmação de entrega da Meta para concluir a conexão.'
-              : 'O WhatsApp deste workspace foi conectado com sucesso.',
+              ? 'Conectando... aguarde alguns segundos.'
+              : 'O WhatsApp foi conectado com sucesso.',
       });
       void fetchDashboardData({ silent: true });
     } catch (error: any) {
@@ -8608,53 +8171,17 @@ React.useEffect(() => {
           ? error.payload.error
           : 'Não foi possível conectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
-        setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
+        applyWhatsAppPayload({ diagnostic: error.payload.diagnostic, status: 'FAILED' });
       }
       setWhatsAppFeedback({
         tone: 'error',
-        title: 'Falha na conexão',
+        title: 'Falha ao conectar',
         message,
       });
     } finally {
       setIsConnectingWhatsApp(false);
     }
-  }, [applyWhatsAppPayload, buildWhatsAppPayload, fetchDashboardData, getAuthHeaders, parseWhatsAppResponse]);
-
-  const handleDisconnectWhatsApp = React.useCallback(async () => {
-    setWhatsAppFeedback(null);
-    try {
-      const response = await fetch('/api/workspace/whatsapp', {
-        method: 'POST',
-        headers: await getAuthHeaders(true),
-        body: JSON.stringify({ action: 'disconnect' }),
-      });
-      const payload = await parseWhatsAppResponse(response);
-      applyWhatsAppPayload(payload);
-      setWorkspaceWhatsAppPhoneNumber('');
-      setWhatsAppFeedback({
-        tone: 'info',
-        title: 'WhatsApp desconectado',
-        message:
-          typeof payload?.message === 'string'
-            ? payload.message
-            : 'O WhatsApp deste workspace foi desconectado.',
-      });
-      void fetchDashboardData({ silent: true });
-    } catch (error: any) {
-      const message =
-        typeof error?.payload?.error === 'string'
-          ? error.payload.error
-          : 'Não foi possível desconectar o WhatsApp.';
-      if (error?.payload?.diagnostic) {
-        setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
-      }
-      setWhatsAppFeedback({
-        tone: 'error',
-        title: 'Falha ao desconectar',
-        message,
-      });
-    }
-  }, [applyWhatsAppPayload, fetchDashboardData, getAuthHeaders, parseWhatsAppResponse]);
+  }, [applyWhatsAppPayload, fetchDashboardData, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
 
   const handleSendWhatsAppTest = React.useCallback(async () => {
     setIsSendingWhatsAppTest(true);
@@ -8665,7 +8192,7 @@ React.useEffect(() => {
         headers: await getAuthHeaders(true),
         body: JSON.stringify({
           action: 'send_test',
-          ...buildWhatsAppPayload(),
+          phoneNumber: workspaceWhatsAppPhoneNumber,
         }),
       });
       const payload = await parseWhatsAppResponse(response);
@@ -8684,7 +8211,7 @@ React.useEffect(() => {
           ? error.payload.error
           : 'Não foi possível enviar o teste do WhatsApp.';
       if (error?.payload?.diagnostic) {
-        setWhatsAppDiagnostic(error.payload.diagnostic as WhatsAppDiagnostic);
+        applyWhatsAppPayload({ diagnostic: error.payload.diagnostic, status: 'FAILED' });
       }
       setWhatsAppFeedback({
         tone: 'error',
@@ -8694,7 +8221,7 @@ React.useEffect(() => {
     } finally {
       setIsSendingWhatsAppTest(false);
     }
-  }, [applyWhatsAppPayload, buildWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse]);
+  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
 
   const derivedAgendaBills = React.useMemo<Bill[]>(() => {
     const now = new Date();
@@ -12430,23 +11957,11 @@ React.useEffect(() => {
                   isWhatsAppConnected={isWhatsAppConnected}
                   isConnectingWhatsApp={isConnectingWhatsApp}
                   isSendingWhatsAppTest={isSendingWhatsAppTest}
-                  isSavingWhatsAppConfig={isSavingWhatsAppConfig}
                   whatsAppPhoneNumber={workspaceWhatsAppPhoneNumber}
-                  whatsAppTestPhoneNumber={workspaceWhatsAppTestPhoneNumber}
-                  whatsAppConnectTemplateName={workspaceWhatsAppConnectTemplateName}
-                  whatsAppDigestTemplateName={workspaceWhatsAppDigestTemplateName}
-                  whatsAppTemplateLanguage={workspaceWhatsAppTemplateLanguage}
                   whatsAppFeedback={whatsAppFeedback}
                   whatsAppDiagnostic={whatsAppDiagnostic}
                   onWhatsAppPhoneNumberChange={setWorkspaceWhatsAppPhoneNumber}
-                  onWhatsAppTestPhoneNumberChange={setWorkspaceWhatsAppTestPhoneNumber}
-                  onWhatsAppConnectTemplateNameChange={setWorkspaceWhatsAppConnectTemplateName}
-                  onWhatsAppDigestTemplateNameChange={setWorkspaceWhatsAppDigestTemplateName}
-                  onWhatsAppTemplateLanguageChange={setWorkspaceWhatsAppTemplateLanguage}
-                  onSaveWhatsAppConfig={handleSaveWhatsAppConfig}
-                  onRunWhatsAppDiagnostic={handleRunWhatsAppDiagnostic}
                   onConnectWhatsApp={handleConnectWhatsApp}
-                  onDisconnectWhatsApp={handleDisconnectWhatsApp}
                   onSendWhatsAppTest={handleSendWhatsAppTest}
                 />
               )}
@@ -12868,4 +12383,3 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-

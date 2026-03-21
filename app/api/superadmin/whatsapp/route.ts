@@ -4,6 +4,7 @@ import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { getFriendlyWhatsAppErrorMessage, isValidE164Phone, verifyWhatsAppConnection, WhatsAppApiError } from '@/lib/whatsapp';
 import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
 import { sendWorkspaceWhatsAppAlerts } from '@/lib/server/whatsapp-alerts';
+import { getWhatsAppCapabilityPolicy } from '@/lib/server/whatsapp-capabilities';
 import { getWorkspaceWhatsAppConfig, saveWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import { HttpError, logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { requireSuperadminAccess } from '@/lib/server/platform-access';
@@ -458,7 +459,7 @@ export async function GET(req: Request) {
       summary: {
         total: filtered.length,
         connected: filtered.filter((item) => item.whatsappStatus === 'CONNECTED').length,
-        withErrors: filtered.filter((item) => item.lastConnectionState === 'error').length,
+        withErrors: filtered.filter((item) => item.lastConnectionState === 'error' || item.lastConnectionState === 'failed').length,
         pendingConfig: filtered.filter((item) => item.lastConnectionState === 'config_pending').length,
         messagesLast30Days,
         transactionsViaWhatsappLast30Days,
@@ -675,14 +676,23 @@ export async function PATCH(req: Request) {
         source: 'manual',
         destinationOverride: typeof body.testPhoneNumber === 'string' ? body.testPhoneNumber.trim() || null : null,
         resolvedConfig: {
-          digestTemplateName: config.digestTemplateName,
-          templateLanguage: config.templateLanguage,
           testPhoneNumber: config.testPhoneNumber,
         },
       });
 
       if (!result.sent) {
-        return json({ error: 'Não foi possível enviar o teste do WhatsApp para este workspace.' }, 409);
+        if (result.reason === 'plan_not_eligible') {
+          const policy = getWhatsAppCapabilityPolicy('manual_test_send');
+          return json(
+            {
+              error: policy.message,
+              code: policy.code,
+              requiredPlan: policy.requiredPlan,
+            },
+            403
+          );
+        }
+        return json({ error: 'Nao foi possivel enviar o teste do WhatsApp para este workspace.' }, 409);
       }
 
       const updatedConfig = await saveWorkspaceWhatsAppConfig({
@@ -719,7 +729,18 @@ export async function PATCH(req: Request) {
       });
 
       if (!result.sent) {
-        return json({ error: 'Não há alertas elegíveis para enviar neste workspace agora.' }, 409);
+        if (result.reason === 'plan_not_eligible') {
+          const policy = getWhatsAppCapabilityPolicy('auto_basic_alerts');
+          return json(
+            {
+              error: policy.message,
+              code: policy.code,
+              requiredPlan: policy.requiredPlan,
+            },
+            403
+          );
+        }
+        return json({ error: 'Nao ha alertas elegiveis para enviar neste workspace agora.' }, 409);
       }
 
       await logWorkspaceEventSafe({

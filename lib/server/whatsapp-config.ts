@@ -2,10 +2,10 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { normalizeWhatsappPhone } from '@/lib/whatsapp';
+import { normalizeWhatsappPhone, WHATSAPP_TEMPLATES } from '@/lib/whatsapp';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 
-export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = 'pt_BR';
+export const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = WHATSAPP_TEMPLATES.CONNECT.language;
 const WHATSAPP_CONFIG_EVENT_TYPE = 'whatsapp.config.updated';
 const WHATSAPP_CONFIG_KEY_PREFIX = 'workspace.whatsapp-config.';
 const WHATSAPP_CONFIG_CACHE_TTL_MS = 15_000;
@@ -22,7 +22,15 @@ export type WorkspaceWhatsAppConfig = {
   digestTemplateName: string | null;
   templateLanguage: string;
   testPhoneNumber: string | null;
-  lastConnectionState: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
+  lastConnectionState:
+    | 'idle'
+    | 'connecting'
+    | 'connected'
+    | 'disconnected'
+    | 'failed'
+    | 'error'
+    | 'testing'
+    | 'config_pending';
   lastErrorMessage: string | null;
   lastErrorCategory: string | null;
   lastValidatedAt: string | null;
@@ -47,9 +55,9 @@ export type WorkspaceWhatsAppConfig = {
 };
 
 export type ResolvedWorkspaceWhatsAppConfig = WorkspaceWhatsAppConfig & {
-  connectTemplateNameSource: 'workspace' | 'env' | 'unset';
-  digestTemplateNameSource: 'workspace' | 'env' | 'unset';
-  templateLanguageSource: 'workspace' | 'env' | 'fallback';
+  connectTemplateNameSource: 'system';
+  digestTemplateNameSource: 'system';
+  templateLanguageSource: 'system';
   testPhoneNumberSource: 'workspace' | 'connected_phone' | 'unset';
 };
 
@@ -71,11 +79,6 @@ function normalizeTemplateName(value: unknown) {
   return normalized || null;
 }
 
-function normalizeTemplateLanguage(value: unknown) {
-  const normalized = cleanValue(value);
-  return normalized || DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE;
-}
-
 function normalizeTestPhoneNumber(value: unknown) {
   const normalized = normalizeWhatsappPhone(cleanValue(value));
   return normalized || null;
@@ -83,15 +86,10 @@ function normalizeTestPhoneNumber(value: unknown) {
 
 function normalizeConnectionState(value: unknown): WorkspaceWhatsAppConfig['lastConnectionState'] {
   const normalized = cleanValue(value).toLowerCase();
-  if (
-    normalized === 'connected' ||
-    normalized === 'disconnected' ||
-    normalized === 'error' ||
-    normalized === 'testing' ||
-    normalized === 'config_pending'
-  ) {
-    return normalized;
-  }
+  if (normalized === 'connected') return 'connected';
+  if (normalized === 'disconnected' || normalized === 'config_pending') return 'disconnected';
+  if (normalized === 'failed' || normalized === 'error') return 'failed';
+  if (normalized === 'connecting' || normalized === 'testing') return 'connecting';
   return 'idle';
 }
 
@@ -176,11 +174,9 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
       : null;
 
   return {
-    connectTemplateName: sourceRecord ? normalizeTemplateName(sourceRecord.connectTemplateName) : null,
-    digestTemplateName: sourceRecord ? normalizeTemplateName(sourceRecord.digestTemplateName) : null,
-    templateLanguage: sourceRecord
-      ? normalizeTemplateLanguage(sourceRecord.templateLanguage)
-      : DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
+    connectTemplateName: WHATSAPP_TEMPLATES.CONNECT.name,
+    digestTemplateName: WHATSAPP_TEMPLATES.DIGEST.name,
+    templateLanguage: WHATSAPP_TEMPLATES.CONNECT.language,
     testPhoneNumber: sourceRecord ? normalizeTestPhoneNumber(sourceRecord.testPhoneNumber) : null,
     lastConnectionState: sourceRecord ? normalizeConnectionState(sourceRecord.lastConnectionState) : 'idle',
     lastErrorMessage: sourceRecord ? normalizeTemplateName(sourceRecord.lastErrorMessage) : null,
@@ -254,9 +250,9 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
 
   if (!latestConfigEvent) {
     const resolved: WorkspaceWhatsAppConfig = {
-      connectTemplateName: null,
-      digestTemplateName: null,
-      templateLanguage: DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
+      connectTemplateName: WHATSAPP_TEMPLATES.CONNECT.name,
+      digestTemplateName: WHATSAPP_TEMPLATES.DIGEST.name,
+      templateLanguage: WHATSAPP_TEMPLATES.CONNECT.language,
       testPhoneNumber: null,
       lastConnectionState: 'idle',
       lastErrorMessage: null,
@@ -303,18 +299,10 @@ export async function saveWorkspaceWhatsAppConfig(params: {
 }) {
   const currentConfig = await getWorkspaceWhatsAppConfig(params.workspaceId);
   const normalizedConfig: WorkspaceWhatsAppConfig = {
-    connectTemplateName:
-      typeof params.connectTemplateName === 'undefined'
-        ? currentConfig.connectTemplateName
-        : normalizeTemplateName(params.connectTemplateName),
-    digestTemplateName:
-      typeof params.digestTemplateName === 'undefined'
-        ? currentConfig.digestTemplateName
-        : normalizeTemplateName(params.digestTemplateName),
-    templateLanguage:
-      typeof params.templateLanguage === 'undefined'
-        ? currentConfig.templateLanguage
-        : normalizeTemplateLanguage(params.templateLanguage),
+    // Templates e idioma são controlados internamente pelo sistema (SaaS).
+    connectTemplateName: WHATSAPP_TEMPLATES.CONNECT.name,
+    digestTemplateName: WHATSAPP_TEMPLATES.DIGEST.name,
+    templateLanguage: WHATSAPP_TEMPLATES.CONNECT.language,
     testPhoneNumber:
       typeof params.testPhoneNumber === 'undefined'
         ? currentConfig.testPhoneNumber
@@ -403,21 +391,11 @@ export function resolveWorkspaceWhatsAppConfig(params: {
   workspaceConfig: WorkspaceWhatsAppConfig;
   connectedPhoneNumber?: string | null;
 }): ResolvedWorkspaceWhatsAppConfig {
-  const workspaceTemplateLanguageRaw = cleanValue(params.workspaceConfig.templateLanguage);
-  const envConnectTemplateName = normalizeTemplateName(process.env.WHATSAPP_TEMPLATE_CONNECT_NAME);
-  const envDigestTemplateName = normalizeTemplateName(process.env.WHATSAPP_TEMPLATE_DIGEST_NAME);
-  const envTemplateLanguageRaw = cleanValue(process.env.WHATSAPP_TEMPLATE_LANGUAGE);
-  const envTemplateLanguage = envTemplateLanguageRaw
-    ? normalizeTemplateLanguage(envTemplateLanguageRaw)
-    : DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE;
   const connectedPhoneNumber = normalizeTestPhoneNumber(params.connectedPhoneNumber);
 
-  const connectTemplateName = params.workspaceConfig.connectTemplateName || envConnectTemplateName;
-  const digestTemplateName = params.workspaceConfig.digestTemplateName || envDigestTemplateName;
-  const templateLanguage =
-    (workspaceTemplateLanguageRaw ? normalizeTemplateLanguage(workspaceTemplateLanguageRaw) : null) ||
-    envTemplateLanguage ||
-    DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE;
+  const connectTemplateName = WHATSAPP_TEMPLATES.CONNECT.name;
+  const digestTemplateName = WHATSAPP_TEMPLATES.DIGEST.name;
+  const templateLanguage = WHATSAPP_TEMPLATES.CONNECT.language;
   const testPhoneNumber = params.workspaceConfig.testPhoneNumber || connectedPhoneNumber;
 
   return {
@@ -433,21 +411,9 @@ export function resolveWorkspaceWhatsAppConfig(params: {
     pendingConfirmation: params.workspaceConfig.pendingConfirmation,
     pendingConnection: params.workspaceConfig.pendingConnection,
     updatedAt: params.workspaceConfig.updatedAt,
-    connectTemplateNameSource: params.workspaceConfig.connectTemplateName
-      ? 'workspace'
-      : envConnectTemplateName
-      ? 'env'
-      : 'unset',
-    digestTemplateNameSource: params.workspaceConfig.digestTemplateName
-      ? 'workspace'
-      : envDigestTemplateName
-      ? 'env'
-      : 'unset',
-    templateLanguageSource: workspaceTemplateLanguageRaw
-      ? 'workspace'
-      : envTemplateLanguageRaw
-      ? 'env'
-      : 'fallback',
+    connectTemplateNameSource: 'system',
+    digestTemplateNameSource: 'system',
+    templateLanguageSource: 'system',
     testPhoneNumberSource: params.workspaceConfig.testPhoneNumber
       ? 'workspace'
       : connectedPhoneNumber

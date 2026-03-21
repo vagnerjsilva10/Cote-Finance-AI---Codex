@@ -554,7 +554,15 @@ export type SuperadminWhatsappWorkspaceRecord = {
   whatsappStatus: string | null;
   phoneNumber: string | null;
   testPhoneNumber: string | null;
-  lastConnectionState: 'idle' | 'connected' | 'disconnected' | 'error' | 'testing' | 'config_pending';
+  lastConnectionState:
+    | 'idle'
+    | 'connecting'
+    | 'connected'
+    | 'disconnected'
+    | 'failed'
+    | 'error'
+    | 'testing'
+    | 'config_pending';
   lastErrorMessage: string | null;
   lastErrorCategory: string | null;
   lastValidatedAt: string | null;

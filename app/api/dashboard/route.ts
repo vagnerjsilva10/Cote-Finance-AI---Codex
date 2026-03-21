@@ -348,10 +348,6 @@ export async function GET(req: Request) {
         name: context.workspaces.find((item) => item.id === workspaceId)?.name || 'Minha Conta',
         whatsapp_status: null,
         whatsapp_phone_number: null,
-        whatsapp_connect_template_name: workspaceWhatsAppConfig.connectTemplateName,
-        whatsapp_digest_template_name: workspaceWhatsAppConfig.digestTemplateName,
-        whatsapp_template_language: workspaceWhatsAppConfig.templateLanguage,
-        whatsapp_test_phone_number: workspaceWhatsAppConfig.testPhoneNumber,
         whatsapp_last_connection_state: workspaceWhatsAppConfig.lastConnectionState,
         whatsapp_last_error_message: workspaceWhatsAppConfig.lastErrorMessage,
         whatsapp_last_validated_at: workspaceWhatsAppConfig.lastValidatedAt,
@@ -362,10 +358,6 @@ export async function GET(req: Request) {
 
     const workspaceWithConfig = {
       ...safeWorkspace,
-      whatsapp_connect_template_name: workspaceWhatsAppConfig.connectTemplateName,
-      whatsapp_digest_template_name: workspaceWhatsAppConfig.digestTemplateName,
-      whatsapp_template_language: workspaceWhatsAppConfig.templateLanguage,
-      whatsapp_test_phone_number: workspaceWhatsAppConfig.testPhoneNumber,
       whatsapp_last_connection_state: workspaceWhatsAppConfig.lastConnectionState,
       whatsapp_last_error_message: workspaceWhatsAppConfig.lastErrorMessage,
       whatsapp_last_validated_at: workspaceWhatsAppConfig.lastValidatedAt,

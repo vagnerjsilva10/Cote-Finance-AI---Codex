@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/prisma';
+import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { sendWhatsAppTextMessage } from '@/lib/whatsapp';
 
@@ -32,7 +33,7 @@ export type WhatsAppAlertsResult =
       plan?: string;
       alerts?: WorkspaceAlert[];
       count?: number;
-      reason: 'workspace_not_found' | 'not_connected' | 'no_alerts' | 'already_sent';
+      reason: 'workspace_not_found' | 'not_connected' | 'no_alerts' | 'already_sent' | 'plan_not_eligible';
     };
 
 function formatCurrency(value: number) {
@@ -193,13 +194,34 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
   const plan = String(workspace.subscription?.plan || 'FREE').toUpperCase();
   const status = String(workspace.subscription?.status || 'INACTIVE').toUpperCase();
 
-  if (workspace.whatsapp_status !== 'CONNECTED' || !destinationPhone || status !== 'ACTIVE') {
+  if (workspace.whatsapp_status !== 'CONNECTED' || !destinationPhone) {
     return {
       sent: false,
       workspaceId: workspace.id,
       phoneNumber: destinationPhone || undefined,
       plan,
       reason: 'not_connected',
+    } satisfies WhatsAppAlertsResult;
+  }
+
+  const hasBasicAlertCapability = hasWhatsAppCapabilityForSubscription({
+    plan,
+    status,
+    capability: 'auto_basic_alerts',
+  });
+  const hasAdvancedAlertCapability = hasWhatsAppCapabilityForSubscription({
+    plan,
+    status,
+    capability: 'auto_advanced_alerts',
+  });
+
+  if (!hasBasicAlertCapability) {
+    return {
+      sent: false,
+      workspaceId: workspace.id,
+      phoneNumber: destinationPhone || undefined,
+      plan,
+      reason: 'plan_not_eligible',
     } satisfies WhatsAppAlertsResult;
   }
 
@@ -233,7 +255,7 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     }
   }
 
-  if (plan === 'PREMIUM' && prevExpense > 0) {
+  if (hasAdvancedAlertCapability && prevExpense > 0) {
     const delta = ((currentExpense - prevExpense) / prevExpense) * 100;
     if (delta >= 20) {
       alerts.push({
@@ -244,7 +266,7 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     }
   }
 
-  if (plan === 'PREMIUM') {
+  if (hasAdvancedAlertCapability) {
     const currentExpenseByCategory = new Map<string, number>();
     const previousExpenseByCategory = new Map<string, number>();
 
@@ -346,7 +368,7 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     });
   }
 
-  if (plan !== 'FREE') {
+  if (hasBasicAlertCapability) {
     const recurringDebts = workspace.recurring_debts;
     const recurringTotal = recurringDebts.reduce((acc, debt) => acc + Number(debt.amount || 0), 0);
 

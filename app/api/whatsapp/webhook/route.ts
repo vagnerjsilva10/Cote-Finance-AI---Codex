@@ -11,6 +11,7 @@ import {
   WHATSAPP_CONFIG_MISSING_ERROR,
   WHATSAPP_VERIFY_TOKEN_MISSING_ERROR,
 } from '@/lib/whatsapp';
+import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
 import { getWorkspaceWhatsAppConfig, saveWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 
@@ -1470,7 +1471,7 @@ async function processIncomingStatus(status: IncomingMessageStatus) {
     await saveWorkspaceWhatsAppConfig({
       workspaceId: workspace.id,
       userId: null,
-      lastConnectionState: 'error',
+      lastConnectionState: 'failed',
       lastErrorMessage: failureReason,
       lastErrorCategory: 'delivery',
       lastValidatedAt: new Date().toISOString(),
@@ -1591,12 +1592,26 @@ async function processIncomingMessage(message: IncomingTextMessage) {
   }
 
   const aiIntent = detectWhatsAppAiIntent(message.body);
-  const workspacePlan = String(workspace.subscription?.plan || 'FREE').toUpperCase();
-  const workspaceStatus = String(workspace.subscription?.status || 'INACTIVE').toUpperCase();
-  const isPremiumActive = workspaceStatus === 'ACTIVE' && workspacePlan === 'PREMIUM';
+  const subscriptionPlan = workspace.subscription?.plan;
+  const subscriptionStatus = workspace.subscription?.status;
+  const canUseWhatsAppAi = hasWhatsAppCapabilityForSubscription({
+    plan: subscriptionPlan,
+    status: subscriptionStatus,
+    capability: 'ai_assistant',
+  });
+  const canUseAdminActions = hasWhatsAppCapabilityForSubscription({
+    plan: subscriptionPlan,
+    status: subscriptionStatus,
+    capability: 'admin_actions',
+  });
+  const canUseGeminiParser = hasWhatsAppCapabilityForSubscription({
+    plan: subscriptionPlan,
+    status: subscriptionStatus,
+    capability: 'gemini_transaction_parser',
+  });
 
   if (aiIntent) {
-    if (!isPremiumActive) {
+    if (!canUseWhatsAppAi) {
       await sendWhatsAppTextMessage({
         to: sender,
         text: 'As consultas com IA no WhatsApp estão disponíveis no plano Premium.',
@@ -1616,7 +1631,7 @@ async function processIncomingMessage(message: IncomingTextMessage) {
 
   const actionIntent = detectWhatsAppActionIntent(message.body);
   if (actionIntent) {
-    if (!isPremiumActive) {
+    if (!canUseAdminActions) {
       await sendWhatsAppTextMessage({
         to: sender,
         text: 'As ações administrativas pelo WhatsApp estão disponíveis no plano Premium.',
@@ -1636,7 +1651,7 @@ async function processIncomingMessage(message: IncomingTextMessage) {
 
   let parsed = parseFinancialCommand(message.body);
   let parserMode: 'simple' | 'gemini' = 'simple';
-  if (isPremiumActive && shouldTryGeminiTransactionParser(message.body, parsed)) {
+  if (canUseGeminiParser && shouldTryGeminiTransactionParser(message.body, parsed)) {
     try {
       const geminiParsed = await extractFinancialCommandWithGemini(message.body);
       if (geminiParsed) {
@@ -1665,7 +1680,7 @@ async function processIncomingMessage(message: IncomingTextMessage) {
   }
 
   if (!parsed) {
-    if (isPremiumActive) {
+    if (canUseWhatsAppAi) {
       try {
         await handleWhatsAppGeminiIntent({
           workspaceId: workspace.id,

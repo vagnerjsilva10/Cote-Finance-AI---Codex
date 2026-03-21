@@ -8,6 +8,19 @@ export const WHATSAPP_CONFIG_MISSING_ERROR =
 export const WHATSAPP_VERIFY_TOKEN_MISSING_ERROR =
   'WhatsApp não configurado. Defina WHATSAPP_VERIFY_TOKEN.';
 
+export const WHATSAPP_TEMPLATES = {
+  CONNECT: {
+    name: 'cote_connect_success',
+    language: 'pt_BR',
+  },
+  DIGEST: {
+    name: 'cote_daily_digest',
+    language: 'pt_BR',
+  },
+} as const;
+
+export type WhatsAppTemplateKey = keyof typeof WHATSAPP_TEMPLATES;
+
 type WhatsAppConfig = {
   accessToken: string;
   phoneNumberId: string;
@@ -92,8 +105,8 @@ type WhatsAppTemplateMessageParams = {
 };
 
 export const TEMPLATE_CONFIG = {
-  cote_connect_success: 1,
-  cote_daily_digest: 5,
+  [WHATSAPP_TEMPLATES.CONNECT.name]: 1,
+  [WHATSAPP_TEMPLATES.DIGEST.name]: 5,
 } as const;
 
 type SupportedTemplateName = keyof typeof TEMPLATE_CONFIG;
@@ -223,6 +236,115 @@ export function getFriendlyWhatsAppErrorMessage(error: unknown) {
   }
 
   return `Falha ao enviar mensagem no WhatsApp (HTTP ${error.status}). ${error.message}`;
+}
+
+type UserFacingWhatsAppErrorCode =
+  | 'window_24h'
+  | 'invalid_number'
+  | 'template_internal'
+  | 'auth'
+  | 'rate_limit'
+  | 'temporary'
+  | 'generic';
+
+export type UserFacingWhatsAppError = {
+  code: UserFacingWhatsAppErrorCode;
+  message: string;
+  status: number;
+  shouldLogInternalDetailsOnly: boolean;
+};
+
+function is24HourWindowError(error: WhatsAppApiError) {
+  const message = error.message.toLowerCase();
+  return (
+    error.metaCode === 131047 ||
+    /24\s*hours/.test(message) ||
+    /outside the allowed window/.test(message) ||
+    /outside the customer care window/.test(message)
+  );
+}
+
+function isInvalidDestinationNumberError(error: WhatsAppApiError) {
+  const message = error.message.toLowerCase();
+  return (
+    error.metaCode === 131030 ||
+    error.metaCode === 131026 ||
+    error.metaCode === 132005 ||
+    /invalid/.test(message) && /number|phone|recipient|to/.test(message)
+  );
+}
+
+export function getUserFacingWhatsAppError(error: unknown): UserFacingWhatsAppError {
+  if (!(error instanceof WhatsAppApiError)) {
+    return {
+      code: 'generic',
+      message: 'Não foi possível enviar mensagem no WhatsApp. Tente novamente em alguns segundos.',
+      status: 500,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  if (is24HourWindowError(error)) {
+    return {
+      code: 'window_24h',
+      message:
+        'Não foi possível enviar mensagem. Estamos iniciando a conexão com seu WhatsApp. Tente novamente em alguns segundos.',
+      status: 409,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  if (isInvalidDestinationNumberError(error)) {
+    return {
+      code: 'invalid_number',
+      message: 'Número inválido. Verifique o formato com DDD.',
+      status: 400,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  if (error.category === 'template') {
+    return {
+      code: 'template_internal',
+      message: 'Não foi possível enviar mensagem no WhatsApp. Tente novamente em alguns segundos.',
+      status: 500,
+      shouldLogInternalDetailsOnly: true,
+    };
+  }
+
+  if (error.category === 'auth') {
+    return {
+      code: 'auth',
+      message: 'Não foi possível autenticar a integração do WhatsApp no momento.',
+      status: 503,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  if (error.category === 'rate_limit') {
+    return {
+      code: 'rate_limit',
+      message: 'Não foi possível enviar mensagem no WhatsApp. Tente novamente em alguns segundos.',
+      status: 429,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  if (error.category === 'temporary') {
+    return {
+      code: 'temporary',
+      message: 'Não foi possível enviar mensagem no WhatsApp. Tente novamente em alguns segundos.',
+      status: 503,
+      shouldLogInternalDetailsOnly: false,
+    };
+  }
+
+  return {
+    code: 'generic',
+    message: `Falha ao enviar mensagem no WhatsApp (HTTP ${error.status}).`,
+    status: error.status || 500,
+    shouldLogInternalDetailsOnly: false,
+  };
 }
 
 async function sendWhatsAppRequest(payload: Record<string, unknown>, context: WhatsAppRequestContext) {
@@ -468,7 +590,7 @@ export async function sendWhatsAppTemplate(params: SendWhatsAppTemplateParams) {
   }
 
   const templateName = params.templateName.trim();
-  const languageCode = (params.languageCode || process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'pt_BR').trim();
+  const languageCode = (params.languageCode || WHATSAPP_TEMPLATES.CONNECT.language).trim();
 
   if (!templateName) {
     throw new Error('Nome do template do WhatsApp não configurado.');

@@ -3,10 +3,12 @@ import 'server-only';
 import { prisma } from '@/lib/prisma';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
+import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
 import { ResolvedWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import {
   sendWhatsAppTemplate,
   sendWhatsAppTextMessage,
+  WHATSAPP_TEMPLATES,
   WhatsAppApiError,
 } from '@/lib/whatsapp';
 
@@ -39,7 +41,7 @@ export type WhatsAppDigestResult =
       preview?: string;
       workspaceId: string;
       phoneNumber?: string;
-      reason: 'not_connected' | 'already_sent' | 'no_content' | 'workspace_not_found';
+      reason: 'not_connected' | 'already_sent' | 'no_content' | 'workspace_not_found' | 'plan_not_eligible';
     };
 
 function formatCurrency(value: number) {
@@ -253,7 +255,7 @@ export async function sendWorkspaceWhatsAppDigest(params: {
   source?: 'cron' | 'manual';
   now?: Date;
   destinationOverride?: string | null;
-  resolvedConfig?: Pick<ResolvedWorkspaceWhatsAppConfig, 'digestTemplateName' | 'templateLanguage' | 'testPhoneNumber'>;
+  resolvedConfig?: Pick<ResolvedWorkspaceWhatsAppConfig, 'testPhoneNumber'>;
 }) {
   const now = params.now ?? new Date();
   const workspace = await prisma.workspace.findUnique({
@@ -263,6 +265,12 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       name: true,
       whatsapp_phone_number: true,
       whatsapp_status: true,
+      subscription: {
+        select: {
+          plan: true,
+          status: true,
+        },
+      },
       wallets: {
         select: { balance: true },
       },
@@ -316,6 +324,22 @@ export async function sendWorkspaceWhatsAppDigest(params: {
       sent: false,
       workspaceId: params.workspaceId,
       reason: 'workspace_not_found',
+    } satisfies WhatsAppDigestResult;
+  }
+
+  const requiredCapability = params.source === 'manual' ? 'manual_test_send' : 'auto_daily_digest';
+  const hasDigestCapability = hasWhatsAppCapabilityForSubscription({
+    plan: workspace.subscription?.plan,
+    status: workspace.subscription?.status,
+    capability: requiredCapability,
+  });
+
+  if (!hasDigestCapability) {
+    return {
+      sent: false,
+      workspaceId: workspace.id,
+      phoneNumber: workspace.whatsapp_phone_number || undefined,
+      reason: 'plan_not_eligible',
     } satisfies WhatsAppDigestResult;
   }
 
@@ -423,48 +447,39 @@ export async function sendWorkspaceWhatsAppDigest(params: {
     upcomingItems,
   });
 
-  const digestTemplateName =
-    params.resolvedConfig?.digestTemplateName?.trim() || process.env.WHATSAPP_TEMPLATE_DIGEST_NAME?.trim();
   let deliveryMode: 'template' | 'text' = 'text';
 
-  if (digestTemplateName) {
-    try {
-      await sendWhatsAppTemplate({
-        to: destinationPhone,
-        templateName: digestTemplateName,
-        languageCode: params.resolvedConfig?.templateLanguage,
-        variables: [
-          workspace.name,
-          formatCurrency(totalBalance),
-          formatCurrency(monthIncome),
-          formatCurrency(monthExpenses),
-          buildDigestHighlights({
-            monthNet,
-            topExpenseCategory: topExpenseCategory
-              ? { name: topExpenseCategory[0], amount: topExpenseCategory[1] }
-              : null,
-            upcomingItems,
-            insights,
-          }) || 'Abra o painel para acompanhar tudo com mais detalhes.',
-        ],
-      });
-      deliveryMode = 'template';
-    } catch (error) {
-      if (!shouldFallbackToText(error)) {
-        throw error;
-      }
-
-      await sendWhatsAppTextMessage({
-        to: destinationPhone,
-        text: preview,
-      });
-      deliveryMode = 'text';
+  try {
+    await sendWhatsAppTemplate({
+      to: destinationPhone,
+      templateName: WHATSAPP_TEMPLATES.DIGEST.name,
+      languageCode: WHATSAPP_TEMPLATES.DIGEST.language,
+      variables: [
+        workspace.name,
+        formatCurrency(totalBalance),
+        formatCurrency(monthIncome),
+        formatCurrency(monthExpenses),
+        buildDigestHighlights({
+          monthNet,
+          topExpenseCategory: topExpenseCategory
+            ? { name: topExpenseCategory[0], amount: topExpenseCategory[1] }
+            : null,
+          upcomingItems,
+          insights,
+        }) || 'Abra o painel para acompanhar tudo com mais detalhes.',
+      ],
+    });
+    deliveryMode = 'template';
+  } catch (error) {
+    if (!shouldFallbackToText(error)) {
+      throw error;
     }
-  } else {
+
     await sendWhatsAppTextMessage({
       to: destinationPhone,
       text: preview,
     });
+    deliveryMode = 'text';
   }
 
   await logWorkspaceEventSafe({

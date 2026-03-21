@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
+import { WHATSAPP_AUTOMATION_ELIGIBLE_PLANS } from '@/lib/server/whatsapp-capabilities';
 import { sendWorkspaceWhatsAppDigest } from '@/lib/server/whatsapp-digest';
 import { sendWorkspaceWhatsAppAlerts } from '@/lib/server/whatsapp-alerts';
 
@@ -217,7 +218,7 @@ export async function GET(req: Request) {
           is: {
             status: 'ACTIVE',
             plan: {
-              in: ['PRO', 'PREMIUM'],
+              in: [...WHATSAPP_AUTOMATION_ELIGIBLE_PLANS],
             },
           },
         },

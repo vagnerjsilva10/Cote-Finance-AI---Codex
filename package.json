@@ -14,7 +14,9 @@
     "fix:encoding": "node scripts/fix-mojibake.js",
     "check:encoding": "node scripts/check-mojibake.js",
     "check:theme": "node scripts/check-theme-hardcodes.js",
-    "clean": "node scripts/clean-next.js"
+    "clean": "node scripts/clean-next.js",
+    "ops:verify-whatsapp-cron": "node scripts/ops/verify-whatsapp-cron-production.js",
+    "ops:verify-whatsapp-cron:strict": "node scripts/ops/verify-whatsapp-cron-production.js --strict"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",

@@ -407,9 +407,9 @@ function StateBadge({ state }: { state: SuperadminWhatsappResponse['workspaces']
   const label =
     state === 'connected'
       ? 'Conectado'
-      : state === 'error'
+      : state === 'error' || state === 'failed'
         ? 'Com erro'
-        : state === 'testing'
+        : state === 'testing' || state === 'connecting'
           ? 'Testando'
           : state === 'config_pending'
             ? 'Config. pendente'
@@ -419,9 +419,9 @@ function StateBadge({ state }: { state: SuperadminWhatsappResponse['workspaces']
   const className =
     state === 'connected'
       ? 'border border-[var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]'
-      : state === 'error'
+      : state === 'error' || state === 'failed'
         ? 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--danger)]'
-        : state === 'testing'
+        : state === 'testing' || state === 'connecting'
           ? 'border border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]'
           : 'border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)]';
   return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${className}`}>{label}</span>;
