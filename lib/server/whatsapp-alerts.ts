@@ -1,15 +1,25 @@
 import 'server-only';
 
 import { prisma } from '@/lib/prisma';
-import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
+import type { FinancialCalendarAlert } from '@/lib/financial-calendar/types';
+import { getFinancialCalendarSnapshot } from '@/lib/server/financial-calendar';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
+import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capabilities';
 import { sendWhatsAppTextMessage } from '@/lib/whatsapp';
 
 const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
-const UPCOMING_WINDOW_DAYS = 7;
 
-type AlertKind = 'low_balance' | 'high_spending' | 'upcoming_due' | 'category_spike' | 'goal_overdue' | 'recurring_heavy';
-
+type AlertKind =
+  | 'low_balance'
+  | 'high_spending'
+  | 'upcoming_due'
+  | 'category_spike'
+  | 'goal_overdue'
+  | 'recurring_heavy'
+  | 'calendar_overdue'
+  | 'calendar_tight_balance'
+  | 'calendar_heavy_day'
+  | 'calendar_outflow_cluster';
 
 type WorkspaceAlert = {
   kind: AlertKind;
@@ -43,14 +53,6 @@ function formatCurrency(value: number) {
   });
 }
 
-function formatDateLabel(date: Date) {
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    timeZone: SAO_PAULO_TIMEZONE,
-  });
-}
-
 function getDateKey(date = new Date()) {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: SAO_PAULO_TIMEZONE,
@@ -60,30 +62,20 @@ function getDateKey(date = new Date()) {
   }).format(date);
 }
 
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+function mapFinancialCalendarAlertKind(kind: FinancialCalendarAlert['kind']): AlertKind {
+  if (kind === 'upcoming_due') return 'upcoming_due';
+  if (kind === 'overdue') return 'calendar_overdue';
+  if (kind === 'tight_balance') return 'calendar_tight_balance';
+  if (kind === 'heavy_day') return 'calendar_heavy_day';
+  return 'calendar_outflow_cluster';
 }
 
-function getDaysUntil(date: Date, now: Date) {
-  const diffMs = startOfDay(date).getTime() - startOfDay(now).getTime();
-  return Math.round(diffMs / 86_400_000);
-}
-
-function getNextDueDate(dueDay: number, now: Date) {
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const lastDayCurrentMonth = new Date(year, month + 1, 0).getDate();
-  const currentCandidate = new Date(year, month, Math.min(dueDay, lastDayCurrentMonth));
-
-  if (startOfDay(currentCandidate) >= startOfDay(now)) {
-    return currentCandidate;
-  }
-
-  const nextMonthDate = new Date(year, month + 1, 1);
-  const nextYear = nextMonthDate.getFullYear();
-  const nextMonth = nextMonthDate.getMonth();
-  const lastDayNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
-  return new Date(nextYear, nextMonth, Math.min(dueDay, lastDayNextMonth));
+function mapFinancialCalendarAlert(alert: FinancialCalendarAlert): WorkspaceAlert {
+  return {
+    kind: mapFinancialCalendarAlertKind(alert.kind),
+    title: alert.title,
+    message: alert.message,
+  };
 }
 
 function buildAlertMessage(workspaceName: string, alerts: WorkspaceAlert[]) {
@@ -141,32 +133,6 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
               name: true,
             },
           },
-        },
-      },
-      goals: {
-        where: {
-          deadline: {
-            not: null,
-          },
-        },
-        select: {
-          name: true,
-          current_amount: true,
-          target_amount: true,
-          deadline: true,
-        },
-      },
-      debts: {
-        where: {
-          status: {
-            in: ['ACTIVE', 'OVERDUE', 'INSTALLMENT'],
-          },
-        },
-        select: {
-          creditor: true,
-          category: true,
-          remaining_amount: true,
-          due_day: true,
         },
       },
       recurring_debts: {
@@ -250,7 +216,7 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
       alerts.push({
         kind: 'low_balance',
         title: 'Saldo baixo',
-        message: `Seu saldo atual está em ${formatCurrency(totalBalance)} e merece atenção nesta semana.`, 
+        message: `Seu saldo atual esta em ${formatCurrency(totalBalance)} e merece atencao nesta semana.`,
       });
     }
   }
@@ -260,8 +226,8 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     if (delta >= 20) {
       alerts.push({
         kind: 'high_spending',
-        title: 'Gasto acima da média',
-        message: `Suas saídas subiram ${delta.toFixed(1)}% em relação ao mês anterior.`, 
+        title: 'Gasto acima da media',
+        message: `Suas saidas subiram ${delta.toFixed(1)}% em relacao ao mes anterior.`,
       });
     }
   }
@@ -303,86 +269,42 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
           title: 'Categoria em destaque',
           message:
             categoryDelta !== null && categoryDelta >= 30
-              ? `${topCurrentCategory[0]} subiu ${categoryDelta.toFixed(1)}% e já soma ${formatCurrency(topCurrentCategory[1])} no mês.`
-              : `${topCurrentCategory[0]} concentra ${categoryShare.toFixed(1)}% das saídas do mês, com ${formatCurrency(topCurrentCategory[1])}.`,
+              ? `${topCurrentCategory[0]} subiu ${categoryDelta.toFixed(1)}% e ja soma ${formatCurrency(topCurrentCategory[1])} no mes.`
+              : `${topCurrentCategory[0]} concentra ${categoryShare.toFixed(1)}% das saidas do mes, com ${formatCurrency(topCurrentCategory[1])}.`,
         });
       }
     }
   }
 
-  const upcomingDebts = [
-    ...workspace.debts.map((debt) => ({
-      creditor: debt.creditor,
-      amount: Number(debt.remaining_amount || 0),
-      nextDueDate: getNextDueDate(Number(debt.due_day || 1), now),
-    })),
-    ...workspace.recurring_debts.map((debt) => ({
-      creditor: debt.creditor,
-      amount: Number(debt.amount || 0),
-      nextDueDate: debt.next_due_date,
-    })),
-  ]
-    .map((item) => ({
-      ...item,
-      daysUntil: getDaysUntil(item.nextDueDate, now),
-    }))
-    .filter((item) => item.daysUntil >= 0 && item.daysUntil <= UPCOMING_WINDOW_DAYS)
-    .sort((a, b) => a.nextDueDate.getTime() - b.nextDueDate.getTime());
+  const calendarSnapshot = await getFinancialCalendarSnapshot({
+    workspaceId: workspace.id,
+    view: 'month',
+    focusDate: now.toISOString(),
+    now,
+  });
+  const calendarAlerts = calendarSnapshot.alerts
+    .slice(0, hasAdvancedAlertCapability ? 3 : 2)
+    .map(mapFinancialCalendarAlert);
 
-  if (upcomingDebts.length > 0) {
-    const topDebt = upcomingDebts[0];
-    alerts.push({
-      kind: 'upcoming_due',
-      title: 'Vencimento próximo',
-      message: `${topDebt.creditor} vence em ${formatDateLabel(topDebt.nextDueDate)} com ${formatCurrency(topDebt.amount)} em aberto.`,
-    });
+  for (const alert of calendarAlerts) {
+    if (!alerts.some((existing) => existing.kind === alert.kind && existing.title === alert.title)) {
+      alerts.push(alert);
+    }
   }
 
-  const overdueGoals = workspace.goals
-    .map((goal) => ({
-      name: goal.name,
-      deadline: goal.deadline,
-      currentAmount: Number(goal.current_amount || 0),
-      targetAmount: Number(goal.target_amount || 0),
-    }))
-    .filter(
-      (goal) =>
-        goal.deadline &&
-        goal.targetAmount > goal.currentAmount &&
-        startOfDay(goal.deadline).getTime() < startOfDay(now).getTime()
-    )
-    .sort((a, b) => {
-      const left = a.deadline ? a.deadline.getTime() : 0;
-      const right = b.deadline ? b.deadline.getTime() : 0;
-      return left - right;
-    });
+  const recurringDebts = workspace.recurring_debts;
+  const recurringTotal = recurringDebts.reduce((acc, debt) => acc + Number(debt.amount || 0), 0);
 
-  if (overdueGoals.length > 0) {
-    const topGoal = overdueGoals[0];
-    alerts.push({
-      kind: 'goal_overdue',
-      title: 'Meta atrasada',
-      message: `${topGoal.name} venceu em ${formatDateLabel(topGoal.deadline as Date)} e ainda faltam ${formatCurrency(
-        Math.max(0, topGoal.targetAmount - topGoal.currentAmount)
-      )}.`,
-    });
-  }
-
-  if (hasBasicAlertCapability) {
-    const recurringDebts = workspace.recurring_debts;
-    const recurringTotal = recurringDebts.reduce((acc, debt) => acc + Number(debt.amount || 0), 0);
-
-    if (recurringDebts.length > 0 && currentExpense > 0) {
-      const recurringShare = (recurringTotal / currentExpense) * 100;
-      if (recurringShare >= 30 || recurringTotal >= 500) {
-        alerts.push({
-          kind: 'recurring_heavy',
-          title: 'Recorrência pesada',
-          message: `As contas recorrentes já somam ${formatCurrency(recurringTotal)} e representam ${recurringShare.toFixed(
-            1
-          )}% das saídas do mês.`,
-        });
-      }
+  if (recurringDebts.length > 0 && currentExpense > 0) {
+    const recurringShare = (recurringTotal / currentExpense) * 100;
+    if (recurringShare >= 30 || recurringTotal >= 500) {
+      alerts.push({
+        kind: 'recurring_heavy',
+        title: 'Recorrencia pesada',
+        message: `As contas recorrentes ja somam ${formatCurrency(recurringTotal)} e representam ${recurringShare.toFixed(
+          1
+        )}% das saidas do mes.`,
+      });
     }
   }
 
@@ -457,5 +379,3 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     count: kindsToSend.length,
   } satisfies WhatsAppAlertsResult;
 }
-
-

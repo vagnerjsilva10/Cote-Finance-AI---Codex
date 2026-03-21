@@ -57,6 +57,30 @@ function clampDay(year: number, month: number, dueDay: number) {
   return Math.max(1, Math.min(dueDay, lastDay));
 }
 
+export function computeConventionalDebtNextDueDate(params: {
+  dueDay: number;
+  now?: Date;
+}) {
+  const now = startOfDay(params.now ?? new Date());
+  const dueDay = Math.max(1, Math.min(Number(params.dueDay || 1), 31));
+  const currentCandidate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    clampDay(now.getFullYear(), now.getMonth(), dueDay)
+  );
+
+  if (startOfDay(currentCandidate) >= now) {
+    return currentCandidate;
+  }
+
+  const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return new Date(
+    nextMonthDate.getFullYear(),
+    nextMonthDate.getMonth(),
+    clampDay(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), dueDay)
+  );
+}
+
 function addMonths(date: Date, count: number) {
   return new Date(date.getFullYear(), date.getMonth() + count, date.getDate());
 }

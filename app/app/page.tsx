@@ -56,6 +56,7 @@ import {
   Cell,
 } from 'recharts';
 import { cn } from '@/lib/utils';
+import { FinancialCalendarView } from '@/components/financial-calendar/financial-calendar-view';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 import {
@@ -11321,6 +11322,16 @@ React.useEffect(() => {
 
         <nav className={cn('flex-1 py-4 space-y-1 overflow-y-auto custom-scrollbar', isSidebarCollapsed ? 'px-2' : 'px-4')}>
           <SidebarItem
+            icon={Calendar}
+            label="Calendario Financeiro"
+            active={activeTab === 'agenda'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('agenda');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
             icon={LayoutDashboard}
             label="Dashboard"
             active={activeTab === 'dashboard'}
@@ -11508,7 +11519,7 @@ React.useEffect(() => {
                 : activeTab === 'assistant'
                 ? 'Assistente IA'
                 : activeTab === 'agenda'
-                ? 'Agenda'
+                ? 'Calendario Financeiro'
                 : activeTab === 'integrations'
                 ? 'Integrações'
                 : activeTab === 'subscription'
@@ -12134,7 +12145,15 @@ React.useEffect(() => {
                   onDismissFeedback={() => setPortfolioFeedback(null)}
                 />
               )}
-              {activeTab === 'agenda' && <AgendaView bills={bills} />}
+              {activeTab === 'agenda' && (
+                <FinancialCalendarView
+                  currentPlan={currentPlan}
+                  activeWorkspaceId={activeWorkspaceId}
+                  getAuthHeaders={getAuthHeaders}
+                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
+                />
+              )}
               {activeTab === 'reports' && (
                 <ReportsView
                   transactions={transactions}
@@ -12147,7 +12166,6 @@ React.useEffect(() => {
                   accessLevel={reportAccessLevel}
                   currentPlan={currentPlan}
                   onUpgrade={() => void handleUpgrade('Pro Mensal')}
-                  onNavigateTab={(tab) => setActiveTab(tab)}
                 />
               )}
               {activeTab === 'assistant' && (
@@ -12550,3 +12568,9 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
+
+
+
+
+

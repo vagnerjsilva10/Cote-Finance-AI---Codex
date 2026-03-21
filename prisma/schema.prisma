@@ -8,86 +8,87 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  avatar_url    String?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @default(now()) @updatedAt
+  id         String   @id @default(uuid())
+  email      String   @unique
+  name       String?
+  avatar_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
 
-  profile       Profile?
-  workspaces    WorkspaceMember[]
-  subscription  SubscriptionEntitlement?
-  workspace_events WorkspaceEvent[]
+  profile               Profile?
+  workspaces            WorkspaceMember[]
+  subscription          SubscriptionEntitlement?
+  workspace_events      WorkspaceEvent[]
+  financial_events      FinancialEvent[]
   marketing_attribution MarketingAttribution[]
 }
 
 model Profile {
-  id                 String   @id @default(uuid())
-  user_id            String   @unique
-  user               User     @relation(fields: [user_id], references: [id])
+  id                 String  @id @default(uuid())
+  user_id            String  @unique
+  user               User    @relation(fields: [user_id], references: [id])
   stripe_customer_id String?
-  plan               String   @default("FREE") // FREE, PRO, PREMIUM
-  tutorial_completed Boolean  @default(false)
-  
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+  plan               String  @default("FREE") // FREE, PRO, PREMIUM
+  tutorial_completed Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Workspace {
-  id            String    @id @default(uuid())
-  name          String
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @default(now()) @updatedAt
+  id         String   @id @default(uuid())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
 
   whatsapp_phone_number String?
   whatsapp_status       String?   @default("DISCONNECTED") // CONNECTED, DISCONNECTED, CONNECTING
   whatsapp_connected_at DateTime?
 
-  members       WorkspaceMember[]
-  wallets       Wallet[]
-  transactions  Transaction[]
-  goals         Goal[]
-  debts         Debt[]
-  recurring_debts RecurringDebt[]
-  investments   Investment[]
-  category_suggestions CategorySuggestion[]
-  subscription  WorkspaceSubscription?
-  preference    WorkspacePreference?
-  events        WorkspaceEvent[]
+  members               WorkspaceMember[]
+  wallets               Wallet[]
+  transactions          Transaction[]
+  goals                 Goal[]
+  debts                 Debt[]
+  recurring_debts       RecurringDebt[]
+  investments           Investment[]
+  category_suggestions  CategorySuggestion[]
+  subscription          WorkspaceSubscription?
+  preference            WorkspacePreference?
+  events                WorkspaceEvent[]
+  financial_events      FinancialEvent[]
   marketing_attribution MarketingAttribution[]
 }
 
 model Goal {
-  id            String    @id @default(uuid())
-  workspace_id  String
-  name          String
-  target_amount Decimal   @db.Decimal(12, 2)
-  current_amount Decimal   @db.Decimal(12, 2) @default(0)
-  deadline      DateTime?
-  
-  workspace     Workspace @relation(fields: [workspace_id], references: [id])
-  created_at    DateTime  @default(now())
+  id             String    @id @default(uuid())
+  workspace_id   String
+  name           String
+  target_amount  Decimal   @db.Decimal(12, 2)
+  current_amount Decimal   @default(0) @db.Decimal(12, 2)
+  deadline       DateTime?
+
+  workspace  Workspace @relation(fields: [workspace_id], references: [id])
+  created_at DateTime  @default(now())
 }
 
 model Debt {
-  id                     String    @id @default(uuid())
-  workspace_id           String
-  creditor               String
-  original_amount        Decimal   @db.Decimal(12, 2)
-  remaining_amount       Decimal   @db.Decimal(12, 2)
-  interest_rate_monthly  Decimal   @db.Decimal(6, 3)
-  due_day                Int
-  category               String
-  status                 String    @default("ACTIVE") // ACTIVE, PAID
-  created_at             DateTime  @default(now())
-  updated_at             DateTime  @updatedAt
+  id                    String   @id @default(uuid())
+  workspace_id          String
+  creditor              String
+  original_amount       Decimal  @db.Decimal(12, 2)
+  remaining_amount      Decimal  @db.Decimal(12, 2)
+  interest_rate_monthly Decimal  @db.Decimal(6, 3)
+  due_day               Int
+  category              String
+  status                String   @default("ACTIVE") // ACTIVE, PAID
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
 
-  workspace              Workspace @relation(fields: [workspace_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
 
   @@index([workspace_id, created_at])
 }
-
 
 model RecurringDebt {
   id            String    @id @default(uuid())
@@ -106,157 +107,212 @@ model RecurringDebt {
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
-  workspace     Workspace @relation(fields: [workspace_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
 
   @@index([workspace_id, status, next_due_date])
   @@index([workspace_id, created_at])
 }
-model Investment {
-  id                       String    @id @default(uuid())
-  workspace_id             String
-  name                     String
-  type                     String
-  institution              String
-  invested_amount          Decimal   @db.Decimal(12, 2)
-  current_amount           Decimal   @db.Decimal(12, 2)
-  expected_return_annual   Decimal   @db.Decimal(6, 3) @default(0)
-  created_at               DateTime  @default(now())
-  updated_at               DateTime  @updatedAt
 
-  workspace                Workspace @relation(fields: [workspace_id], references: [id])
+model Investment {
+  id                     String   @id @default(uuid())
+  workspace_id           String
+  name                   String
+  type                   String
+  institution            String
+  invested_amount        Decimal  @db.Decimal(12, 2)
+  current_amount         Decimal  @db.Decimal(12, 2)
+  expected_return_annual Decimal  @default(0) @db.Decimal(6, 3)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
 
   @@index([workspace_id, created_at])
 }
 
 model SubscriptionEntitlement {
-  id            String    @id @default(uuid())
-  user_id       String    @unique
-  plan          String    @default("FREE")
-  status        String    @default("ACTIVE")
+  id                 String    @id @default(uuid())
+  user_id            String    @unique
+  plan               String    @default("FREE")
+  status             String    @default("ACTIVE")
   current_period_end DateTime?
-  
-  user          User      @relation(fields: [user_id], references: [id])
+
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model WorkspaceMember {
-  id            String    @id @default(uuid())
-  workspace_id  String
-  user_id       String
-  role          String    @default("OWNER") // OWNER, ADMIN, MEMBER
+  id           String @id @default(uuid())
+  workspace_id String
+  user_id      String
+  role         String @default("OWNER") // OWNER, ADMIN, MEMBER
 
-  workspace     Workspace @relation(fields: [workspace_id], references: [id])
-  user          User      @relation(fields: [user_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
 
   @@unique([workspace_id, user_id])
 }
 
 model Wallet {
-  id            String    @id @default(uuid())
-  workspace_id  String
-  name          String
-  type          String    @default("CASH") // CASH, BANK, CREDIT_CARD, INVESTMENT
-  balance       Decimal   @default(0) @db.Decimal(12, 2)
+  id           String  @id @default(uuid())
+  workspace_id String
+  name         String
+  type         String  @default("CASH") // CASH, BANK, CREDIT_CARD, INVESTMENT
+  balance      Decimal @default(0) @db.Decimal(12, 2)
 
-  workspace     Workspace @relation(fields: [workspace_id], references: [id])
-  transactions  Transaction[] @relation("PrimaryWalletTransactions")
+  workspace          Workspace     @relation(fields: [workspace_id], references: [id])
+  transactions       Transaction[] @relation("PrimaryWalletTransactions")
   incoming_transfers Transaction[] @relation("DestinationWalletTransactions")
 }
 
 model Transaction {
-  id            String    @id @default(uuid())
-  workspace_id  String
-  wallet_id     String
+  id                    String  @id @default(uuid())
+  workspace_id          String
+  wallet_id             String
   destination_wallet_id String?
-  category_id   String?
-  
-  type          String    // INCOME, EXPENSE, TRANSFER
-  payment_method String   @default("OTHER") // PIX, CARD, CASH, BANK_TRANSFER, BOLETO, DEBIT, OTHER
-  amount        Decimal   @db.Decimal(12, 2)
-  date          DateTime
-  due_date      DateTime?
-  status        String    @default("CONFIRMED") // PENDING, CONFIRMED, CANCELLED
-  description   String
-  receipt_url   String?
-  
-  ai_confidence Float?
-  
-  workspace     Workspace @relation(fields: [workspace_id], references: [id])
-  wallet        Wallet    @relation("PrimaryWalletTransactions", fields: [wallet_id], references: [id])
-  destination_wallet Wallet? @relation("DestinationWalletTransactions", fields: [destination_wallet_id], references: [id])
-  category      Category? @relation(fields: [category_id], references: [id])
+  category_id           String?
 
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @default(now()) @updatedAt
+  type           String // INCOME, EXPENSE, TRANSFER
+  payment_method String    @default("OTHER") // PIX, CARD, CASH, BANK_TRANSFER, BOLETO, DEBIT, OTHER
+  amount         Decimal   @db.Decimal(12, 2)
+  date           DateTime
+  due_date       DateTime?
+  status         String    @default("CONFIRMED") // PENDING, CONFIRMED, CANCELLED
+  description    String
+  receipt_url    String?
+
+  ai_confidence Float?
+
+  workspace          Workspace @relation(fields: [workspace_id], references: [id])
+  wallet             Wallet    @relation("PrimaryWalletTransactions", fields: [wallet_id], references: [id])
+  destination_wallet Wallet?   @relation("DestinationWalletTransactions", fields: [destination_wallet_id], references: [id])
+  category           Category? @relation(fields: [category_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
 }
 
 model Category {
-  id            String    @id @default(uuid())
-  name          String
-  icon          String?
-  color         String?
-  
-  transactions  Transaction[]
-  suggestions   CategorySuggestion[]
+  id    String  @id @default(uuid())
+  name  String
+  icon  String?
+  color String?
+
+  transactions Transaction[]
+  suggestions  CategorySuggestion[]
 }
 
 model CategorySuggestion {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   workspace_id  String
   keyword       String
   category_id   String?
   category_name String
-  confidence    Float     @default(1)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  confidence    Float    @default(1)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
-  workspace     Workspace @relation(fields: [workspace_id], references: [id])
-  category      Category? @relation(fields: [category_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+  category  Category? @relation(fields: [category_id], references: [id])
 
   @@unique([workspace_id, keyword])
   @@index([workspace_id, updated_at])
 }
 
 model WorkspaceSubscription {
-  id                    String    @id @default(uuid())
-  workspace_id          String    @unique
-  plan                  String    @default("FREE") // FREE, PRO, PREMIUM
-  status                String    @default("ACTIVE") // ACTIVE, CANCELED, PENDING
-  stripe_customer_id    String?
+  id                     String    @id @default(uuid())
+  workspace_id           String    @unique
+  plan                   String    @default("FREE") // FREE, PRO, PREMIUM
+  status                 String    @default("ACTIVE") // ACTIVE, CANCELED, PENDING
+  stripe_customer_id     String?
   stripe_subscription_id String?
-  current_period_end    DateTime?
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
+  current_period_end     DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
 
-  workspace             Workspace @relation(fields: [workspace_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
 }
 
 model WorkspacePreference {
-  id                    String    @id @default(uuid())
-  workspace_id          String    @unique
-  onboarding_completed  Boolean   @default(false)
-  objective             String?
-  financial_profile     String?
+  id                     String   @id @default(uuid())
+  workspace_id           String   @unique
+  onboarding_completed   Boolean  @default(false)
+  objective              String?
+  financial_profile      String?
   ai_suggestions_enabled Boolean  @default(true)
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
 
-  workspace             Workspace @relation(fields: [workspace_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
 }
 
 model WorkspaceEvent {
-  id                    String    @id @default(uuid())
-  workspace_id          String
-  user_id               String?
-  type                  String
-  payload               Json?
-  created_at            DateTime  @default(now())
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_id      String?
+  type         String
+  payload      Json?
+  created_at   DateTime @default(now())
 
-  workspace             Workspace @relation(fields: [workspace_id], references: [id])
-  user                  User?     @relation(fields: [user_id], references: [id])
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+  user      User?     @relation(fields: [user_id], references: [id])
 
   @@index([workspace_id, created_at])
   @@index([user_id, created_at])
   @@index([type, created_at])
+}
+
+model FinancialEvent {
+  id                   String    @id @default(uuid())
+  user_id              String?
+  workspace_id         String
+  title                String
+  description          String?
+  type                 String // FIXED_BILL, EXPECTED_INCOME, CARD_BILL, INSTALLMENT, SUBSCRIPTION, GOAL_DEADLINE, FINANCIAL_REMINDER, MANUAL_ALERT
+  amount               Decimal?  @db.Decimal(12, 2)
+  category             String?
+  date                 DateTime
+  end_date             DateTime?
+  recurrence           String    @default("NONE") // NONE, DAILY, WEEKLY, MONTHLY, YEARLY
+  recurrence_interval  Int       @default(1)
+  is_recurring         Boolean   @default(false)
+  status               String    @default("PENDING") // PENDING, PAID, RECEIVED, OVERDUE, CANCELED
+  source_type          String    @default("MANUAL") // MANUAL, EXPENSE, INCOME, GOAL, SUBSCRIPTION, INSTALLMENT, CARD_BILL, SYSTEM
+  source_id            String?
+  reminder_enabled     Boolean   @default(false)
+  reminder_days_before Int       @default(0)
+  color_token          String?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  user                 User?                      @relation(fields: [user_id], references: [id])
+  workspace            Workspace                  @relation(fields: [workspace_id], references: [id])
+  occurrence_overrides FinancialEventOccurrence[]
+
+  @@index([workspace_id, date])
+  @@index([workspace_id, type, status])
+  @@index([workspace_id, source_type, source_id])
+  @@index([user_id, date])
+}
+
+model FinancialEventOccurrence {
+  id                   String   @id @default(uuid())
+  financial_event_id   String
+  occurrence_date      DateTime
+  title                String?
+  description          String?
+  amount               Decimal? @db.Decimal(12, 2)
+  status               String? // PENDING, PAID, RECEIVED, OVERDUE, CANCELED
+  reminder_enabled     Boolean?
+  reminder_days_before Int?
+  is_deleted           Boolean  @default(false)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  financial_event FinancialEvent @relation(fields: [financial_event_id], references: [id], onDelete: Cascade)
+
+  @@unique([financial_event_id, occurrence_date])
+  @@index([occurrence_date])
+  @@index([financial_event_id, is_deleted])
 }
 
 model PlatformSetting {
@@ -291,4 +347,3 @@ model MarketingAttribution {
   @@index([utm_campaign, created_at])
   @@index([workspace_id])
 }
-
