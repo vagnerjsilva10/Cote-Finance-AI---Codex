@@ -11322,22 +11322,22 @@ React.useEffect(() => {
 
         <nav className={cn('flex-1 py-4 space-y-1 overflow-y-auto custom-scrollbar', isSidebarCollapsed ? 'px-2' : 'px-4')}>
           <SidebarItem
-            icon={Calendar}
-            label="Calendario Financeiro"
-            active={activeTab === 'agenda'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('agenda');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
             icon={LayoutDashboard}
             label="Dashboard"
             active={activeTab === 'dashboard'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
               setActiveTab('dashboard');
+              setIsSidebarOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Calendar}
+            label="Calendario Financeiro"
+            active={activeTab === 'agenda'}
+            collapsed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveTab('agenda');
               setIsSidebarOpen(false);
             }}
           />

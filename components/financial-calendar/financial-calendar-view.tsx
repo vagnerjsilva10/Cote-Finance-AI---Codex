@@ -665,7 +665,7 @@ export function FinancialCalendarView({
 
   if (currentPlan === 'FREE') {
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top_right,rgba(79,140,255,0.16),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)] p-6 sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div className="space-y-4">
@@ -738,45 +738,49 @@ export function FinancialCalendarView({
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)] sm:text-[11px]">
-            {'Calend\u00e1rio Financeiro Inteligente'}
-          </p>
-          <div className="max-w-[44rem] space-y-3">
-            <h3 className="page-title-premium max-w-[11ch] text-4xl leading-[0.94] tracking-[-0.05em] text-[var(--text-primary)] sm:text-5xl xl:text-[4.3rem]">
-              {'Mapa financeiro do m\u00eas antes dele acontecer'}
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <section className="app-surface-card rounded-[1.85rem] px-4 py-4 sm:px-5 sm:py-5 lg:px-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-[34rem] space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">
+              {'Calendário Financeiro'}
+            </p>
+            <h3 className="page-title-premium max-w-[17ch] text-[2rem] leading-[1.02] tracking-[-0.045em] text-[var(--text-primary)] sm:text-[2.35rem] lg:text-[2.65rem]">
+              {'Calendário Financeiro'}
             </h3>
-            <p className="max-w-[34rem] text-sm leading-7 text-[var(--text-secondary)] sm:text-[1.02rem]">
-              {'Visualize entradas, sa\u00eddas e dias de press\u00e3o com clareza, sem cair na l\u00f3gica de uma agenda gen\u00e9rica.'}
+            <p className="max-w-[31rem] text-sm leading-6 text-[var(--text-secondary)] sm:text-[0.98rem]">
+              {'Visualize entradas, saídas e vencimentos do mês com clareza.'}
             </p>
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2.5 lg:justify-end">
-          <ButtonSecondary className="min-h-11 rounded-2xl px-4" onClick={() => handleMonthShift(-1)}>
-            <ChevronLeft size={16} />
-            {'M\u00eas anterior'}
-          </ButtonSecondary>
-          <div
-            data-testid="financial-calendar-month-label"
-            className="min-h-11 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-4 py-3 text-sm font-semibold capitalize text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-          >
-            {formatMonthLabel(monthCursor)}
+
+          <div className="flex flex-col gap-2.5 lg:items-end">
+            <div className="flex flex-wrap items-center gap-2">
+              <ButtonSecondary className="min-h-10 rounded-2xl px-3.5" onClick={() => handleMonthShift(-1)}>
+                <ChevronLeft size={16} />
+                {'Mês anterior'}
+              </ButtonSecondary>
+              <div
+                data-testid="financial-calendar-month-label"
+                className="min-h-10 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm font-semibold capitalize text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              >
+                {formatMonthLabel(monthCursor)}
+              </div>
+              <ButtonSecondary className="min-h-10 rounded-2xl px-3.5" onClick={() => handleMonthShift(1)}>
+                {'Próximo mês'}
+                <ChevronRight size={16} />
+              </ButtonSecondary>
+              <ButtonSecondary className="min-h-10 rounded-2xl px-3.5" onClick={handleGoToToday}>
+                Hoje
+              </ButtonSecondary>
+            </div>
+
+            <ButtonPrimary data-testid="financial-calendar-new-event" className="min-h-10 rounded-2xl px-5" onClick={() => handleOpenComposer()}>
+              <Plus size={16} />
+              Novo evento
+            </ButtonPrimary>
           </div>
-          <ButtonSecondary className="min-h-11 rounded-2xl px-4" onClick={() => handleMonthShift(1)}>
-            {'Pr\u00f3ximo m\u00eas'}
-            <ChevronRight size={16} />
-          </ButtonSecondary>
-          <ButtonSecondary className="min-h-11 rounded-2xl px-4" onClick={handleGoToToday}>
-            Hoje
-          </ButtonSecondary>
-          <ButtonPrimary data-testid="financial-calendar-new-event" className="min-h-11 rounded-2xl px-5" onClick={() => handleOpenComposer()}>
-            <Plus size={16} />
-            Novo evento
-          </ButtonPrimary>
         </div>
-      </div>
+      </section>
 
       <div data-testid="financial-calendar-feedback" aria-live="polite" className="space-y-3">
         {notice ? (
@@ -808,7 +812,7 @@ export function FinancialCalendarView({
         ) : null}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.82fr))]">
+      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
         <button
           type="button"
           onClick={() => {
@@ -818,7 +822,7 @@ export function FinancialCalendarView({
           }}
           disabled={!primaryAlert.dayKey}
           className={cn(
-            'app-surface-card group relative overflow-hidden rounded-[2rem] px-5 py-5 text-left xl:min-h-[220px] xl:px-7 xl:py-6 disabled:cursor-default disabled:opacity-100',
+            'app-surface-card group relative overflow-hidden rounded-[1.8rem] px-5 py-4 text-left min-h-[152px] disabled:cursor-default disabled:opacity-100',
             primaryAlert.tone === 'danger'
               ? 'border-[rgba(255,90,90,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
               : primaryAlert.tone === 'warning'
@@ -828,31 +832,31 @@ export function FinancialCalendarView({
                   : 'border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top_right,rgba(79,140,255,0.12),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
           )}
         >
-          <div className="flex h-full items-start justify-between gap-5">
-            <div className="flex h-full flex-col justify-between space-y-6">
-              <div className="space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">{primaryAlert.eyebrow}</p>
-                <h4 className="max-w-[18ch] text-[clamp(1.75rem,2.8vw,2.8rem)] font-black leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)]">
+          <div className="flex h-full items-start justify-between gap-4">
+            <div className="flex h-full flex-col justify-between space-y-4">
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] sm:text-[11px]">{primaryAlert.eyebrow}</p>
+                <h4 className="max-w-[22ch] text-[1.3rem] font-black leading-[1.08] tracking-[-0.035em] text-[var(--text-primary)] sm:text-[1.55rem]">
                   {primaryAlert.title}
                 </h4>
               </div>
-              <div className="space-y-2">
-                <p className="max-w-[34rem] text-sm leading-7 text-[var(--text-secondary)]">{primaryAlert.message}</p>
+              <div className="space-y-1.5">
+                <p className="max-w-[34rem] text-sm leading-6 text-[var(--text-secondary)]">{primaryAlert.message}</p>
                 {primaryAlert.dayKey ? (
-                  <p className="text-xs font-medium text-[var(--text-muted)]">Toque para abrir o dia com mais contexto.</p>
+                  <p className="text-xs font-medium text-[var(--text-muted)]">Abra o dia para ver mais contexto.</p>
                 ) : null}
               </div>
             </div>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.035)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <Sparkles size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <Sparkles size={16} />
             </div>
           </div>
         </button>
 
-        <div className="app-surface-card flex min-h-[220px] flex-col justify-between rounded-[2rem] px-5 py-5 xl:px-6 xl:py-6">
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">Entradas previstas</p>
-            <p className="text-[clamp(1.9rem,2.5vw,2.75rem)] font-black tracking-[-0.04em] text-[var(--positive)]">
+        <div className="app-surface-card flex min-h-[152px] flex-col justify-between rounded-[1.8rem] px-5 py-4">
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] sm:text-[11px]">Entradas previstas</p>
+            <p className="text-[1.95rem] font-black tracking-[-0.04em] text-[var(--positive)] sm:text-[2.2rem]">
               {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedInflow)}
             </p>
           </div>
@@ -862,24 +866,24 @@ export function FinancialCalendarView({
           </div>
         </div>
 
-        <div className="app-surface-card flex min-h-[220px] flex-col justify-between rounded-[2rem] px-5 py-5 xl:px-6 xl:py-6">
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">{'Sa\u00eddas previstas'}</p>
-            <p className="text-[clamp(1.9rem,2.5vw,2.75rem)] font-black tracking-[-0.04em] text-[var(--text-primary)]">
+        <div className="app-surface-card flex min-h-[152px] flex-col justify-between rounded-[1.8rem] px-5 py-4">
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] sm:text-[11px]">{'Saídas previstas'}</p>
+            <p className="text-[1.95rem] font-black tracking-[-0.04em] text-[var(--text-primary)] sm:text-[2.2rem]">
               {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedOutflow)}
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-medium leading-relaxed text-[var(--text-secondary)]">
             <ReceiptText size={14} className="text-[var(--warning)]" />
-            {'Compromissos mapeados no per\u00edodo'}
+            {'Compromissos mapeados no período'}
           </div>
         </div>
 
-        <div className="app-surface-card flex min-h-[220px] flex-col justify-between rounded-[2rem] px-5 py-5 xl:px-6 xl:py-6">
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">Saldo previsto</p>
+        <div className="app-surface-card flex min-h-[152px] flex-col justify-between rounded-[1.8rem] px-5 py-4">
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] sm:text-[11px]">Saldo previsto</p>
             <p className={cn(
-              'text-[clamp(1.9rem,2.5vw,2.75rem)] font-black tracking-[-0.04em]',
+              'text-[1.95rem] font-black tracking-[-0.04em] sm:text-[2.2rem]',
               Number(snapshot?.summary.projectedBalance || 0) >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]'
             )}>
               {isLoading ? '--' : formatCurrency(snapshot?.summary.projectedBalance)}
@@ -892,61 +896,49 @@ export function FinancialCalendarView({
         </div>
       </div>
 
-      {topAlerts.length > 0 ? (
-        <div className="grid gap-3 lg:grid-cols-3">
-          {topAlerts.map((alert) => (
-            <button
-              key={alert.id}
-              type="button"
-              onClick={() => {
-                if (alert.dayKey) {
-                  setSelectedDayKey(alert.dayKey);
-                }
-              }}
-              disabled={!alert.dayKey}
-              className={cn(
-                'rounded-[1.6rem] border bg-[rgba(255,255,255,0.02)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[var(--border-strong)] disabled:cursor-default',
-                getAlertCardTone(alert)
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                    {getAlertEyebrow(alert)}
-                  </p>
-                  <p className="mt-2 text-sm font-bold leading-relaxed text-[var(--text-primary)]">{alert.title}</p>
-                </div>
-                <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2.5 py-1 text-[10px] font-semibold tracking-[0.08em] text-[var(--text-secondary)]">
-                  {formatAlertWindow(alert)}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">{alert.message}</p>
-            </button>
-          ))}
-        </div>
-      ) : null}
-
       <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.018)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]">
-        <div className="flex flex-col gap-5 border-b border-[var(--border-default)] px-4 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:text-[11px]">{'Vis\u00e3o mensal'}</p>
-            <h4 className="text-[1.6rem] font-black capitalize tracking-[-0.04em] text-[var(--text-primary)] sm:text-[1.8rem]">
-              {formatMonthLabel(monthCursor)}
-            </h4>
-            <p className="max-w-[32rem] text-sm leading-7 text-[var(--text-secondary)]">
-              {'Leia o m\u00eas como um canvas financeiro: vencimentos, concentra\u00e7\u00e3o de sa\u00eddas e dias que merecem aten\u00e7\u00e3o.'}
-            </p>
+        <div className="flex flex-col gap-4 border-b border-[var(--border-default)] px-4 py-4 sm:px-5 sm:py-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] sm:text-[11px]">{'Visão mensal'}</p>
+              <h4 className="text-[1.45rem] font-black capitalize tracking-[-0.04em] text-[var(--text-primary)] sm:text-[1.7rem]">
+                {formatMonthLabel(monthCursor)}
+              </h4>
+            </div>
+            {topAlerts.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {topAlerts.map((alert) => (
+                  <button
+                    key={alert.id}
+                    type="button"
+                    onClick={() => {
+                      if (alert.dayKey) {
+                        setSelectedDayKey(alert.dayKey);
+                      }
+                    }}
+                    disabled={!alert.dayKey}
+                    className={cn(
+                      'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] text-left transition hover:border-[var(--border-strong)] disabled:cursor-default',
+                      getAlertCardTone(alert)
+                    )}
+                  >
+                    <span className="truncate">{alert.title}</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">{formatAlertWindow(alert)}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-semibold tracking-[0.06em]">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.04em]">
             {LEGEND_ITEMS.map((item) => (
-              <span key={item.label} className={cn('rounded-full border px-3 py-1.5', item.className)}>
+              <span key={item.label} className={cn('rounded-full border px-2.5 py-1', item.className)}>
                 {item.label}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="px-3 pb-3 pt-4 sm:px-5 sm:pb-5">
+        <div className="px-3 pb-3 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
           <div data-testid="financial-calendar-grid-scroll" className="overflow-x-auto overscroll-x-contain pb-1">
             <div className="min-w-[720px] rounded-[1.7rem] border border-[rgba(255,255,255,0.05)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),rgba(7,12,21,0.74)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-4">
               <div className="mb-3 grid grid-cols-7 gap-2.5 text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:mb-4 sm:gap-3">
@@ -962,15 +954,15 @@ export function FinancialCalendarView({
                   ))}
                 </div>
               ) : !hasMonthEvents ? (
-                <div className="rounded-[1.85rem] border border-dashed border-[rgba(79,140,255,0.16)] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.08),transparent_42%),rgba(255,255,255,0.03)] px-6 py-14 text-center sm:px-10">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(79,140,255,0.14)] bg-[rgba(79,140,255,0.08)] text-[var(--primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <Sparkles size={20} />
+                <div className="rounded-[1.7rem] border border-dashed border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.06),transparent_40%),rgba(255,255,255,0.025)] px-6 py-10 text-center sm:px-10 sm:py-12">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(79,140,255,0.12)] bg-[rgba(79,140,255,0.07)] text-[var(--primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                    <Sparkles size={18} />
                   </div>
-                  <p className="mt-5 text-[1.15rem] font-black tracking-[-0.03em] text-[var(--text-primary)]">{'Seu m\u00eas ainda est\u00e1 limpo'}</p>
-                  <p className="mx-auto mt-3 max-w-[32rem] text-sm leading-7 text-[var(--text-secondary)] sm:text-[0.98rem]">
-                    {'Adicione eventos e comece a visualizar seu fluxo financeiro no tempo, com mais clareza sobre entradas, sa\u00eddas e vencimentos.'}
+                  <p className="mt-4 text-[1.08rem] font-black tracking-[-0.03em] text-[var(--text-primary)]">{'Nenhum evento neste mês'}</p>
+                  <p className="mx-auto mt-2 max-w-[30rem] text-sm leading-6 text-[var(--text-secondary)] sm:text-[0.97rem]">
+                    {'Adicione eventos para visualizar vencimentos, entradas e saídas no calendário.'}
                   </p>
-                  <ButtonPrimary data-testid="financial-calendar-empty-create" className="mt-6 min-h-11 rounded-2xl px-6" onClick={() => handleOpenComposer(monthCursor)}>
+                  <ButtonPrimary data-testid="financial-calendar-empty-create" className="mt-5 min-h-10 rounded-2xl px-6" onClick={() => handleOpenComposer(monthCursor)}>
                     <Plus size={16} />
                     Adicionar primeiro evento
                   </ButtonPrimary>
@@ -985,7 +977,7 @@ export function FinancialCalendarView({
                       <button
                         key={cell.key}
                         type="button"
-                        data-testid={`financial-calendar-day-${cell.key}`}
+                        data-testid={'financial-calendar-day-' + cell.key}
                         aria-label={getCellAriaLabel(cell)}
                         aria-pressed={isSelected}
                         onClick={() => {
@@ -1031,7 +1023,7 @@ export function FinancialCalendarView({
                               {summaryDots.length > 0 ? (
                                 summaryDots.map((tone, index) => (
                                   <span
-                                    key={`${cell.key}-${index}`}
+                                    key={cell.key + '-' + index}
                                     className={cn('h-1.5 rounded-full opacity-90', tone.dot, index === 0 ? 'w-9' : index === 1 ? 'w-6' : 'w-3.5')}
                                   />
                                 ))
@@ -1042,7 +1034,7 @@ export function FinancialCalendarView({
 
                             <div className="space-y-2">
                               <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                                <span>{cell.isCritical ? 'Press\u00e3o' : cell.hasOverdue ? 'Vencido' : cell.hasDueSoon ? 'Vence logo' : 'Fluxo'}</span>
+                                <span>{cell.isCritical ? 'Pressão' : cell.hasOverdue ? 'Vencido' : cell.hasDueSoon ? 'Vence logo' : 'Fluxo'}</span>
                                 {cell.isCritical ? <TriangleAlert size={11} className="text-[var(--danger)]" /> : cell.hasOverdue ? <TriangleAlert size={11} className="text-[var(--danger)]" /> : cell.hasDueSoon ? <Bell size={11} className="text-[var(--warning)]" /> : null}
                               </div>
                               <p className={cn('text-sm font-black tracking-[-0.03em]', netIsPositive ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
