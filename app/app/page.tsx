@@ -5693,10 +5693,11 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 onChange={(value) => setFormData((prev) => ({ ...prev, dueDate: value }))}
                 placeholder="Selecione a data"
               />
+              <p className="text-xs text-[var(--text-muted)]">Defina a data exata para manter lembretes e calendário sincronizados.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="label-premium text-[var(--text-muted)]">Categoria</label>
               <select
