@@ -60,7 +60,7 @@ import { FinancialCalendarView } from '@/components/financial-calendar/financial
 import { PremiumDatePicker } from '@/components/ui/premium-date-picker';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
-import { fetchDashboardResource } from '@/app/app/modules/dashboard/data-client';
+import { fetchDashboardCalendarReadPayload, fetchDashboardResource } from '@/app/app/modules/dashboard/data-client';
 import { fetchTransactionsContext } from '@/app/app/modules/transactions/data-client';
 import { fetchGoalsContext } from '@/app/app/modules/goals/data-client';
 import { fetchInvestmentsContext } from '@/app/app/modules/investments/data-client';
@@ -295,6 +295,28 @@ type DashboardProjection = {
   daily: DashboardProjectionDaily[];
 };
 
+type DashboardCalendarUpcomingItem = {
+  id: string;
+  title: string;
+  date: string;
+  status: 'PENDING' | 'OVERDUE' | 'PAID' | 'RECEIVED' | 'CANCELED' | string;
+  flow: 'in' | 'out' | 'neutral';
+  type: string;
+  amount: number | null;
+  sourceType: string | null;
+};
+
+type DashboardCalendarReadModel = {
+  periodFocusDate: string | null;
+  openingBalance: number;
+  totalExpectedInflow: number;
+  totalExpectedOutflow: number;
+  projectedBalance: number;
+  overdueCount: number;
+  criticalDaysCount: number;
+  upcomingEvents: DashboardCalendarUpcomingItem[];
+};
+
 type WorkspaceDashboardSnapshot = {
   totalBalance: number;
   currentPlan: SubscriptionPlan;
@@ -311,6 +333,7 @@ type WorkspaceDashboardSnapshot = {
   isWhatsAppConnected: boolean;
   workspaceWhatsAppPhoneNumber: string;
   dashboardProjection: DashboardProjection | null;
+  dashboardCalendarReadModel?: DashboardCalendarReadModel | null;
 };
 
 const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 1;
@@ -1530,6 +1553,59 @@ const mapApiProjectionToClientProjection = (projection: any): DashboardProjectio
   };
 };
 
+const mapApiDashboardCalendarReadModel = (payload: any): DashboardCalendarReadModel | null => {
+  if (!payload || typeof payload !== 'object') return null;
+
+  const upcomingPayload =
+    payload.upcoming && typeof payload.upcoming === 'object' ? payload.upcoming : null;
+  const summaryPayload =
+    payload.summary && typeof payload.summary === 'object' ? payload.summary : null;
+  const summaryCore =
+    summaryPayload?.summary && typeof summaryPayload.summary === 'object'
+      ? summaryPayload.summary
+      : null;
+
+  if (!upcomingPayload && !summaryPayload) return null;
+
+  const upcomingEvents = Array.isArray(upcomingPayload?.items)
+    ? upcomingPayload.items
+        .map((item: any) => ({
+          id: String(item?.id || item?.occurrenceKey || ''),
+          title: String(item?.title || 'Evento financeiro'),
+          date: String(item?.date || ''),
+          status: String(item?.status || 'PENDING'),
+          flow:
+            item?.flow === 'in' || item?.flow === 'out' || item?.flow === 'neutral'
+              ? item.flow
+              : 'neutral',
+          type: String(item?.type || ''),
+          amount:
+            item?.amount === null || item?.amount === undefined ? null : Number(item.amount || 0),
+          sourceType:
+            typeof item?.sourceType === 'string'
+              ? item.sourceType
+              : typeof item?.source_type === 'string'
+                ? item.source_type
+                : null,
+        }))
+        .filter((item: DashboardCalendarUpcomingItem) => item.id.length > 0)
+    : [];
+
+  return {
+    periodFocusDate:
+      typeof summaryPayload?.period?.focusDate === 'string' ? summaryPayload.period.focusDate : null,
+    openingBalance: Number(summaryPayload?.openingBalance || 0),
+    totalExpectedInflow: Number(summaryCore?.totalExpectedInflow || 0),
+    totalExpectedOutflow: Number(summaryCore?.totalExpectedOutflow || 0),
+    projectedBalance: Number(summaryCore?.projectedBalance || 0),
+    overdueCount: Number(summaryCore?.overdueCount || 0),
+    criticalDaysCount: Array.isArray(summaryPayload?.criticalDays)
+      ? summaryPayload.criticalDays.length
+      : 0,
+    upcomingEvents,
+  };
+};
+
 const sortTransactionsByNewest = (items: Transaction[]) =>
   [...items].sort((left, right) => {
     const leftTime = parseTransactionDate(left.date)?.getTime() || 0;
@@ -2034,12 +2110,23 @@ type DashboardViewProps = {
   transactions: Transaction[];
   insights: string[];
   projection: DashboardProjection | null;
+  calendarReadModel: DashboardCalendarReadModel | null;
+  totalBalance: number;
   onAddTransaction: () => void;
   currentPlan: SubscriptionPlan;
   onUpgrade: () => void;
 };
 
-const DashboardView = ({ transactions, insights, projection, onAddTransaction, currentPlan, onUpgrade }: DashboardViewProps) => {
+const DashboardView = ({
+  transactions,
+  insights,
+  projection,
+  calendarReadModel,
+  totalBalance,
+  onAddTransaction,
+  currentPlan,
+  onUpgrade,
+}: DashboardViewProps) => {
   const now = React.useMemo(() => new Date(), []);
   const enrichedTransactions = React.useMemo(
     () =>
@@ -2125,9 +2212,6 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
 
   const monthLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const projectionDelta30d = projection ? projection.projectedBalance30d - projection.currentBalance : null;
-  const projectionPlannedNetMonth = projection
-    ? projection.monthPlannedIncome - projection.monthPlannedExpense
-    : null;
   const projectionPreviewRows = React.useMemo(() => {
     if (!projection) return [] as Array<{
       dateLabel: string;
@@ -2141,6 +2225,87 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
       plannedNet: row.inflowPlanned - row.outflowPlanned,
     }));
   }, [projection]);
+  const projectionCurveRows = React.useMemo(() => {
+    if (!projection) return [] as Array<{ dateLabel: string; closingBalance: number }>;
+    return projection.daily.map((row) => ({
+      dateLabel: formatIsoDateShort(row.date),
+      closingBalance: row.closingBalance,
+    }));
+  }, [projection]);
+  const upcomingEvents = calendarReadModel?.upcomingEvents ?? [];
+  const upcomingInflow = upcomingEvents.reduce((acc, item) => {
+    if (item.flow !== 'in') return acc;
+    return acc + Number(item.amount || 0);
+  }, 0);
+  const upcomingOutflow = upcomingEvents.reduce((acc, item) => {
+    if (item.flow !== 'out') return acc;
+    return acc + Number(item.amount || 0);
+  }, 0);
+  const upcomingInflowCount = upcomingEvents.filter((item) => item.flow === 'in').length;
+  const upcomingOutflowCount = upcomingEvents.filter((item) => item.flow === 'out').length;
+  const monthProjectedNet = projection
+    ? projection.monthPlannedIncome - projection.monthPlannedExpense
+    : calendarReadModel
+      ? calendarReadModel.totalExpectedInflow - calendarReadModel.totalExpectedOutflow
+      : null;
+  const smartAlerts: Array<{ id: string; tone: 'danger' | 'warning' | 'info'; title: string; message: string }> = [];
+
+  if (projection?.projectedNegativeDate) {
+    smartAlerts.push({
+      id: 'negative-balance-forecast',
+      tone: 'danger',
+      title: 'Risco de saldo negativo',
+      message: `A projeção aponta saldo negativo em ${formatIsoDateShort(projection.projectedNegativeDate)}.`,
+    });
+  }
+
+  if ((calendarReadModel?.overdueCount || 0) > 0) {
+    smartAlerts.push({
+      id: 'overdue-events',
+      tone: 'danger',
+      title: 'Compromissos em atraso',
+      message: `${calendarReadModel?.overdueCount || 0} evento(s) estão em atraso e pressionam o caixa.`,
+    });
+  }
+
+  if ((calendarReadModel?.criticalDaysCount || 0) > 0) {
+    smartAlerts.push({
+      id: 'critical-days',
+      tone: 'warning',
+      title: 'Datas críticas no calendário',
+      message: `${calendarReadModel?.criticalDaysCount || 0} dia(s) com pressão relevante de saldo neste período.`,
+    });
+  }
+
+  if ((monthProjectedNet || 0) < 0) {
+    smartAlerts.push({
+      id: 'negative-month-net',
+      tone: 'warning',
+      title: 'Fluxo previsto do mês negativo',
+      message: `A soma prevista do mês está em ${formatCurrency(monthProjectedNet || 0)}.`,
+    });
+  }
+
+  const firstInsight = insights[0];
+  if (firstInsight) {
+    smartAlerts.push({
+      id: 'insight-priority',
+      tone: 'info',
+      title: 'Leitura inteligente',
+      message: firstInsight,
+    });
+  }
+
+  const dashboardAlerts = smartAlerts.slice(0, 4);
+
+  const mapUpcomingStatusLabel = (status: string) => {
+    const normalized = String(status || '').toUpperCase();
+    if (normalized === 'OVERDUE') return 'Atrasado';
+    if (normalized === 'PAID') return 'Pago';
+    if (normalized === 'RECEIVED') return 'Recebido';
+    if (normalized === 'CANCELED') return 'Cancelado';
+    return 'Pendente';
+  };
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
@@ -2194,65 +2359,184 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
       <div className="app-surface-card rounded-2xl p-5 sm:p-6">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="card-title-premium text-[var(--text-primary)]">Painel de Projecao V2</h3>
+            <h3 className="card-title-premium text-[var(--text-primary)]">Painel financeiro canonico</h3>
             <p className="text-sm text-[var(--text-secondary)]">
               {projection
-                ? `Base atualizada em ${formatIsoDateShort(projection.updatedAt)}`
+                ? `Projecao atualizada em ${formatIsoDateShort(projection.updatedAt)}`
                 : 'Base de projecao ainda indisponivel para este workspace.'}
             </p>
           </div>
           <span
             className={cn(
               'inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest',
-              projection
+              projection && calendarReadModel
                 ? 'border-[color:color-mix(in_srgb,var(--positive)_35%,transparent)] text-[var(--positive)] bg-[color:var(--positive-soft)]'
                 : 'border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] text-[var(--warning)] bg-[var(--warning-soft)]'
             )}
           >
-            {projection ? 'Read model ativo' : 'Fallback legado'}
+            {projection && calendarReadModel ? 'Read models ativos' : 'Modo de compatibilidade'}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Saldo previsto 30 dias</p>
+            <p className="label-premium text-[var(--text-muted)]">Saldo atual confirmado</p>
+            <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
+              {projection ? formatCurrency(projection.currentBalance) : formatCurrency(totalBalance)}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              Dinheiro que ja entrou/saiu e impactou o caixa real.
+            </p>
+          </div>
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Saldo previsto (30 dias)</p>
             <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
               {projection ? formatCurrency(projection.projectedBalance30d) : '--'}
             </p>
             <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
               {projectionDelta30d === null
-                ? 'Aguardando materializacao da curva diaria.'
-                : `${projectionDelta30d >= 0 ? '+' : '-'}${formatCurrency(Math.abs(projectionDelta30d))} vs saldo atual`}
+                ? 'Aguardando curva diaria materializada.'
+                : `${projectionDelta30d >= 0 ? '+' : '-'}${formatCurrency(Math.abs(projectionDelta30d))} frente ao saldo atual.`}
             </p>
           </div>
+        </div>
 
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Risco de saldo negativo</p>
+            <p className="label-premium text-[var(--text-muted)]">Proximas entradas</p>
+            <p className="mt-2 text-2xl font-black text-[var(--positive)]">{formatCurrency(upcomingInflow)}</p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              {upcomingInflowCount} evento(s) para entrar em breve.
+            </p>
+          </div>
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Proximas saidas</p>
+            <p className="mt-2 text-2xl font-black text-[var(--danger)]">{formatCurrency(upcomingOutflow)}</p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              {upcomingOutflowCount} compromisso(s) previstos no horizonte.
+            </p>
+          </div>
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Datas criticas</p>
             <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
               {projection?.projectedNegativeDate ? formatIsoDateShort(projection.projectedNegativeDate) : 'Sem risco'}
             </p>
             <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              {projection?.nextCriticalDate
-                ? `Proxima data critica: ${formatIsoDateShort(projection.nextCriticalDate)}`
-                : 'Sem data critica no horizonte atual.'}
+              {calendarReadModel
+                ? `${calendarReadModel.criticalDaysCount} dia(s) critico(s) no calendario.`
+                : projection?.nextCriticalDate
+                  ? `Proxima data critica: ${formatIsoDateShort(projection.nextCriticalDate)}`
+                  : 'Sem data critica no horizonte atual.'}
             </p>
           </div>
-
           <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Fluxo planejado do mes</p>
+            <p className="label-premium text-[var(--text-muted)]">Resumo do mes</p>
             <p
               className={cn(
                 'mt-2 text-2xl font-black',
-                (projectionPlannedNetMonth || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]'
+                (monthProjectedNet || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]'
               )}
             >
-              {projectionPlannedNetMonth === null ? '--' : formatCurrency(projectionPlannedNetMonth)}
+              {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
             </p>
             <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              {projection
-                ? `${projection.upcomingEventsCount14d} eventos previstos nos proximos 14 dias`
-                : 'Sem eventos previstos no read model.'}
+              Confirmado: {formatCurrency(monthBalance)} | Previsto: {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
             </p>
+          </div>
+        </div>
+
+        {projectionCurveRows.length > 0 ? (
+          <div className="mt-5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Curva de saldo do mes</p>
+            <div className="mt-3 h-[170px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={projectionCurveRows}>
+                  <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
+                  <XAxis dataKey="dateLabel" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis
+                    stroke="var(--text-muted)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => formatCurrency(Number(value || 0))}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-default)',
+                      borderRadius: '12px',
+                      boxShadow: 'var(--shadow-soft)',
+                    }}
+                    formatter={(value) => [formatCurrency(Number(value || 0)), 'Saldo projetado']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="closingBalance"
+                    stroke="var(--primary)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Proximos eventos financeiros</p>
+            <div className="mt-3 space-y-2">
+              {upcomingEvents.slice(0, 6).map((event) => (
+                <div
+                  key={`dashboard-upcoming-${event.id}`}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{event.title}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {formatIsoDateShort(event.date)} • {mapUpcomingStatusLabel(event.status)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={cn('text-sm font-black', event.flow === 'in' ? 'text-[var(--positive)]' : event.flow === 'out' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]')}>
+                      {event.amount === null ? '--' : formatCurrency(event.amount)}
+                    </p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                      {event.flow === 'in' ? 'Entrada' : event.flow === 'out' ? 'Saida' : 'Neutro'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {upcomingEvents.length === 0 ? (
+                <p className="text-sm text-[var(--text-secondary)]">Sem eventos futuros no read model para os proximos dias.</p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Alertas inteligentes</p>
+            <div className="mt-3 space-y-2">
+              {dashboardAlerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className={cn(
+                    'rounded-lg border px-3 py-2',
+                    alert.tone === 'danger'
+                      ? 'border-[color:color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--danger)_14%,transparent)]'
+                      : alert.tone === 'warning'
+                        ? 'border-[color:color-mix(in_srgb,var(--warning)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--warning)_14%,transparent)]'
+                        : 'border-[color:color-mix(in_srgb,var(--primary)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_14%,transparent)]'
+                  )}
+                >
+                  <p className="text-sm font-bold text-[var(--text-primary)]">{alert.title}</p>
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">{alert.message}</p>
+                </div>
+              ))}
+              {dashboardAlerts.length === 0 ? (
+                <p className="text-sm text-[var(--text-secondary)]">Sem alertas criticos no momento.</p>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -7847,6 +8131,7 @@ export default function App() {
   const [totalBalance, setTotalBalance] = React.useState(0);
   const [dashboardInsights, setDashboardInsights] = React.useState<string[]>([]);
   const [dashboardProjection, setDashboardProjection] = React.useState<DashboardProjection | null>(null);
+  const [dashboardCalendarReadModel, setDashboardCalendarReadModel] = React.useState<DashboardCalendarReadModel | null>(null);
   const [currentPlan, setCurrentPlan] = React.useState<SubscriptionPlan>('FREE');
   const [reportAccessLevel, setReportAccessLevel] = React.useState<ReportAccessLevel>('basic');
   const [currentMonthTransactionCount, setCurrentMonthTransactionCount] = React.useState(0);
@@ -8010,6 +8295,17 @@ export default function App() {
             .filter(Boolean)
         : null;
       const mappedProjection = mapApiProjectionToClientProjection(data.projection);
+      let mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
+      try {
+        const calendarPayload = await fetchDashboardCalendarReadPayload({
+          getAuthHeaders,
+          workspaceIdOverride: workspaceIdForRequest,
+          upcomingDays: 14,
+        });
+        mappedCalendarReadModel = mapApiDashboardCalendarReadModel(calendarPayload);
+      } catch (calendarError) {
+        console.warn('Dashboard calendar read model fallback:', calendarError);
+      }
 
       if (data.totalBalance !== undefined) {
         setTotalBalance(Number(data.totalBalance));
@@ -8104,6 +8400,11 @@ export default function App() {
         setDashboardInsights([]);
       }
       setDashboardProjection(mappedProjection);
+      if (mappedCalendarReadModel) {
+        setDashboardCalendarReadModel(mappedCalendarReadModel);
+      } else if (scope === 'full') {
+        setDashboardCalendarReadModel(null);
+      }
 
       if (mappedTransactions) {
         setTransactions(mappedTransactions);
@@ -8175,6 +8476,8 @@ export default function App() {
               ? `+${data.workspace.whatsapp_phone_number}`
               : baseSnapshot?.workspaceWhatsAppPhoneNumber ?? '',
           dashboardProjection: mappedProjection ?? baseSnapshot?.dashboardProjection ?? null,
+          dashboardCalendarReadModel:
+            mappedCalendarReadModel ?? baseSnapshot?.dashboardCalendarReadModel ?? null,
         };
         workspaceDashboardCacheRef.current[resolvedWorkspaceId] = workspaceSnapshot;
         if (user?.id) {
@@ -8386,6 +8689,7 @@ export default function App() {
     setWorkspaceEvents(snapshot.workspaceEvents);
     setDashboardInsights(snapshot.dashboardInsights);
     setDashboardProjection(snapshot.dashboardProjection ?? null);
+    setDashboardCalendarReadModel(snapshot.dashboardCalendarReadModel ?? null);
     setIsWhatsAppConnected(snapshot.isWhatsAppConnected);
     setWorkspaceWhatsAppPhoneNumber(snapshot.workspaceWhatsAppPhoneNumber);
   }, []);
@@ -8421,6 +8725,7 @@ export default function App() {
         isWhatsAppConnected: baseSnapshot?.isWhatsAppConnected ?? isWhatsAppConnected,
         workspaceWhatsAppPhoneNumber: baseSnapshot?.workspaceWhatsAppPhoneNumber ?? workspaceWhatsAppPhoneNumber,
         dashboardProjection: baseSnapshot?.dashboardProjection ?? dashboardProjection,
+        dashboardCalendarReadModel: baseSnapshot?.dashboardCalendarReadModel ?? dashboardCalendarReadModel,
         ...patch,
       };
 
@@ -8434,6 +8739,7 @@ export default function App() {
       currentMonthTransactionCount,
       currentPlan,
       dashboardInsights,
+      dashboardCalendarReadModel,
       dashboardProjection,
       debts,
       goals,
@@ -8486,12 +8792,26 @@ export default function App() {
           .filter(Boolean)
       : [];
     const mappedProjection = mapApiProjectionToClientProjection(data?.projection);
+    let mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
+    try {
+      const calendarPayload = await fetchDashboardCalendarReadPayload({
+        getAuthHeaders,
+        workspaceIdOverride: workspaceIdForRequest,
+        upcomingDays: 14,
+      });
+      mappedCalendarReadModel = mapApiDashboardCalendarReadModel(calendarPayload);
+    } catch (calendarError) {
+      console.warn('Transactions refresh calendar read model fallback:', calendarError);
+    }
 
     setTransactions(mappedTransactions);
     setWallets(mappedWallets);
     setWorkspaceEvents(mappedWorkspaceEvents);
     setDashboardInsights(mappedInsights);
     setDashboardProjection(mappedProjection);
+    if (mappedCalendarReadModel) {
+      setDashboardCalendarReadModel(mappedCalendarReadModel);
+    }
 
     if (typeof data?.totalBalance !== 'undefined') {
       setTotalBalance(Number(data.totalBalance));
@@ -8553,6 +8873,8 @@ export default function App() {
         workspaceEvents: mappedWorkspaceEvents,
         dashboardInsights: mappedInsights,
         dashboardProjection: mappedProjection,
+        dashboardCalendarReadModel:
+          mappedCalendarReadModel ?? workspaceDashboardCacheRef.current[resolvedWorkspaceId]?.dashboardCalendarReadModel ?? null,
         isWhatsAppConnected:
           data?.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED',
         workspaceWhatsAppPhoneNumber:
@@ -8655,6 +8977,7 @@ export default function App() {
       setSubscriptionActionLoading(null);
       setDashboardInsights([]);
       setDashboardProjection(null);
+      setDashboardCalendarReadModel(null);
       setTotalBalance(0);
       setCurrentPlan('FREE');
       setReportAccessLevel('basic');
@@ -12563,6 +12886,8 @@ React.useEffect(() => {
                   transactions={transactions}
                   insights={dashboardInsights}
                   projection={dashboardProjection}
+                  calendarReadModel={dashboardCalendarReadModel}
+                  totalBalance={totalBalance}
                   onAddTransaction={handleOpenCreateTransaction}
                   currentPlan={currentPlan}
                   onUpgrade={() => void handleUpgrade('Pro Mensal')}

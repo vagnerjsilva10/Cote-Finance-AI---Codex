@@ -2,6 +2,11 @@ import { fetchResourceJson, type AuthHeadersResolver } from '@/app/app/modules/s
 
 export type DashboardScope = 'full' | 'transactions';
 
+export type DashboardCalendarReadPayload = {
+  upcoming: any;
+  summary: any;
+};
+
 export async function fetchDashboardResource(params: {
   getAuthHeaders: AuthHeadersResolver;
   scope?: DashboardScope;
@@ -14,4 +19,38 @@ export async function fetchDashboardResource(params: {
     getAuthHeaders: params.getAuthHeaders,
     workspaceIdOverride: params.workspaceIdOverride,
   });
+}
+
+export async function fetchDashboardCalendarReadPayload(params: {
+  getAuthHeaders: AuthHeadersResolver;
+  workspaceIdOverride?: string | null;
+  upcomingDays?: number;
+  focusDate?: string | null;
+}) {
+  const upcomingDays = Math.max(1, Math.min(30, Number(params.upcomingDays || 14)));
+  const upcomingQuery = new URLSearchParams();
+  upcomingQuery.set('days', String(upcomingDays));
+
+  const summaryQuery = new URLSearchParams();
+  if (params.focusDate) {
+    summaryQuery.set('date', params.focusDate);
+  }
+
+  const [upcoming, summary] = await Promise.all([
+    fetchResourceJson<any>({
+      path: `/api/financial-calendar/upcoming?${upcomingQuery.toString()}`,
+      getAuthHeaders: params.getAuthHeaders,
+      workspaceIdOverride: params.workspaceIdOverride,
+    }),
+    fetchResourceJson<any>({
+      path: `/api/financial-calendar/summary${summaryQuery.toString() ? `?${summaryQuery.toString()}` : ''}`,
+      getAuthHeaders: params.getAuthHeaders,
+      workspaceIdOverride: params.workspaceIdOverride,
+    }),
+  ]);
+
+  return {
+    upcoming,
+    summary,
+  } satisfies DashboardCalendarReadPayload;
 }
