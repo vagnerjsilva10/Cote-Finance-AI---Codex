@@ -1275,6 +1275,16 @@ const formatSubscriptionDate = (isoString?: string | null) => {
   });
 };
 
+const formatIsoDateShort = (isoString?: string | null) => {
+  if (!isoString) return 'Sem data';
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return 'Sem data';
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+  });
+};
+
 const normalizePublicAppUrl = (value?: string | null) =>
   String(value || '')
     .trim()
@@ -2114,6 +2124,23 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
   );
 
   const monthLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const projectionDelta30d = projection ? projection.projectedBalance30d - projection.currentBalance : null;
+  const projectionPlannedNetMonth = projection
+    ? projection.monthPlannedIncome - projection.monthPlannedExpense
+    : null;
+  const projectionPreviewRows = React.useMemo(() => {
+    if (!projection) return [] as Array<{
+      dateLabel: string;
+      closingBalance: number;
+      plannedNet: number;
+    }>;
+
+    return projection.daily.slice(0, 6).map((row) => ({
+      dateLabel: formatIsoDateShort(row.date),
+      closingBalance: row.closingBalance,
+      plannedNet: row.inflowPlanned - row.outflowPlanned,
+    }));
+  }, [projection]);
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
@@ -2162,6 +2189,95 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
           icon={Gauge}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
         />
+      </div>
+
+      <div className="app-surface-card rounded-2xl p-5 sm:p-6">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="card-title-premium text-[var(--text-primary)]">Painel de Projecao V2</h3>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {projection
+                ? `Base atualizada em ${formatIsoDateShort(projection.updatedAt)}`
+                : 'Base de projecao ainda indisponivel para este workspace.'}
+            </p>
+          </div>
+          <span
+            className={cn(
+              'inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest',
+              projection
+                ? 'border-[color:color-mix(in_srgb,var(--positive)_35%,transparent)] text-[var(--positive)] bg-[color:var(--positive-soft)]'
+                : 'border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] text-[var(--warning)] bg-[var(--warning-soft)]'
+            )}
+          >
+            {projection ? 'Read model ativo' : 'Fallback legado'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Saldo previsto 30 dias</p>
+            <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
+              {projection ? formatCurrency(projection.projectedBalance30d) : '--'}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              {projectionDelta30d === null
+                ? 'Aguardando materializacao da curva diaria.'
+                : `${projectionDelta30d >= 0 ? '+' : '-'}${formatCurrency(Math.abs(projectionDelta30d))} vs saldo atual`}
+            </p>
+          </div>
+
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Risco de saldo negativo</p>
+            <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
+              {projection?.projectedNegativeDate ? formatIsoDateShort(projection.projectedNegativeDate) : 'Sem risco'}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              {projection?.nextCriticalDate
+                ? `Proxima data critica: ${formatIsoDateShort(projection.nextCriticalDate)}`
+                : 'Sem data critica no horizonte atual.'}
+            </p>
+          </div>
+
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Fluxo planejado do mes</p>
+            <p
+              className={cn(
+                'mt-2 text-2xl font-black',
+                (projectionPlannedNetMonth || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]'
+              )}
+            >
+              {projectionPlannedNetMonth === null ? '--' : formatCurrency(projectionPlannedNetMonth)}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              {projection
+                ? `${projection.upcomingEventsCount14d} eventos previstos nos proximos 14 dias`
+                : 'Sem eventos previstos no read model.'}
+            </p>
+          </div>
+        </div>
+
+        {projectionPreviewRows.length > 0 ? (
+          <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {projectionPreviewRows.map((row) => (
+              <div
+                key={`projection-preview-${row.dateLabel}`}
+                className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3"
+              >
+                <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">{row.dateLabel}</p>
+                <p className="mt-1 text-base font-black text-[var(--text-primary)]">
+                  {formatCurrency(row.closingBalance)}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">
+                  Planejado no dia: {formatCurrency(row.plannedNet)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+            Sem curva diaria materializada ainda. Registre ou sincronize movimentacoes para gerar a projecao.
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
