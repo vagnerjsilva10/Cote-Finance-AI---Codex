@@ -500,7 +500,7 @@ async function buildSyncDrafts(workspaceId: string) {
       type: isInstallment ? 'INSTALLMENT' : 'FIXED_BILL',
       amount,
       category: debt.category || null,
-      date: computeConventionalDebtNextDueDate({ dueDay: debt.due_day }),
+      date: computeConventionalDebtNextDueDate({ dueDay: debt.due_day, dueDate: debt.due_date }),
       endDate: null,
       recurrence: 'NONE',
       recurrenceInterval: 1,

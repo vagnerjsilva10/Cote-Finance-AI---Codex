@@ -317,6 +317,7 @@ export async function getWorkspacePreference(workspaceId: string, userId: string
       where: { workspace_id: workspaceId },
       select: {
         onboarding_completed: true,
+        onboarding_dismissed: true,
         objective: true,
         financial_profile: true,
         ai_suggestions_enabled: true,
@@ -350,6 +351,7 @@ export async function getWorkspacePreference(workspaceId: string, userId: string
 
   return {
     onboarding_completed: Boolean(profile?.tutorial_completed),
+    onboarding_dismissed: Boolean(profile?.tutorial_completed),
     objective: null,
     financial_profile: null,
     ai_suggestions_enabled: true,
@@ -359,6 +361,7 @@ export async function getWorkspacePreference(workspaceId: string, userId: string
 export async function upsertWorkspacePreferenceSafe(params: {
   workspaceId: string;
   onboardingCompleted?: boolean;
+  onboardingDismissed?: boolean;
   objective?: string | null;
   financialProfile?: string | null;
   aiSuggestionsEnabled?: boolean;
@@ -372,6 +375,10 @@ export async function upsertWorkspacePreferenceSafe(params: {
           typeof params.onboardingCompleted === 'boolean'
             ? params.onboardingCompleted
             : undefined,
+        onboarding_dismissed:
+          typeof params.onboardingDismissed === 'boolean'
+            ? params.onboardingDismissed
+            : undefined,
         objective: params.objective ?? undefined,
         financial_profile: params.financialProfile ?? undefined,
         ai_suggestions_enabled:
@@ -382,6 +389,10 @@ export async function upsertWorkspacePreferenceSafe(params: {
       create: {
         workspace_id: params.workspaceId,
         onboarding_completed: Boolean(params.onboardingCompleted),
+        onboarding_dismissed:
+          typeof params.onboardingDismissed === 'boolean'
+            ? params.onboardingDismissed
+            : Boolean(params.onboardingCompleted),
         objective: params.objective ?? undefined,
         financial_profile: params.financialProfile ?? undefined,
         ai_suggestions_enabled:

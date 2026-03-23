@@ -58,9 +58,16 @@ function clampDay(year: number, month: number, dueDay: number) {
 }
 
 export function computeConventionalDebtNextDueDate(params: {
-  dueDay: number;
+  dueDay?: number | null;
+  dueDate?: Date | string | null;
   now?: Date;
 }) {
+  if (params.dueDate) {
+    const parsed = params.dueDate instanceof Date ? params.dueDate : new Date(params.dueDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      return startOfDay(parsed);
+    }
+  }
   const now = startOfDay(params.now ?? new Date());
   const dueDay = Math.max(1, Math.min(Number(params.dueDay || 1), 31));
   const currentCandidate = new Date(

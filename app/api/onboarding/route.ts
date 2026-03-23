@@ -21,6 +21,7 @@ type OnboardingBody = {
   financialProfile?: string;
   desiredPlan?: string;
   aiSuggestionsEnabled?: boolean;
+  dismissed?: boolean;
 };
 
 export async function GET(req: Request) {
@@ -42,6 +43,8 @@ export async function GET(req: Request) {
       limits,
       onboarding: {
         completed: Boolean(preference.onboarding_completed),
+        dismissed: Boolean(preference.onboarding_dismissed),
+        shouldShow: !preference.onboarding_completed && !preference.onboarding_dismissed,
         objective: preference.objective,
         financialProfile: preference.financial_profile,
         aiSuggestionsEnabled: preference.ai_suggestions_enabled,
@@ -84,6 +87,7 @@ export async function POST(req: Request) {
     await upsertWorkspacePreferenceSafe({
       workspaceId: context.workspaceId,
       onboardingCompleted: true,
+      onboardingDismissed: true,
       objective,
       financialProfile,
       aiSuggestionsEnabled,
@@ -111,6 +115,11 @@ export async function POST(req: Request) {
       currentPlan,
       desiredPlan: desiredPlan as WorkspacePlan,
       upgradeRequired,
+      onboarding: {
+        completed: true,
+        dismissed: true,
+        shouldShow: false,
+      },
     });
   } catch (error) {
     if (error instanceof HttpError) {
@@ -119,5 +128,46 @@ export async function POST(req: Request) {
 
     console.error('Onboarding POST Error:', error);
     return NextResponse.json({ error: 'Failed to save onboarding' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const context = await resolveWorkspaceContext(req);
+    const body = (await req.json().catch(() => null)) as OnboardingBody | null;
+    if (!body || typeof body.dismissed !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    await upsertWorkspacePreferenceSafe({
+      workspaceId: context.workspaceId,
+      onboardingDismissed: body.dismissed,
+      userId: context.userId,
+    });
+
+    if (body.dismissed) {
+      await logWorkspaceEventSafe({
+        workspaceId: context.workspaceId,
+        userId: context.userId,
+        type: 'onboarding.dismissed',
+        payload: {},
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      onboarding: {
+        completed: false,
+        dismissed: body.dismissed,
+        shouldShow: !body.dismissed,
+      },
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    console.error('Onboarding PATCH Error:', error);
+    return NextResponse.json({ error: 'Failed to update onboarding' }, { status: 500 });
   }
 }

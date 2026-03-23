@@ -103,6 +103,7 @@ function buildUpcomingAgendaItems(params: {
     creditor: string;
     remaining_amount: unknown;
     due_day: number;
+    due_date?: Date | null;
     status: string;
   }>;
   recurringDebts: Array<{
@@ -124,7 +125,7 @@ function buildUpcomingAgendaItems(params: {
 
   for (const debt of params.debts) {
     if (String(debt.status || '').toUpperCase() === 'PAID') continue;
-    const nextDueDate = getNextDueDate(Number(debt.due_day || 1), now);
+    const nextDueDate = debt.due_date || getNextDueDate(Number(debt.due_day || 1), now);
     const daysUntil = getDaysUntil(nextDueDate, now);
     if (daysUntil < 0 || daysUntil > UPCOMING_WINDOW_DAYS) continue;
 
@@ -301,6 +302,7 @@ export async function sendWorkspaceWhatsAppDigest(params: {
           creditor: true,
           remaining_amount: true,
           due_day: true,
+          due_date: true,
           status: true,
         },
       },

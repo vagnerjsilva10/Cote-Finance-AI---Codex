@@ -544,6 +544,7 @@ async function handleWhatsAppAiIntent(params: {
         creditor: true,
         remaining_amount: true,
         due_day: true,
+        due_date: true,
       },
       take: 6,
     }),
@@ -635,7 +636,7 @@ async function handleWhatsAppAiIntent(params: {
       .map((debt) => ({
         creditor: debt.creditor,
         amount: Number(debt.remaining_amount || 0),
-        dueDate: getNextDueDate(Number(debt.due_day || 1), now),
+        dueDate: debt.due_date || getNextDueDate(Number(debt.due_day || 1), now),
       }))
       .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
       .slice(0, 3);
@@ -718,6 +719,7 @@ async function handleWhatsAppGeminiIntent(params: {
         creditor: true,
         remaining_amount: true,
         due_day: true,
+        due_date: true,
       },
       take: 5,
     }),
@@ -772,6 +774,7 @@ async function handleWhatsAppGeminiIntent(params: {
     debts: debts.map((debt) => ({
       creditor: debt.creditor,
       remainingAmount: Number(debt.remaining_amount || 0),
+      dueDate: debt.due_date,
       dueDay: Number(debt.due_day || 1),
     })),
   };

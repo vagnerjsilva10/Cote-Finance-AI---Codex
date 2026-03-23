@@ -16,6 +16,7 @@ export type ConventionalDebtRecord = {
   remaining_amount: unknown;
   interest_rate_monthly: unknown;
   due_day: number;
+  due_date: Date | null;
   category: string;
   status: string;
   source: 'debt';
@@ -57,6 +58,7 @@ export async function findWorkspaceConventionalDebts(workspaceId: string) {
       remaining_amount: true,
       interest_rate_monthly: true,
       due_day: true,
+      due_date: true,
       category: true,
       status: true,
     },

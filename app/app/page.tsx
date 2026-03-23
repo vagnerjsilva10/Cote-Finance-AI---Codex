@@ -57,12 +57,14 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { FinancialCalendarView } from '@/components/financial-calendar/financial-calendar-view';
+import { PremiumDatePicker } from '@/components/ui/premium-date-picker';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 import {
   CONVENTIONAL_DEBT_CATEGORIES,
   RECURRING_DEBT_FREQUENCIES,
   RECURRING_DEBT_PRESETS,
+  computeConventionalDebtNextDueDate,
   getRecurringDebtDefaultDueDay,
   getRecurringDebtFrequencyLabel,
   isRecurringDebtCategory,
@@ -122,7 +124,7 @@ type DebtFormData = {
   originalAmount: string;
   remainingAmount: string;
   interestRateMonthly: string;
-  dueDay: string;
+  dueDate: string;
   category: string;
   status: 'Em aberto' | 'Quitada' | 'Atrasada' | 'Parcelada';
 };
@@ -202,6 +204,7 @@ type Debt = {
   remainingAmount: number;
   interestRateMonthly: number;
   dueDay: number;
+  dueDate?: string | null;
   category: string;
   status: 'Em aberto' | 'Quitada' | 'Atrasada' | 'Parcelada';
 };
@@ -683,6 +686,46 @@ const getNextMonthDueDate = (dueDay: number, reference = new Date()) => {
     nextMonthBase.getMonth(),
     Math.min(dueDay, nextMonthLastDay)
   );
+};
+
+const toInputDateValue = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const parseInputDateValue = (value: string | null | undefined) => {
+  const token = String(value || '').trim();
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(token);
+  if (!match) return null;
+  const parsed = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const getDefaultDebtDueDateInput = (reference = new Date(), fallbackDueDay = 10) =>
+  toInputDateValue(getNextMonthDueDate(fallbackDueDay, reference));
+
+const getDebtDueDateValue = (debt: Pick<Debt, 'dueDate' | 'dueDay'>, reference = new Date()) => {
+  const explicitDate = parseInputDateValue(debt.dueDate ?? null);
+  if (explicitDate) return explicitDate;
+  return computeConventionalDebtNextDueDate({ dueDay: debt.dueDay, now: reference });
+};
+
+const formatDebtDueDateLabel = (debt: Pick<Debt, 'dueDate' | 'dueDay'>, reference = new Date()) =>
+  new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(getDebtDueDateValue(debt, reference));
+
+const shouldShowWorkspaceOnboarding = (payload: unknown) => {
+  if (!payload || typeof payload !== 'object') return false;
+  const onboarding = payload as {
+    shouldShow?: boolean;
+    completed?: boolean;
+    dismissed?: boolean;
+  };
+  if (typeof onboarding.shouldShow === 'boolean') return onboarding.shouldShow;
+  const completed = Boolean(onboarding.completed);
+  const dismissed = Boolean(onboarding.dismissed);
+  return !completed && !dismissed;
 };
 
 const parseMoneyInput = (val: string) => parseCurrency(val);
@@ -3222,7 +3265,7 @@ const DebtsView = ({
                             {debt.status}
                           </span>
                         </div>
-                        <p className="text-sm text-[var(--text-secondary)]">{debt.category}  • vence no dia {debt.dueDay}</p>
+                        <p className="text-sm text-[var(--text-secondary)]">{debt.category} - vence em {formatDebtDueDateLabel(debt)}</p>
                         <div className="grid gap-3 sm:grid-cols-3">
                           <div>
                             <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Em aberto</p>
@@ -4113,7 +4156,7 @@ const PortfolioView = ({
                   <span className="text-sm font-bold text-[var(--danger)]">{formatCurrency(debt.remainingAmount)}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-muted)]">
-                  <span>Vence no dia {debt.dueDay}</span>
+                  <span>Vence em {formatDebtDueDateLabel(debt)}</span>
                   <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimônio</span>
                 </div>
               </div>
@@ -5532,7 +5575,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
         originalAmount: initialDraft?.originalAmount ?? '',
         remainingAmount: initialDraft?.remainingAmount ?? '',
         interestRateMonthly: initialDraft?.interestRateMonthly ?? '0',
-        dueDay: initialDraft?.dueDay ?? '10',
+        dueDate: initialDraft?.dueDate ?? getDefaultDebtDueDateInput(),
         category: draftCategory,
         status: initialDraft?.status ?? 'Em aberto',
       };
@@ -5543,7 +5586,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       originalAmount: formatMoneyInput(initialData.originalAmount),
       remainingAmount: formatMoneyInput(initialData.remainingAmount),
       interestRateMonthly: String(initialData.interestRateMonthly),
-      dueDay: String(initialData.dueDay),
+      dueDate: initialData.dueDate ?? toInputDateValue(getDebtDueDateValue(initialData)),
       category: initialData.category,
       status: initialData.status,
     };
@@ -5565,8 +5608,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
     parseMoneyInput(formData.originalAmount) > 0 &&
     parseMoneyInput(formData.remainingAmount) >= 0 &&
     Number(formData.interestRateMonthly) >= 0 &&
-    Number(formData.dueDay) >= 1 &&
-    Number(formData.dueDay) <= 31;
+    Boolean(parseInputDateValue(formData.dueDate));
 
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return;
@@ -5645,14 +5687,11 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </div>
             <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Dia do vencimento</label>
-              <input
-                type="number"
-                min={1}
-                max={31}
-                value={formData.dueDay}
-                onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+              <label className="label-premium text-[var(--text-muted)]">Data do vencimento</label>
+              <PremiumDatePicker
+                value={formData.dueDate}
+                onChange={(value) => setFormData((prev) => ({ ...prev, dueDate: value }))}
+                placeholder="Selecione a data"
               />
             </div>
           </div>
@@ -7435,8 +7474,8 @@ export default function App() {
           } else if (typeof payload?.activeWorkspaceId === 'string') {
             setActiveWorkspaceId((current) => current || payload.activeWorkspaceId);
           }
-          if (payload?.onboarding && typeof payload.onboarding.completed === 'boolean') {
-            setIsWorkspaceOnboardingOpen(!payload.onboarding.completed);
+          if (payload?.onboarding) {
+            setIsWorkspaceOnboardingOpen(shouldShowWorkspaceOnboarding(payload.onboarding));
           }
         } else {
           setupTokenRef.current = null;
@@ -7615,9 +7654,10 @@ export default function App() {
     [activeWorkspaceId]
   );
 
-  const fetchDashboardData = React.useCallback(async (options?: { silent?: boolean }) => {
+  const fetchDashboardData = React.useCallback(async (options?: { silent?: boolean; scope?: 'full' | 'transactions' }) => {
     if (!user) return;
     const silent = Boolean(options?.silent);
+    const scope = options?.scope === 'transactions' ? 'transactions' : 'full';
     if (!silent) {
       setDataLoading(true);
     }
@@ -7628,7 +7668,7 @@ export default function App() {
     }
     const usageStorageKey = user?.id ? `cote-ai-usage-${user.id}-${getCurrentMonthKey()}` : null;
     try {
-      let response = await fetch('/api/dashboard', {
+      let response = await fetch(`/api/dashboard${scope === 'transactions' ? '?scope=transactions' : ''}`, {
         headers: await getAuthHeaders(false, workspaceIdForRequest),
       });
       if (!response.ok && response.status === 404) {
@@ -7637,7 +7677,7 @@ export default function App() {
         } = await supabase.auth.getSession();
         if (session?.access_token) {
           await setupUserOnServer(session.access_token, session.user?.id);
-          response = await fetch('/api/dashboard', {
+          response = await fetch(`/api/dashboard${scope === 'transactions' ? '?scope=transactions' : ''}`, {
             headers: await getAuthHeaders(false, workspaceIdForRequest),
           });
         }
@@ -7687,14 +7727,14 @@ export default function App() {
             balance: Number(wallet.balance || 0),
           }))
         );
-      } else {
+      } else if (scope === 'full') {
         setWallets([]);
       }
       if (typeof data.activeWorkspaceId === 'string') {
         setActiveWorkspaceId((current) => current || data.activeWorkspaceId);
       }
       if (data.onboarding) {
-        setIsWorkspaceOnboardingOpen(!data.onboarding.completed);
+        setIsWorkspaceOnboardingOpen(shouldShowWorkspaceOnboarding(data.onboarding));
       }
       if (Array.isArray(data.recentEvents)) {
         setWorkspaceEvents(
@@ -7764,10 +7804,10 @@ export default function App() {
           ).length;
           setCurrentMonthTransactionCount(localMonthCount);
         }
-      } else {
+      } else if (scope === 'full') {
         setTransactions([]);
       }
-      if (data.goals) {
+      if (Array.isArray(data.goals)) {
         setGoals(data.goals.map((g: any) => ({
           id: g.id,
           name: g.name,
@@ -7778,7 +7818,7 @@ export default function App() {
           icon: Wallet,
           color: 'text-[var(--positive)]',
         })));
-      } else {
+      } else if (scope === 'full') {
         setGoals([]);
       }
       if (Array.isArray(data.investments)) {
@@ -7796,7 +7836,7 @@ export default function App() {
             color: getInvestmentColor(item.type || 'Outros'),
           }))
         );
-      } else {
+      } else if (scope === 'full') {
         setInvestments([]);
       }
       if (Array.isArray(data.debts)) {
@@ -7808,11 +7848,12 @@ export default function App() {
             remainingAmount: Number(item.remaining_amount || 0),
             interestRateMonthly: Number(item.interest_rate_monthly || 0),
             dueDay: Number(item.due_day || 1),
+            dueDate: item.due_date || null,
             category: item.category || 'Outros',
             status: mapLegacyDebtStatusToLabel(item.status) as Debt['status'],
           }))
         );
-      } else {
+      } else if (scope === 'full') {
         setDebts([]);
       }
       if (Array.isArray(data.recurringDebts)) {
@@ -7839,11 +7880,14 @@ export default function App() {
             legacyDebtId: item.legacy_debt_id || null,
           }))
         );
-      } else {
+      } else if (scope === 'full') {
         setRecurringDebts([]);
       }
       const resolvedWorkspaceId = typeof data.activeWorkspaceId === 'string' ? data.activeWorkspaceId : activeWorkspaceId;
       if (resolvedWorkspaceId) {
+        const baseSnapshot =
+          workspaceDashboardCacheRef.current[resolvedWorkspaceId] ??
+          (user?.id ? readDashboardSnapshot(user.id, resolvedWorkspaceId) : null);
         const workspaceSnapshot: WorkspaceDashboardSnapshot = {
           totalBalance: data.totalBalance !== undefined ? Number(data.totalBalance) : 0,
           currentPlan: data.plan ? normalizePlan(data.plan) : 'FREE',
@@ -7856,10 +7900,10 @@ export default function App() {
           currentMonthTransactionCount:
             typeof data.currentMonthTransactionCount === 'number' ? Math.max(0, data.currentMonthTransactionCount) : 0,
           aiUsageCount: typeof data.currentMonthAiUsage === 'number' ? Math.max(0, data.currentMonthAiUsage) : 0,
-          transactions: data.transactions
+          transactions: Array.isArray(data.transactions)
             ? data.transactions.map((tx: any) => mapApiTransactionToClientTransaction(tx))
-            : [],
-          goals: data.goals
+            : baseSnapshot?.transactions ?? [],
+          goals: Array.isArray(data.goals)
             ? data.goals.map((g: any) => ({
                 id: g.id,
                 name: g.name,
@@ -7870,7 +7914,7 @@ export default function App() {
                 icon: Wallet,
                 color: 'text-[var(--positive)]',
               }))
-            : [],
+            : baseSnapshot?.goals ?? [],
           investments: Array.isArray(data.investments)
             ? data.investments.map((item: any) => ({
                 id: item.id,
@@ -7884,7 +7928,7 @@ export default function App() {
                 expectedReturnAnnual: Number(item.expected_return_annual || 0),
                 color: getInvestmentColor(item.type || 'Outros'),
               }))
-            : [],
+            : baseSnapshot?.investments ?? [],
           debts: Array.isArray(data.debts)
             ? data.debts.map((item: any) => ({
                 id: item.id,
@@ -7893,10 +7937,11 @@ export default function App() {
                 remainingAmount: Number(item.remaining_amount || 0),
                 interestRateMonthly: Number(item.interest_rate_monthly || 0),
                 dueDay: Number(item.due_day || 1),
+                dueDate: item.due_date || null,
                 category: item.category || 'Outros',
                 status: mapLegacyDebtStatusToLabel(item.status) as Debt['status'],
               }))
-            : [],
+            : baseSnapshot?.debts ?? [],
           recurringDebts: Array.isArray(data.recurringDebts)
             ? data.recurringDebts.map((item: any) => ({
                 id: item.id,
@@ -7919,7 +7964,7 @@ export default function App() {
                 source: item.source === 'legacy_debt' ? 'legacy_debt' : 'recurring_debt',
                 legacyDebtId: item.legacy_debt_id || null,
               }))
-            : [],
+            : baseSnapshot?.recurringDebts ?? [],
           workspaceEvents: Array.isArray(data.recentEvents)
             ? data.recentEvents.map((event: any) => ({
                 id: String(event.id),
@@ -7931,19 +7976,19 @@ export default function App() {
                     ? (event.payload as Record<string, unknown>)
                     : null,
               }))
-            : [],
+            : baseSnapshot?.workspaceEvents ?? [],
           dashboardInsights: Array.isArray(data.insights)
             ? data.insights
                 .filter((item: unknown) => typeof item === 'string')
                 .map((item: string) => item.trim())
                 .filter(Boolean)
-            : [],
+            : baseSnapshot?.dashboardInsights ?? [],
           isWhatsAppConnected:
             data.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED',
           workspaceWhatsAppPhoneNumber:
             data.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
               ? `+${data.workspace.whatsapp_phone_number}`
-              : '',
+              : baseSnapshot?.workspaceWhatsAppPhoneNumber ?? '',
         };
         workspaceDashboardCacheRef.current[resolvedWorkspaceId] = workspaceSnapshot;
         if (user?.id) {
@@ -8029,6 +8074,7 @@ export default function App() {
   const [onboardingInsightViewed, setOnboardingInsightViewed] = React.useState(false);
   const [isSavingOnboardingRecord, setIsSavingOnboardingRecord] = React.useState(false);
   const [isSavingOnboarding, setIsSavingOnboarding] = React.useState(false);
+  const [isDismissingOnboarding, setIsDismissingOnboarding] = React.useState(false);
   const [transactionModalDraft, setTransactionModalDraft] = React.useState<Partial<TransactionFormData> | null>(
     null
   );
@@ -8334,7 +8380,7 @@ React.useEffect(() => {
               ? 'O WhatsApp foi conectado com sucesso.'
               : 'A Meta aceitou a conexão. Agora falta a confirmação de entrega pelo webhook.',
       });
-      void fetchDashboardData({ silent: true });
+      void fetchDashboardData({ silent: true, scope: 'transactions' });
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
@@ -8374,7 +8420,7 @@ React.useEffect(() => {
             ? payload.message
             : 'A integração do WhatsApp foi desconectada com sucesso.',
       });
-      void fetchDashboardData({ silent: true });
+      void fetchDashboardData({ silent: true, scope: 'transactions' });
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
@@ -8440,7 +8486,7 @@ React.useEffect(() => {
 
     for (const debt of debts) {
       if (debt.status === 'Quitada') continue;
-      const nextDueDate = getNextMonthDueDate(debt.dueDay, now);
+      const nextDueDate = getDebtDueDateValue(debt, now);
       const daysUntil = getAgendaDayDiff(nextDueDate, now);
       if (daysUntil > 30) continue;
 
@@ -8455,7 +8501,7 @@ React.useEffect(() => {
         bg: 'bg-[color:var(--danger-soft)]',
         status: daysUntil < 0 ? 'overdue' : 'pending',
         kind: 'debt',
-        helperText: `${debt.category} - vencimento todo dia ${String(debt.dueDay).padStart(2, '0')}`,
+        helperText: `${debt.category} - vencimento em ${formatDebtDueDateLabel(debt, now)}`,
         daysUntil,
       });
     }
@@ -9099,6 +9145,33 @@ React.useEffect(() => {
       alert(error instanceof Error ? error.message : 'Falha ao salvar onboarding.');
     } finally {
       setIsSavingOnboarding(false);
+    }
+  };
+
+  const handleDismissWorkspaceOnboarding = async () => {
+    if (isDismissingOnboarding || isSavingOnboarding) return;
+    setIsDismissingOnboarding(true);
+
+    try {
+      const response = await fetch('/api/onboarding', {
+        method: 'PATCH',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({ dismissed: true }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          typeof payload?.error === 'string'
+            ? payload.error
+            : `Falha ao atualizar onboarding (HTTP ${response.status}).`
+        );
+      }
+      setIsWorkspaceOnboardingOpen(false);
+    } catch (error) {
+      console.error('Onboarding dismiss error:', error);
+      alert(error instanceof Error ? error.message : 'Falha ao atualizar onboarding.');
+    } finally {
+      setIsDismissingOnboarding(false);
     }
   };
 
@@ -9874,13 +9947,15 @@ React.useEffect(() => {
   };
 
   const handleSubmitDebt = async (debt: DebtFormData) => {
+    const parsedDueDate = parseInputDateValue(debt.dueDate);
     const payload = {
       ...(editingDebtId ? { id: String(editingDebtId) } : {}),
       creditor: debt.creditor.trim(),
       originalAmount: parseMoneyInput(debt.originalAmount),
       remainingAmount: parseMoneyInput(debt.remainingAmount),
       interestRateMonthly: Number(debt.interestRateMonthly || 0),
-      dueDay: Number(debt.dueDay || 1),
+      dueDate: parsedDueDate ? toInputDateValue(parsedDueDate) : null,
+      dueDay: parsedDueDate ? parsedDueDate.getDate() : undefined,
       category: debt.category,
       status: debt.status,
     };
@@ -10780,10 +10855,11 @@ React.useEffect(() => {
                   <p className="text-sm text-[var(--text-secondary)]">Etapa {onboardingStep + 1} de 9</p>
                 </div>
                 <button
-                  onClick={() => setIsWorkspaceOnboardingOpen(false)}
+                  onClick={() => void handleDismissWorkspaceOnboarding()}
+                  disabled={isDismissingOnboarding || isSavingOnboarding}
                   className="app-button-secondary rounded-xl px-3 py-1.5 text-xs font-bold"
                 >
-                  Depois
+                  {isDismissingOnboarding ? 'Salvando...' : 'Depois'}
                 </button>
               </div>
 
@@ -12568,6 +12644,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
 

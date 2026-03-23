@@ -315,6 +315,8 @@ async function getWorkspaceEventSnapshot(workspaceId: string) {
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
+    const requestUrl = new URL(req.url);
+    const scope = requestUrl.searchParams.get('scope') === 'transactions' ? 'transactions' : 'full';
     const workspaceId = context.workspaceId;
 
     const now = new Date();
@@ -336,10 +338,15 @@ export async function GET(req: Request) {
     ]);
 
     const transactions = await findWorkspaceTransactions(workspaceId);
-    const goals = await findWorkspaceGoals(workspaceId);
-    const investments = await findWorkspaceInvestments(workspaceId);
-    const debts = await findWorkspaceDebts(workspaceId);
-    const recurringDebts = await findWorkspaceRecurringDebtItems(workspaceId);
+    const [goals, investments, debts, recurringDebts] =
+      scope === 'transactions'
+        ? [undefined, undefined, undefined, undefined]
+        : await Promise.all([
+            findWorkspaceGoals(workspaceId),
+            findWorkspaceInvestments(workspaceId),
+            findWorkspaceDebts(workspaceId),
+            findWorkspaceRecurringDebtItems(workspaceId),
+          ]);
 
     const safeWorkspace =
       workspace ||
@@ -365,7 +372,7 @@ export async function GET(req: Request) {
     };
 
     const totalBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
-    const totalInvested = investments.reduce<number>((acc, item) => acc + Number(item.current_amount), 0);
+    const totalInvested = (investments ?? []).reduce<number>((acc, item) => acc + Number(item.current_amount), 0);
     const insights = plan === 'FREE' ? [] : buildFinancialInsights(transactions as any, totalBalance);
 
     return NextResponse.json({
@@ -373,10 +380,14 @@ export async function GET(req: Request) {
       totalInvested,
       wallets,
       transactions,
-      goals,
-      investments,
-      debts,
-      recurringDebts,
+      ...(scope === 'full'
+        ? {
+            goals,
+            investments,
+            debts,
+            recurringDebts,
+          }
+        : {}),
       workspace: workspaceWithConfig,
       plan,
       limits: PLAN_LIMITS[plan],
@@ -388,6 +399,8 @@ export async function GET(req: Request) {
       insights,
       onboarding: {
         completed: Boolean(preference.onboarding_completed),
+        dismissed: Boolean(preference.onboarding_dismissed),
+        shouldShow: !preference.onboarding_completed && !preference.onboarding_dismissed,
         objective: preference.objective,
         financialProfile: preference.financial_profile,
         aiSuggestionsEnabled: preference.ai_suggestions_enabled,

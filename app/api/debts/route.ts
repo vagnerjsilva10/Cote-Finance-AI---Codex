@@ -18,6 +18,7 @@ type DebtBody = {
   remainingAmount?: number | string;
   interestRateMonthly?: number | string;
   dueDay?: number | string;
+  dueDate?: string | null;
   category?: string;
   status?: string;
 };
@@ -36,6 +37,22 @@ const parseInteger = (value: unknown) => {
   if (typeof value === 'string') {
     const parsed = Number(value);
     return Number.isInteger(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const parseDate = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  if (typeof value === 'string') {
+    const token = value.trim();
+    if (!token) return null;
+    const normalized = token.length <= 10 ? `${token.slice(0, 10)}T00:00:00` : token;
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
   }
   return null;
 };
@@ -94,6 +111,7 @@ export async function POST(req: Request) {
     const remainingAmount = parseAmount(body.remainingAmount);
     const interestRateMonthly = parseAmount(body.interestRateMonthly);
     const dueDay = parseInteger(body.dueDay);
+    const dueDate = parseDate(body.dueDate);
     const category = (body.category || '').trim() || 'Outros';
     if (isRecurringDebtCategory(category)) {
       return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
@@ -112,8 +130,8 @@ export async function POST(req: Request) {
     if (interestRateMonthly === null || interestRateMonthly < 0) {
       return NextResponse.json({ error: 'Invalid monthly interest rate' }, { status: 400 });
     }
-    if (!dueDay || dueDay < 1 || dueDay > 31) {
-      return NextResponse.json({ error: 'Invalid due day' }, { status: 400 });
+    if (!dueDate && (!dueDay || dueDay < 1 || dueDay > 31)) {
+      return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
     }
 
     const debt = await prisma.debt.create({
@@ -123,7 +141,8 @@ export async function POST(req: Request) {
         original_amount: originalAmount,
         remaining_amount: remainingAmount,
         interest_rate_monthly: interestRateMonthly,
-        due_day: dueDay,
+        due_day: dueDate ? dueDate.getDate() : (dueDay as number),
+        due_date: dueDate,
         category,
         status,
       },
@@ -180,11 +199,21 @@ export async function PATCH(req: Request) {
     const remainingAmount = parseAmount(body.remainingAmount);
     const interestRateMonthly = parseAmount(body.interestRateMonthly);
     const dueDay = parseInteger(body.dueDay);
+    const dueDate = Object.prototype.hasOwnProperty.call(body, 'dueDate') ? parseDate(body.dueDate) : undefined;
     const category = body.category?.trim();
     if (category && isRecurringDebtCategory(category)) {
       return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
     }
     const status = body.status ? normalizeDebtStatus(body.status) : undefined;
+
+    if (
+      Object.prototype.hasOwnProperty.call(body, 'dueDate') &&
+      body.dueDate !== null &&
+      body.dueDate !== '' &&
+      dueDate === null
+    ) {
+      return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
+    }
 
     const debt = await prisma.debt.update({
       where: { id: existing.id },
@@ -194,7 +223,13 @@ export async function PATCH(req: Request) {
         remaining_amount: remainingAmount !== null && remainingAmount >= 0 ? remainingAmount : undefined,
         interest_rate_monthly:
           interestRateMonthly !== null && interestRateMonthly >= 0 ? interestRateMonthly : undefined,
-        due_day: dueDay !== null && dueDay >= 1 && dueDay <= 31 ? dueDay : undefined,
+        due_day:
+          dueDate instanceof Date
+            ? dueDate.getDate()
+            : dueDay !== null && dueDay >= 1 && dueDay <= 31
+              ? dueDay
+              : undefined,
+        due_date: dueDate === undefined ? undefined : dueDate,
         category: category || undefined,
         status,
       },

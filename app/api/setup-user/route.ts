@@ -129,6 +129,8 @@ export async function POST(req: Request) {
       plan,
       onboarding: {
         completed: Boolean(onboardingPreference.onboarding_completed),
+        dismissed: Boolean(onboardingPreference.onboarding_dismissed),
+        shouldShow: !onboardingPreference.onboarding_completed && !onboardingPreference.onboarding_dismissed,
         objective: onboardingPreference.objective,
         financialProfile: onboardingPreference.financial_profile,
         aiSuggestionsEnabled: onboardingPreference.ai_suggestions_enabled,
