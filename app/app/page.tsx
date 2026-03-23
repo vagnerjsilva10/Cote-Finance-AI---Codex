@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -95,14 +95,14 @@ type Tab =
   | 'settings'
   | 'agenda';
 
-type TransactionFlowType = 'Receita' | 'Despesa' | 'TransferÃªncia';
+type TransactionFlowType = 'Receita' | 'Despesa' | 'Transferência';
 type PaymentMethodLabel =
   | 'PIX'
-  | 'CartÃ£o'
+  | 'Cartão'
   | 'Dinheiro'
-  | 'TransferÃªncia bancÃ¡ria'
+  | 'Transferência bancária'
   | 'Boleto'
-  | 'DÃ©bito'
+  | 'Débito'
   | 'Outro';
 
 type TransactionFormData = {
@@ -546,15 +546,15 @@ const getWhatsAppConnectionDescription = (
   lastErrorMessage?: string | null
 ) => {
   if (state === 'failed') {
-    return lastErrorMessage || 'NÃ£o foi possÃ­vel confirmar a entrega da mensagem. Revise o nÃºmero e tente novamente.';
+    return lastErrorMessage || 'Não foi possível confirmar a entrega da mensagem. Revise o número e tente novamente.';
   }
   if (state === 'connecting') {
-    return 'A Meta aceitou a solicitaÃ§Ã£o. Estamos aguardando a confirmaÃ§Ã£o real de entrega.';
+    return 'A Meta aceitou a solicitação. Estamos aguardando a confirmação real de entrega.';
   }
   if (state === 'connected' || isConnected) {
-    return 'Entrega confirmada. O WhatsApp estÃ¡ pronto para testes e resumos.';
+    return 'Entrega confirmada. O WhatsApp está pronto para testes e resumos.';
   }
-  return 'Informe o nÃºmero e clique em Conectar.';
+  return 'Informe o número e clique em Conectar.';
 };
 
 const normalizeWhatsAppConnectionState = (value: unknown): WhatsAppDiagnostic['connectionState'] => {
@@ -656,8 +656,8 @@ const buildPremiumSmartAlerts = ({
     const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
     alerts.push({
       id: 'premium-expense-spike',
-      title: 'Alerta inteligente: gasto acima do padrÃ£o',
-      message: `Suas despesas subiram ${variation}% em relaÃ§Ã£o ao mÃªs anterior. Vale revisar onde o caixa acelerou.`,
+      title: 'Alerta inteligente: gasto acima do padrão',
+      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
       tone: 'warning',
       targetTab: 'reports',
     });
@@ -692,7 +692,7 @@ const buildPremiumSmartAlerts = ({
     alerts.push({
       id: 'premium-smart-alerts-ok',
       title: 'Alertas inteligentes monitorando seu caixa',
-      message: 'Nenhum sinal crÃ­tico foi detectado agora. Seu fluxo estÃ¡ estÃ¡vel e dentro do esperado.',
+      message: 'Nenhum sinal crítico foi detectado agora. Seu fluxo está estável e dentro do esperado.',
       tone: 'success',
       targetTab: 'reports',
     });
@@ -780,7 +780,7 @@ const getUserDisplayName = (user: any) => {
     return resolvedName.trim();
   }
 
-  return user?.email?.split('@')[0] || 'UsuÃ¡rio';
+  return user?.email?.split('@')[0] || 'Usuário';
 };
 
 const getUserAvatarUrl = (user: any) => {
@@ -824,7 +824,7 @@ const isValidAvatarUrl = (value: string) => {
 const optimizeAvatarFile = (file: File) =>
   new Promise<string>((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
-      reject(new Error('Selecione um arquivo de imagem vÃ¡lido.'));
+      reject(new Error('Selecione um arquivo de imagem válido.'));
       return;
     }
 
@@ -839,7 +839,7 @@ const optimizeAvatarFile = (file: File) =>
 
         const context = canvas.getContext('2d');
         if (!context) {
-          throw new Error('NÃ£o foi possÃ­vel processar a imagem.');
+          throw new Error('Não foi possível processar a imagem.');
         }
 
         const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
@@ -870,7 +870,7 @@ const optimizeAvatarFile = (file: File) =>
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('NÃ£o foi possÃ­vel ler a imagem selecionada.'));
+      reject(new Error('Não foi possível ler a imagem selecionada.'));
     };
 
     image.src = objectUrl;
@@ -885,29 +885,29 @@ const maskMoneyInput = (rawValue: string) => {
 const TRANSACTION_FLOW_TYPES: TransactionFlowType[] = [
   'Receita',
   'Despesa',
-  'TransferÃªncia',
+  'Transferência',
 ];
 
 const PAYMENT_METHODS: PaymentMethodLabel[] = [
   'PIX',
-  'CartÃ£o',
+  'Cartão',
   'Dinheiro',
-  'TransferÃªncia bancÃ¡ria',
+  'Transferência bancária',
   'Boleto',
-  'DÃ©bito',
+  'Débito',
   'Outro',
 ];
 
 const TRANSACTION_CATEGORIES = [
-  'AlimentaÃ§Ã£o',
+  'Alimentação',
   'Transporte',
-  'SaÃºde',
-  'EducaÃ§Ã£o',
+  'Saúde',
+  'Educação',
   'Lazer',
   'Moradia',
-  'SalÃ¡rio',
+  'Salário',
   'Freelance',
-  'ComissÃ£o',
+  'Comissão',
   'Reembolso',
   'Vendas',
   'Marketing',
@@ -918,9 +918,9 @@ const TRANSACTION_CATEGORIES = [
 ];
 
 const REVENUE_TRANSACTION_CATEGORIES: readonly string[] = [
-  'SalÃ¡rio',
+  'Salário',
   'Freelance',
-  'ComissÃ£o',
+  'Comissão',
   'Reembolso',
   'Vendas',
   'Investimentos',
@@ -928,10 +928,10 @@ const REVENUE_TRANSACTION_CATEGORIES: readonly string[] = [
   'Outros',
 ] as const;
 const EXPENSE_TRANSACTION_CATEGORIES: readonly string[] = [
-  'AlimentaÃ§Ã£o',
+  'Alimentação',
   'Transporte',
-  'SaÃºde',
-  'EducaÃ§Ã£o',
+  'Saúde',
+  'Educação',
   'Lazer',
   'Moradia',
   'Marketing',
@@ -945,7 +945,7 @@ const MAIN_BANK_OPTIONS = [
   'Nubank',
   'Banco do Brasil',
   'Caixa',
-  'ItaÃº',
+  'Itaú',
   'Bradesco',
   'Santander',
   'Inter',
@@ -958,12 +958,12 @@ const MAIN_BANK_OPTIONS = [
 ] as const;
 
 const GOAL_CATEGORIES = [
-  'Reserva de emergÃªncia',
+  'Reserva de emergência',
   'Viagem',
   'Casa',
   'Carro',
   'Investimentos',
-  'EducaÃ§Ã£o',
+  'Educação',
   'Aposentadoria',
   'Outros',
 ];
@@ -972,11 +972,11 @@ const DEBT_CATEGORIES: readonly string[] = [...CONVENTIONAL_DEBT_CATEGORIES];
 
 const INVESTMENT_TYPES = [
   'Renda fixa',
-  'Renda variÃ¡vel',
+  'Renda variável',
   'Tesouro',
   'CDB',
   'LCI/LCA',
-  'AÃ§Ãµes',
+  'Ações',
   'Fundos',
   'Cripto',
   'Outros',
@@ -984,33 +984,33 @@ const INVESTMENT_TYPES = [
 
 const ASSISTANT_SUGGESTIONS = [
   'Onde eu mais gasto',
-  'Qual meu saldo este mÃªs',
-  'Me dÃª dicas para economizar',
-  'Quais sÃ£o meus maiores gastos',
-  'Como estÃ£o meus investimentos',
-  'Quais dÃ­vidas devo priorizar',
+  'Qual meu saldo este mês',
+  'Me dê dicas para economizar',
+  'Quais são meus maiores gastos',
+  'Como estão meus investimentos',
+  'Quais dívidas devo priorizar',
 ];
 
 const ONBOARDING_OBJECTIVES = [
   'Organizar meus gastos',
   'Economizar mais dinheiro',
-  'Sair das dÃ­vidas',
+  'Sair das dívidas',
   'Acompanhar investimentos',
   'Ter mais controle financeiro',
 ];
 
 const ONBOARDING_USAGE_LEVELS = [
-  'AtÃ© 20 lanÃ§amentos',
-  '20 a 50 lanÃ§amentos',
-  '50 a 100 lanÃ§amentos',
-  'Mais de 100 lanÃ§amentos',
+  'Até 20 lançamentos',
+  '20 a 50 lançamentos',
+  '50 a 100 lançamentos',
+  'Mais de 100 lançamentos',
 ];
 
 const createInitialOnboardingTransaction = (): TransactionFormData => ({
   description: '',
   amount: '',
   flowType: 'Despesa',
-  category: 'AlimentaÃ§Ã£o',
+  category: 'Alimentação',
   paymentMethod: 'PIX',
   wallet: DEFAULT_TRANSACTION_WALLET,
   destinationWallet: '',
@@ -1021,11 +1021,11 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
 const getInvestmentColor = (type: string) => {
   const colorMap: Record<string, string> = {
     'Renda fixa': 'bg-[var(--primary)]',
-    'Renda variÃ¡vel': 'bg-[var(--primary)]',
+    'Renda variável': 'bg-[var(--primary)]',
     Tesouro: 'bg-[var(--primary)]',
     CDB: 'bg-[var(--primary)]',
     'LCI/LCA': 'bg-[var(--primary)]',
-    'AÃ§Ãµes': 'bg-[color:var(--danger-soft)]',
+    'Ações': 'bg-[color:var(--danger-soft)]',
     Fundos: 'bg-[var(--primary)]',
     Cripto: 'bg-[color:var(--danger-soft)]',
     Outros: 'bg-[var(--bg-surface-elevated)]',
@@ -1049,7 +1049,7 @@ const mapFlowTypeToBackendType = (flowType: TransactionFlowType) => {
 const mapBackendTypeToFlowType = (rawType: string): TransactionFlowType => {
   if (rawType === 'INCOME' || rawType === 'PIX_IN') return 'Receita';
   if (rawType === 'EXPENSE' || rawType === 'PIX_OUT') return 'Despesa';
-  if (rawType === 'TRANSFER') return 'TransferÃªncia';
+  if (rawType === 'TRANSFER') return 'Transferência';
   if (rawType === 'income') return 'Receita';
   if (rawType === 'expense') return 'Despesa';
   return 'Despesa';
@@ -1061,44 +1061,44 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃƒO') return 'CartÃ£o';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÒO') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
     normalized === 'TRANSFERENCIA_BANCARIA' ||
-    normalized === 'TRANSFERÃŠNCIA BANCÃRIA'
+    normalized === 'TRANSFERENCIA BANCARIA'
   ) {
-    return 'TransferÃªncia bancÃ¡ria';
+    return 'Transferência bancária';
   }
   if (normalized === 'BOLETO') return 'Boleto';
-  if (normalized === 'DEBIT' || normalized === 'DEBITO' || normalized === 'DÃ‰BITO') return 'DÃ©bito';
+  if (normalized === 'DEBIT' || normalized === 'DEBITO') return 'Débito';
   return 'Outro';
 };
 
 const mapPaymentMethodToBackend = (method: PaymentMethodLabel) => {
   if (method === 'PIX') return 'PIX';
-  if (method === 'CartÃ£o') return 'CARD';
+  if (method === 'Cartão') return 'CARD';
   if (method === 'Dinheiro') return 'CASH';
-  if (method === 'TransferÃªncia bancÃ¡ria') return 'BANK_TRANSFER';
+  if (method === 'Transferência bancária') return 'BANK_TRANSFER';
   if (method === 'Boleto') return 'BOLETO';
-  if (method === 'DÃ©bito') return 'DEBIT';
+  if (method === 'Débito') return 'DEBIT';
   return 'OTHER';
 };
 
 const getDefaultPaymentMethodForFlow = (flowType: TransactionFlowType): PaymentMethodLabel => {
-  if (flowType === 'TransferÃªncia') return 'TransferÃªncia bancÃ¡ria';
+  if (flowType === 'Transferência') return 'Transferência bancária';
   return 'PIX';
 };
 
 const getDefaultCategoryForFlow = (flowType: TransactionFlowType) => {
-  if (flowType === 'Receita') return 'SalÃ¡rio';
-  if (flowType === 'TransferÃªncia') return 'Outros';
-  return 'AlimentaÃ§Ã£o';
+  if (flowType === 'Receita') return 'Salário';
+  if (flowType === 'Transferência') return 'Outros';
+  return 'Alimentação';
 };
 
 const getAvailableCategoriesForFlow = (flowType: TransactionFlowType): string[] => {
   if (flowType === 'Receita') return [...REVENUE_TRANSACTION_CATEGORIES];
-  if (flowType === 'TransferÃªncia') return [...TRANSFER_TRANSACTION_CATEGORIES];
+  if (flowType === 'Transferência') return [...TRANSFER_TRANSACTION_CATEGORIES];
   return [...EXPENSE_TRANSACTION_CATEGORIES];
 };
 
@@ -1110,17 +1110,17 @@ const getTransactionAmountSignal = (baseType: 'income' | 'expense' | 'transfer')
 
 const getPaymentMethodIconLabel = (method: PaymentMethodLabel) => {
   if (method === 'PIX') return 'PIX';
-  if (method === 'CartÃ£o') return 'CARD';
+  if (method === 'Cartão') return 'CARD';
   if (method === 'Dinheiro') return 'CASH';
-  if (method === 'TransferÃªncia bancÃ¡ria') return 'TED';
+  if (method === 'Transferência bancária') return 'TED';
   if (method === 'Boleto') return 'BOL';
-  if (method === 'DÃ©bito') return 'DEB';
+  if (method === 'Débito') return 'DEB';
   return 'OUT';
 };
 
 const getFlowTypeIcon = (flowType: TransactionFlowType) => {
   if (flowType === 'Receita') return ArrowUpRight;
-  if (flowType === 'TransferÃªncia') return Workflow;
+  if (flowType === 'Transferência') return Workflow;
   return ArrowDownRight;
 };
 
@@ -1151,19 +1151,19 @@ const extractInsightMetric = (text: string): string | null => {
 
 const getInsightActionHint = (insight: string) => {
   const normalized = insight.toLowerCase();
-  if (normalized.includes('dÃ­vida') || normalized.includes('divida')) {
-    return 'AÃ§Ã£o sugerida: priorize reduÃ§Ã£o de dÃ­vidas com maior juros.';
+  if (normalized.includes('dívida') || normalized.includes('divida')) {
+    return 'Ação sugerida: priorize redução de dívidas com maior juros.';
   }
   if (normalized.includes('gasto') || normalized.includes('despesa')) {
-    return 'AÃ§Ã£o sugerida: revise categorias que mais pressionam o caixa.';
+    return 'Ação sugerida: revise categorias que mais pressionam o caixa.';
   }
   if (normalized.includes('saldo') || normalized.includes('caixa')) {
-    return 'AÃ§Ã£o sugerida: ajuste saÃ­das recorrentes para proteger o saldo.';
+    return 'Ação sugerida: ajuste saídas recorrentes para proteger o saldo.';
   }
   if (normalized.includes('invest')) {
-    return 'AÃ§Ã£o sugerida: rebalanceie os ativos de maior concentraÃ§Ã£o.';
+    return 'Ação sugerida: rebalanceie os ativos de maior concentração.';
   }
-  return 'AÃ§Ã£o sugerida: valide este ponto e defina o prÃ³ximo passo.';
+  return 'Ação sugerida: valide este ponto e defina o próximo passo.';
 };
 
 const normalizePlan = (rawPlan: unknown): SubscriptionPlan => {
@@ -1182,21 +1182,21 @@ const getPlanLabel = (plan: SubscriptionPlan) => {
 
 const getWorkspaceEventLabel = (eventType: string) => {
   const labels: Record<string, string> = {
-    'transaction.created': 'TransaÃ§Ã£o criada',
-    'transaction.updated': 'TransaÃ§Ã£o atualizada',
-    'transaction.deleted': 'TransaÃ§Ã£o removida',
+    'transaction.created': 'Transação criada',
+    'transaction.updated': 'Transação atualizada',
+    'transaction.deleted': 'Transação removida',
     'workspace.created': 'Workspace criado',
-    'onboarding.completed': 'Onboarding concluÃ­do',
+    'onboarding.completed': 'Onboarding concluído',
     'workspace.whatsapp.connected': 'WhatsApp conectado',
     'workspace.whatsapp.disconnected': 'WhatsApp desconectado',
-    'whatsapp.connect.requested': 'ConexÃ£o de WhatsApp iniciada',
-    'whatsapp.connect.delivered': 'ConexÃ£o de WhatsApp confirmada',
-    'whatsapp.connect.failed': 'Falha na conexÃ£o do WhatsApp',
-    'whatsapp.connect.welcome_failed': 'Falha no envio de conexÃ£o do WhatsApp',
+    'whatsapp.connect.requested': 'Conexão de WhatsApp iniciada',
+    'whatsapp.connect.delivered': 'Conexão de WhatsApp confirmada',
+    'whatsapp.connect.failed': 'Falha na conexão do WhatsApp',
+    'whatsapp.connect.welcome_failed': 'Falha no envio de conexão do WhatsApp',
     'whatsapp.test.requested': 'Teste de WhatsApp iniciado',
     'whatsapp.test.delivered': 'Teste de WhatsApp entregue',
     'whatsapp.test.failed': 'Falha no teste de WhatsApp',
-    'whatsapp.connect.status_webhook': 'Webhook da conexÃ£o do WhatsApp',
+    'whatsapp.connect.status_webhook': 'Webhook da conexão do WhatsApp',
     'whatsapp.test.status_webhook': 'Webhook do teste do WhatsApp',
     'whatsapp.status_webhook': 'Webhook de status do WhatsApp',
     'whatsapp.disconnected': 'WhatsApp desconectado',
@@ -1206,46 +1206,46 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'stripe.customer.subscription.updated': 'Assinatura atualizada',
     'stripe.customer.subscription.deleted': 'Assinatura encerrada',
     'stripe.invoice.paid': 'Pagamento confirmado',
-    'stripe.invoice.payment_failed': 'Falha na cobranÃ§a',
+    'stripe.invoice.payment_failed': 'Falha na cobrança',
     'ai.chat.used': 'Assistente IA utilizado',
-    'ai.classify.used': 'ClassificaÃ§Ã£o automÃ¡tica usada',
+    'ai.classify.used': 'Classificação automática usada',
   };
 
-  return labels[eventType] || eventType.replace(/\./g, ' â¬¢ ');
+  return labels[eventType] || eventType.replace(/\./g, ' ⬢ ');
 };
 
 const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
   const messages: Record<string, string> = {
-    'transaction.created': 'Uma nova movimentaÃ§Ã£o foi registrada e jÃ¡ apareceu no seu painel.',
-    'transaction.updated': 'Uma movimentaÃ§Ã£o foi atualizada com os dados mais recentes.',
-    'transaction.deleted': 'Uma movimentaÃ§Ã£o foi removida do histÃ³rico deste workspace.',
-    'workspace.created': 'Seu espaÃ§o financeiro foi criado e estÃ¡ pronto para uso.',
-    'onboarding.completed': 'Sua configuraÃ§Ã£o inicial foi concluÃ­da com sucesso.',
+    'transaction.created': 'Uma nova movimentação foi registrada e já apareceu no seu painel.',
+    'transaction.updated': 'Uma movimentação foi atualizada com os dados mais recentes.',
+    'transaction.deleted': 'Uma movimentação foi removida do histórico deste workspace.',
+    'workspace.created': 'Seu espaço financeiro foi criado e está pronto para uso.',
+    'onboarding.completed': 'Sua configuração inicial foi concluída com sucesso.',
     'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
     'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
-    'whatsapp.connect.requested': 'A solicitaÃ§Ã£o de conexÃ£o foi aceita e aguarda confirmaÃ§Ã£o real de entrega.',
-    'whatsapp.connect.delivered': 'A mensagem de conexÃ£o foi entregue e o WhatsApp estÃ¡ validado.',
-    'whatsapp.connect.failed': 'A conexÃ£o nÃ£o foi confirmada pela Meta e precisa de uma nova tentativa.',
-    'whatsapp.connect.welcome_failed': 'A mensagem inicial de conexÃ£o nÃ£o foi aceita pela Meta.',
-    'whatsapp.test.requested': 'Um teste foi enviado para validaÃ§Ã£o e aguarda confirmaÃ§Ã£o de entrega.',
-    'whatsapp.test.delivered': 'O teste foi entregue com sucesso no nÃºmero conectado.',
-    'whatsapp.test.failed': 'O teste falhou apÃ³s a aceitaÃ§Ã£o inicial da Meta.',
-    'whatsapp.connect.status_webhook': 'Recebemos uma atualizaÃ§Ã£o de status da tentativa de conexÃ£o.',
-    'whatsapp.test.status_webhook': 'Recebemos uma atualizaÃ§Ã£o de status do teste enviado.',
-    'whatsapp.status_webhook': 'Recebemos uma atualizaÃ§Ã£o de status do WhatsApp.',
-    'whatsapp.disconnected': 'A integraÃ§Ã£o do WhatsApp foi desconectada deste workspace.',
-    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmaÃ§Ã£o.',
-    'stripe.portal.created': 'A Ã¡rea de gerenciamento da assinatura foi aberta.',
-    'stripe.customer.subscription.created': 'Sua assinatura foi criada e estÃ¡ sendo preparada para uso.',
-    'stripe.customer.subscription.updated': 'Houve uma atualizaÃ§Ã£o recente na sua assinatura.',
+    'whatsapp.connect.requested': 'A solicitação de conexão foi aceita e aguarda confirmação real de entrega.',
+    'whatsapp.connect.delivered': 'A mensagem de conexão foi entregue e o WhatsApp está validado.',
+    'whatsapp.connect.failed': 'A conexão não foi confirmada pela Meta e precisa de uma nova tentativa.',
+    'whatsapp.connect.welcome_failed': 'A mensagem inicial de conexão não foi aceita pela Meta.',
+    'whatsapp.test.requested': 'Um teste foi enviado para validação e aguarda confirmação de entrega.',
+    'whatsapp.test.delivered': 'O teste foi entregue com sucesso no número conectado.',
+    'whatsapp.test.failed': 'O teste falhou após a aceitação inicial da Meta.',
+    'whatsapp.connect.status_webhook': 'Recebemos uma atualização de status da tentativa de conexão.',
+    'whatsapp.test.status_webhook': 'Recebemos uma atualização de status do teste enviado.',
+    'whatsapp.status_webhook': 'Recebemos uma atualização de status do WhatsApp.',
+    'whatsapp.disconnected': 'A integração do WhatsApp foi desconectada deste workspace.',
+    'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
+    'stripe.portal.created': 'A área de gerenciamento da assinatura foi aberta.',
+    'stripe.customer.subscription.created': 'Sua assinatura foi criada e está sendo preparada para uso.',
+    'stripe.customer.subscription.updated': 'Houve uma atualização recente na sua assinatura.',
     'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada neste workspace.',
-    'stripe.invoice.paid': 'Recebemos a confirmaÃ§Ã£o do pagamento da sua assinatura.',
-    'stripe.invoice.payment_failed': 'A Ãºltima tentativa de cobranÃ§a nÃ£o foi concluÃ­da.',
-    'ai.chat.used': 'Uma anÃ¡lise com IA foi gerada para este workspace.',
-    'ai.classify.used': 'Uma classificaÃ§Ã£o automÃ¡tica foi aplicada em uma movimentaÃ§Ã£o.',
+    'stripe.invoice.paid': 'Recebemos a confirmação do pagamento da sua assinatura.',
+    'stripe.invoice.payment_failed': 'A última tentativa de cobrança não foi concluída.',
+    'ai.chat.used': 'Uma análise com IA foi gerada para este workspace.',
+    'ai.classify.used': 'Uma classificação automática foi aplicada em uma movimentação.',
   };
 
-  return messages[event.type] || 'Uma atualizaÃ§Ã£o recente foi registrada neste workspace.';
+  return messages[event.type] || 'Uma atualização recente foi registrada neste workspace.';
 };
 
 const getNotificationStorageKey = (userId: string, workspaceId: string) =>
@@ -1265,9 +1265,9 @@ const formatEventTimestamp = (isoString: string) => {
 };
 
 const formatSubscriptionDate = (isoString?: string | null) => {
-  if (!isoString) return 'Sem cobranÃ§a futura definida';
+  if (!isoString) return 'Sem cobrança futura definida';
   const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return 'Sem cobranÃ§a futura definida';
+  if (Number.isNaN(date.getTime())) return 'Sem cobrança futura definida';
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -1326,15 +1326,15 @@ const mapAiCategoryToCategory = (rawCategory: string) => {
     return normalizedMap.get(normalized) as string;
   }
 
-  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'AlimentaÃ§Ã£o';
+  if (normalized.includes('mercado') || normalized.includes('aliment')) return 'Alimentação';
   if (normalized.includes('transp')) return 'Transporte';
-  if (normalized.includes('saud')) return 'SaÃºde';
-  if (normalized.includes('educ')) return 'EducaÃ§Ã£o';
+  if (normalized.includes('saud')) return 'Saúde';
+  if (normalized.includes('educ')) return 'Educação';
   if (normalized.includes('lazer')) return 'Lazer';
   if (normalized.includes('morad') || normalized.includes('aluguel')) return 'Moradia';
-  if (normalized.includes('salario')) return 'SalÃ¡rio';
+  if (normalized.includes('salario')) return 'Salário';
   if (normalized.includes('freela')) return 'Freelance';
-  if (normalized.includes('comiss')) return 'ComissÃ£o';
+  if (normalized.includes('comiss')) return 'Comissão';
   if (normalized.includes('reemb')) return 'Reembolso';
   if (normalized.includes('vend')) return 'Vendas';
   if (normalized.includes('ads') || normalized.includes('marketing') || normalized.includes('trafego')) return 'Marketing';
@@ -1449,8 +1449,8 @@ const mapApiInvestmentToClientInvestment = (item: any): Investment => ({
   label: item.name,
   type: item.type || 'Outros',
   walletId: null,
-  walletName: item.institution || 'NÃ£o informado',
-  institution: item.institution || 'NÃ£o informado',
+  walletName: item.institution || 'Não informado',
+  institution: item.institution || 'Não informado',
   invested: Number(item.invested_amount || 0),
   value: Number(item.current_amount || 0),
   expectedReturnAnnual: Number(item.expected_return_annual || 0),
@@ -1551,7 +1551,7 @@ const buildOptimisticTransaction = (
   flowType: formData.flowType,
   paymentMethod: formData.paymentMethod,
   wallet: formData.wallet,
-  destinationWallet: formData.flowType === 'TransferÃªncia' ? formData.destinationWallet || null : null,
+  destinationWallet: formData.flowType === 'Transferência' ? formData.destinationWallet || null : null,
   receiptUrl: formData.receiptUrl || null,
 });
 
@@ -1633,13 +1633,13 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Ap
           <div className="max-w-md w-full bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6 text-center">
             <h2 className="page-title-premium mb-2 text-[var(--text-primary)]">Erro na interface</h2>
             <p className="text-sm text-[var(--text-secondary)] mb-5">
-              Ocorreu uma falha inesperada de renderizaÃ§Ã£o. Recarregue a pÃ¡gina para continuar.
+              Ocorreu uma falha inesperada de renderização. Recarregue a página para continuar.
             </p>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--text-primary)] text-sm font-bold hover:bg-[var(--primary-hover)] transition-colors"
             >
-              Recarregar pÃ¡gina
+              Recarregar página
             </button>
           </div>
         </div>
@@ -1842,7 +1842,7 @@ const SubscriptionView = ({
           <div>
             <h3 className="text-2xl font-black text-[var(--text-primary)]">Minha assinatura</h3>
             <p className="text-sm text-[var(--text-secondary)]">
-              Gerencie seu plano, cobranÃ§a e status da assinatura sem sair do Cote Finance AI.
+              Gerencie seu plano, cobrança e status da assinatura sem sair do Cote Finance AI.
             </p>
           </div>
         </div>
@@ -1859,7 +1859,7 @@ const SubscriptionView = ({
         <div className="app-surface-card rounded-[1.75rem] p-8 text-center">
           <p className="text-base font-semibold text-[var(--text-primary)]">Carregando assinatura...</p>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Estamos sincronizando o status do workspace e a cobranÃ§a atual.
+            Estamos sincronizando o status do workspace e a cobrança atual.
           </p>
         </div>
       ) : error ? (
@@ -1889,7 +1889,7 @@ const SubscriptionView = ({
                   </div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">PrÃ³xima cobranÃ§a</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Próxima cobrança</p>
                   <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{formatSubscriptionDate(summary.nextBillingDate)}</p>
                 </div>
               </div>
@@ -1900,7 +1900,7 @@ const SubscriptionView = ({
                   <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.statusLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">CobranÃ§a</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">Cobrança</p>
                   <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.billingLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
@@ -1912,11 +1912,11 @@ const SubscriptionView = ({
 
             <div className="app-surface-card space-y-4 rounded-[1.9rem] p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Resumo rÃ¡pido</p>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                  Tudo o que importa para este workspace fica visÃ­vel aqui. Quando uma aÃ§Ã£o exigir a Stripe,
-                  abrimos apenas a etapa necessÃ¡ria.
+                  Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
+                  abrimos apenas a etapa necessária.
                 </p>
               </div>
 
@@ -1933,9 +1933,9 @@ const SubscriptionView = ({
                 <div className="flex items-start gap-3">
                   <CreditCard size={18} className="mt-0.5 text-[var(--text-secondary)]" />
                   <div>
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">GestÃ£o sem sair do app</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Gestão sem sair do app</p>
                     <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                      Status, plano e prÃ³ximas cobranÃ§as aparecem dentro do SaaS. Portal externo sÃ³ quando preciso.
+                      Status, plano e próximas cobranças aparecem dentro do SaaS. Portal externo só quando preciso.
                     </p>
                   </div>
                 </div>
@@ -1948,7 +1948,7 @@ const SubscriptionView = ({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Recursos do plano</p>
-                  <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">BenefÃ­cios ativos</h4>
+                  <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">Benefícios ativos</h4>
                 </div>
                 <span className="rounded-full border border-[var(--border-default)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                   {summary.planLabel}
@@ -1964,7 +1964,7 @@ const SubscriptionView = ({
             </div>
 
             <div className="app-surface-card rounded-[1.75rem] p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">AÃ§Ãµes disponÃ­veis</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Ações disponíveis</p>
               <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">Gerenciar assinatura</h4>
               <div className="mt-5 space-y-3">
                 <button
@@ -2001,14 +2001,14 @@ const SubscriptionView = ({
                   disabled={!summary.canManageBilling || actionLoading !== null}
                   className="inline-flex w-full items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-left text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histÃ³rico de cobranÃ§a'}</span>
+                  <span>{actionLoading === 'history' ? 'Abrindo...' : 'Ver histórico de cobrança'}</span>
                   <ExternalLink size={16} className="text-[var(--text-secondary)]" />
                 </button>
               </div>
 
               {summary.cancelAtPeriodEnd ? (
                 <p className="mt-4 text-sm text-[var(--text-secondary)]">
-                  O cancelamento estÃ¡ agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
+                  O cancelamento está agendado para o fim do ciclo atual. Se quiser continuar com o plano, reative antes
                   da data de encerramento.
                 </p>
               ) : null}
@@ -2119,35 +2119,35 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="page-title-premium text-[var(--text-primary)]">VisÃ£o Geral</h3>
+          <h3 className="page-title-premium text-[var(--text-primary)]">Visão Geral</h3>
           <p className="text-sm text-[var(--text-secondary)] capitalize">Resumo de {monthLabel}</p>
         </div>
         <button
           onClick={onAddTransaction}
           className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft)]"
         >
-          <Plus size={16} /> Nova TransaÃ§Ã£o
+          <Plus size={16} /> Nova Transação
         </button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Entradas do mÃªs"
+          label="Entradas do mês"
           value={formatCurrency(monthIncome)}
-          trend="transaÃ§Ãµes de entrada"
+          trend="transações de entrada"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'income').length}`}
           icon={TrendingUp}
         />
         <StatCard
-          label="Despesas do mÃªs"
+          label="Despesas do mês"
           value={formatCurrency(monthExpenses)}
-          trend="transaÃ§Ãµes de saÃ­da"
+          trend="transações de saída"
           trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'expense').length}`}
           icon={TrendingDown}
           trendType="down"
         />
         <StatCard
-          label="Saldo do mÃªs"
+          label="Saldo do mês"
           value={formatCurrency(monthBalance)}
           trend="entradas - despesas"
           trendValue={monthBalance >= 0 ? 'Positivo' : 'Negativo'}
@@ -2158,7 +2158,7 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
           label="Taxa de economia"
           value={`${savingsRate.toFixed(1)}%`}
           trend="economia sobre receitas"
-          trendValue="No mÃªs atual"
+          trendValue="No mês atual"
           icon={Gauge}
           trendType={savingsRate >= 0 ? 'up' : 'down'}
         />
@@ -2168,7 +2168,7 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
         <div className="app-surface-card lg:col-span-2 rounded-2xl p-5 sm:p-6">
           <div className="mb-6">
             <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
-            <p className="text-sm text-[var(--text-secondary)]">Ãšltimos 6 meses</p>
+            <p className="text-sm text-[var(--text-secondary)]">Ultimos 6 meses</p>
           </div>
 
           <div className="h-[280px] w-full sm:h-[320px]">
@@ -2219,58 +2219,58 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
         </div>
 
         <div className="app-surface-card rounded-2xl p-5 sm:p-6">
-          <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mÃªs</h3>
+          <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mês</h3>
           <div className="space-y-4">
             <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)] p-5">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--warning)]">
                 Alerta
               </div>
-              <p className="label-premium text-[var(--text-muted)]">Maior gasto do mÃªs</p>
+              <p className="label-premium text-[var(--text-muted)]">Maior gasto do mês</p>
               <p className="mt-2 text-xl font-black text-[var(--text-primary)]">
                 {largestExpenseEntry ? formatCurrency(largestExpenseEntry[1]) : formatCurrency(0)}
               </p>
               <p className="mt-2 text-sm text-[var(--text-primary)]">
-                {largestExpenseEntry ? largestExpenseEntry[0] : 'Sem despesas registradas no mÃªs atual.'}
+                {largestExpenseEntry ? largestExpenseEntry[0] : 'Sem despesas registradas no mês atual.'}
               </p>
               <p className="mt-3 text-xs font-semibold text-[var(--warning)]">
-                AÃ§Ã£o sugerida: revise essa categoria e defina limite para os prÃ³ximos 7 dias.
+                Ação sugerida: revise essa categoria e defina limite para os próximos 7 dias.
               </p>
             </div>
 
             <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--primary)]">
-                TendÃªncia
+                Tendência
               </div>
-              <p className="label-premium text-[var(--text-muted)]">Despesas no mÃªs</p>
+              <p className="label-premium text-[var(--text-muted)]">Despesas no mês</p>
               <p className="mt-2 text-xl font-black text-[var(--text-primary)]">{formatCurrency(monthExpenses)}</p>
               <p className="mt-2 text-sm text-[var(--text-primary)]">
-                VocÃª gastou <span className="font-bold text-[var(--danger)]">{formatCurrency(monthExpenses)}</span>{' '}
+                Você gastou <span className="font-bold text-[var(--danger)]">{formatCurrency(monthExpenses)}</span>{' '}
                 em{' '}
                 <span className="font-bold text-[var(--text-primary)]">
                   {currentMonthTransactions.filter((tx) => tx.type === 'expense').length}
                 </span>{' '}
-                transaÃ§Ãµes no perÃ­odo atual.
+                transações no período atual.
               </p>
               <p className="mt-3 text-xs font-semibold text-[var(--primary)]">
-                AÃ§Ã£o sugerida: acompanhe o relatÃ³rio de categorias para conter desvios.
+                Ação sugerida: acompanhe o relatório de categorias para conter desvios.
               </p>
             </div>
 
             {currentPlan === 'FREE' ? (
               <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
-                  DisponÃ­vel no Pro
+                  Disponível no Pro
                 </p>
                 <p className="text-sm leading-relaxed text-[var(--text-primary)]">
-                  Receba insights financeiros automÃ¡ticos com base no seu histÃ³rico para identificar padrÃµes,
-                  desperdÃ­cios e oportunidades de ajuste.
+                  Receba insights financeiros automáticos com base no seu histórico para identificar padrões,
+                  desperdícios e oportunidades de ajuste.
                 </p>
                 <button
                   type="button"
                   onClick={onUpgrade}
                   className="app-button-primary mt-4 rounded-xl px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft)]"
                 >
-                  Liberar insights automÃ¡ticos
+                  Liberar insights automáticos
                 </button>
               </div>
             ) : (
@@ -2283,7 +2283,7 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
                     Insight IA
                   </p>
                   <p className="text-sm font-semibold text-[var(--text-muted)]">Leitura principal</p>
-                  <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem mÃ©trica numÃ©rica'}</p>
+                  <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem métrica numérica'}</p>
                   <p className="mt-2 text-sm text-[var(--text-primary)]">{insight}</p>
                   <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{getInsightActionHint(insight)}</p>
                 </div>
@@ -2295,7 +2295,7 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
 
       <div className="app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-[var(--border-default)] px-6 py-4">
-          <h3 className="card-title-premium text-[var(--text-primary)]">Ãšltimas transaÃ§Ãµes</h3>
+          <h3 className="card-title-premium text-[var(--text-primary)]">Ultimas transacoes</h3>
           <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
@@ -2309,7 +2309,7 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
                   Categoria
                 </th>
                 <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                  DescriÃ§Ã£o
+                  Descrição
                 </th>
                 <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                   Data
@@ -2323,7 +2323,7 @@ const DashboardView = ({ transactions, insights, projection, onAddTransaction, c
               {recentTransactions.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
-                    Nenhuma transaÃ§Ã£o encontrada.
+                    Nenhuma transação encontrada.
                   </td>
                 </tr>
               )}
@@ -2393,12 +2393,12 @@ const TransactionsView = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-[var(--text-primary)]">TransaÃ§Ãµes</h3>
+        <h3 className="page-title-premium text-[var(--text-primary)]">Transações</h3>
         <button
           onClick={onAddTransaction}
           className="app-button-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
         >
-          <Plus size={18} /> Nova TransaÃ§Ã£o
+          <Plus size={18} /> Nova Transação
         </button>
       </div>
 
@@ -2408,7 +2408,7 @@ const TransactionsView = ({
           <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">SaÃ­das totais</p>
+          <p className="label-premium mb-2 text-[var(--text-muted)]">Saídas totais</p>
           <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-5">
@@ -2426,7 +2426,7 @@ const TransactionsView = ({
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por descriÃ§Ã£o"
+              placeholder="Buscar por descrição"
               className="app-field w-full rounded-xl py-2 pl-10 pr-4 text-sm"
             />
           </div>
@@ -2449,7 +2449,7 @@ const TransactionsView = ({
       <div className="lg:hidden space-y-4">
         {filteredTransactions.length === 0 && (
           <div className="app-surface-card rounded-2xl p-6 text-center text-[var(--text-muted)] text-sm">
-            Nenhuma transaÃ§Ã£o encontrada para os filtros atuais.
+            Nenhuma transação encontrada para os filtros atuais.
           </div>
         )}
 
@@ -2491,7 +2491,7 @@ const TransactionsView = ({
                 <span className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest flex items-center gap-1">
                   <Wallet size={10} /> {tx.wallet}
                 </span>
-                {tx.flowType === 'TransferÃªncia' && tx.destinationWallet && (
+                {tx.flowType === 'Transferência' && tx.destinationWallet && (
                   <span className="text-[10px] text-[var(--text-secondary)]/80 font-bold uppercase tracking-widest">
                     ? {tx.destinationWallet}
                   </span>
@@ -2522,20 +2522,20 @@ const TransactionsView = ({
           <thead>
             <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30">
               <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Data</th>
-              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">DescriÃ§Ã£o</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Descrição</th>
               <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Tipo</th>
               <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Categoria</th>
-              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">MÃ©todo</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Método</th>
               <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Carteira</th>
               <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Valor</th>
-              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">AÃ§Ãµes</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filteredTransactions.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
-                  Nenhuma transaÃ§Ã£o encontrada para os filtros atuais.
+                  Nenhuma transação encontrada para os filtros atuais.
                 </td>
               </tr>
             )}
@@ -2561,7 +2561,7 @@ const TransactionsView = ({
                   <td className="px-6 py-4 text-xs text-[var(--text-secondary)]">{tx.paymentMethod}</td>
                   <td className="px-6 py-4 text-xs text-[var(--text-secondary)]">
                     {tx.wallet}
-                    {tx.flowType === 'TransferÃªncia' && tx.destinationWallet ? ` -> ${tx.destinationWallet}` : ''}
+                    {tx.flowType === 'Transferência' && tx.destinationWallet ? ` -> ${tx.destinationWallet}` : ''}
                   </td>
                   <td
                     className={cn(
@@ -2668,13 +2668,13 @@ const IntegrationsView = ({
     connectionState === 'connected' && !isEditingAnotherNumber
       ? 'Testar envio'
       : connectionState === 'connecting'
-        ? 'Aguardar confirmaÃ§Ã£o'
+        ? 'Aguardar confirmação'
         : connectionState === 'failed'
-          ? 'Revisar nÃºmero e tentar novamente'
-          : 'Informar nÃºmero e conectar';
+          ? 'Revisar número e tentar novamente'
+          : 'Informar número e conectar';
   const lastAttemptLabel = whatsAppDiagnostic?.lastValidatedAt
     ? formatEventTimestamp(whatsAppDiagnostic.lastValidatedAt)
-    : 'Ainda nÃ£o registrada';
+    : 'Ainda não registrada';
   const lastTestLabel = whatsAppDiagnostic?.lastTestSentAt
     ? formatEventTimestamp(whatsAppDiagnostic.lastTestSentAt)
     : 'Nenhum teste confirmado';
@@ -2688,10 +2688,10 @@ const IntegrationsView = ({
       monthlyPrice: 29,
       annualPrice: 290,
       features: [
-        'LanÃ§amentos ilimitados',
-        'RelatÃ³rios completos e grÃ¡ficos avanÃ§ados',
-        'AtÃ© 500 interaÃ§Ãµes com IA por mÃªs',
-        'Insights financeiros automÃ¡ticos',
+        'Lançamentos ilimitados',
+        'Relatórios completos e gráficos avançados',
+        'Até 500 interações com IA por mês',
+        'Insights financeiros automáticos',
         'Metas ilimitadas',
         'Investimentos',
         'Alertas e resumos no WhatsApp',
@@ -2705,10 +2705,10 @@ const IntegrationsView = ({
       features: [
         'Tudo do Pro',
         'IA financeira sem limite mensal',
-        'Insights financeiros avanÃ§ados',
-        'PrevisÃµes de saldo e alertas inteligentes',
-        'Planejamento estratÃ©gico',
-        'AutomaÃ§Ã£o financeira no WhatsApp',
+        'Insights financeiros avançados',
+        'Previsões de saldo e alertas inteligentes',
+        'Planejamento estratégico',
+        'Automação financeira no WhatsApp',
         'Suporte por e-mail',
       ],
     },
@@ -2747,7 +2747,7 @@ const IntegrationsView = ({
               billingCycle === 'annually' ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-lg shadow-[color:var(--primary-soft)]' : 'text-[var(--text-secondary)]'
             )}
           >
-            Anual <span className="ml-1 text-[10px] opacity-70">(2 meses grÃ¡tis)</span>
+            Anual <span className="ml-1 text-[10px] opacity-70">(2 meses grátis)</span>
           </button>
         </div>
 
@@ -2762,7 +2762,7 @@ const IntegrationsView = ({
                 <span className="text-4xl font-black text-[var(--text-primary)]">
                   R$ {billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice}
                 </span>
-                <span className="text-sm text-[var(--text-muted)]">/{billingCycle === 'monthly' ? 'mÃªs' : 'ano'}</span>
+                <span className="text-sm text-[var(--text-muted)]">/{billingCycle === 'monthly' ? 'mês' : 'ano'}</span>
               </div>
               <button
                 onClick={() => onUpgrade(`${plan.name} ${billingCycle === 'monthly' ? 'Mensal' : 'Anual'}`)}
@@ -2793,7 +2793,7 @@ const IntegrationsView = ({
             </div>
             <div>
               <h3 className="page-title-premium text-[var(--text-primary)]">WhatsApp</h3>
-              <p className="text-sm text-[var(--text-muted)]">Conecte um nÃºmero e acompanhe a entrega real das mensagens</p>
+              <p className="text-sm text-[var(--text-muted)]">Conecte um número e acompanhe a entrega real das mensagens</p>
             </div>
           </div>
           <div
@@ -2824,7 +2824,7 @@ const IntegrationsView = ({
                   : 'bg-[color:var(--danger-soft)]'
               )}
             />
-            {hasWhatsAppAccess ? connectionLabel : 'DisponÃ­vel no Pro'}
+            {hasWhatsAppAccess ? connectionLabel : 'Disponível no Pro'}
           </div>
         </div>
 
@@ -2836,14 +2836,14 @@ const IntegrationsView = ({
                   Recurso Pro
                 </div>
                 <p className="leading-relaxed text-[var(--text-secondary)]">
-                  Alertas e resumos no WhatsApp ficam disponÃ­veis a partir do plano Pro. Use esse canal para receber
-                  lembretes financeiros e acompanhar o que merece atenÃ§Ã£o sem abrir o app.
+                  Alertas e resumos no WhatsApp ficam disponíveis a partir do plano Pro. Use esse canal para receber
+                  lembretes financeiros e acompanhar o que merece atenção sem abrir o app.
                 </p>
                 <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                   {[
-                    'Resumo diÃ¡rio com saldo, entradas e saÃ­das',
-                    'Alertas de vencimentos e compromissos prÃ³ximos',
-                    'Teste de envio e configuraÃ§Ã£o por workspace',
+                    'Resumo diário com saldo, entradas e saídas',
+                    'Alertas de vencimentos e compromissos próximos',
+                    'Teste de envio e configuração por workspace',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <CheckCircle2 size={16} className="mt-0.5 text-[var(--text-secondary)]" />
@@ -2861,13 +2861,13 @@ const IntegrationsView = ({
             ) : (
               <>
                 <p className="leading-relaxed text-[var(--text-secondary)]">
-                  Informe seu nÃºmero, valide a conexÃ£o e libere o teste apenas apÃ³s a confirmaÃ§Ã£o real de entrega.
+                  Informe seu número, valide a conexão e libere o teste apenas após a confirmação real de entrega.
                 </p>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2 sm:col-span-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      NÃºmero do WhatsApp
+                      Número do WhatsApp
                     </label>
                     <input
                       type="tel"
@@ -2880,7 +2880,7 @@ const IntegrationsView = ({
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      Status da conexÃ£o
+                      Status da conexão
                     </label>
                     <div className="flex min-h-[52px] items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 text-sm text-[var(--text-secondary)]">
                       {connectionDescription}
@@ -2897,12 +2897,12 @@ const IntegrationsView = ({
 
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {[
-                    { label: 'NÃºmero vinculado', value: linkedPhoneNumber || 'Nenhum nÃºmero salvo' },
+                    { label: 'Número vinculado', value: linkedPhoneNumber || 'Nenhum número salvo' },
                     { label: 'Status atual', value: connectionLabel },
-                    { label: 'Ãšltima tentativa', value: lastAttemptLabel },
-                    { label: 'Ãšltimo teste', value: lastTestLabel },
-                    { label: 'Ãšltimo erro', value: lastErrorLabel },
-                    { label: 'AÃ§Ã£o disponÃ­vel', value: nextActionLabel },
+                    { label: 'Ultima tentativa', value: lastAttemptLabel },
+                    { label: 'Ultimo teste', value: lastTestLabel },
+                    { label: 'Ultimo erro', value: lastErrorLabel },
+                    { label: 'Ação disponível', value: nextActionLabel },
                   ].map((item) => (
                     <div
                       key={item.label}
@@ -2995,15 +2995,15 @@ const IntegrationsView = ({
                 Quais alertas vou receber no WhatsApp?
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-lg shadow-black/10">
-                Resumo diÃ¡rio com saldo, entradas, saÃ­das, prÃ³ximos vencimentos e insights prÃ¡ticos para agir mais rÃ¡pido.
+                Resumo diário com saldo, entradas, saídas, próximos vencimentos e insights práticos para agir mais rápido.
               </div>
               <div className="max-w-[90%] rounded-2xl bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-lg shadow-black/10">
-                Exemplo: <span className="font-semibold text-[var(--text-primary)]">Maior gasto do mÃªs</span>, contas prÃ³ximas do vencimento e um resumo do que merece atenÃ§Ã£o no caixa.
+                Exemplo: <span className="font-semibold text-[var(--text-primary)]">Maior gasto do mês</span>, contas próximas do vencimento e um resumo do que merece atenção no caixa.
               </div>
             </div>
 
             <p className="mt-4 text-xs leading-relaxed text-[var(--text-muted)]">
-              Depois da confirmaÃ§Ã£o de entrega, o workspace passa a receber um resumo automÃ¡tico por dia e o teste manual fica liberado.
+              Depois da confirmação de entrega, o workspace passa a receber um resumo automático por dia e o teste manual fica liberado.
             </p>
           </div>
         </div>
@@ -3025,12 +3025,12 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
   const groupedBills = [
     {
       key: 'urgent',
-      title: 'Mais prÃ³ximos',
+      title: 'Mais próximos',
       items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) <= 7),
     },
     {
       key: 'later',
-      title: 'PrÃ³ximos 30 dias',
+      title: 'Próximos 30 dias',
       items: upcomingBills.filter((bill) => (bill.daysUntil ?? 99) > 7),
     },
   ].filter((group) => group.items.length > 0);
@@ -3042,15 +3042,15 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
           <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">
             Agenda financeira
           </p>
-          <h3 className="text-2xl font-black text-[var(--text-primary)]">PrÃ³ximos compromissos do seu caixa</h3>
+          <h3 className="text-2xl font-black text-[var(--text-primary)]">Próximos compromissos do seu caixa</h3>
           <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            Veja o que vence primeiro, o que merece atenÃ§Ã£o nesta semana e quanto do seu
-            caixa jÃ¡ estÃ¡ comprometido nos prÃ³ximos 30 dias.
+            Veja o que vence primeiro, o que merece atenção nesta semana e quanto do seu
+            caixa já está comprometido nos próximos 30 dias.
           </p>
         </div>
         <div className="app-surface-subtle inline-flex items-center gap-2 self-start rounded-2xl px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">
           <Calendar size={16} className="text-[var(--text-secondary)]" />
-          PrÃ³ximos 30 dias
+          Próximos 30 dias
         </div>
       </div>
 
@@ -3062,12 +3062,12 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
             helper: overdueCount > 0 ? `${overdueCount} em atraso` : 'Tudo dentro do prazo',
           },
           {
-            label: 'PrÃ³ximos 7 dias',
+            label: 'Próximos 7 dias',
             value: nextSevenDays.length,
             helper:
               nextSevenDays.length > 0
                 ? formatCurrency(nextSevenDays.reduce((acc, bill) => acc + bill.amount, 0))
-                : 'Nenhum vencimento crÃ­tico',
+                : 'Nenhum vencimento crítico',
           },
           {
             label: 'Total programado',
@@ -3091,9 +3091,9 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
           <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
             <Calendar size={26} />
           </div>
-          <h4 className="card-title-premium text-[var(--text-primary)]">Sua agenda estÃ¡ limpa por enquanto</h4>
+          <h4 className="card-title-premium text-[var(--text-primary)]">Sua agenda está limpa por enquanto</h4>
           <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-            Adicione dÃ­vidas com vencimento ou metas com prazo para acompanhar compromissos sem
+            Adicione dívidas com vencimento ou metas com prazo para acompanhar compromissos sem
             perder o timing do seu caixa.
           </p>
         </div>
@@ -3235,10 +3235,10 @@ const DebtsView = ({
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">DÃ­vidas</p>
-              <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">DÃ­vidas</h3>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">Dívidas</p>
+              <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">Dívidas</h3>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Separe dÃ­vidas pontuais de contas recorrentes para ter mais clareza financeira.
+                Separe dívidas pontuais de contas recorrentes para ter mais clareza financeira.
 
               </p>
             </div>
@@ -3248,22 +3248,22 @@ const DebtsView = ({
                 <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining + recurringMonthlyTotal)}</p>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                   {recurringMonthlyTotal > 0
-                    ? `${formatCurrency(recurringMonthlyTotal)} em recorrÃªncias ativas`
-                    : 'Sem recorrÃªncias ativas no momento'}
+                    ? `${formatCurrency(recurringMonthlyTotal)} em recorrências ativas`
+                    : 'Sem recorrências ativas no momento'}
                 </p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor quitado</p>
                 <p className="mt-2 text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalPaid)}</p>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {paidDebts > 0 ? `${paidDebts} dÃ­vida(s) j? quitadas` : 'Ainda nÃ£o h? dÃ­vidas quitadas'}
+                  {paidDebts > 0 ? `${paidDebts} dívida(s) j? quitadas` : 'Ainda não h? dívidas quitadas'}
                 </p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Itens cadastrados</p>
                 <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{totalRegisteredItems}</p>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {debts.length} dÃ­vida(s) Ãºnica(s) e {recurringDebts.length} recorrÃªncia(s)
+                  {debts.length} dívida(s) única(s) e {recurringDebts.length} recorrência(s)
                 </p>
               </div>
             </div>
@@ -3273,7 +3273,7 @@ const DebtsView = ({
               onClick={() => setIsCreateChooserOpen(true)}
               className="app-button-primary inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black sm:w-auto"
             >
-              <Plus size={16} /> Nova dÃ­vida
+              <Plus size={16} /> Nova dívida
             </button>
           </div>
         </div>
@@ -3282,7 +3282,7 @@ const DebtsView = ({
         <div className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
           <div>
             <p className="font-bold">{feedbackMessage}</p>
-            <p className="mt-1 text-[var(--text-secondary)]/80">Sua Ã¡rea de dÃ­vidas foi atualizada com sucesso.</p>
+            <p className="mt-1 text-[var(--text-secondary)]/80">Sua área de dívidas foi atualizada com sucesso.</p>
           </div>
           {onDismissFeedback ? (
             <button onClick={onDismissFeedback} className="text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
@@ -3302,7 +3302,7 @@ const DebtsView = ({
               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
-          DÃ­vidas
+          Dívidas
         </button>
         <button
           type="button"
@@ -3321,10 +3321,10 @@ const DebtsView = ({
         <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">DÃ­vidas</p>
-              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">ObrigaÃ§Ãµes com comeÃ§o, meio e fim</h4>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dívidas</p>
+              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Obrigações com começo, meio e fim</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Use para emprÃ©stimos, acordos, cartÃ£o atrasado e qualquer compromisso com valor total definido.
+                Use para empréstimos, acordos, cartão atrasado e qualquer compromisso com valor total definido.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -3357,15 +3357,15 @@ const DebtsView = ({
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                 <Wallet size={26} />
               </div>
-              <h5 className="text-xl font-black text-[var(--text-primary)]">VocÃª ainda nÃ£o cadastrou nenhuma dÃ­vida.</h5>
+              <h5 className="text-xl font-black text-[var(--text-primary)]">Você ainda não cadastrou nenhuma dívida.</h5>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
-                Adicione uma dÃ­vida para comeÃ§ar a ter controle completo do seu dinheiro. Sem cadastrar suas dÃ­vidas, vocÃª nÃ£o consegue ver para onde seu dinheiro estÃ¡ indo.
+                Adicione uma dívida para começar a ter controle completo do seu dinheiro. Sem cadastrar suas dívidas, você não consegue ver para onde seu dinheiro está indo.
               </p>
               <button
                 onClick={openSingleDebtFlow}
                 className="app-button-primary mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black"
               >
-                <Plus size={16} /> Adicionar primeira dÃ­vida
+                <Plus size={16} /> Adicionar primeira dívida
               </button>
             </div>
           ) : (
@@ -3426,7 +3426,7 @@ const DebtsView = ({
               <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Contas fixas</p>
               <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Contas que se repetem automaticamente</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Use para mensalidades, aluguel, assinaturas e qualquer compromisso fixo com frequÃªncia definida.
+                Use para mensalidades, aluguel, assinaturas e qualquer compromisso fixo com frequência definida.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -3435,13 +3435,13 @@ const DebtsView = ({
                 <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(recurringMonthlyTotal)}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">RecorrÃªncias ativas</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Recorrências ativas</p>
                 <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{activeRecurringDebts.length}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">PrÃ³xima cobranÃ§a</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Próxima cobrança</p>
                 <p className="mt-2 text-base font-black text-[var(--text-secondary)]">
-                  {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previsÃ£o'}
+                  {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previsão'}
                 </p>
               </div>
             </div>
@@ -3449,7 +3449,7 @@ const DebtsView = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Atalhos rÃ¡pidos</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Atalhos rápidos</p>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">Escolha uma conta fixa comum e acelere seu cadastro.</p>
               </div>
               <button
@@ -3485,7 +3485,7 @@ const DebtsView = ({
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                 <Calendar size={26} />
               </div>
-              <h5 className="text-xl font-black text-[var(--text-primary)]">VocÃª ainda nÃ£o cadastrou contas fixas.</h5>
+              <h5 className="text-xl font-black text-[var(--text-primary)]">Você ainda não cadastrou contas fixas.</h5>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
                 Cadastre contas fixas para enxergar seu compromisso mensal e saber o que vence primeiro.
               </p>
@@ -3520,18 +3520,18 @@ const DebtsView = ({
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.amount)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">FrequÃªncia</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Frequência</p>
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{getRecurringDebtFrequencyLabel(debt.frequency)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">PrÃ³ximo vencimento</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Próximo vencimento</p>
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{new Date(debt.nextDueDate).toLocaleDateString('pt-BR')}</p>
                         </div>
                       </div>
                       {debt.notes ? <p className="text-sm leading-7 text-[var(--text-secondary)]">{debt.notes}</p> : null}
                       {debt.source === 'legacy_debt' ? (
                         <p className="text-[11px] leading-5 text-[var(--text-secondary)]">
-                          Registro legado mantido por compatibilidade. VocÃª pode editar normalmente sem perder histÃ³rico.
+                          Registro legado mantido por compatibilidade. Você pode editar normalmente sem perder histórico.
                         </p>
                       ) : null}
                     </div>
@@ -3554,17 +3554,17 @@ const DebtsView = ({
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
           <button
             type="button"
-            aria-label="Fechar escolha de tipo de dÃ­vida"
+            aria-label="Fechar escolha de tipo de dívida"
             onClick={() => setIsCreateChooserOpen(false)}
             className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
           />
           <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Nova dÃ­vida</p>
-                <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Como essa dÃ­vida funciona?</h4>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Nova dívida</p>
+                <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Como essa dívida funciona?</h4>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                  Escolha o tipo para organizar melhor suas finanÃ§as.
+                  Escolha o tipo para organizar melhor suas finanças.
                 </p>
               </div>
               <button
@@ -3584,7 +3584,7 @@ const DebtsView = ({
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-[color:var(--primary-soft)] text-[var(--text-secondary)]">
                   <Wallet size={22} />
                 </div>
-                <h5 className="mt-5 text-xl font-black text-[var(--text-primary)]">DÃ­vida Ãºnica</h5>
+                <h5 className="mt-5 text-xl font-black text-[var(--text-primary)]">Dívida única</h5>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
                   Tem valor total definido e termina quando for quitada.
                 </p>
@@ -3599,7 +3599,7 @@ const DebtsView = ({
                 </div>
                 <h5 className="mt-5 text-xl font-black text-[var(--text-primary)]">Conta recorrente</h5>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                  Se repete automaticamente todo mÃªs.
+                  Se repete automaticamente todo mês.
                 </p>
               </button>
             </div>
@@ -3761,11 +3761,11 @@ const buildPortfolioInsights = ({
   const topWallet = [...wallets].sort((a, b) => b.balance - a.balance)[0] ?? null;
 
   if (totalAssets <= 0 && totalDebt <= 0) {
-    return ['VocÃª ainda nÃ£o consolidou patrimÃ´nio suficiente para gerar insights da carteira.'];
+    return ['Você ainda não consolidou patrimônio suficiente para gerar insights da carteira.'];
   }
 
   if (totalAssets > 0 && totalInvested === 0) {
-    insights.push('Seu patrimÃ´nio ainda estÃ¡ concentrado em caixa. Registrar investimentos pode melhorar sua diversificaÃ§Ã£o.');
+    insights.push('Seu patrimônio ainda está concentrado em caixa. Registrar investimentos pode melhorar sua diversificação.');
   }
 
   if (topWallet && totalBalance > 0) {
@@ -3777,15 +3777,15 @@ const buildPortfolioInsights = ({
 
   if (totalDebt > 0 && totalAssets > 0) {
     const debtShare = (totalDebt / totalAssets) * 100;
-    insights.push(`Suas dÃ­vidas representam ${debtShare.toFixed(0)}% dos seus ativos atuais.`);
+    insights.push(`Suas dívidas representam ${debtShare.toFixed(0)}% dos seus ativos atuais.`);
   }
 
   if (netWorth < 0) {
-    insights.push('Seu patrimÃ´nio lÃ­quido estÃ¡ negativo. Priorize reduzir dÃ­vidas e reforÃ§ar o saldo em contas.');
+    insights.push('Seu patrimônio líquido está negativo. Priorize reduzir dívidas e reforçar o saldo em contas.');
   }
 
   if (insights.length === 0 && totalAssets > 0) {
-    insights.push('Sua carteira estÃ¡ equilibrada neste momento. Continue acompanhando a distribuiÃ§Ã£o entre caixa, investimentos e dÃ­vidas.');
+    insights.push('Sua carteira está equilibrada neste momento. Continue acompanhando a distribuição entre caixa, investimentos e dívidas.');
   }
 
   return insights.slice(0, 3);
@@ -3829,7 +3829,7 @@ const PortfolioView = ({
       [
         { name: 'Caixa', value: Math.max(totalBalance, 0), color: 'var(--positive)' },
         { name: 'Investimentos', value: Math.max(totalInvested, 0), color: 'var(--primary)' },
-        { name: 'DÃ­vidas', value: Math.max(totalDebt, 0), color: 'var(--danger)' },
+        { name: 'Dívidas', value: Math.max(totalDebt, 0), color: 'var(--danger)' },
       ],
     [totalBalance, totalInvested, totalDebt]
   );
@@ -3895,7 +3895,7 @@ const PortfolioView = ({
           <div className="space-y-2">
             <h3 className="page-title-premium text-[var(--text-primary)]">Carteira</h3>
             <p className="max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
-              Veja seu patrimÃ´nio total e onde seu dinheiro estÃ¡ distribuÃ­do.
+              Veja seu patrimônio total e onde seu dinheiro está distribuído.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end">
@@ -3929,7 +3929,7 @@ const PortfolioView = ({
               className="app-button-secondary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold"
             >
               <CreditCard size={16} className="text-[var(--primary)]" />
-              Registrar dÃ­vida
+              Registrar dívida
             </button>
           </div>
         </div>
@@ -3938,7 +3938,7 @@ const PortfolioView = ({
           <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-surface)]/40 px-6 py-8 text-center">
             <h4 className="card-title-premium text-[var(--text-primary)]">Crie sua primeira carteira</h4>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
-              Adicione contas bancÃ¡rias, dinheiro em espÃ©cie ou carteiras digitais para comeÃ§ar a organizar suas finanÃ§as.
+              Adicione contas bancárias, dinheiro em espécie ou carteiras digitais para começar a organizar suas finanças.
             </p>
             <button
               type="button"
@@ -3980,11 +3980,11 @@ const PortfolioView = ({
           onClick={onOpenReports}
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">PatrimÃ´nio lÃ­quido</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Patrimônio líquido</p>
           <p className={cn('text-2xl font-black', netWorth >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
             {formatCurrency(netWorth)}
           </p>
-          <p className="mt-3 text-xs text-[var(--text-muted)]">Saldo em contas + investimentos - dÃ­vidas</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Saldo em contas + investimentos - dívidas</p>
         </button>
         <button
           type="button"
@@ -3993,7 +3993,7 @@ const PortfolioView = ({
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Saldo em contas</p>
           <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalBalance)}</p>
-          <p className="mt-3 text-xs text-[var(--text-muted)]">Veja o histÃ³rico e movimente saldo entre carteiras</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Veja o histórico e movimente saldo entre carteiras</p>
         </button>
         <button
           type="button"
@@ -4002,16 +4002,16 @@ const PortfolioView = ({
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Investimentos</p>
           <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalInvested)}</p>
-          <p className="mt-3 text-xs text-[var(--text-muted)]">Abra a Ã¡rea de investimentos e registre novas posiÃ§Ãµes</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Abra a área de investimentos e registre novas posições</p>
         </button>
         <button
           type="button"
           onClick={onOpenDebts}
           className="app-surface-card rounded-2xl p-5 text-left transition-colors hover:border-[var(--border-strong)]"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">DÃ­vidas</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Dívidas</p>
           <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalDebt)}</p>
-          <p className="mt-3 text-xs text-[var(--text-muted)]">Acompanhe o valor em aberto e os prÃ³ximos vencimentos</p>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">Acompanhe o valor em aberto e os próximos vencimentos</p>
         </button>
       </div>
 
@@ -4019,8 +4019,8 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h4 className="card-title-premium text-[var(--text-primary)]">DistribuiÃ§Ã£o do patrimÃ´nio</h4>
-              <p className="text-sm text-[var(--text-muted)]">Entenda rapidamente quanto do seu patrimÃ´nio estÃ¡ em contas, investimentos e dÃ­vidas.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">Distribuição do patrimônio</h4>
+              <p className="text-sm text-[var(--text-muted)]">Entenda rapidamente quanto do seu patrimônio está em contas, investimentos e dívidas.</p>
             </div>
           </div>
 
@@ -4064,7 +4064,7 @@ const PortfolioView = ({
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-[var(--border-default)] text-sm text-[var(--text-muted)]">
-                  Assim que vocÃª registrar contas, investimentos ou dÃ­vidas, a distribuiÃ§Ã£o aparecerÃ¡ aqui.
+                  Assim que você registrar contas, investimentos ou dívidas, a distribuição aparecerá aqui.
                 </div>
               )}
             </div>
@@ -4097,8 +4097,8 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="card-title-premium text-[var(--text-primary)]">Onde estÃ¡ meu dinheiro</h4>
-              <p className="text-sm text-[var(--text-muted)]">Veja as principais carteiras, participaÃ§Ã£o no saldo total e aÃ§Ãµes rÃ¡pidas.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">Onde está meu dinheiro</h4>
+              <p className="text-sm text-[var(--text-muted)]">Veja as principais carteiras, participação no saldo total e ações rápidas.</p>
             </div>
             {walletAllocation.length > 4 && (
               <button
@@ -4114,7 +4114,7 @@ const PortfolioView = ({
           <div className="space-y-3">
             {walletAllocation.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6 text-sm text-[var(--text-muted)]">
-                Nenhuma carteira cadastrada ainda. Crie uma conta financeira para comeÃ§ar a organizar o saldo do workspace.
+                Nenhuma carteira cadastrada ainda. Crie uma conta financeira para começar a organizar o saldo do workspace.
               </div>
             )}
 
@@ -4135,7 +4135,7 @@ const PortfolioView = ({
                     className="app-button-secondary inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
                   >
                     <ReceiptText size={14} className="text-[var(--primary)]" />
-                    Ver histÃ³rico
+                    Ver histórico
                   </button>
                   <button
                     type="button"
@@ -4173,7 +4173,7 @@ const PortfolioView = ({
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h4 className="card-title-premium text-[var(--text-primary)]">Resumo de investimentos</h4>
-              <p className="text-sm text-[var(--text-muted)]">Veja os ativos que mais representam seu patrimÃ´nio.</p>
+              <p className="text-sm text-[var(--text-muted)]">Veja os ativos que mais representam seu patrimônio.</p>
             </div>
             {topInvestments.length > 0 && (
               <button
@@ -4189,9 +4189,9 @@ const PortfolioView = ({
           <div className="space-y-3">
             {topInvestments.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6">
-                <p className="text-sm font-semibold text-[var(--text-primary)]">VocÃª ainda nÃ£o registrou investimentos.</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Você ainda não registrou investimentos.</p>
                 <p className="mt-2 text-sm text-[var(--text-muted)]">
-                  Adicione seus principais ativos para ver a participaÃ§Ã£o deles no patrimÃ´nio total.
+                  Adicione seus principais ativos para ver a participação deles no patrimônio total.
                 </p>
                 <button
                   type="button"
@@ -4210,13 +4210,13 @@ const PortfolioView = ({
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-[var(--text-primary)]">{investment.label}</p>
                     <p className="text-xs text-[var(--text-muted)]">
-                      {investment.type} Â· {investment.walletName}
+                      {investment.type} · {investment.walletName}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-[var(--text-secondary)]">{formatCurrency(investment.value)}</p>
                     <p className="text-[11px] uppercase tracking-widest text-[var(--text-muted)]">
-                      {investment.portfolioShare.toFixed(1)}% do patrimÃ´nio
+                      {investment.portfolioShare.toFixed(1)}% do patrimônio
                     </p>
                     <p
                       className={cn(
@@ -4237,8 +4237,8 @@ const PortfolioView = ({
         <div className="app-surface-card rounded-2xl p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h4 className="card-title-premium text-[var(--text-primary)]">Resumo de dÃ­vidas</h4>
-              <p className="text-sm text-[var(--text-muted)]">Entenda o que estÃ¡ em aberto e o peso disso no seu patrimÃ´nio.</p>
+              <h4 className="card-title-premium text-[var(--text-primary)]">Resumo de dívidas</h4>
+              <p className="text-sm text-[var(--text-muted)]">Entenda o que está em aberto e o peso disso no seu patrimônio.</p>
             </div>
             {topDebts.length > 0 && (
               <button
@@ -4246,7 +4246,7 @@ const PortfolioView = ({
                 onClick={onOpenDebts}
                 className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
-                Abrir dÃ­vidas
+                Abrir dívidas
               </button>
             )}
           </div>
@@ -4254,9 +4254,9 @@ const PortfolioView = ({
           <div className="space-y-3">
             {topDebts.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6">
-                <p className="text-sm font-semibold text-[var(--text-primary)]">VocÃª nÃ£o possui dÃ­vidas registradas.</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Você não possui dívidas registradas.</p>
                 <p className="mt-2 text-sm text-[var(--text-muted)]">
-                  Registre dÃ­vidas para acompanhar o valor em aberto e o impacto delas no seu patrimÃ´nio.
+                  Registre dívidas para acompanhar o valor em aberto e o impacto delas no seu patrimônio.
                 </p>
                 <button
                   type="button"
@@ -4264,7 +4264,7 @@ const PortfolioView = ({
                   className="app-button-secondary mt-4 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
                 >
                   <Plus size={14} className="text-[var(--primary)]" />
-                  Registrar dÃ­vida
+                  Registrar dívida
                 </button>
               </div>
             )}
@@ -4280,7 +4280,7 @@ const PortfolioView = ({
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-muted)]">
                   <span>Vence em {formatDebtDueDateLabel(debt)}</span>
-                  <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimÃ´nio</span>
+                  <span>{Math.max(debt.portfolioShare, 0).toFixed(1)}% do patrimônio</span>
                 </div>
               </div>
             ))}
@@ -4293,8 +4293,8 @@ const PortfolioView = ({
           <h4 className="card-title-premium text-[var(--text-primary)]">Insights da IA</h4>
           <p className="text-sm text-[var(--text-muted)]">
             {hasPortfolioAiInsights
-              ? 'Mensagens rÃ¡pidas para ajudar vocÃª a entender a composiÃ§Ã£o da sua carteira.'
-              : 'Descubra para onde seu dinheiro estÃ¡ indo com os Insights automÃ¡ticos da IA.'}
+              ? 'Mensagens rápidas para ajudar você a entender a composição da sua carteira.'
+              : 'Descubra para onde seu dinheiro está indo com os Insights automáticos da IA.'}
           </p>
         </div>
 
@@ -4307,7 +4307,7 @@ const PortfolioView = ({
                   Insight
                 </div>
                 <p className="text-sm font-semibold text-[var(--text-muted)]">Leitura principal</p>
-                <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem mÃ©trica numÃ©rica'}</p>
+                <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem métrica numérica'}</p>
                 <p className="mt-2 text-sm leading-relaxed text-[var(--text-primary)]">{insight}</p>
                 <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{getInsightActionHint(insight)}</p>
               </div>
@@ -4319,11 +4319,11 @@ const PortfolioView = ({
               <div className="max-w-2xl">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                   <Lock size={12} />
-                  DisponÃ­vel no plano Pro
+                  Disponível no plano Pro
                 </div>
                 <p className="text-sm leading-relaxed text-[var(--text-primary)]">
-                  Receba anÃ¡lises automÃ¡ticas da sua vida financeira com inteligÃªncia artificial e veja rapidamente onde seu
-                  patrimÃ´nio estÃ¡ concentrado, quais pontos exigem atenÃ§Ã£o e quais oportunidades merecem prioridade.
+                  Receba análises automáticas da sua vida financeira com inteligência artificial e veja rapidamente onde seu
+                  patrimônio está concentrado, quais pontos exigem atenção e quais oportunidades merecem prioridade.
                 </p>
               </div>
               <button
@@ -4401,7 +4401,7 @@ const InvestmentsView = ({
                 <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Rendimento</th>
                 <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Rentab. %</th>
                 <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Ret. esp. % a.a.</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">AÃ§Ãµes</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -4671,7 +4671,7 @@ const ReportsView = ({
       .map((tx) => ({
         id: tx.id,
         amount: parseCurrency(tx.amount),
-        description: tx.desc || tx.cat || 'Despesa sem descriÃ§Ã£o',
+        description: tx.desc || tx.cat || 'Despesa sem descrição',
         category: tx.cat || 'Outros',
         date: tx.parsedDate,
       }))
@@ -4775,18 +4775,18 @@ const ReportsView = ({
 
   const trendDirectionLabel =
     balanceForecast.trend === 'positive'
-      ? 'DireÃ§Ã£o de alta'
+      ? 'Direção de alta'
       : balanceForecast.trend === 'negative'
-        ? 'DireÃ§Ã£o de queda'
-        : 'DireÃ§Ã£o estÃ¡vel';
+        ? 'Direção de queda'
+        : 'Direção estável';
   const trendMetricValue = `${balanceForecast.dailyNetFlow >= 0 ? '+' : '-'}${formatCurrency(Math.abs(balanceForecast.dailyNetFlow))}/dia`;
   const trendBasisLabel = balanceForecast.source === 'read-model' ? 'base read model' : 'base 60 dias';
   const trendActionHint =
     balanceForecast.trend === 'positive'
-      ? 'AÃ§Ã£o sugerida: manter a cadÃªncia atual e ampliar reserva de seguranÃ§a.'
+      ? 'Ação sugerida: manter a cadência atual e ampliar reserva de segurança.'
       : balanceForecast.trend === 'negative'
-        ? 'AÃ§Ã£o sugerida: revisar despesas recorrentes e reduzir saÃ­das nas prÃ³ximas 2 semanas.'
-        : 'AÃ§Ã£o sugerida: acompanhar os prÃ³ximos 7 dias para confirmar estabilidade.';
+        ? 'Ação sugerida: revisar despesas recorrentes e reduzir saídas nas próximas 2 semanas.'
+        : 'Ação sugerida: acompanhar os próximos 7 dias para confirmar estabilidade.';
 
   const getAlertActionLabel = (tone: AppNotification['tone']) => {
     if (tone === 'error') return 'Corrigir agora';
@@ -4802,7 +4802,7 @@ const ReportsView = ({
 
     setIsGeneratingInsight(true);
     try {
-      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionÃ¡veis:
+      const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionáveis:
 Receitas: ${formatCurrency(totalIncome)}
 Despesas: ${formatCurrency(totalExpenses)}
 Saldo: ${formatCurrency(balance)}
@@ -4821,10 +4821,10 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao gerar insights.');
       }
-      setAiInsight(typeof data?.text === 'string' ? data.text : 'NÃ£o foi possÃ­vel gerar insights no momento.');
+      setAiInsight(typeof data?.text === 'string' ? data.text : 'Não foi possível gerar insights no momento.');
     } catch (error) {
       console.error('AI Insight error:', error);
-      setAiInsight('NÃ£o foi possÃ­vel gerar insights no momento.');
+      setAiInsight('Não foi possível gerar insights no momento.');
     } finally {
       setIsGeneratingInsight(false);
     }
@@ -4835,9 +4835,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="page-title-premium text-[var(--text-primary)]">RelatÃ³rios</h3>
+            <h3 className="page-title-premium text-[var(--text-primary)]">Relatórios</h3>
             <p className="text-sm text-[var(--text-secondary)]">
-              VisÃ£o bÃ¡sica da sua movimentaÃ§Ã£o financeira atual.
+              Visão básica da sua movimentação financeira atual.
             </p>
           </div>
           {currentPlan === 'FREE' && (
@@ -4845,7 +4845,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
               onClick={onUpgrade}
               className="app-button-primary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
             >
-              <Sparkles size={16} /> Liberar relatÃ³rios completos
+              <Sparkles size={16} /> Liberar relatórios completos
             </button>
           )}
         </div>
@@ -4860,7 +4860,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="label-premium mb-1 text-[var(--text-muted)]">Saldo lÃ­quido</p>
+            <p className="label-premium mb-1 text-[var(--text-muted)]">Saldo líquido</p>
             <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(balance)}</p>
           </div>
         </div>
@@ -4889,13 +4889,13 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
 
           <div className="app-surface-card rounded-2xl p-6">
-            <h4 className="label-premium text-[var(--text-primary)] mb-4">DisponÃ­vel no Pro</h4>
+            <h4 className="label-premium text-[var(--text-primary)] mb-4">Disponível no Pro</h4>
             <div className="space-y-3">
               {[
-                'GrÃ¡ficos comparativos completos',
-                'Insights automÃ¡ticos com IA',
-                'ExportaÃ§Ã£o em PDF e CSV',
-                'Comparativos avanÃ§ados de receita, despesa e economia',
+                'Gráficos comparativos completos',
+                'Insights automáticos com IA',
+                'Exportação em PDF e CSV',
+                'Comparativos avançados de receita, despesa e economia',
               ].map((feature) => (
                 <div
                   key={feature}
@@ -4922,7 +4922,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-[var(--text-primary)]">RelatÃ³rios e Insights</h3>
+        <h3 className="page-title-premium text-[var(--text-primary)]">Relatórios e Insights</h3>
         <div className="flex gap-2">
           <button
             onClick={onExportPDF}
@@ -4949,7 +4949,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="label-premium mb-1 text-[var(--text-muted)]">Saldo lÃ­quido</p>
+          <p className="label-premium mb-1 text-[var(--text-muted)]">Saldo líquido</p>
           <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(balance)}</p>
         </div>
       </div>
@@ -4959,7 +4959,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="app-surface-card rounded-2xl p-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
               <div>
-                <h4 className="label-premium text-[var(--text-primary)]">PrevisÃ£o de saldo</h4>
+                <h4 className="label-premium text-[var(--text-primary)]">Previsão de saldo</h4>
                 <p className="text-sm text-[var(--text-secondary)] mt-2">
                   {balanceForecast.source === 'read-model'
                     ? 'Projecao baseada no read model diario (confirmado + planejado).'
@@ -4967,9 +4967,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 </p>
               </div>
               <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-4 py-3">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">TendÃªncia</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Tendência</p>
                 <p className="mt-1 text-sm font-black text-[var(--text-primary)]">{trendMetricValue}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{`${trendDirectionLabel} • ${trendBasisLabel}`}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{`${trendDirectionLabel} " ${trendBasisLabel}`}</p>
               </div>
             </div>
 
@@ -4979,8 +4979,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   key={item.days}
                   className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5"
                 >
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">TendÃªncia</p>
-                  <p className="mt-2 label-premium text-[var(--text-muted)]">ProjeÃ§Ã£o em {item.days} dias</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Tendência</p>
+                  <p className="mt-2 label-premium text-[var(--text-muted)]">Projeção em {item.days} dias</p>
                   <p
                     className={`mt-2 text-2xl font-black ${
                       item.projectedBalance >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]'
@@ -4990,7 +4990,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                   </p>
                   <p className="text-xs text-[var(--text-secondary)] mt-2">
                     {item.projectedBalance >= 0
-                      ? 'Mantendo o ritmo atual, seu caixa permanece saudÃ¡vel.'
+                      ? 'Mantendo o ritmo atual, seu caixa permanece saudável.'
                       : 'Se nada mudar, o saldo projetado fica negativo.'}
                   </p>
                   <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{trendActionHint}</p>
@@ -5063,9 +5063,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="app-surface-card rounded-2xl p-6">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h4 className="label-premium text-[var(--text-primary)]">AnÃ¡lises profundas de despesas</h4>
+                <h4 className="label-premium text-[var(--text-primary)]">Análises profundas de despesas</h4>
                 <p className="mt-2 max-w-3xl text-sm text-[var(--text-secondary)]">
-                  Veja quais categorias mais cresceram, onde estÃ£o os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mÃªs.
+                  Veja quais categorias mais cresceram, onde estão os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
                 </p>
               </div>
               <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
@@ -5075,17 +5075,17 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-[var(--text-muted)]">Despesas do mÃªs</p>
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Despesas do mês</p>
                 <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.previousMonthTotal > 0
-                    ? `MÃªs anterior: ${formatCurrency(expenseDeepDive.previousMonthTotal)}`
-                    : 'Sem comparaÃ§Ã£o vÃ¡lida com o mÃªs anterior.'}
+                    ? `Mês anterior: ${formatCurrency(expenseDeepDive.previousMonthTotal)}`
+                    : 'Sem comparação válida com o mês anterior.'}
                 </p>
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-[var(--text-muted)]">VariaÃ§Ã£o mensal</p>
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Variação mensal</p>
                 <p
                   className={cn(
                     'text-2xl font-black',
@@ -5101,7 +5101,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
-                  ComparaÃ§Ã£o entre as despesas do mÃªs atual e do mÃªs anterior.
+                  Comparação entre as despesas do mês atual e do mês anterior.
                 </p>
               </div>
 
@@ -5113,7 +5113,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.topCurrentCategory
                     ? formatCurrency(expenseDeepDive.topCurrentCategory.value)
-                    : 'Registre mais despesas para gerar a anÃ¡lise.'}
+                    : 'Registre mais despesas para gerar a análise.'}
                 </p>
               </div>
 
@@ -5125,7 +5125,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.largestExpense
                     ? `${formatCurrency(expenseDeepDive.largestExpense.amount)} em ${expenseDeepDive.largestExpense.category}`
-                    : 'Ainda nÃ£o hÃ¡ lanÃ§amentos suficientes neste mÃªs.'}
+                    : 'Ainda não há lançamentos suficientes neste mês.'}
                 </p>
               </div>
             </div>
@@ -5136,7 +5136,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <div className="space-y-3">
                   {expenseDeepDive.growingCategories.length === 0 ? (
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Nenhuma categoria apresentou crescimento relevante em relaÃ§Ã£o ao mÃªs anterior.
+                      Nenhuma categoria apresentou crescimento relevante em relação ao mês anterior.
                     </p>
                   ) : (
                     expenseDeepDive.growingCategories.map((item) => (
@@ -5148,8 +5148,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                           </span>
                         </div>
                         <div className="mt-2 flex items-center justify-between gap-3 text-xs text-[var(--text-secondary)]">
-                          <span>MÃªs atual: {formatCurrency(item.currentValue)}</span>
-                          <span>MÃªs anterior: {formatCurrency(item.previousValue)}</span>
+                          <span>Mês atual: {formatCurrency(item.currentValue)}</span>
+                          <span>Mês anterior: {formatCurrency(item.previousValue)}</span>
                         </div>
                         <p className="mt-2 text-xs text-[var(--text-muted)]">
                           Crescimento absoluto de {formatCurrency(item.diff)} nesta categoria.
@@ -5165,7 +5165,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <div className="space-y-3">
                   {expenseDeepDive.recurringHeavyCategories.length === 0 ? (
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Ainda nÃ£o hÃ¡ categorias recorrentes suficientes neste mÃªs para uma anÃ¡lise mais profunda.
+                      Ainda não há categorias recorrentes suficientes neste mês para uma análise mais profunda.
                     </p>
                   ) : (
                     expenseDeepDive.recurringHeavyCategories.map((item) => (
@@ -5173,12 +5173,12 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-bold text-[var(--text-primary)]">{item.name}</p>
                           <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
-                            {item.count} lanÃ§amentos
+                            {item.count} lançamentos
                           </span>
                         </div>
                         <p className="mt-2 text-sm text-[var(--text-secondary)]">{formatCurrency(item.total)}</p>
                         <p className="mt-2 text-xs text-[var(--text-muted)]">
-                          Vale revisar frequÃªncia, assinatura recorrente ou padrÃ£o de consumo nesta categoria.
+                          Vale revisar frequência, assinatura recorrente ou padrão de consumo nesta categoria.
                         </p>
                       </div>
                     ))
@@ -5192,9 +5192,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
         <div className="app-surface-card rounded-2xl p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h4 className="label-premium text-[var(--text-primary)]">DisponÃ­vel no Premium</h4>
+              <h4 className="label-premium text-[var(--text-primary)]">Disponível no Premium</h4>
               <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-2xl">
-                Desbloqueie previsÃµes de saldo em 7, 15 e 30 dias, alertas inteligentes e anÃ¡lises profundas de despesas para identificar crescimento por categoria e padrÃµes que pressionam seu caixa.
+                Desbloqueie previsões de saldo em 7, 15 e 30 dias, alertas inteligentes e análises profundas de despesas para identificar crescimento por categoria e padrões que pressionam seu caixa.
               </p>
             </div>
             <button
@@ -5342,8 +5342,8 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <Sparkles size={16} className="text-[var(--primary)]" />
                 <span className="text-xs font-bold text-[var(--primary)] uppercase tracking-widest">Insight IA</span>
               </div>
-              <p className="text-sm font-semibold text-[var(--text-muted)]">AnÃ¡lise personalizada</p>
-              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">{extractInsightMetric(aiInsight) ?? 'Sem mÃ©trica numÃ©rica'}</p>
+              <p className="text-sm font-semibold text-[var(--text-muted)]">Análise personalizada</p>
+              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">{extractInsightMetric(aiInsight) ?? 'Sem métrica numérica'}</p>
               <div className="mt-2 text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
                 {aiInsight}
               </div>
@@ -5535,7 +5535,7 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar meta'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar meta'}
           </button>
         </div>
       </motion.div>
@@ -5712,7 +5712,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
                 : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Adicionar investimento'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
           </button>
         </div>
       </motion.div>
@@ -5784,7 +5784,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar dÃ­vida.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar dívida.');
     } finally {
       setIsSubmitting(false);
     }
@@ -5799,8 +5799,8 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar dÃ­vida Ãºnica' : 'Nova dÃ­vida Ãºnica'}</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para obrigaÃ§Ãµes especÃ­ficas com valor total definido.</p>
+            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar dívida única' : 'Nova dívida única'}</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para obrigações específicas com valor total definido.</p>
           </div>
           <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
@@ -5842,7 +5842,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Juros (% mÃªs)</label>
+              <label className="label-premium text-[var(--text-muted)]">Juros (% mês)</label>
               <input
                 type="number"
                 min="0"
@@ -5907,7 +5907,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
             )}
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar dÃ­vida Ãºnica'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida única'}
           </button>
         </div>
       </motion.div>
@@ -5935,7 +5935,7 @@ const RecurringDebtModal = ({
       const category =
         typeof initialDraft?.category === 'string' && initialDraft.category.trim().length > 0
           ? initialDraft.category
-          : RECURRING_DEBT_PRESETS[0]?.category ?? 'Ãgua';
+          : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
       return {
         creditor: initialDraft?.creditor ?? category,
         amount: initialDraft?.amount ?? '',
@@ -5995,7 +5995,7 @@ const RecurringDebtModal = ({
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar recorrÃªncia.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar recorrência.');
     } finally {
       setIsSubmitting(false);
     }
@@ -6010,8 +6010,8 @@ const RecurringDebtModal = ({
       >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar recorrÃªncia' : 'Nova dÃ­vida recorrente'}</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para cobranÃ§as repetidas com frequÃªncia e prÃ³xima cobranÃ§a definidas.</p>
+            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para cobranças repetidas com frequência e próxima cobrança definidas.</p>
           </div>
           <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
@@ -6020,7 +6020,7 @@ const RecurringDebtModal = ({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">DescriÃ§Ã£o</label>
+            <label className="label-premium text-[var(--text-muted)]">Descrição</label>
             <input
               type="text"
               value={formData.creditor}
@@ -6030,7 +6030,7 @@ const RecurringDebtModal = ({
             />
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Valor da cobranÃ§a</label>
+            <label className="label-premium text-[var(--text-muted)]">Valor da cobrança</label>
             <MoneyInput
               value={formData.amount}
               onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
@@ -6067,7 +6067,7 @@ const RecurringDebtModal = ({
             </select>
           </div>
           <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">FrequÃªncia</label>
+            <label className="label-premium text-[var(--text-muted)]">Frequência</label>
             <select
               value={formData.frequency}
               onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
@@ -6110,7 +6110,7 @@ const RecurringDebtModal = ({
           </div>
           {isMonthlyFamily ? (
             <div className="space-y-2 md:col-span-2">
-              <label className="label-premium text-[var(--text-muted)]">Dia da cobranÃ§a</label>
+              <label className="label-premium text-[var(--text-muted)]">Dia da cobrança</label>
               <input
                 type="number"
                 min={1}
@@ -6122,13 +6122,13 @@ const RecurringDebtModal = ({
             </div>
           ) : null}
           <div className="space-y-2 md:col-span-2">
-            <label className="label-premium text-[var(--text-muted)]">ObservaÃ§Ãµes</label>
+            <label className="label-premium text-[var(--text-muted)]">Observações</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
               rows={3}
               className="app-field w-full resize-none rounded-xl py-2 px-4 text-sm"
-              placeholder="Ex: cobranÃ§a obrigatÃ³ria do condomÃ­nio"
+              placeholder="Ex: cobrança obrigatória do condomínio"
             />
           </div>
         </div>
@@ -6143,7 +6143,7 @@ const RecurringDebtModal = ({
               : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
           )}
         >
-          {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrÃªncia' : 'Criar recorrÃªncia'}
+          {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrência' : 'Criar recorrência'}
         </button>
       </motion.div>
     </div>
@@ -6218,7 +6218,7 @@ const TransactionModal = ({
       const draftWallet = normalizeWalletSelection(initialDraft?.wallet);
       const normalizedPaymentMethod =
         initialDraft?.paymentMethod ||
-        (draftFlowType === 'TransferÃªncia' ? 'TransferÃªncia bancÃ¡ria' : 'PIX');
+        (draftFlowType === 'Transferência' ? 'Transferência bancária' : 'PIX');
 
       return {
         description: '',
@@ -6230,7 +6230,7 @@ const TransactionModal = ({
         ...initialDraft,
         wallet: draftWallet,
         destinationWallet:
-          draftFlowType === 'TransferÃªncia'
+          draftFlowType === 'Transferência'
             ? normalizeDestinationWalletSelection(initialDraft?.destinationWallet, draftWallet)
             : '',
         paymentMethod: normalizedPaymentMethod,
@@ -6250,7 +6250,7 @@ const TransactionModal = ({
       paymentMethod: initialData.paymentMethod || getDefaultPaymentMethodForFlow(initialData.flowType),
       wallet: normalizeWalletSelection(initialData.wallet),
       destinationWallet:
-        initialData.flowType === 'TransferÃªncia'
+        initialData.flowType === 'Transferência'
           ? normalizeDestinationWalletSelection(initialData.destinationWallet, initialData.wallet)
           : '',
       receiptUrl: initialData.receiptUrl || null,
@@ -6299,7 +6299,7 @@ const TransactionModal = ({
     setFormData((prev) => {
       const nextWallet = normalizeWalletSelection(prev.wallet);
       const nextDestinationWallet =
-        prev.flowType === 'TransferÃªncia'
+        prev.flowType === 'Transferência'
           ? normalizeDestinationWalletSelection(prev.destinationWallet, nextWallet)
           : '';
 
@@ -6394,7 +6394,7 @@ const TransactionModal = ({
         }));
         setReceiptStatus('Dados detectados automaticamente. Revise antes de salvar.');
       } else {
-        setReceiptStatus('NÃ£o foi possÃ­vel extrair dados do comprovante.');
+        setReceiptStatus('Não foi possível extrair dados do comprovante.');
       }
     } catch {
       setReceiptStatus('Falha ao processar comprovante.');
@@ -6457,7 +6457,7 @@ const TransactionModal = ({
           <div className="h-1.5 w-12 rounded-full bg-[var(--bg-surface-elevated)]" />
         </div>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar TransaÃ§Ã£o' : 'Nova TransaÃ§Ã£o'}</h3>
+          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
           <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
             <X size={20} />
           </button>
@@ -6480,9 +6480,9 @@ const TransactionModal = ({
                         ? prev.category
                         : getDefaultCategoryForFlow(flowType),
                       paymentMethod:
-                        flowType === 'TransferÃªncia'
-                          ? 'TransferÃªncia bancÃ¡ria'
-                          : prev.paymentMethod === 'TransferÃªncia bancÃ¡ria'
+                        flowType === 'Transferência'
+                          ? 'Transferência bancária'
+                          : prev.paymentMethod === 'Transferência bancária'
                             ? 'PIX'
                             : prev.paymentMethod,
                     }))
@@ -6519,7 +6519,7 @@ const TransactionModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">DescriÃ§Ã£o</label>
+            <label className="label-premium text-[var(--text-muted)]">Descrição</label>
             <input
               type="text"
               value={formData.description}
@@ -6536,18 +6536,18 @@ const TransactionModal = ({
           {(isLoadingSuggestion || suggestedCategory) && (
             <div className="app-surface-subtle rounded-xl p-3 text-xs text-[var(--text-secondary)]">
               {isLoadingSuggestion ? (
-                <span>Buscando sugestÃ£o de categoria...</span>
+                <span>Buscando sugestão de categoria...</span>
               ) : suggestedCategory ? (
                 <div className="flex items-center justify-between gap-2">
                   <span>
-                    SugestÃ£o: <span className="font-bold text-[var(--text-secondary)]">{suggestedCategory}</span>
+                    Sugestão: <span className="font-bold text-[var(--text-secondary)]">{suggestedCategory}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
                     className="rounded-md bg-[color:var(--primary-soft)] px-2 py-1 text-[var(--text-secondary)] transition-colors hover:bg-[color:var(--primary-soft)]"
                   >
-                    Usar sugestÃ£o
+                    Usar sugestão
                   </button>
                 </div>
               ) : null}
@@ -6605,7 +6605,7 @@ const TransactionModal = ({
 
           <div className="space-y-2">
             <label className="label-premium text-[var(--text-muted)]">
-              MÃ©todo de pagamento
+              Método de pagamento
             </label>
             <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
               <select
@@ -6654,11 +6654,11 @@ const TransactionModal = ({
 
           {formData.category === 'Auto (IA)' && (
             <div className="rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-3 text-xs text-[var(--text-secondary)]">
-              A categoria serÃ¡ classificada automaticamente com base na descriÃ§Ã£o.
+              A categoria será classificada automaticamente com base na descrição.
             </div>
           )}
 
-          {formData.flowType === 'TransferÃªncia' ? (
+          {formData.flowType === 'Transferência' ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="min-w-0 overflow-hidden space-y-2">
                 <label className="label-premium text-[var(--text-muted)]">Conta origem</label>
@@ -6740,9 +6740,9 @@ const TransactionModal = ({
             </div>
           )}
 
-          {formData.flowType === 'TransferÃªncia' && formData.destinationWallet === formData.wallet && (
+          {formData.flowType === 'Transferência' && formData.destinationWallet === formData.wallet && (
             <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3 text-xs text-[var(--text-secondary)]">
-              Conta origem e destino nÃ£o podem ser iguais.
+              Conta origem e destino não podem ser iguais.
             </div>
           )}
 
@@ -6751,11 +6751,11 @@ const TransactionModal = ({
             disabled={isSubmitting}
             className="app-cta-primary mt-2 w-full rounded-xl py-3 font-bold"
           >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteraÃ§Ãµes' : 'Criar transaÃ§Ã£o'}
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
           </button>
           {hasAttemptedSubmit && !isValid && (
             <p className="text-xs text-[color:var(--danger)]">
-              Preencha os campos obrigatÃ³rios para continuar.
+              Preencha os campos obrigatórios para continuar.
             </p>
           )}
         </div>
@@ -6774,32 +6774,32 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const steps = [
     {
       title: 'Bem-vindo ao Cote Finance AI!',
-      description: 'Seu assistente financeiro inteligente que organiza, analisa, prevÃª e orienta automaticamente.',
+      description: 'Seu assistente financeiro inteligente que organiza, analisa, prevê e orienta automaticamente.',
       target: 'sidebar-logo',
     },
     {
-      title: 'VisÃ£o Geral do Painel',
-      description: 'Aqui vocÃª acompanha seu saldo consolidado, entradas e saÃ­das em tempo real.',
+      title: 'Visão Geral do Painel',
+      description: 'Aqui você acompanha seu saldo consolidado, entradas e saídas em tempo real.',
       target: 'dashboard-stats',
     },
     {
-      title: 'PrevisÃµes de IA',
-      description: 'Nossa IA analisa seus padrÃµes e prevÃª seu saldo futuro, ajudando vocÃª a se planejar.',
+      title: 'Previsões de IA',
+      description: 'Nossa IA analisa seus padrões e prevê seu saldo futuro, ajudando você a se planejar.',
       target: 'ai-forecast',
     },
     {
       title: 'Assistente Cote',
-      description: 'Converse com nossa IA para tirar dÃºvidas sobre seus gastos e receber dicas personalizadas.',
+      description: 'Converse com nossa IA para tirar dúvidas sobre seus gastos e receber dicas personalizadas.',
       target: 'ai-assistant',
     },
     {
-      title: 'IntegraÃ§Ã£o WhatsApp',
+      title: 'Integração WhatsApp',
       description: 'Registre gastos e receba alertas diretamente pelo WhatsApp. Praticidade total.',
       target: 'whatsapp-integration',
     },
     {
       title: 'Tudo Pronto!',
-      description: 'Agora vocÃª estÃ¡ pronto para dominar suas finanÃ§as. Vamos comeÃ§ar?',
+      description: 'Agora você está pronto para dominar suas finanças. Vamos começar?',
       target: 'sidebar-logo',
     },
   ];
@@ -6855,7 +6855,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               onClick={nextStep}
               className="px-6 py-2 rounded-xl bg-[var(--primary)] text-[var(--text-primary)] font-bold hover:bg-[var(--primary-hover)] transition-all shadow-lg shadow-[color:var(--primary-soft)]"
             >
-              {step === steps.length - 1 ? 'ComeÃ§ar agora' : 'PrÃ³ximo'}
+              {step === steps.length - 1 ? 'Começar agora' : 'Próximo'}
             </button>
           </div>
         </div>
@@ -6901,7 +6901,7 @@ const LoginView = ({
     () => [
       { label: 'Pelo menos 8 caracteres', valid: password.length >= 8 },
       { label: 'Pelo menos 1 letra', valid: /[A-Za-z]/.test(password) },
-      { label: 'Pelo menos 1 nÃºmero', valid: /\d/.test(password) },
+      { label: 'Pelo menos 1 número', valid: /\d/.test(password) },
     ],
     [password]
   );
@@ -6910,11 +6910,11 @@ const LoginView = ({
     if (!firstName.trim()) return 'Informe seu nome.';
     if (!lastName.trim()) return 'Informe seu sobrenome.';
     if (!email.trim()) return 'Informe seu e-mail.';
-    if (password.length < 8) return 'A senha deve ter no mÃ­nimo 8 caracteres.';
+    if (password.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      return 'A senha deve conter letras e nÃºmeros.';
+      return 'A senha deve conter letras e números.';
     }
-    if (!acceptedTerms) return 'VocÃª precisa aceitar os termos para continuar.';
+    if (!acceptedTerms) return 'Você precisa aceitar os termos para continuar.';
     return null;
   };
 
@@ -6999,7 +6999,7 @@ const LoginView = ({
           clearTimeout(timeoutId);
         });
       },
-      'NÃ£o foi possÃ­vel finalizar sua sessÃ£o no servidor. Tente novamente.'
+      'Não foi possível finalizar sua sessão no servidor. Tente novamente.'
     );
     const setupData = await setupRes.json().catch(() => ({}));
     if (!setupRes.ok && setupData.error) throw new Error(setupData.error);
@@ -7024,16 +7024,16 @@ const LoginView = ({
               emailRedirectTo: buildClientRedirectUrl('/auth/confirm'),
             },
           }),
-        'O reenvio do e-mail demorou demais. Verifique sua conexÃ£o e tente novamente.'
+        'O reenvio do e-mail demorou demais. Verifique sua conexão e tente novamente.'
       );
 
       if (resendError) throw resendError;
 
       authDebug('resend_confirmation:done', { email: pendingConfirmationEmail });
-      setNotice('Enviamos um novo e-mail de confirmaÃ§Ã£o. Verifique sua caixa de entrada e spam.');
+      setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
       authDebug('resend_confirmation:failed', { message: String(err?.message || err || 'erro desconhecido') });
-      setError(err?.message || 'NÃ£o foi possÃ­vel reenviar o e-mail de confirmaÃ§Ã£o.');
+      setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
     } finally {
       setLoading(false);
     }
@@ -7041,7 +7041,7 @@ const LoginView = ({
 
   const requestEmailCode = async (normalizedEmail: string) => {
     if (!normalizedEmail) {
-      throw new Error('Informe seu e-mail para receber o cÃ³digo.');
+      throw new Error('Informe seu e-mail para receber o código.');
     }
 
     authDebug('otp_request:start', { email: normalizedEmail });
@@ -7054,7 +7054,7 @@ const LoginView = ({
             shouldCreateUser: false,
           },
         }),
-      'O envio do cÃ³digo demorou demais. Verifique sua conexÃ£o e tente novamente.'
+      'O envio do código demorou demais. Verifique sua conexão e tente novamente.'
     );
 
     if (otpError) {
@@ -7064,18 +7064,18 @@ const LoginView = ({
     authDebug('otp_request:done', { email: normalizedEmail });
     setOtpRequestedEmail(normalizedEmail);
     setOtpCode('');
-    setNotice('Enviamos um cÃ³digo de acesso para o seu e-mail. Digite esse cÃ³digo para entrar.');
+    setNotice('Enviamos um código de acesso para o seu e-mail. Digite esse código para entrar.');
   };
 
   const verifyEmailCode = async (normalizedEmail: string) => {
     const token = otpCode.trim();
 
     if (!normalizedEmail) {
-      throw new Error('Informe seu e-mail para validar o cÃ³digo.');
+      throw new Error('Informe seu e-mail para validar o código.');
     }
 
     if (token.length < 6) {
-      throw new Error('Digite o cÃ³digo recebido no e-mail para continuar.');
+      throw new Error('Digite o código recebido no e-mail para continuar.');
     }
 
     authDebug('otp_verify:start', { email: normalizedEmail, tokenLength: token.length });
@@ -7087,7 +7087,7 @@ const LoginView = ({
           token,
           type: 'email',
         }),
-      'A validaÃ§Ã£o do cÃ³digo demorou demais. Tente novamente.'
+      'A validação do código demorou demais. Tente novamente.'
     );
 
     if (verifyError) {
@@ -7099,7 +7099,7 @@ const LoginView = ({
     const resolvedUser = data.user || (await supabase.auth.getUser()).data.user;
 
     if (!accessToken || !resolvedUser) {
-      throw new Error('NÃ£o foi possÃ­vel validar o cÃ³digo. Solicite um novo e tente novamente.');
+      throw new Error('Não foi possível validar o código. Solicite um novo e tente novamente.');
     }
 
     authDebug('otp_verify:done', { hasSession: Boolean(accessToken), hasUser: Boolean(resolvedUser) });
@@ -7145,7 +7145,7 @@ const LoginView = ({
         result = await runWithRetry(
           'password_login',
           () => supabase.auth.signInWithPassword({ email: normalizedEmail, password }),
-          'O login demorou demais. Verifique sua conexÃ£o e tente novamente.'
+          'O login demorou demais. Verifique sua conexão e tente novamente.'
         );
       } else {
         result = await runWithRetry(
@@ -7163,7 +7163,7 @@ const LoginView = ({
                 },
               },
             }),
-          'A criaÃ§Ã£o da conta demorou demais. Verifique sua conexÃ£o e tente novamente.'
+          'A criação da conta demorou demais. Verifique sua conexão e tente novamente.'
         );
       }
 
@@ -7182,16 +7182,16 @@ const LoginView = ({
       if (!isLogin) {
         setPendingConfirmationEmail(normalizedEmail);
         setNotice(
-          'Conta criada com sucesso. Enviamos um e-mail de confirmaÃ§Ã£o para continuar seu acesso.'
+          'Conta criada com sucesso. Enviamos um e-mail de confirmação para continuar seu acesso.'
         );
         setIsLogin(true);
         setPassword('');
         return;
       }
 
-      throw new Error('NÃ£o foi possÃ­vel iniciar sessÃ£o. Tente novamente.');
+      throw new Error('Não foi possível iniciar sessão. Tente novamente.');
     } catch (err: any) {
-      const errorMessage = String(err?.message || 'NÃ£o foi possÃ­vel fazer login. Tente novamente.');
+      const errorMessage = String(err?.message || 'Não foi possível fazer login. Tente novamente.');
       authDebug('auth_submit:failed', { message: errorMessage });
       setError(errorMessage);
     } finally {
@@ -7229,11 +7229,11 @@ const LoginView = ({
       authDebug('oauth_google:failed', { message: rawMessage || 'erro desconhecido' });
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError(
-          'Google OAuth nÃ£o estÃ¡ habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
+          'Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
         );
       } else if (/redirect|callback|redirect_uri_mismatch/i.test(rawMessage)) {
         setError(
-          `Redirect URI invÃ¡lida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
+          `Redirect URI inválida. Configure ${buildClientRedirectUrl('/auth/callback')} nas URLs permitidas do Supabase.`
         );
       } else {
         setError(rawMessage || 'Falha ao iniciar login com Google.');
@@ -7267,9 +7267,9 @@ const LoginView = ({
             <p className="text-sm text-[var(--text-secondary)]">
               {isLogin
                 ? loginMethod === 'otp'
-                  ? 'Receba um cÃ³digo no e-mail e valide sua entrada sem depender da senha.'
-                  : 'Acesse seu workspace com seguranÃ§a e continue de onde parou.'
-                : 'Comece a organizar suas finanÃ§as em minutos.'}
+                  ? 'Receba um código no e-mail e valide sua entrada sem depender da senha.'
+                  : 'Acesse seu workspace com segurança e continue de onde parou.'
+                : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
         </div>
@@ -7311,7 +7311,7 @@ const LoginView = ({
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 )}
               >
-                CÃ³digo por e-mail
+                Código por e-mail
               </button>
             </div>
           ) : null}
@@ -7367,12 +7367,12 @@ const LoginView = ({
               />
               {isLogin ? (
                 <p className="text-xs leading-relaxed text-[var(--text-muted)]">
-                  Entre com a senha que vocÃª criou para acessar sua conta.
+                  Entre com a senha que você criou para acessar sua conta.
                 </p>
               ) : (
                 <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                    CritÃ©rios da senha
+                    Critérios da senha
                   </p>
                   <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
                     {passwordChecks.map((rule) => (
@@ -7398,19 +7398,19 @@ const LoginView = ({
             <div className="space-y-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/30 p-4">
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-[var(--text-primary)]">
-                  {otpRequestedEmail ? 'Digite o cÃ³digo recebido' : 'Receba um cÃ³digo de acesso'}
+                  {otpRequestedEmail ? 'Digite o código recebido' : 'Receba um código de acesso'}
                 </p>
                 <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
                   {otpRequestedEmail
-                    ? `Enviamos o cÃ³digo para ${otpRequestedEmail}. Digite esse cÃ³digo abaixo para entrar.`
-                    : 'Vamos enviar um cÃ³digo real para o seu e-mail para validar sua entrada no app.'}
+                    ? `Enviamos o código para ${otpRequestedEmail}. Digite esse código abaixo para entrar.`
+                    : 'Vamos enviar um código real para o seu e-mail para validar sua entrada no app.'}
                 </p>
               </div>
 
               {otpRequestedEmail ? (
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                    CÃ³digo
+                    Código
                   </label>
                   <input
                     type="text"
@@ -7419,7 +7419,7 @@ const LoginView = ({
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
                     className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] py-3 px-4 text-[var(--text-primary)] transition-all focus:outline-none focus:border-[var(--primary)]"
-                    placeholder="Digite o cÃ³digo recebido"
+                    placeholder="Digite o código recebido"
                   />
                 </div>
               ) : null}
@@ -7454,7 +7454,7 @@ const LoginView = ({
                     rel="noreferrer"
                     className="font-semibold text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
                   >
-                    polÃ­tica de privacidade
+                    política de privacidade
                   </Link>
                   <span>.</span>
                 </div>
@@ -7476,8 +7476,8 @@ const LoginView = ({
                 ? 'Criar conta gratuita'
                 : loginMethod === 'otp'
                   ? otpRequestedEmail
-                    ? 'Validar cÃ³digo e entrar'
-                    : 'Receber cÃ³digo por e-mail'
+                    ? 'Validar código e entrar'
+                    : 'Receber código por e-mail'
                   : 'Entrar'}
           </button>
 
@@ -7488,7 +7488,7 @@ const LoginView = ({
               disabled={loading}
               className="w-full text-center text-xs font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-50"
             >
-              NÃ£o recebeu o e-mail? Reenviar confirmaÃ§Ã£o
+              Não recebeu o e-mail? Reenviar confirmação
             </button>
           ) : null}
 
@@ -7504,14 +7504,14 @@ const LoginView = ({
                   try {
                     await requestEmailCode(otpRequestedEmail);
                   } catch (err: any) {
-                    setError(err?.message || 'NÃ£o foi possÃ­vel reenviar o cÃ³digo.');
+                    setError(err?.message || 'Não foi possível reenviar o código.');
                   } finally {
                     setLoading(false);
                   }
                 }}
                 className="text-xs font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-50"
               >
-                Reenviar cÃ³digo
+                Reenviar código
               </button>
               <button
                 type="button"
@@ -7565,7 +7565,7 @@ const LoginView = ({
         </button>
 
         <p className="mt-7 text-center text-sm text-[var(--text-muted)]">
-          {isLogin ? 'NÃ£o tem uma conta?' : 'JÃ¡ tem uma conta?'}
+          {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
           <button
             onClick={() => {
               setError(null);
@@ -7803,7 +7803,7 @@ export default function App() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('SessÃ£o expirada. FaÃ§a login novamente.');
+        throw new Error('Sessão expirada. Faça login novamente.');
       }
 
       const headers: Record<string, string> = {
@@ -8073,7 +8073,7 @@ export default function App() {
         setDashboardInsights((current) =>
           current.length > 0
             ? current
-            : ['NÃ£o foi possÃ­vel atualizar os dados agora. Exibindo o Ãºltimo estado conhecido.']
+            : ['Não foi possível atualizar os dados agora. Exibindo o último estado conhecido.']
         );
       }
     } finally {
@@ -8692,20 +8692,20 @@ React.useEffect(() => {
       });
       setWhatsAppFeedback({
         tone: connectionState === 'connected' ? 'success' : 'info',
-        title: connectionState === 'connected' ? 'WhatsApp conectado' : 'ConexÃ£o em validaÃ§Ã£o',
+        title: connectionState === 'connected' ? 'WhatsApp conectado' : 'Conexão em validação',
         message:
           typeof payload?.message === 'string'
             ? payload.message
             : connectionState === 'connected'
               ? 'O WhatsApp foi conectado com sucesso.'
-              : 'A Meta aceitou a conexÃ£o. Agora falta a confirmaÃ§Ã£o de entrega pelo webhook.',
+              : 'A Meta aceitou a conexão. Agora falta a confirmação de entrega pelo webhook.',
       });
       void refreshTransactionsResource();
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'NÃ£o foi possÃ­vel conectar o WhatsApp.';
+          : 'Não foi possível conectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         applyWhatsAppPayload({ diagnostic: error.payload.diagnostic, status: 'FAILED' });
       }
@@ -8738,14 +8738,14 @@ React.useEffect(() => {
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A integraÃ§Ã£o do WhatsApp foi desconectada com sucesso.',
+            : 'A integração do WhatsApp foi desconectada com sucesso.',
       });
       void refreshTransactionsResource();
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'NÃ£o foi possÃ­vel desconectar o WhatsApp.';
+          : 'Não foi possível desconectar o WhatsApp.';
       if (error?.payload?.diagnostic) {
         applyWhatsAppPayload({ diagnostic: error.payload.diagnostic, status: 'FAILED' });
       }
@@ -8775,18 +8775,18 @@ React.useEffect(() => {
       applyWhatsAppPayload(payload);
       setWhatsAppFeedback({
         tone: 'info',
-        title: 'Teste em validaÃ§Ã£o',
+        title: 'Teste em validação',
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A Meta aceitou o teste. Agora falta a confirmaÃ§Ã£o de entrega pelo webhook.',
+            : 'A Meta aceitou o teste. Agora falta a confirmação de entrega pelo webhook.',
       });
       void refreshTransactionsResource();
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
           ? error.payload.error
-          : 'NÃ£o foi possÃ­vel enviar o teste do WhatsApp.';
+          : 'Não foi possível enviar o teste do WhatsApp.';
       if (error?.payload?.diagnostic) {
         applyWhatsAppPayload({ diagnostic: error.payload.diagnostic, status: 'FAILED' });
       }
@@ -8905,16 +8905,16 @@ React.useEffect(() => {
     if (overdueBills.length > 0) {
       notifications.push({
         id: `agenda-overdue-${overdueBills.length}`,
-        title: 'VocÃª tem compromissos em atraso',
-        message: `${overdueBills.length} item(ns) exigem atenÃ§Ã£o imediata na sua agenda financeira.`,
+        title: 'Você tem compromissos em atraso',
+        message: `${overdueBills.length} item(ns) exigem atenção imediata na sua agenda financeira.`,
         tone: 'error',
         targetTab: 'agenda',
       });
     } else if (upcomingBills.length > 0) {
       notifications.push({
         id: `agenda-upcoming-${upcomingBills.length}`,
-        title: 'HÃ¡ vencimentos prÃ³ximos',
-        message: `${upcomingBills.length} compromisso(s) vencem nos prÃ³ximos 7 dias.`,
+        title: 'Há vencimentos próximos',
+        message: `${upcomingBills.length} compromisso(s) vencem nos próximos 7 dias.`,
         tone: 'warning',
         targetTab: 'agenda',
       });
@@ -8923,25 +8923,25 @@ React.useEffect(() => {
     if (subscriptionSummary?.status === 'PENDING') {
       notifications.push({
         id: 'subscription-pending',
-        title: 'Sua assinatura precisa de atenÃ§Ã£o',
-        message: 'Revise a cobranÃ§a para manter seu acesso premium ativo.',
+        title: 'Sua assinatura precisa de atenção',
+        message: 'Revise a cobrança para manter seu acesso premium ativo.',
         tone: 'error',
         targetTab: 'subscription',
       });
     } else if (subscriptionSummary?.status === 'TRIALING') {
       notifications.push({
         id: 'subscription-trial',
-        title: 'Seu perÃ­odo de teste estÃ¡ ativo',
+        title: 'Seu período de teste está ativo',
         message: subscriptionSummary.nextBillingDate
-          ? `A cobranÃ§a do Pro comeÃ§a em ${subscriptionSummary.nextBillingDate}.`
-          : 'Aproveite o teste do Pro e acompanhe a prÃ³xima cobranÃ§a na sua assinatura.',
+          ? `A cobrança do Pro começa em ${subscriptionSummary.nextBillingDate}.`
+          : 'Aproveite o teste do Pro e acompanhe a próxima cobrança na sua assinatura.',
         tone: 'info',
         targetTab: 'subscription',
       });
     } else if (subscriptionSummary?.status === 'CANCELED' && subscriptionSummary.cancelAtPeriodEnd) {
       notifications.push({
         id: 'subscription-canceled',
-        title: 'Sua assinatura estÃ¡ programada para encerrar',
+        title: 'Sua assinatura está programada para encerrar',
         message: 'Reative o plano se quiser continuar com acesso aos recursos premium.',
         tone: 'warning',
         targetTab: 'subscription',
@@ -8951,8 +8951,8 @@ React.useEffect(() => {
     if (currentPlan === 'FREE' && currentMonthTransactionCount >= Math.ceil(FREE_TRANSACTION_LIMIT_PER_MONTH * 0.8)) {
       notifications.push({
         id: 'free-transactions-limit',
-        title: 'VocÃª estÃ¡ perto do limite do plano Free',
-        message: `JÃ¡ foram ${currentMonthTransactionCount}/${FREE_TRANSACTION_LIMIT_PER_MONTH} lanÃ§amentos neste mÃªs.`,
+        title: 'Você está perto do limite do plano Free',
+        message: `Já foram ${currentMonthTransactionCount}/${FREE_TRANSACTION_LIMIT_PER_MONTH} lançamentos neste mês.`,
         tone: 'warning',
         targetTab: 'subscription',
       });
@@ -8961,8 +8961,8 @@ React.useEffect(() => {
     if (currentPlan === 'FREE' && aiUsageCount >= Math.ceil(FREE_AI_LIMIT_PER_MONTH * 0.8)) {
       notifications.push({
         id: 'free-ai-limit',
-        title: 'Seu limite de IA estÃ¡ quase no fim',
-        message: `VocÃª jÃ¡ usou ${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH} interaÃ§Ãµes de IA neste mÃªs.`,
+        title: 'Seu limite de IA está quase no fim',
+        message: `Você já usou ${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH} interações de IA neste mês.`,
         tone: 'info',
         targetTab: 'subscription',
       });
@@ -8972,7 +8972,7 @@ React.useEffect(() => {
       notifications.push({
         id: 'whatsapp-not-connected',
         title: 'Conecte o WhatsApp do workspace',
-        message: 'Ative alertas e resumos automÃ¡ticos direto no seu celular.',
+        message: 'Ative alertas e resumos automáticos direto no seu celular.',
         tone: 'info',
         targetTab: 'integrations',
       });
@@ -9327,7 +9327,7 @@ React.useEffect(() => {
       { label: 'Adicionar 3 despesas', done: expenseCount >= 3 },
       { label: 'Adicionar uma receita', done: incomeCount >= 1 },
       { label: 'Criar uma meta financeira', done: hasGoal },
-      { label: 'Conhecer a prÃ©via das anÃ¡lises com IA', done: hasInsightPreview },
+      { label: 'Conhecer a prévia das análises com IA', done: hasInsightPreview },
     ];
   }, [goals.length, onboardingCurrentMonthExpenses.length, onboardingCurrentMonthIncomeCount, onboardingInsightViewed]);
 
@@ -9344,7 +9344,7 @@ React.useEffect(() => {
 
     if (!file) return;
     if (file.size > AVATAR_MAX_FILE_SIZE_BYTES) {
-      alert('Escolha uma imagem de atÃ© 5 MB.');
+      alert('Escolha uma imagem de até 5 MB.');
       return;
     }
 
@@ -9353,7 +9353,7 @@ React.useEffect(() => {
     try {
       const optimizedAvatar = await optimizeAvatarFile(file);
       setSettingsAvatarUrl(optimizedAvatar);
-      setSettingsSavedAt('Foto pronta. Clique em salvar alteraÃ§Ãµes para concluir.');
+      setSettingsSavedAt('Foto pronta. Clique em salvar alterações para concluir.');
     } catch (error) {
       console.error('Avatar processing error:', error);
       alert(error instanceof Error ? error.message : 'Falha ao processar a foto.');
@@ -9368,7 +9368,7 @@ React.useEffect(() => {
     const normalizedAvatarUrl = settingsAvatarUrl.trim();
 
     if (!isValidAvatarUrl(normalizedAvatarUrl)) {
-      alert('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https vÃ¡lida.');
+      alert('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https válida.');
       return;
     }
 
@@ -9406,14 +9406,14 @@ React.useEffect(() => {
       }
 
       setSettingsSavedAt(
-        `AlteraÃ§Ãµes salvas Ã s ${new Date().toLocaleTimeString('pt-BR', {
+        `Alterações salvas às ${new Date().toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit',
         })}`
       );
     } catch (error) {
       console.error('Save settings error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao salvar configuraÃ§Ãµes.');
+      alert(error instanceof Error ? error.message : 'Falha ao salvar configurações.');
     }
   };
 
@@ -9501,7 +9501,7 @@ React.useEffect(() => {
     const payload: TransactionFormData = {
       ...onboardingFirstRecord,
       flowType:
-        onboardingFirstRecord.flowType === 'TransferÃªncia'
+        onboardingFirstRecord.flowType === 'Transferência'
           ? 'Despesa'
           : onboardingFirstRecord.flowType,
       destinationWallet: '',
@@ -9583,7 +9583,7 @@ React.useEffect(() => {
             parts: [{ text: m.text }],
           })),
           context: {
-            userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'UsuÃ¡rio',
+            userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário',
             activeTab,
             isWhatsAppConnected,
             financialSummary: assistantFinancialContext,
@@ -9613,7 +9613,7 @@ React.useEffect(() => {
         ...prev,
         {
           role: 'model',
-          text: `Desculpe, tive um problema tÃ©cnico ao processar sua mensagem. ${
+          text: `Desculpe, tive um problema técnico ao processar sua mensagem. ${
             error instanceof Error ? error.message : 'Tente novamente em alguns instantes.'
           }`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -9810,7 +9810,7 @@ React.useEffect(() => {
 
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text('RelatÃ©rio Financeiro - Cote Finance AI', 20, 20);
+    doc.text('Relatério Financeiro - Cote Finance AI', 20, 20);
     doc.setFontSize(12);
     doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 30);
 
@@ -9823,13 +9823,13 @@ React.useEffect(() => {
 
     doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 20, 45);
     doc.text(`Total Despesas: ${formatCurrency(totalExpenses)}`, 20, 55);
-    doc.text(`Saldo LÃ­quido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
+    doc.text(`Saldo Líquido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
 
     const tableData = transactions.map((tx) => [tx.date, tx.desc, tx.cat, tx.amount, tx.wallet]);
 
     (doc as any).autoTable({
       startY: 80,
-      head: [['Data', 'DescriÃ§Ã£o', 'Categoria', 'Valor', 'Carteira']],
+      head: [['Data', 'Descrição', 'Categoria', 'Valor', 'Carteira']],
       body: tableData,
     });
 
@@ -9837,7 +9837,7 @@ React.useEffect(() => {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Data', 'DescriÃ§Ã£o', 'Categoria', 'Valor', 'Tipo', 'Carteira'];
+    const headers = ['Data', 'Descrição', 'Categoria', 'Valor', 'Tipo', 'Carteira'];
     const rows = transactions.map((tx) => [
       tx.date,
       tx.desc,
@@ -9978,16 +9978,16 @@ React.useEffect(() => {
     const resolvedCategory = await resolveTransactionCategory(tx);
     const absoluteAmount = parseMoneyInput(tx.amount);
     if (!absoluteAmount || absoluteAmount <= 0) {
-      alert('Valor invÃ¡lido para transaÃ§Ã£o.');
+      alert('Valor inválido para transação.');
       return false;
     }
-    if (flowType === 'TransferÃªncia') {
+    if (flowType === 'Transferência') {
       if (!tx.destinationWallet.trim()) {
-        alert('Selecione a conta de destino da transferÃªncia.');
+        alert('Selecione a conta de destino da transferência.');
         return false;
       }
       if (tx.destinationWallet === tx.wallet) {
-        alert('Conta origem e destino nÃ£o podem ser iguais.');
+        alert('Conta origem e destino não podem ser iguais.');
         return false;
       }
     }
@@ -10008,7 +10008,7 @@ React.useEffect(() => {
         category: resolvedCategory,
         paymentMethod: mapPaymentMethodToBackend(tx.paymentMethod),
         wallet: tx.wallet,
-        destinationWallet: tx.flowType === 'TransferÃªncia' ? tx.destinationWallet : null,
+        destinationWallet: tx.flowType === 'Transferência' ? tx.destinationWallet : null,
         receiptUrl: tx.receiptUrl || null,
         date: tx.date,
       };
@@ -10041,7 +10041,7 @@ React.useEffect(() => {
         const message =
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao salvar transaÃ§Ã£o.';
+            : 'Falha ao salvar transação.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -10061,7 +10061,7 @@ React.useEffect(() => {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Save transaction error:', error);
-      alert('Falha ao salvar transaÃ§Ã£o. Tente novamente.');
+      alert('Falha ao salvar transação. Tente novamente.');
       return false;
     }
   };
@@ -10110,7 +10110,7 @@ React.useEffect(() => {
         const message =
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao excluir transaÃ§Ã£o.';
+            : 'Falha ao excluir transação.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -10129,7 +10129,7 @@ React.useEffect(() => {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Delete transaction error:', error);
-      alert('Falha ao excluir transaÃ§Ã£o. Tente novamente.');
+      alert('Falha ao excluir transação. Tente novamente.');
     }
   };
 
@@ -10291,13 +10291,13 @@ React.useEffect(() => {
       const message =
         typeof responseData?.error === 'string'
           ? responseData.error
-          : 'Falha ao salvar dÃ­vida.';
+          : 'Falha ao salvar dívida.';
       throw new Error(message);
     }
 
     setEditingDebtId(null);
     setDebtDraft(null);
-    setDebtFeedbackMessage(editingDebtId ? 'DÃ­vida atualizada com sucesso.' : 'DÃ­vida adicionada com sucesso.');
+    setDebtFeedbackMessage(editingDebtId ? 'Dívida atualizada com sucesso.' : 'Dívida adicionada com sucesso.');
     await Promise.all([refreshDebtsResource(), refreshTransactionsResource()]);
   };
 
@@ -10312,7 +10312,7 @@ React.useEffect(() => {
     const resolvedCategory =
       typeof category === 'string' && category.trim().length > 0
         ? category
-        : RECURRING_DEBT_PRESETS[0]?.category ?? 'Ãgua';
+        : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
     setDebtFeedbackMessage(null);
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft({
@@ -10347,7 +10347,7 @@ React.useEffect(() => {
           throw new Error(
             typeof responseData?.error === 'string'
               ? responseData.error
-              : 'Falha ao excluir dÃ­vida.'
+              : 'Falha ao excluir dívida.'
           );
         }
         if (editingDebtId === id) {
@@ -10355,10 +10355,10 @@ React.useEffect(() => {
           setDebtDraft(null);
           setIsDebtModalOpen(false);
         }
-        setDebtFeedbackMessage('DÃ­vida removida com sucesso.');
+        setDebtFeedbackMessage('Dívida removida com sucesso.');
         await Promise.all([refreshDebtsResource(), refreshTransactionsResource()]);
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir dÃ­vida.');
+        alert(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
       }
     })();
   };
@@ -10395,13 +10395,13 @@ React.useEffect(() => {
       const message =
         typeof responseData?.error === 'string'
           ? responseData.error
-          : 'Falha ao salvar recorrÃªncia.';
+          : 'Falha ao salvar recorrência.';
       throw new Error(message);
     }
 
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft(null);
-    setDebtFeedbackMessage(editingRecurringDebt ? 'RecorrÃªncia atualizada com sucesso.' : 'RecorrÃªncia criada com sucesso.');
+    setDebtFeedbackMessage(editingRecurringDebt ? 'Recorrência atualizada com sucesso.' : 'Recorrência criada com sucesso.');
     await Promise.all([refreshRecurringDebtsResource(), refreshTransactionsResource()]);
   };
 
@@ -10430,7 +10430,7 @@ React.useEffect(() => {
           throw new Error(
             typeof responseData?.error === 'string'
               ? responseData.error
-              : 'Falha ao excluir recorrÃªncia.'
+              : 'Falha ao excluir recorrência.'
           );
         }
         if (editingRecurringDebtId === id) {
@@ -10438,10 +10438,10 @@ React.useEffect(() => {
           setRecurringDebtDraft(null);
           setIsRecurringDebtModalOpen(false);
         }
-        setDebtFeedbackMessage('RecorrÃªncia removida com sucesso.');
+        setDebtFeedbackMessage('Recorrência removida com sucesso.');
         await Promise.all([refreshRecurringDebtsResource(), refreshTransactionsResource()]);
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir recorrÃªncia.');
+        alert(error instanceof Error ? error.message : 'Falha ao excluir recorrência.');
       }
     })();
   };
@@ -10583,7 +10583,7 @@ React.useEffect(() => {
       }
       setPortfolioFeedback({
         tone: 'success',
-        message: `Carteira "${walletPendingDelete.name}" excluÃ­da com sucesso.`,
+        message: `Carteira "${walletPendingDelete.name}" excluída com sucesso.`,
       });
       setWalletPendingDelete(null);
       void refreshTransactionsResource();
@@ -10607,14 +10607,14 @@ React.useEffect(() => {
 
   const handleDeleteWorkspace = async () => {
     if (!activeWorkspace) {
-      setDeleteWorkspaceError('Selecione um workspace vÃ¡lido para excluir.');
+      setDeleteWorkspaceError('Selecione um workspace válido para excluir.');
       return;
     }
 
     const expectedName = activeWorkspace.name.trim();
     const providedName = deleteWorkspaceConfirmationName.trim();
     if (providedName !== expectedName) {
-      setDeleteWorkspaceError('Digite o nome do workspace exatamente para confirmar a exclusÃ£o.');
+      setDeleteWorkspaceError('Digite o nome do workspace exatamente para confirmar a exclusão.');
       return;
     }
 
@@ -10647,7 +10647,7 @@ React.useEffect(() => {
       setActiveWorkspaceId(nextWorkspaceId);
       setIsDeleteWorkspaceModalOpen(false);
       setDeleteWorkspaceConfirmationName('');
-      setSettingsSavedAt(`Workspace "${activeWorkspace.name}" excluÃ­do com sucesso.`);
+      setSettingsSavedAt(`Workspace "${activeWorkspace.name}" excluído com sucesso.`);
       setActiveTab('dashboard');
     } catch (error) {
       setDeleteWorkspaceError(error instanceof Error ? error.message : 'Falha ao excluir workspace.');
@@ -10735,16 +10735,16 @@ React.useEffect(() => {
               <h3 className="card-title-premium text-[var(--text-primary)] mb-2">Limite do plano Free atingido</h3>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
                 {upgradeLimitReason === 'transactions'
-                  ? `VocÃª chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes no mÃªs.`
-                  : `VocÃª chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interaÃ§Ãµes de IA no mÃªs.`}{' '}
-                FaÃ§a upgrade para Pro/Premium e continue sem bloqueios.
+                  ? `Você chegou ao limite de ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês.`
+                  : `Você chegou ao limite de ${FREE_AI_LIMIT_PER_MONTH} interações de IA no mês.`}{' '}
+                Faça upgrade para Pro/Premium e continue sem bloqueios.
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsUpgradeLimitModalOpen(false)}
                   className="flex-1 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
-                  Agora nÃ£o
+                  Agora não
                 </button>
                 <button
                   onClick={() => {
@@ -10792,7 +10792,7 @@ React.useEffect(() => {
                   <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Nova conta</p>
                   <h3 className="page-title-premium text-[var(--text-primary)]">Criar workspace</h3>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
-                    Crie uma nova conta para separar finanÃ§as pessoais, empresa ou operaÃ§Ãµes diferentes dentro do mesmo
+                    Crie uma nova conta para separar finanças pessoais, empresa ou operações diferentes dentro do mesmo
                     painel.
                   </p>
                 </div>
@@ -10847,7 +10847,7 @@ React.useEffect(() => {
                     }}
                     className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                   >
-                    Agora nÃ£o
+                    Agora não
                   </button>
                   <button
                     type="submit"
@@ -10984,7 +10984,7 @@ React.useEffect(() => {
                     }}
                     className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-4 py-3 text-sm font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                   >
-                    Agora nÃ£o
+                    Agora não
                   </button>
                   <button
                     type="submit"
@@ -11010,7 +11010,7 @@ React.useEffect(() => {
           >
             <button
               type="button"
-              aria-label="Fechar confirmaÃ§Ã£o de exclusÃ£o de carteira"
+              aria-label="Fechar confirmação de exclusão de carteira"
               onClick={() => {
                 if (isDeletingWallet) return;
                 setWalletPendingDelete(null);
@@ -11028,11 +11028,11 @@ React.useEffect(() => {
               <div className="mb-5 space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--danger)]">Excluir carteira</p>
                 <h3 className="card-title-premium text-[var(--text-primary)]">
-                  Confirmar exclusÃ£o de &quot;{walletPendingDelete.name}&quot;
+                  Confirmar exclusão de &quot;{walletPendingDelete.name}&quot;
                 </h3>
                 <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                  Essa aÃ§Ã£o remove a carteira de forma permanente. Se houver transaÃ§Ãµes ou investimentos vinculados, a
-                  exclusÃ£o serÃ¡ bloqueada para evitar perda de dados.
+                  Essa ação remove a carteira de forma permanente. Se houver transações ou investimentos vinculados, a
+                  exclusão será bloqueada para evitar perda de dados.
                 </p>
               </div>
 
@@ -11078,7 +11078,7 @@ React.useEffect(() => {
           >
             <button
               type="button"
-              aria-label="Fechar confirmaÃ§Ã£o de exclusÃ£o de workspace"
+              aria-label="Fechar confirmação de exclusão de workspace"
               onClick={() => {
                 if (isDeletingWorkspace) return;
                 setIsDeleteWorkspaceModalOpen(false);
@@ -11095,12 +11095,12 @@ React.useEffect(() => {
             >
               <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-[var(--bg-surface-elevated)] sm:hidden" />
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--danger)]">AÃ§Ã£o irreversÃ­vel</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--danger)]">Ação irreversível</p>
                 <h3 className="card-title-premium text-[var(--text-primary)]">
                   Excluir workspace &quot;{activeWorkspace.name}&quot;
                 </h3>
                 <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                  Para confirmar, digite o nome do workspace exatamente como estÃ¡. Todos os dados vinculados serÃ£o
+                  Para confirmar, digite o nome do workspace exatamente como está. Todos os dados vinculados serão
                   apagados permanentemente.
                 </p>
               </div>
@@ -11195,8 +11195,8 @@ React.useEffect(() => {
                   <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/40 p-6">
                     <h4 className="page-title-premium mb-2 text-[var(--text-primary)]">Bem-vindo ao Cote Finance AI</h4>
                     <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                      Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanÃ§as e
-                      gerar insights mais Ãºteis para vocÃª.
+                      Vamos configurar sua conta em menos de 1 minuto. Isso ajuda a IA a entender melhor suas finanças e
+                      gerar insights mais úteis para você.
                     </p>
                   </div>
                   <div className="flex justify-end">
@@ -11204,7 +11204,7 @@ React.useEffect(() => {
                       onClick={() => setOnboardingStep(1)}
                       className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
-                      ComeÃ§ar
+                      Começar
                     </button>
                   </div>
                 </div>
@@ -11213,7 +11213,7 @@ React.useEffect(() => {
               {onboardingStep === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Qual Ã© seu principal objetivo financeiro?</h4>
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Qual é seu principal objetivo financeiro?</h4>
                     <p className="text-sm text-[var(--text-secondary)]">
                       Escolha o objetivo principal para personalizar seus insights.
                     </p>
@@ -11258,9 +11258,9 @@ React.useEffect(() => {
                 <div className="space-y-5">
                   <div>
                     <h4 className="page-title-premium text-[var(--text-primary)] mb-1">
-                      Quantos lanÃ§amentos vocÃª pretende registrar por mÃªs?
+                      Quantos lançamentos você pretende registrar por mês?
                     </h4>
-                    <p className="text-sm text-[var(--text-secondary)]">Isso ajuda a ajustar recomendaÃ§Ãµes e limites iniciais.</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Isso ajuda a ajustar recomendações e limites iniciais.</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {ONBOARDING_USAGE_LEVELS.map((rangeLabel) => (
@@ -11378,7 +11378,7 @@ React.useEffect(() => {
 
                   <div className="space-y-2">
                     <label className="label-premium text-[var(--text-muted)]">
-                      DescriÃ§Ã£o (opcional)
+                      Descrição (opcional)
                     </label>
                     <input
                       value={onboardingFirstRecord.description}
@@ -11388,7 +11388,7 @@ React.useEffect(() => {
                           description: event.target.value,
                         }))
                       }
-                      placeholder="Ex: Mercado do mÃªs"
+                      placeholder="Ex: Mercado do mês"
                       className={cn(
                         'app-field w-full rounded-xl py-2 px-4 text-sm',
                         onboardingFirstRecord.description.trim().length > 0 && 'app-field-filled'
@@ -11398,7 +11398,7 @@ React.useEffect(() => {
 
                   {onboardingFirstRecordAdded && (
                     <div className="rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      ParabÃ©ns! Seu primeiro registro foi adicionado.
+                      Parabéns! Seu primeiro registro foi adicionado.
                     </div>
                   )}
 
@@ -11423,16 +11423,16 @@ React.useEffect(() => {
               {onboardingStep === 4 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Este Ã© seu painel financeiro</h4>
-                    <p className="text-sm text-[var(--text-secondary)]">Aqui vocÃª acompanha tudo em um Ãºnico lugar.</p>
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Este é seu painel financeiro</h4>
+                    <p className="text-sm text-[var(--text-secondary)]">Aqui você acompanha tudo em um único lugar.</p>
                   </div>
                   <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/50 p-5 space-y-3">
-                    <p className="text-sm text-[var(--text-primary)]">Aqui vocÃª pode ver:</p>
+                    <p className="text-sm text-[var(--text-primary)]">Aqui você pode ver:</p>
                     <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
                       <li>saldo atual</li>
                       <li>despesas por categoria</li>
-                      <li>evoluÃ§Ã£o dos gastos</li>
-                      <li>anÃ¡lises completas disponÃ­veis no Pro</li>
+                      <li>evolução dos gastos</li>
+                      <li>análises completas disponíveis no Pro</li>
                     </ul>
                   </div>
                   <div className="flex justify-between">
@@ -11455,16 +11455,16 @@ React.useEffect(() => {
               {onboardingStep === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">PrÃ©via das anÃ¡lises com IA</h4>
+                    <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Prévia das análises com IA</h4>
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Este Ã© um exemplo do tipo de insight automÃ¡tico disponÃ­vel nos planos Pro e Premium.
+                      Este é um exemplo do tipo de insight automático disponível nos planos Pro e Premium.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-5 text-sm leading-relaxed text-[var(--text-secondary)]">
-                    VocÃª gastou {onboardingPrimaryInsight.percentage}% em{' '}
-                    {String(onboardingPrimaryInsight.category || 'alimentaÃ§Ã£o').toLowerCase()}. Se reduzir esse gasto em
+                    Você gastou {onboardingPrimaryInsight.percentage}% em{' '}
+                    {String(onboardingPrimaryInsight.category || 'alimentação').toLowerCase()}. Se reduzir esse gasto em
                     10%, pode economizar aproximadamente{' '}
-                    {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mÃªs.
+                    {formatCurrency(onboardingPrimaryInsight.monthlySaving)} por mês.
                   </div>
                   <div className="flex justify-between">
                     <button
@@ -11491,7 +11491,7 @@ React.useEffect(() => {
                   <div>
                     <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Complete seu setup</h4>
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Conclua estas aÃ§Ãµes para deixar sua conta pronta para anÃ¡lises mais avanÃ§adas.
+                      Conclua estas ações para deixar sua conta pronta para análises mais avançadas.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/50 p-5 space-y-4">
@@ -11501,7 +11501,7 @@ React.useEffect(() => {
                         style={{ width: `${onboardingChecklistProgress}%` }}
                       />
                     </div>
-                    <p className="text-sm text-[var(--text-secondary)]">VocÃª completou {onboardingChecklistProgress}% do setup.</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Você completou {onboardingChecklistProgress}% do setup.</p>
                     <div className="space-y-2">
                       {onboardingChecklist.map((item) => (
                         <div key={item.label} className="flex items-center gap-2 text-sm text-[var(--text-primary)]">
@@ -11533,12 +11533,12 @@ React.useEffect(() => {
                   <div>
                     <h4 className="page-title-premium text-[var(--text-primary)] mb-1">Exemplo de oportunidade detectada</h4>
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Nos planos Pro e Premium, a IA destaca padrÃµes e oportunidades automaticamente.
+                      Nos planos Pro e Premium, a IA destaca padrões e oportunidades automaticamente.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-[var(--border-default)]/25 bg-[color:var(--primary-soft)] p-5 text-sm leading-relaxed text-[var(--text-secondary)]">
-                    VocÃª gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
-                    {onboardingAutomaticInsight.categoryLabel} neste mÃªs. Se reduzir 15% desse valor, pode economizar
+                    Você gastou {formatCurrency(onboardingAutomaticInsight.total)} em{' '}
+                    {onboardingAutomaticInsight.categoryLabel} neste mês. Se reduzir 15% desse valor, pode economizar
                     aproximadamente {formatCurrency(onboardingAutomaticInsight.annualSaving)} por ano.
                   </div>
                   <div className="flex justify-between">
@@ -11552,7 +11552,7 @@ React.useEffect(() => {
                       onClick={() => setOnboardingStep(8)}
                       className="app-button-primary rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
-                      Ver anÃ¡lise completa
+                      Ver análise completa
                     </button>
                   </div>
                 </div>
@@ -11562,17 +11562,17 @@ React.useEffect(() => {
                 <div className="space-y-5">
                   <div>
                     <h4 className="page-title-premium text-[var(--text-primary)] mb-1">
-                      Desbloqueie anÃ¡lises financeiras avanÃ§adas
+                      Desbloqueie análises financeiras avançadas
                     </h4>
-                    <p className="text-sm text-[var(--text-secondary)]">Com o plano Pro vocÃª terÃ¡:</p>
+                    <p className="text-sm text-[var(--text-secondary)]">Com o plano Pro você terá:</p>
                   </div>
                   <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-5">
                     <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-                      <li>â¬¢ insights financeiros completos</li>
-                      <li>â¬¢ previsÃµes de saldo</li>
-                      <li>â€¢ alertas de gastos fora do padrÃ£o</li>
-                      <li>â¬¢ resumos e lembretes no WhatsApp</li>
-                      <li>â¬¢ relatÃ³rios avanÃ§ados</li>
+                      <li>⬢ insights financeiros completos</li>
+                      <li>⬢ previsões de saldo</li>
+                      <li>⬢ alertas de gastos fora do padrão</li>
+                      <li>⬢ resumos e lembretes no WhatsApp</li>
+                      <li>⬢ relatórios avançados</li>
                     </ul>
                   </div>
                   <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
@@ -11581,7 +11581,7 @@ React.useEffect(() => {
                       checked={onboardingAiSuggestionsEnabled}
                       onChange={(event) => setOnboardingAiSuggestionsEnabled(event.target.checked)}
                     />
-                    Ativar sugestÃµes de IA para este workspace
+                    Ativar sugestões de IA para este workspace
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
@@ -11739,7 +11739,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={ReceiptText}
-            label="TransaÃ§Ãµes"
+            label="Transações"
             active={activeTab === 'transactions'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11759,7 +11759,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={CreditCard}
-            label="DÃ­vidas"
+            label="Dívidas"
             active={activeTab === 'debts'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11789,7 +11789,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={PieChart}
-            label="RelatÃ³rios"
+            label="Relatórios"
             active={activeTab === 'reports'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11810,7 +11810,7 @@ React.useEffect(() => {
           />
           <SidebarItem
             icon={Settings}
-            label="ConfiguraÃ§Ãµes"
+            label="Configurações"
             active={activeTab === 'settings'}
             collapsed={isSidebarCollapsed}
             onClick={() => {
@@ -11857,10 +11857,10 @@ React.useEffect(() => {
                 </p>
                 <p className="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed">
                   {isFreePlan
-                    ? `Free: atÃ© ${FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes/mÃªs e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
+                    ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
                     : currentPlan === 'PREMIUM'
-                    ? 'Seu plano atual possui lanÃ§amentos ilimitados, IA sem limite mensal e automaÃ§Ãµes avanÃ§adas.'
-                    : 'Seu plano Pro possui lanÃ§amentos ilimitados, relatÃ³rios completos, IA avanÃ§ada e alertas no WhatsApp.'}
+                    ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
+                    : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
                 </p>
                 <button
                   onClick={() => {
@@ -11901,26 +11901,26 @@ React.useEffect(() => {
               {activeTab === 'dashboard'
                 ? 'Dashboard'
                 : activeTab === 'transactions'
-                ? 'TransaÃ§Ãµes'
+                ? 'Transações'
                 : activeTab === 'goals'
                 ? 'Metas'
                 : activeTab === 'debts'
-                ? 'DÃ­vidas'
+                ? 'Dívidas'
                 : activeTab === 'investments'
                 ? 'Investimentos'
                 : activeTab === 'portfolio'
                 ? 'Carteira'
                 : activeTab === 'reports'
-                ? 'RelatÃ³rios'
+                ? 'Relatórios'
                 : activeTab === 'assistant'
                 ? 'Assistente IA'
                 : activeTab === 'agenda'
                 ? 'Calendario Financeiro'
                 : activeTab === 'integrations'
-                ? 'IntegraÃ§Ãµes'
+                ? 'Integrações'
                 : activeTab === 'subscription'
                 ? 'Minha assinatura'
-                : 'ConfiguraÃ§Ãµes'}
+                : 'Configurações'}
               </h2>
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">
@@ -11984,7 +11984,7 @@ React.useEffect(() => {
                 <>
                   <button
                     type="button"
-                    aria-label="Fechar atalhos rÃ¡pidos"
+                    aria-label="Fechar atalhos rápidos"
                     onClick={() => setIsQuickCreateOpen(false)}
                     className="fixed inset-0 z-40 bg-[var(--bg-app)] md:hidden"
                   />
@@ -12054,10 +12054,10 @@ React.useEffect(() => {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {([
-                        { value: 'AlimentaÃ§Ã£o', label: 'AlimentaÃ§Ã£o' },
+                        { value: 'Alimentação', label: 'Alimentação' },
                         { value: 'Transporte', label: 'Transporte' },
                         { value: 'Moradia', label: 'Moradia' },
-                        { value: 'SaÃºde', label: 'SaÃºde' },
+                        { value: 'Saúde', label: 'Saúde' },
                         { value: 'Lazer', label: 'Lazer' },
                       ] as const).map((quickCategory) => (
                         <button
@@ -12153,11 +12153,11 @@ React.useEffect(() => {
                         <div className="border-b border-[var(--border-default)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="text-sm font-bold text-[var(--text-primary)]">NotificaÃ§Ãµes</p>
+                              <p className="text-sm font-bold text-[var(--text-primary)]">Notificações</p>
                               <p className="text-xs text-[var(--text-secondary)]">
                                 {visibleNotifications.length > 0
                                   ? unreadNotifications.length > 0
-                                    ? `${unreadNotifications.length} nova(s) e ${readNotifications.length} jÃ¡ revisada(s)`
+                                    ? `${unreadNotifications.length} nova(s) e ${readNotifications.length} já revisada(s)`
                                     : 'Tudo revisado por aqui'
                                   : 'Nada novo por enquanto'}
                               </p>
@@ -12184,7 +12184,7 @@ React.useEffect(() => {
 
                         {visibleNotifications.length === 0 ? (
                           <div className="px-4 py-5">
-                            <p className="text-sm text-[var(--text-secondary)]">Nenhuma atualizaÃ§Ã£o pendente no momento.</p>
+                            <p className="text-sm text-[var(--text-secondary)]">Nenhuma atualização pendente no momento.</p>
                             <p className="mt-1 text-xs text-[var(--text-muted)]">
                               Quando surgir algo importante sobre sua conta, assinatura ou agenda, isso aparece aqui.
                             </p>
@@ -12238,7 +12238,7 @@ React.useEffect(() => {
                                         type="button"
                                         onClick={() => deleteNotification(notification.id)}
                                         className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-elevated)] hover:text-[var(--danger)]"
-                                        aria-label="Apagar notificaÃ§Ã£o"
+                                        aria-label="Apagar notificação"
                                       >
                                         <Trash2 size={14} />
                                       </button>
@@ -12289,7 +12289,7 @@ React.useEffect(() => {
                                       type="button"
                                       onClick={() => deleteNotification(notification.id)}
                                       className="rounded-lg p-1.5 text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-elevated)] hover:text-[var(--danger)]"
-                                      aria-label="Apagar notificaÃ§Ã£o"
+                                      aria-label="Apagar notificação"
                                     >
                                       <Trash2 size={14} />
                                     </button>
@@ -12370,7 +12370,7 @@ React.useEffect(() => {
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] transition-all"
                         >
-                          <Settings size={16} /> ConfiguraÃ§Ãµes
+                          <Settings size={16} /> Configurações
                         </button>
                         <button
                           onClick={() => {
@@ -12505,11 +12505,11 @@ React.useEffect(() => {
 
                     setActiveTab('transactions');
                     handleOpenCreateTransaction({
-                      flowType: 'TransferÃªncia',
+                      flowType: 'Transferência',
                       wallet: sourceWallet,
                       destinationWallet,
-                      category: getDefaultCategoryForFlow('TransferÃªncia'),
-                      paymentMethod: getDefaultPaymentMethodForFlow('TransferÃªncia'),
+                      category: getDefaultCategoryForFlow('Transferência'),
+                      paymentMethod: getDefaultPaymentMethodForFlow('Transferência'),
                     });
                   }}
                   onAddInvestment={() => {
@@ -12605,12 +12605,12 @@ React.useEffect(() => {
               {activeTab === 'settings' && (
                 <div className="max-w-3xl space-y-6 animate-in fade-in duration-500">
                   <div className="flex items-center justify-between gap-4">
-                    <h3 className="page-title-premium text-[var(--text-primary)]">ConfiguraÃ§Ãµes</h3>
+                    <h3 className="page-title-premium text-[var(--text-primary)]">Configurações</h3>
                     <button
                       onClick={() => setActiveTab('integrations')}
                       className="app-button-secondary px-3 py-2 rounded-xl text-xs font-bold transition-all"
                     >
-                      Abrir IntegraÃ§Ãµes
+                      Abrir Integrações
                     </button>
                   </div>
 
@@ -12631,7 +12631,7 @@ React.useEffect(() => {
                             Foto de perfil
                           </label>
                           <p className="mt-2 text-xs text-[var(--text-muted)]">
-                            PNG, JPG ou WEBP de atÃ© 5 MB. A imagem Ã© ajustada automaticamente para avatar.
+                            PNG, JPG ou WEBP de até 5 MB. A imagem é ajustada automaticamente para avatar.
                           </p>
                         </div>
                         <input
@@ -12654,7 +12654,7 @@ React.useEffect(() => {
                             type="button"
                             onClick={() => {
                               setSettingsAvatarUrl('');
-                              setSettingsSavedAt('Foto removida. Clique em salvar alteraÃ§Ãµes para concluir.');
+                              setSettingsSavedAt('Foto removida. Clique em salvar alterações para concluir.');
                             }}
                             disabled={!settingsAvatarUrl || isAvatarProcessing}
                             className="inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] px-4 py-2 text-sm font-bold text-[var(--text-secondary)] transition-all hover:border-[var(--border-strong)] hover:text-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50"
@@ -12663,7 +12663,7 @@ React.useEffect(() => {
                           </button>
                         </div>
                         <p className="text-xs text-[var(--text-muted)]">
-                          Se nÃ£o houver foto, o sistema mostra automaticamente as iniciais do usuÃ¡rio.
+                          Se não houver foto, o sistema mostra automaticamente as iniciais do usuário.
                         </p>
                       </div>
                     </div>
@@ -12712,7 +12712,7 @@ React.useEffect(() => {
                       </div>
                       {isFreePlan && (
                         <p className="mt-2 text-xs text-[var(--text-secondary)]">
-                          {currentMonthTransactionCount}/{FREE_TRANSACTION_LIMIT_PER_MONTH} transaÃ§Ãµes no mÃªs - IA{' '}
+                          {currentMonthTransactionCount}/{FREE_TRANSACTION_LIMIT_PER_MONTH} transações no mês - IA{' '}
                           {aiUsageCount}/{FREE_AI_LIMIT_PER_MONTH}
                         </p>
                       )}
@@ -12756,7 +12756,7 @@ React.useEffect(() => {
                                 {getWorkspaceEventLabel(event.type)}
                               </p>
                               <p className="text-[11px] text-[var(--text-muted)]">
-                                {event.user_id ? `UsuÃ¡rio: ${event.user_id.slice(0, 8)}...` : 'Sistema'}
+                                {event.user_id ? `Usuário: ${event.user_id.slice(0, 8)}...` : 'Sistema'}
                               </p>
                             </div>
                             <span className="text-[11px] text-[var(--text-muted)] whitespace-nowrap">
@@ -12774,14 +12774,14 @@ React.useEffect(() => {
                         <h4 className="label-premium text-[var(--danger)]">Zona de risco</h4>
                         <p className="text-sm font-semibold text-[var(--text-primary)]">Excluir workspace atual</p>
                         <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                          Essa aÃ§Ã£o Ã© irreversÃ­vel e remove carteiras, transaÃ§Ãµes, metas, dÃ­vidas, investimentos e eventos
+                          Essa ação é irreversível e remove carteiras, transações, metas, dívidas, investimentos e eventos
                           deste workspace.
                         </p>
                         {!canDeleteActiveWorkspace && (
                           <p className="text-xs text-[var(--text-muted)]">
                             {workspaces.length <= 1
                               ? 'Crie outra conta antes de excluir a atual.'
-                              : 'Somente o proprietÃ¡rio da conta pode excluir este workspace.'}
+                              : 'Somente o proprietário da conta pode excluir este workspace.'}
                           </p>
                         )}
                       </div>
@@ -12810,7 +12810,7 @@ React.useEffect(() => {
                         disabled={isAvatarProcessing}
                         className="px-4 py-2 rounded-xl bg-[var(--primary)] text-[var(--text-primary)] text-sm font-bold hover:bg-[var(--primary-hover)] transition-all disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        Salvar alteraÃ§Ãµes
+                        Salvar alterações
                       </button>
                     </div>
                   </div>
@@ -12844,7 +12844,7 @@ React.useEffect(() => {
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-[var(--text-secondary)]">Pergunte qualquer coisa sobre suas finanÃ§as</p>
+                <p className="text-xs text-[var(--text-secondary)]">Pergunte qualquer coisa sobre suas finanças</p>
               </div>
               <button onClick={() => setIsAssistantOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                 <X size={20} />
@@ -12854,7 +12854,7 @@ React.useEffect(() => {
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
               {!hasUserMessages && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">SugestÃµes</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">Sugestões</p>
                   <div className="flex flex-wrap gap-2">
                     {ASSISTANT_SUGGESTIONS.map((suggestion) => (
                       <button
@@ -12883,7 +12883,7 @@ React.useEffect(() => {
                     {msg.role === 'model' && i > 0 && (
                       <div className="flex items-center gap-2 mb-2">
                         <TrendingUp className="text-[var(--primary)]" size={14} />
-                        <span className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest">AnÃ¡lise Cote</span>
+                        <span className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest">Análise Cote</span>
                       </div>
                     )}
                     {msg.role === 'model' ? (
@@ -12900,7 +12900,7 @@ React.useEffect(() => {
 
               {isLoading && (
                 <div className="flex items-center gap-2 text-[var(--primary)] text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                  <Sparkles size={12} /> Cote estÃ¡ pensando...
+                  <Sparkles size={12} /> Cote está pensando...
                 </div>
               )}
             </div>
