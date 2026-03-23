@@ -2,18 +2,25 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import {
+  TRANSACTION_PAYMENT_METHODS,
+  TRANSACTION_STATUSES,
+  TRANSACTION_TYPES,
+  normalizeTransactionStatus,
+  type TransactionPaymentMethod,
+  type TransactionStatus,
+  type TransactionType,
+} from '@/lib/domain/financial-domain';
+import {
   HttpError,
   getWorkspacePlan,
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { getRuntimePlanLimits, getTransactionUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
+import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER';
-type PaymentMethod = 'PIX' | 'CARD' | 'CASH' | 'BANK_TRANSFER' | 'BOLETO' | 'DEBIT' | 'OTHER';
 
 type CreateTransactionBody = {
   description?: string;
@@ -26,6 +33,10 @@ type CreateTransactionBody = {
   flowType?: string;
   paymentMethod?: string;
   receiptUrl?: string | null;
+  dueDate?: string | null;
+  status?: string;
+  originType?: string;
+  originId?: string | null;
 };
 
 type UpdateTransactionBody = CreateTransactionBody & {
@@ -36,16 +47,10 @@ type DeleteTransactionBody = {
   id?: string;
 };
 
-const VALID_TYPES = new Set<TransactionType>(['INCOME', 'EXPENSE', 'TRANSFER']);
-const VALID_PAYMENT_METHODS = new Set<PaymentMethod>([
-  'PIX',
-  'CARD',
-  'CASH',
-  'BANK_TRANSFER',
-  'BOLETO',
-  'DEBIT',
-  'OTHER',
-]);
+const VALID_TYPES = new Set<TransactionType>(TRANSACTION_TYPES);
+const VALID_PAYMENT_METHODS = new Set<TransactionPaymentMethod>(TRANSACTION_PAYMENT_METHODS);
+const VALID_STATUSES = new Set<TransactionStatus>(TRANSACTION_STATUSES);
+const VALID_ORIGIN_TYPES = new Set(['MANUAL', 'RECURRENCE', 'INSTALLMENT', 'DEBT', 'GOAL', 'SYSTEM']);
 
 const SCHEMA_SYNC_REQUIRED_ERROR =
   'Banco de dados desatualizado para transações. Rode a migration/db push para adicionar destination_wallet_id, payment_method e receipt_url.';
@@ -98,23 +103,23 @@ const normalizePaymentMethod = (rawMethod: string | undefined, transactionType: 
     normalizedMethod === 'CARTÃO' ||
     normalizedMethod === 'CREDIT_CARD'
   ) {
-    return 'CARD' as PaymentMethod;
+    return 'CARD' as TransactionPaymentMethod;
   }
   if (
     normalizedMethod === 'TRANSFERENCIA_BANCARIA' ||
     normalizedMethod === 'TRANSFERÊNCIA_BANCÁRIA' ||
     normalizedMethod === 'TRANSFERENCIA'
   ) {
-    return 'BANK_TRANSFER' as PaymentMethod;
+    return 'BANK_TRANSFER' as TransactionPaymentMethod;
   }
   if (normalizedMethod === 'DINHEIRO') {
-    return 'CASH' as PaymentMethod;
+    return 'CASH' as TransactionPaymentMethod;
   }
   if (normalizedMethod === 'DEBITO' || normalizedMethod === 'DÉBITO') {
-    return 'DEBIT' as PaymentMethod;
+    return 'DEBIT' as TransactionPaymentMethod;
   }
-  if (VALID_PAYMENT_METHODS.has(normalizedMethod as PaymentMethod)) {
-    return normalizedMethod as PaymentMethod;
+  if (VALID_PAYMENT_METHODS.has(normalizedMethod as TransactionPaymentMethod)) {
+    return normalizedMethod as TransactionPaymentMethod;
   }
 
   if (transactionType === 'TRANSFER') return 'BANK_TRANSFER';
@@ -137,6 +142,11 @@ const parseDate = (rawDate: unknown) => {
   const parsed = new Date(rawDate);
   if (Number.isNaN(parsed.getTime())) return null;
   return parsed;
+};
+
+const normalizeOriginType = (rawOriginType: unknown) => {
+  const normalized = String(rawOriginType || 'MANUAL').trim().toUpperCase();
+  return VALID_ORIGIN_TYPES.has(normalized) ? normalized : 'MANUAL';
 };
 
 const normalizeReceiptUrl = (raw: unknown) => {
@@ -193,32 +203,52 @@ async function upsertCategorySuggestionSafe(params: {
   }
 }
 
-async function findTransactionsWithCompatibility(workspaceId: string) {
+async function findTransactionsWithCompatibility(params: {
+  workspaceId: string;
+  limit: number;
+  cursor?: string | null;
+}) {
+  const query = {
+    where: { workspace_id: params.workspaceId },
+    orderBy: [{ date: 'desc' as const }, { id: 'desc' as const }],
+    take: params.limit + 1,
+    ...(params.cursor
+      ? {
+          cursor: { id: params.cursor },
+          skip: 1,
+        }
+      : {}),
+  };
+
   try {
-    return await prisma.transaction.findMany({
-      where: { workspace_id: workspaceId },
-      orderBy: { date: 'desc' },
-      take: 200,
+    const rows = await prisma.transaction.findMany({
+      ...query,
       include: {
         category: true,
         wallet: true,
         destination_wallet: true,
       },
     });
+    const hasMore = rows.length > params.limit;
+    const items = hasMore ? rows.slice(0, params.limit) : rows;
+    const nextCursor = hasMore ? items[items.length - 1]?.id || null : null;
+    return { items, hasMore, nextCursor };
   } catch (error) {
     if (!isSchemaMismatchError(error)) {
       throw error;
     }
 
-    return await prisma.transaction.findMany({
-      where: { workspace_id: workspaceId },
-      orderBy: { date: 'desc' },
-      take: 200,
+    const rows = await prisma.transaction.findMany({
+      ...query,
       include: {
         category: true,
         wallet: true,
       },
     });
+    const hasMore = rows.length > params.limit;
+    const items = hasMore ? rows.slice(0, params.limit) : rows;
+    const nextCursor = hasMore ? items[items.length - 1]?.id || null : null;
+    return { items, hasMore, nextCursor };
   }
 }
 
@@ -329,8 +359,29 @@ async function applyLedgerEffects(
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
-    const transactions = await findTransactionsWithCompatibility(context.workspaceId);
-    return NextResponse.json(transactions);
+    const url = new URL(req.url);
+    const requestedLimit = Number(url.searchParams.get('limit') || '50');
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.max(1, Math.min(200, Math.floor(requestedLimit)))
+      : 50;
+    const cursor = url.searchParams.get('cursor');
+    const paginatedMode = url.searchParams.get('paginated') === '1' || Boolean(cursor) || url.searchParams.has('limit');
+
+    const result = await findTransactionsWithCompatibility({
+      workspaceId: context.workspaceId,
+      limit: paginatedMode ? limit : 200,
+      cursor: paginatedMode ? cursor : null,
+    });
+
+    if (!paginatedMode) {
+      return NextResponse.json(result.items);
+    }
+
+    return NextResponse.json({
+      items: result.items,
+      hasMore: result.hasMore,
+      nextCursor: result.nextCursor,
+    });
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -375,6 +426,28 @@ export async function POST(req: Request) {
     if (!date) {
       return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
     }
+    const dueDateInBody = Object.prototype.hasOwnProperty.call(body, 'dueDate');
+    const dueDate = dueDateInBody
+      ? body.dueDate === null || body.dueDate === ''
+        ? null
+        : parseDate(body.dueDate)
+      : null;
+    if (dueDateInBody && body.dueDate !== null && body.dueDate !== '' && !dueDate) {
+      return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
+    }
+    const status = normalizeTransactionStatus(body.status, 'CONFIRMED');
+    if (!VALID_STATUSES.has(status)) {
+      return NextResponse.json({ error: 'Invalid transaction status' }, { status: 400 });
+    }
+    const originType = normalizeOriginType(body.originType);
+    const originId = typeof body.originId === 'string' ? body.originId.trim() : null;
+    if (originType !== 'MANUAL' && !originId) {
+      return NextResponse.json(
+        { error: 'originId is required when originType is not MANUAL' },
+        { status: 400 }
+      );
+    }
+    const effectiveOriginId = originType === 'MANUAL' ? null : originId;
 
     const description = (body.description || '').trim();
     if (!description) {
@@ -428,12 +501,15 @@ export async function POST(req: Request) {
     ]);
     const paymentMethod = normalizePaymentMethod(body.paymentMethod, type);
 
-    const ledgerEffects = buildLedgerEffects({
-      type,
-      amount,
-      walletId,
-      destinationWalletId,
-    });
+    const ledgerEffects =
+      status === 'CONFIRMED'
+        ? buildLedgerEffects({
+            type,
+            amount,
+            walletId,
+            destinationWalletId,
+          })
+        : [];
 
     const transaction = await prisma.$transaction(async (tx) => {
       const createdTransaction = await tx.transaction.create({
@@ -447,8 +523,11 @@ export async function POST(req: Request) {
           receipt_url: receiptUrl,
           amount,
           date,
+          due_date: dueDate,
           description,
-          status: 'CONFIRMED',
+          status,
+          origin_type: originType,
+          origin_id: effectiveOriginId,
         },
         include: {
           category: true,
@@ -470,6 +549,8 @@ export async function POST(req: Request) {
         amount,
         type,
         paymentMethod,
+        status,
+        originType,
       },
     });
 
@@ -479,6 +560,7 @@ export async function POST(req: Request) {
       categoryName: normalizedCategoryName,
       description,
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(transaction);
   } catch (error: any) {
@@ -554,6 +636,15 @@ export async function PATCH(req: Request) {
     if (body.date && !nextDate) {
       return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
     }
+    const dueDateInBody = Object.prototype.hasOwnProperty.call(body, 'dueDate');
+    const nextDueDate = dueDateInBody
+      ? body.dueDate === null || body.dueDate === ''
+        ? null
+        : parseDate(body.dueDate)
+      : undefined;
+    if (dueDateInBody && body.dueDate !== null && body.dueDate !== '' && !nextDueDate) {
+      return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
+    }
 
     const walletId = body.wallet
       ? await getOrCreateWalletId(context.workspaceId, body.wallet)
@@ -585,7 +676,7 @@ export async function PATCH(req: Request) {
     const nextReceiptUrl = receiptUrlInBody ? normalizeReceiptUrl(body.receiptUrl) : undefined;
     const paymentMethod = body.paymentMethod
       ? normalizePaymentMethod(body.paymentMethod, nextType)
-      : (existingTransaction.payment_method as PaymentMethod);
+      : (existingTransaction.payment_method as TransactionPaymentMethod);
 
     const previousEffects = buildLedgerEffects({
       type: existingTransaction.type as TransactionType,
@@ -615,6 +706,7 @@ export async function PATCH(req: Request) {
           receipt_url: receiptUrlInBody ? nextReceiptUrl : undefined,
           amount: nextAmount,
           date: nextDate ?? undefined,
+          due_date: nextDueDate,
           description: nextDescription || undefined,
         },
         include: {
@@ -655,6 +747,7 @@ export async function PATCH(req: Request) {
         });
       }
     }
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(transaction);
   } catch (error: any) {
@@ -736,6 +829,7 @@ export async function DELETE(req: Request) {
         transactionId: existingTransaction.id,
       },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

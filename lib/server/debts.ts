@@ -2,10 +2,11 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { mapLegacyDebtStatusToRecurringDebtStatus } from '@/lib/domain/financial-domain';
 import {
   computeNextRecurringDebtDueDate,
   isRecurringDebtCategory,
-  mapLegacyDebtStatusToConventionalStatus,
+  normalizeRecurringDebtStatus as normalizeRecurringDebtStatusCompatibility,
   type RecurringDebtStatus,
 } from '@/lib/debts';
 
@@ -145,7 +146,7 @@ export async function findWorkspaceRecurringDebts(workspaceId: string) {
         startDate: new Date(),
         dueDay: debt.due_day,
       }),
-      status: mapLegacyDebtStatusToConventionalStatus(debt.status) === 'PAID' ? 'ENDED' : 'ACTIVE',
+      status: mapLegacyDebtStatusToRecurringDebtStatus(debt.status),
       notes: 'Registro legado de conta recorrente mantido para compatibilidade.',
       source: 'legacy_debt' as const,
       legacy_debt_id: debt.id,
@@ -162,8 +163,5 @@ export async function findWorkspaceRecurringDebts(workspaceId: string) {
 }
 
 export function normalizeRecurringDebtStatus(value: string | undefined): RecurringDebtStatus {
-  const normalized = String(value || '').trim().toUpperCase();
-  if (normalized === 'PAUSED') return 'PAUSED';
-  if (normalized === 'ENDED') return 'ENDED';
-  return 'ACTIVE';
+  return normalizeRecurringDebtStatusCompatibility(value);
 }

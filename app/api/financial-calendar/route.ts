@@ -8,7 +8,7 @@ import {
   createManualFinancialEvent,
   getFinancialCalendarSnapshot,
   markFinancialCalendarEventStatus,
-  syncWorkspaceFinancialCalendarSources,
+  syncWorkspaceFinancialCalendarSourcesSafe,
 } from '@/lib/server/financial-calendar';
 import { logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
@@ -42,13 +42,6 @@ export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
     const { view, date: focusDate } = parseCalendarListQuery(req, 'month');
-    const url = new URL(req.url);
-    const syncOnly = url.searchParams.get('syncOnly') === '1';
-
-    if (syncOnly) {
-      const result = await syncWorkspaceFinancialCalendarSources(context.workspaceId);
-      return NextResponse.json(result);
-    }
 
     const snapshot = await getFinancialCalendarSnapshot({
       workspaceId: context.workspaceId,
@@ -97,6 +90,7 @@ export async function POST(req: Request) {
         sourceType: created.source_type,
       },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
@@ -130,6 +124,7 @@ export async function PATCH(req: Request) {
         status: result.status,
       },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(result);
   } catch (error: any) {

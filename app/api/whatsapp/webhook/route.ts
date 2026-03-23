@@ -1230,7 +1230,7 @@ async function handlePendingConfirmation(params: {
   await prisma.$transaction(async (tx) => {
     await tx.transaction.update({
       where: { id: transaction.id },
-      data: { status: 'CANCELED' },
+      data: { status: 'CANCELLED' },
     });
 
     const balanceDelta =
@@ -1873,6 +1873,8 @@ async function processIncomingMessage(message: IncomingTextMessage) {
         date: new Date(),
         description: parsed.description,
         status: 'CONFIRMED',
+        origin_type: 'SYSTEM',
+        origin_id: message.id ? `whatsapp:${message.id}` : null,
       },
     });
 

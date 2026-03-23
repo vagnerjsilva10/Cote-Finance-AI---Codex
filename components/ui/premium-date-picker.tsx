@@ -25,18 +25,14 @@ function parseInputDate(value: string) {
 function formatDisplayDate(value: string) {
   const parsed = parseInputDate(value);
   if (!parsed) return '';
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(parsed);
+  return new Intl.DateTimeFormat('pt-BR').format(parsed);
 }
 
 export function PremiumDatePicker({
   id,
   value,
   onChange,
-  placeholder = 'Selecione uma data',
+  placeholder = 'Selecione a data',
   className,
   disabled = false,
   min,
@@ -54,45 +50,43 @@ export function PremiumDatePicker({
     const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
     if (typeof pickerInput.showPicker === 'function') {
       pickerInput.showPicker();
+      return;
     }
+
+    input.click();
   }, [disabled]);
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <div
+    <div className={cn('relative', className)}>
+      <button
+        type="button"
+        onClick={handleOpenPicker}
+        disabled={disabled}
         className={cn(
-          'group app-field flex items-center gap-3 rounded-xl px-4 py-2.5 transition',
-          disabled && 'cursor-not-allowed opacity-70',
-          hasValue && 'app-field-filled'
+          'app-field flex h-[42px] w-full items-center justify-between gap-3 rounded-xl px-4 text-left text-sm transition',
+          disabled && 'cursor-not-allowed opacity-70'
         )}
+        aria-label={hasValue ? `Selecionar data, atual ${formatDisplayDate(value)}` : 'Selecionar data'}
       >
-        <button
-          type="button"
-          onClick={handleOpenPicker}
-          disabled={disabled}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] transition group-hover:border-[var(--border-strong)] group-hover:text-[var(--text-primary)]"
-          aria-label="Abrir calendário"
-        >
-          <CalendarDays size={16} />
-        </button>
+        <span className={cn('truncate font-medium', hasValue ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]')}>
+          {hasValue ? formatDisplayDate(value) : placeholder}
+        </span>
+        <CalendarDays size={16} className="shrink-0 text-[var(--text-secondary)]" />
+      </button>
 
-        <div className="min-w-0 flex-1">
-          <input
-            ref={inputRef}
-            id={id}
-            type="date"
-            value={value}
-            min={min}
-            disabled={disabled}
-            data-testid={dataTestId}
-            onChange={(event) => onChange(event.target.value)}
-            className="w-full bg-transparent text-sm font-medium text-[var(--text-primary)] outline-none [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit]:text-[var(--text-primary)] [&::-webkit-datetime-edit-fields-wrapper]:p-0 [&::-webkit-date-and-time-value]:text-left"
-          />
-          <p className={cn('mt-1 truncate text-xs', hasValue ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]')}>
-            {hasValue ? formatDisplayDate(value) : placeholder}
-          </p>
-        </div>
-      </div>
+      <input
+        ref={inputRef}
+        id={id}
+        type="date"
+        value={value}
+        min={min}
+        disabled={disabled}
+        data-testid={dataTestId}
+        onChange={(event) => onChange(event.target.value)}
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-0 [color-scheme:dark]"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
     </div>
   );
 }

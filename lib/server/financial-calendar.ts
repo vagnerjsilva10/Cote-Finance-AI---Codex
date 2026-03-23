@@ -2,10 +2,27 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { computeConventionalDebtNextDueDate, computeNextRecurringDebtDueDate, mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
+import {
+  DERIVED_FINANCIAL_EVENT_SOURCE_TYPES,
+  buildFinancialSourceRef,
+  canTransitionTransactionStatus,
+  mapCalendarStatusToConventionalDebtStatus,
+  mapCalendarStatusToTransactionStatus,
+  mapConventionalDebtStatusToCalendarStatus,
+  mapConventionalDebtStatusToLegacyDebtStatus,
+  mapTransactionStatusToCalendarStatus,
+  normalizeFinancialEventStatus,
+  normalizeRecurringDebtStatus as normalizeRecurringDebtStatusDomain,
+  normalizeTransactionType,
+  normalizeTransactionStatus,
+  parseFinancialSourceRef,
+  type TransactionType,
+} from '@/lib/domain/financial-domain';
+import { computeConventionalDebtNextDueDate, computeNextRecurringDebtDueDate } from '@/lib/debts';
 import { buildFinancialCalendarAlerts } from '@/lib/financial-calendar/alerts';
 import { expandRecurringOccurrences } from '@/lib/financial-calendar/recurrence';
 import type {
+  FinancialCalendarOccurrence,
   FinancialCalendarSnapshot,
   FinancialCalendarView,
   FinancialEventRecurrence,
@@ -14,6 +31,7 @@ import type {
 } from '@/lib/financial-calendar/types';
 import {
   detectPressureDays,
+  endOfDay,
   generatePeriodSummary,
   groupEventsByDay,
   mapFinancialEventFlow,
@@ -23,6 +41,12 @@ import {
   toDateKey,
 } from '@/lib/financial-calendar/utils';
 import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
+import { syncWorkspaceRecurringRulesProjectionSafe } from '@/lib/server/recurrence-rules';
+
+const READ_MODEL_PAST_DAYS = 15;
+const READ_MODEL_FUTURE_DAYS = 120;
+const DASHBOARD_PROJECTION_DAYS = 30;
+const DASHBOARD_UPCOMING_DAYS = 14;
 
 type CreateManualFinancialEventInput = {
   workspaceId: string;
@@ -135,7 +159,6 @@ type FinancialEventOccurrenceRecord = {
 };
 
 type TransactionClient = Parameters<typeof prisma.$transaction>[0] extends (arg: infer T) => any ? T : never;
-type TransactionKind = 'INCOME' | 'EXPENSE' | 'TRANSFER';
 
 const SCHEMA_SYNC_REQUIRED_ERROR =
   'Banco de dados desatualizado para o Calendario Financeiro Inteligente. Aplique o schema atual antes de usar esta feature.';
@@ -147,6 +170,30 @@ function isMissingTableError(error: unknown) {
 
   const message = error instanceof Error ? error.message : String(error || '');
   return /FinancialEvent|FinancialEventOccurrence|does not exist|Unknown arg/i.test(message);
+}
+
+function isReadModelTableError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021' || error.code === 'P2022';
+  }
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /DailyCashProjection|CalendarEventReadModel|DashboardReadModel|does not exist|Unknown arg/i.test(message);
+}
+
+function addDays(date: Date, count: number) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + count);
+}
+
+function parseDateKey(value: string) {
+  const [yearToken, monthToken, dayToken] = value.split('-');
+  const year = Number(yearToken);
+  const month = Number(monthToken) - 1;
+  const day = Number(dayToken);
+  return new Date(year, month, day);
+}
+
+function toDecimal(value: number) {
+  return Number(value.toFixed(2));
 }
 
 function parseAmount(value: unknown) {
@@ -228,11 +275,7 @@ function normalizeRecurrence(value: string | null | undefined): FinancialEventRe
 }
 
 function normalizeStatus(value: string | null | undefined): FinancialEventStatus {
-  const normalized = String(value || 'PENDING').trim().toUpperCase();
-  if (normalized === 'PAID' || normalized === 'RECEIVED' || normalized === 'OVERDUE' || normalized === 'CANCELED') {
-    return normalized;
-  }
-  return 'PENDING';
+  return normalizeFinancialEventStatus(value);
 }
 
 function normalizeColorToken(value: string | null | undefined) {
@@ -263,25 +306,18 @@ function mapRecurringDebtFrequencyToRecurrence(frequency: string, interval: numb
 }
 
 function mapConventionalDebtStatusToFinancialStatus(status: string | null | undefined): FinancialEventStatus {
-  const normalized = String(status || '').trim().toUpperCase();
-  if (normalized === 'PAID' || normalized === 'QUITADA') return 'PAID';
-  if (normalized === 'OVERDUE' || normalized === 'ATRASADA') return 'OVERDUE';
-  if (normalized === 'CANCELED' || normalized === 'CANCELLED') return 'CANCELED';
-  return 'PENDING';
+  return mapConventionalDebtStatusToCalendarStatus(status);
 }
 
 function buildSourceId(
   kind: 'goal' | 'transaction' | 'recurring-debt' | 'legacy-recurring-debt' | 'debt',
   id: string
 ) {
-  return `${kind}:${id}`;
+  return buildFinancialSourceRef(kind, id);
 }
 
 function parseSourceId(sourceId: string | null) {
-  const raw = String(sourceId || '');
-  if (!raw.includes(':')) return { kind: 'unknown', id: raw };
-  const [kind, ...rest] = raw.split(':');
-  return { kind, id: rest.join(':') };
+  return parseFinancialSourceRef(sourceId);
 }
 
 function normalizeSettlementStatus(eventType: FinancialEventType, requestedStatus: string) {
@@ -309,7 +345,7 @@ async function getWorkspaceFinancialEventOrThrow(workspaceId: string, eventId: s
 }
 
 function buildLedgerEffects(params: {
-  type: TransactionKind;
+  type: TransactionType;
   amount: number;
   walletId: string;
   destinationWalletId?: string | null;
@@ -528,7 +564,7 @@ async function buildSyncDrafts(workspaceId: string) {
       recurrence: recurrence.recurrence,
       recurrenceInterval: recurrence.recurrenceInterval,
       isRecurring: true,
-      status: debt.status === 'ACTIVE' ? 'PENDING' : 'CANCELED',
+      status: normalizeRecurringDebtStatusDomain(debt.status) === 'ACTIVE' ? 'PENDING' : 'CANCELED',
       reminderEnabled: true,
       reminderDaysBefore: 3,
       colorToken: isSubscription ? 'calendar-subscription' : 'calendar-bill',
@@ -543,14 +579,10 @@ async function buildSyncDrafts(workspaceId: string) {
         : transaction.payment_method === 'CARD'
           ? ('CARD_BILL' as const)
           : ('FIXED_BILL' as const);
-    const status =
-      transaction.status === 'CONFIRMED'
-        ? transaction.type === 'INCOME'
-          ? ('RECEIVED' as const)
-          : ('PAID' as const)
-        : transaction.status === 'CANCELLED'
-          ? ('CANCELED' as const)
-          : ('PENDING' as const);
+    const status = mapTransactionStatusToCalendarStatus({
+      transactionStatus: transaction.status,
+      transactionType: transaction.type,
+    });
 
     drafts.push({
       sourceType,
@@ -575,7 +607,467 @@ async function buildSyncDrafts(workspaceId: string) {
   return drafts;
 }
 
+function applyFuturePressureBaseline(params: {
+  groupedByDay: ReturnType<typeof groupEventsByDay>;
+  openingBalance: number;
+  now: Date;
+}) {
+  const todayKey = toDateKey(startOfDay(params.now));
+  const futureDays = params.groupedByDay.filter((day) => day.date >= todayKey);
+
+  if (futureDays.length === 0) {
+    return {
+      groupedDays: params.groupedByDay.map((day) => ({
+        ...day,
+        projectedBalance: null,
+      })),
+      criticalDays: [] as ReturnType<typeof detectPressureDays>['criticalDays'],
+    };
+  }
+
+  const futurePressure = detectPressureDays(futureDays, params.openingBalance);
+  const futureByDate = new Map(futurePressure.groupedDays.map((day) => [day.date, day]));
+
+  return {
+    groupedDays: params.groupedByDay.map((day) => {
+      const enriched = futureByDate.get(day.date);
+      if (enriched) return enriched;
+      return {
+        ...day,
+        projectedBalance: null,
+      };
+    }),
+    criticalDays: futurePressure.criticalDays,
+  };
+}
+
+async function tryBuildSnapshotFromReadModels(params: {
+  workspaceId: string;
+  view: FinancialCalendarView;
+  focusDate: Date;
+  rangeStart: Date;
+  rangeEnd: Date;
+  now: Date;
+}) {
+  try {
+    const [wallets, rows] = await Promise.all([
+      prisma.wallet.findMany({
+        where: { workspace_id: params.workspaceId },
+        select: { balance: true },
+      }),
+      prisma.calendarEventReadModel.findMany({
+        where: {
+          workspace_id: params.workspaceId,
+          date: {
+            gte: params.rangeStart,
+            lte: params.rangeEnd,
+          },
+        },
+        orderBy: [{ date: 'asc' }],
+      }),
+    ]);
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    const events = rows
+      .map((row) => ({
+        id: row.occurrence_key,
+        eventId: row.event_id,
+        occurrenceKey: row.occurrence_key,
+        seriesDate: row.series_date.toISOString(),
+        sourceType: row.source_type as FinancialCalendarOccurrence['sourceType'],
+        sourceId: row.source_id,
+        title: row.title,
+        description: row.description,
+        type: row.type as FinancialCalendarOccurrence['type'],
+        amount: row.amount === null ? null : Number(row.amount),
+        category: row.category,
+        date: row.date.toISOString(),
+        endDate: row.end_date ? row.end_date.toISOString() : null,
+        recurrence: row.recurrence as FinancialCalendarOccurrence['recurrence'],
+        recurrenceInterval: row.recurrence_interval,
+        isRecurring: row.is_recurring,
+        status: row.status as FinancialCalendarOccurrence['status'],
+        flow: row.flow as FinancialCalendarOccurrence['flow'],
+        reminderEnabled: row.reminder_enabled,
+        reminderDaysBefore: row.reminder_days_before,
+        colorToken: row.color_token,
+        isManual: row.is_manual,
+        isOverdue: row.is_overdue,
+        isDerived: row.is_derived,
+        createdAt: row.created_at.toISOString(),
+        updatedAt: row.updated_at.toISOString(),
+      }))
+      .sort((left, right) => {
+        const dateDiff = parseCalendarDate(left.date).getTime() - parseCalendarDate(right.date).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return left.title.localeCompare(right.title);
+      });
+
+    const groupedByDay = groupEventsByDay(events);
+    const openingBalance = wallets.reduce((acc, wallet) => acc + Number(wallet.balance || 0), 0);
+    const futureEvents = events.filter((event) => parseCalendarDate(event.date) >= startOfDay(params.now));
+    const summary = generatePeriodSummary(futureEvents, openingBalance);
+    const pressure = applyFuturePressureBaseline({
+      groupedByDay,
+      openingBalance,
+      now: params.now,
+    });
+
+    const projectionRows = await prisma.dailyCashProjection.findMany({
+      where: {
+        workspace_id: params.workspaceId,
+        date: {
+          gte: params.rangeStart,
+          lte: params.rangeEnd,
+        },
+      },
+      select: {
+        date: true,
+        closing_balance: true,
+      },
+    });
+    const projectionMap = new Map(projectionRows.map((row) => [toDateKey(row.date), Number(row.closing_balance)]));
+    const groupedWithProjection = pressure.groupedDays.map((day) => {
+      const projected = projectionMap.get(day.date);
+      if (projected === undefined) return day;
+      return {
+        ...day,
+        projectedBalance: projected,
+      };
+    });
+
+    const criticalDays = groupedWithProjection
+      .filter((day) => day.pressureScore >= 40)
+      .sort((left, right) => right.pressureScore - left.pressureScore || left.date.localeCompare(right.date))
+      .slice(0, 6);
+
+    const alerts = buildFinancialCalendarAlerts({
+      events,
+      groupedDays: groupedWithProjection,
+      criticalDays,
+      now: params.now,
+    });
+
+    return {
+      period: {
+        view: params.view,
+        focusDate: params.focusDate.toISOString(),
+        startDate: params.rangeStart.toISOString(),
+        endDate: params.rangeEnd.toISOString(),
+      },
+      summary,
+      events,
+      groupedByDay: groupedWithProjection,
+      criticalDays,
+      overdueEvents: events.filter((event) => event.status === 'OVERDUE'),
+      alerts,
+      openingBalance,
+    } satisfies FinancialCalendarSnapshot;
+  } catch (error) {
+    if (isReadModelTableError(error)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function buildDailyProjectionRows(params: {
+  workspaceId: string;
+  events: FinancialCalendarOccurrence[];
+  openingBalance: number;
+  now: Date;
+  rangeEnd: Date;
+}) {
+  const start = startOfDay(params.now);
+  const end = startOfDay(params.rangeEnd);
+  const flowByDate = new Map<
+    string,
+    {
+      inflowConfirmed: number;
+      outflowConfirmed: number;
+      inflowPlanned: number;
+      outflowPlanned: number;
+    }
+  >();
+
+  for (const event of params.events) {
+    if (event.status === 'CANCELED') continue;
+    if (event.flow !== 'in' && event.flow !== 'out') continue;
+    const amount = Number(event.amount || 0);
+    if (!(amount > 0)) continue;
+    const eventDate = startOfDay(parseCalendarDate(event.date));
+    if (eventDate < start || eventDate > end) continue;
+    const key = toDateKey(eventDate);
+    const current = flowByDate.get(key) || {
+      inflowConfirmed: 0,
+      outflowConfirmed: 0,
+      inflowPlanned: 0,
+      outflowPlanned: 0,
+    };
+
+    const isConfirmed = event.status === 'PAID' || event.status === 'RECEIVED';
+    const isPlanned = event.status === 'PENDING' || event.status === 'OVERDUE';
+
+    if (event.flow === 'in') {
+      if (isConfirmed) current.inflowConfirmed += amount;
+      if (isPlanned) current.inflowPlanned += amount;
+    } else {
+      if (isConfirmed) current.outflowConfirmed += amount;
+      if (isPlanned) current.outflowPlanned += amount;
+    }
+
+    flowByDate.set(key, current);
+  }
+
+  const rows: Array<{
+    workspace_id: string;
+    date: Date;
+    opening_balance: number;
+    inflow_confirmed: number;
+    outflow_confirmed: number;
+    inflow_planned: number;
+    outflow_planned: number;
+    closing_balance: number;
+  }> = [];
+
+  let opening = params.openingBalance;
+  let cursor = start;
+  while (cursor <= end) {
+    const key = toDateKey(cursor);
+    const flow = flowByDate.get(key) || {
+      inflowConfirmed: 0,
+      outflowConfirmed: 0,
+      inflowPlanned: 0,
+      outflowPlanned: 0,
+    };
+
+    const closing =
+      opening +
+      flow.inflowConfirmed -
+      flow.outflowConfirmed +
+      flow.inflowPlanned -
+      flow.outflowPlanned;
+
+    rows.push({
+      workspace_id: params.workspaceId,
+      date: new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()),
+      opening_balance: toDecimal(opening),
+      inflow_confirmed: toDecimal(flow.inflowConfirmed),
+      outflow_confirmed: toDecimal(flow.outflowConfirmed),
+      inflow_planned: toDecimal(flow.inflowPlanned),
+      outflow_planned: toDecimal(flow.outflowPlanned),
+      closing_balance: toDecimal(closing),
+    });
+
+    opening = closing;
+    cursor = addDays(cursor, 1);
+  }
+
+  return rows;
+}
+
+function buildDashboardReadModelPayload(params: {
+  workspaceId: string;
+  now: Date;
+  openingBalance: number;
+  events: FinancialCalendarOccurrence[];
+  projections: Array<{
+    date: Date;
+    closing_balance: number;
+  }>;
+  criticalDays: Array<{ date: string }>;
+}) {
+  const today = startOfDay(params.now);
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+  const horizon30Date = startOfDay(addDays(today, DASHBOARD_PROJECTION_DAYS));
+  const upcomingEnd = endOfDay(addDays(today, DASHBOARD_UPCOMING_DAYS));
+
+  let monthConfirmedIncome = 0;
+  let monthConfirmedExpense = 0;
+  let monthPlannedIncome = 0;
+  let monthPlannedExpense = 0;
+  let upcomingEventsCount = 0;
+
+  for (const event of params.events) {
+    if (event.status === 'CANCELED') continue;
+    if (event.flow !== 'in' && event.flow !== 'out') continue;
+    const amount = Number(event.amount || 0);
+    if (!(amount > 0)) continue;
+    const eventDate = parseCalendarDate(event.date);
+
+    if (eventDate >= monthStart && eventDate <= monthEnd) {
+      const isConfirmed = event.status === 'PAID' || event.status === 'RECEIVED';
+      const isPlanned = event.status === 'PENDING' || event.status === 'OVERDUE';
+      if (event.flow === 'in') {
+        if (isConfirmed) monthConfirmedIncome += amount;
+        if (isPlanned) monthPlannedIncome += amount;
+      } else {
+        if (isConfirmed) monthConfirmedExpense += amount;
+        if (isPlanned) monthPlannedExpense += amount;
+      }
+    }
+
+    if ((event.status === 'PENDING' || event.status === 'OVERDUE') && eventDate >= today && eventDate <= upcomingEnd) {
+      upcomingEventsCount += 1;
+    }
+  }
+
+  const sortedProjections = [...params.projections].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const projected30 =
+    sortedProjections.find((item) => startOfDay(item.date).getTime() === horizon30Date.getTime())?.closing_balance ??
+    sortedProjections[sortedProjections.length - 1]?.closing_balance ??
+    params.openingBalance;
+  const negativeDate = sortedProjections.find((item) => item.closing_balance < 0)?.date || null;
+  const nextCriticalDate = params.criticalDays.length > 0 ? parseDateKey(params.criticalDays[0].date) : null;
+
+  return {
+    workspace_id: params.workspaceId,
+    as_of_date: today,
+    current_balance: toDecimal(params.openingBalance),
+    projected_balance_30d: toDecimal(projected30),
+    projected_negative_date: negativeDate,
+    month_confirmed_income: toDecimal(monthConfirmedIncome),
+    month_confirmed_expense: toDecimal(monthConfirmedExpense),
+    month_planned_income: toDecimal(monthPlannedIncome),
+    month_planned_expense: toDecimal(monthPlannedExpense),
+    upcoming_events_count_14d: upcomingEventsCount,
+    next_critical_date: nextCriticalDate,
+  };
+}
+
+async function refreshWorkspaceFinancialReadModels(params: {
+  workspaceId: string;
+  now?: Date;
+}) {
+  const now = params.now ?? new Date();
+  const rangeStart = startOfDay(addDays(now, -READ_MODEL_PAST_DAYS));
+  const rangeEnd = endOfDay(addDays(now, READ_MODEL_FUTURE_DAYS));
+  const snapshot = await getFinancialCalendarSnapshotForRange({
+    workspaceId: params.workspaceId,
+    view: 'month',
+    focusDate: now,
+    rangeStart,
+    rangeEnd,
+    now,
+    preferReadModel: false,
+  });
+
+  const calendarRows = snapshot.events.map((event) => ({
+    workspace_id: params.workspaceId,
+    occurrence_key: event.occurrenceKey,
+    event_id: event.eventId,
+    series_date: parseCalendarDate(event.seriesDate),
+    source_type: event.sourceType,
+    source_id: event.sourceId,
+    title: event.title,
+    description: event.description,
+    type: event.type,
+    amount: event.amount === null ? null : toDecimal(Number(event.amount)),
+    category: event.category,
+    date: parseCalendarDate(event.date),
+    end_date: event.endDate ? parseCalendarDate(event.endDate) : null,
+    recurrence: event.recurrence,
+    recurrence_interval: event.recurrenceInterval,
+    is_recurring: event.isRecurring,
+    status: event.status,
+    flow: event.flow,
+    reminder_enabled: event.reminderEnabled,
+    reminder_days_before: event.reminderDaysBefore,
+    color_token: event.colorToken,
+    is_manual: event.isManual,
+    is_overdue: event.isOverdue,
+    is_derived: event.isDerived,
+  }));
+
+  const dailyProjectionRows = buildDailyProjectionRows({
+    workspaceId: params.workspaceId,
+    events: snapshot.events,
+    openingBalance: snapshot.openingBalance,
+    now,
+    rangeEnd,
+  });
+
+  const dashboardPayload = buildDashboardReadModelPayload({
+    workspaceId: params.workspaceId,
+    now,
+    openingBalance: snapshot.openingBalance,
+    events: snapshot.events,
+    projections: dailyProjectionRows.map((item) => ({
+      date: item.date,
+      closing_balance: item.closing_balance,
+    })),
+    criticalDays: snapshot.criticalDays,
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.calendarEventReadModel.deleteMany({
+      where: {
+        workspace_id: params.workspaceId,
+        date: {
+          gte: rangeStart,
+          lte: rangeEnd,
+        },
+      },
+    });
+    if (calendarRows.length > 0) {
+      await tx.calendarEventReadModel.createMany({
+        data: calendarRows,
+      });
+    }
+
+    await tx.dailyCashProjection.deleteMany({
+      where: {
+        workspace_id: params.workspaceId,
+        date: {
+          gte: startOfDay(now),
+          lte: rangeEnd,
+        },
+      },
+    });
+    if (dailyProjectionRows.length > 0) {
+      await tx.dailyCashProjection.createMany({
+        data: dailyProjectionRows,
+      });
+    }
+
+    await tx.dashboardReadModel.upsert({
+      where: {
+        workspace_id: params.workspaceId,
+      },
+      update: dashboardPayload,
+      create: dashboardPayload,
+    });
+  });
+
+  return {
+    workspaceId: params.workspaceId,
+    calendarEvents: calendarRows.length,
+    dailyProjections: dailyProjectionRows.length,
+    updatedAt: now.toISOString(),
+  };
+}
+
+async function refreshWorkspaceFinancialReadModelsSafe(params: {
+  workspaceId: string;
+  now?: Date;
+}) {
+  try {
+    return await refreshWorkspaceFinancialReadModels(params);
+  } catch (error) {
+    if (isReadModelTableError(error)) {
+      return null;
+    }
+    console.error('Financial read-model refresh warning:', error);
+    return null;
+  }
+}
+
 export async function syncWorkspaceFinancialCalendarSources(workspaceId: string) {
+  await syncWorkspaceRecurringRulesProjectionSafe({ workspaceId });
   const drafts = await buildSyncDrafts(workspaceId);
   const activeKeys = new Set(drafts.map((draft) => `${draft.sourceType}:${draft.sourceId}`));
 
@@ -588,7 +1080,7 @@ export async function syncWorkspaceFinancialCalendarSources(workspaceId: string)
       workspace_id: workspaceId,
       user_id: null,
       source_id: { not: null },
-      source_type: { in: ['GOAL', 'EXPENSE', 'INCOME', 'SUBSCRIPTION', 'CARD_BILL', 'INSTALLMENT'] },
+      source_type: { in: [...DERIVED_FINANCIAL_EVENT_SOURCE_TYPES] },
     },
     select: { id: true, source_type: true, source_id: true },
   });
@@ -604,10 +1096,27 @@ export async function syncWorkspaceFinancialCalendarSources(workspaceId: string)
     });
   }
 
+  const readModels = await refreshWorkspaceFinancialReadModelsSafe({
+    workspaceId,
+  });
+
   return {
     syncedCount: drafts.length,
     canceledCount: staleIds.length,
+    readModelsRefreshed: Boolean(readModels),
   };
+}
+
+export async function syncWorkspaceFinancialCalendarSourcesSafe(workspaceId: string) {
+  try {
+    return await syncWorkspaceFinancialCalendarSources(workspaceId);
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      return null;
+    }
+    console.error('Financial calendar sync warning:', error);
+    return null;
+  }
 }
 
 export async function createManualFinancialEvent(input: CreateManualFinancialEventInput) {
@@ -794,7 +1303,15 @@ async function getFinancialCalendarSnapshotForRange(params: {
   rangeStart: Date;
   rangeEnd: Date;
   now: Date;
+  preferReadModel?: boolean;
 }) {
+  if (params.preferReadModel !== false) {
+    const snapshotFromReadModel = await tryBuildSnapshotFromReadModels(params);
+    if (snapshotFromReadModel) {
+      return snapshotFromReadModel;
+    }
+  }
+
   const [wallets, events] = await Promise.all([
     prisma.wallet.findMany({
       where: { workspace_id: params.workspaceId },
@@ -887,8 +1404,13 @@ async function getFinancialCalendarSnapshotForRange(params: {
 
   const groupedByDay = groupEventsByDay(expandedEvents);
   const openingBalance = wallets.reduce((acc, wallet) => acc + Number(wallet.balance || 0), 0);
-  const summary = generatePeriodSummary(expandedEvents, openingBalance);
-  const pressure = detectPressureDays(groupedByDay, openingBalance);
+  const futureEvents = expandedEvents.filter((event) => parseCalendarDate(event.date) >= startOfDay(params.now));
+  const summary = generatePeriodSummary(futureEvents, openingBalance);
+  const pressure = applyFuturePressureBaseline({
+    groupedByDay,
+    openingBalance,
+    now: params.now,
+  });
   const alerts = buildFinancialCalendarAlerts({
     events: expandedEvents,
     groupedDays: pressure.groupedDays,
@@ -920,7 +1442,6 @@ export async function getFinancialCalendarSnapshot(params: {
   now?: Date;
 }) {
   const now = params.now ?? new Date();
-  await syncWorkspaceFinancialCalendarSources(params.workspaceId);
 
   const focusDate = parseCalendarDate(params.focusDate);
   const period = resolvePeriodBounds(params.view, focusDate);
@@ -942,8 +1463,6 @@ export async function getFinancialCalendarUpcomingDueEvents(params: {
   const fromDate = parseOptionalDate(params.fromDate) || new Date();
   const days = Math.max(1, Math.min(90, Number(params.days || 14)));
   const rangeEnd = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate() + days, 23, 59, 59, 999);
-
-  await syncWorkspaceFinancialCalendarSources(params.workspaceId);
 
   const snapshot = await getFinancialCalendarSnapshotForRange({
     workspaceId: params.workspaceId,
@@ -1076,10 +1595,27 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
       throw new Error('Transacao de origem nao encontrada.');
     }
 
-    if (nextStatus === 'PAID' || nextStatus === 'RECEIVED') {
-      if (transaction.status !== 'CONFIRMED') {
+    const transactionType = normalizeTransactionType(transaction.type);
+    if (!transactionType) {
+      throw new Error('Tipo da transacao de origem invalido.');
+    }
+
+    const currentTransactionStatus = normalizeTransactionStatus(transaction.status);
+    const targetTransactionStatus = mapCalendarStatusToTransactionStatus(nextStatus);
+
+    if (
+      !canTransitionTransactionStatus({
+        from: currentTransactionStatus,
+        to: targetTransactionStatus,
+      })
+    ) {
+      throw new Error('Transicao de status da transacao de origem nao permitida nesta rota.');
+    }
+
+    if (targetTransactionStatus === 'CONFIRMED') {
+      if (currentTransactionStatus !== 'CONFIRMED') {
         const effects = buildLedgerEffects({
-          type: transaction.type as TransactionKind,
+          type: transactionType,
           amount: Number(transaction.amount),
           walletId: transaction.wallet_id,
           destinationWalletId: transaction.destination_wallet_id,
@@ -1087,22 +1623,24 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
 
         await prisma.$transaction(async (tx) => {
           await applyLedgerEffects(tx as TransactionClient, effects);
-          await tx.transaction.update({
-            where: { id: transaction.id },
-            data: { status: 'CONFIRMED' },
-          });
+          await Promise.all([
+            tx.transaction.update({
+              where: { id: transaction.id },
+              data: { status: 'CONFIRMED' },
+            }),
+            tx.financialEvent.update({
+              where: { id: event.id },
+              data: { status: nextStatus },
+            }),
+          ]);
+        });
+      } else {
+        await prisma.financialEvent.update({
+          where: { id: event.id },
+          data: { status: nextStatus },
         });
       }
-
-      await prisma.financialEvent.update({
-        where: { id: event.id },
-        data: { status: nextStatus },
-      });
-    } else if (nextStatus === 'CANCELED') {
-      if (transaction.status === 'CONFIRMED') {
-        throw new Error('Nao e seguro cancelar uma transacao ja confirmada por esta rota.');
-      }
-
+    } else if (targetTransactionStatus === 'CANCELLED') {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: transaction.id },
@@ -1154,12 +1692,8 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
       prisma.debt.update({
         where: { id: debt.id },
         data: {
-          status: mapConventionalStatusToLegacyDebtStatus(
-            persistedStatus === 'PAID'
-              ? 'PAID'
-              : persistedStatus === 'OVERDUE'
-                ? 'OVERDUE'
-                : 'OPEN'
+          status: mapConventionalDebtStatusToLegacyDebtStatus(
+            mapCalendarStatusToConventionalDebtStatus(persistedStatus)
           ),
         },
       }),

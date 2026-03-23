@@ -1,3 +1,11 @@
+import {
+  mapConventionalDebtStatusToLegacyDebtStatus as mapConventionalDebtStatusToLegacyDebtStatusDomain,
+  mapLegacyDebtStatusToConventionalDebtStatus as mapLegacyDebtStatusToConventionalDebtStatusDomain,
+  normalizeRecurringDebtStatus as normalizeRecurringDebtStatusDomain,
+  type ConventionalDebtStatus as ConventionalDebtStatusDomain,
+  type RecurringDebtStatus as RecurringDebtStatusDomain,
+} from '@/lib/domain/financial-domain';
+
 export const RECURRING_DEBT_CATEGORIES = [
   'Água',
   'Luz',
@@ -32,8 +40,8 @@ export const RECURRING_DEBT_PRESETS = [
   { category: 'Aluguel', title: 'Aluguel', description: 'Compromisso recorrente da moradia.', dueDay: '5' },
 ] as const;
 
-export type ConventionalDebtStatus = 'OPEN' | 'PAID' | 'OVERDUE' | 'INSTALLMENT';
-export type RecurringDebtStatus = 'ACTIVE' | 'PAUSED' | 'ENDED';
+export type ConventionalDebtStatus = ConventionalDebtStatusDomain;
+export type RecurringDebtStatus = RecurringDebtStatusDomain;
 export type RecurringDebtFrequency = (typeof RECURRING_DEBT_FREQUENCIES)[number]['value'];
 
 export function isRecurringDebtCategory(category: string) {
@@ -135,19 +143,15 @@ export function computeNextRecurringDebtDueDate(params: {
 }
 
 export function mapLegacyDebtStatusToConventionalStatus(status: string | null | undefined): ConventionalDebtStatus {
-  const normalized = String(status || '').trim().toUpperCase();
-  if (normalized === 'PAID' || normalized === 'QUITADA') return 'PAID';
-  if (normalized === 'OVERDUE' || normalized === 'ATRASADA') return 'OVERDUE';
-  if (normalized === 'INSTALLMENT' || normalized === 'PARCELADA') return 'INSTALLMENT';
-  return 'OPEN';
+  return mapLegacyDebtStatusToConventionalDebtStatusDomain(status);
 }
 
 export function mapConventionalStatusToLegacyDebtStatus(status: string | null | undefined) {
-  const normalized = String(status || '').trim().toUpperCase();
-  if (normalized === 'PAID' || normalized === 'QUITADA') return 'PAID';
-  if (normalized === 'OVERDUE' || normalized === 'ATRASADA') return 'OVERDUE';
-  if (normalized === 'INSTALLMENT' || normalized === 'PARCELADA') return 'INSTALLMENT';
-  return 'ACTIVE';
+  return mapConventionalDebtStatusToLegacyDebtStatusDomain(status);
+}
+
+export function normalizeRecurringDebtStatus(status: string | null | undefined): RecurringDebtStatus {
+  return normalizeRecurringDebtStatusDomain(status);
 }
 
 export function mapLegacyDebtStatusToLabel(status: string | null | undefined) {

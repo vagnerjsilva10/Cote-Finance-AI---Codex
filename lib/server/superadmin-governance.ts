@@ -31,7 +31,9 @@ export type FeatureFlagCode =
   | 'whatsapp_automation'
   | 'pix_checkout'
   | 'meta_tracking'
-  | 'beta_superadmin_modules';
+  | 'beta_superadmin_modules'
+  | 'dashboard_read_model_v2'
+  | 'financial_projection_engine_v2';
 
 export type EditablePlanConfig = {
   code: EditablePlanCode;
@@ -179,16 +181,16 @@ function getDefaultFeatureFlags(): FeatureFlagConfig[] {
   return [
     {
       key: 'advanced_ai_insights',
-      label: 'Insights avançados de IA',
-      description: 'Libera leituras mais profundas e explicações financeiras estendidas na experiência do usuário.',
+      label: 'Insights avancados de IA',
+      description: 'Libera leituras mais profundas e explicacoes financeiras estendidas na experiencia do usuario.',
       scope: 'Produto',
       enabled: true,
       allowedPlans: ['PRO', 'PREMIUM'],
     },
     {
       key: 'whatsapp_automation',
-      label: 'Automações no WhatsApp',
-      description: 'Controla recursos de resumo, alerta e automação financeira enviados pelo WhatsApp.',
+      label: 'Automacoes no WhatsApp',
+      description: 'Controla recursos de resumo, alerta e automacao financeira enviados pelo WhatsApp.',
       scope: 'Canal',
       enabled: true,
       allowedPlans: ['PRO', 'PREMIUM'],
@@ -204,17 +206,33 @@ function getDefaultFeatureFlags(): FeatureFlagConfig[] {
     {
       key: 'meta_tracking',
       label: 'Tracking e marketing',
-      description: 'Ativa a camada de tracking usada para Meta Ads, UTM e eventos de conversão.',
+      description: 'Ativa a camada de tracking usada para Meta Ads, UTM e eventos de conversao.',
       scope: 'Marketing',
       enabled: true,
       allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
     },
     {
       key: 'beta_superadmin_modules',
-      label: 'Módulos beta do Superadmin',
-      description: 'Usado para liberar novas áreas administrativas antes da conclusão total do módulo.',
+      label: 'Modulos beta do Superadmin',
+      description: 'Usado para liberar novas areas administrativas antes da conclusao total do modulo.',
       scope: 'Interno',
       enabled: false,
+      allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
+    },
+    {
+      key: 'dashboard_read_model_v2',
+      label: 'Dashboard read model v2',
+      description: 'Controla o uso de read model materializado para resposta da dashboard.',
+      scope: 'Finance Core',
+      enabled: true,
+      allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
+    },
+    {
+      key: 'financial_projection_engine_v2',
+      label: 'Projection engine v2',
+      description: 'Controla o uso de projecao diaria materializada no backend financeiro.',
+      scope: 'Finance Core',
+      enabled: true,
       allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
     },
   ];
@@ -236,7 +254,9 @@ function sanitizeFeatureFlagCode(value: unknown): FeatureFlagCode {
     value === 'whatsapp_automation' ||
     value === 'pix_checkout' ||
     value === 'meta_tracking' ||
-    value === 'beta_superadmin_modules'
+    value === 'beta_superadmin_modules' ||
+    value === 'dashboard_read_model_v2' ||
+    value === 'financial_projection_engine_v2'
     ? value
     : 'advanced_ai_insights';
 }

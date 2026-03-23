@@ -8,9 +8,11 @@ import {
   getWorkspacePreference,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
+import { logWorkspaceFinancialConsistencySnapshot } from '@/lib/server/financial-observability';
 import { buildFinancialInsights } from '@/lib/server/financial-insights';
 import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
 import { getWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
+import { resolveFeatureFlagState } from '@/lib/server/superadmin-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,7 +28,7 @@ const isMissingTableError = (error: unknown) => {
     return error.code === 'P2021' || error.code === 'P2022';
   }
   const message = error instanceof Error ? error.message : String(error || '');
-  return /does not exist|Unknown arg|destination_wallet_id|payment_method|receipt_url/i.test(message);
+  return /does not exist|Unknown arg|destination_wallet_id|payment_method|receipt_url|DashboardReadModel|DailyCashProjection/i.test(message);
 };
 
 async function findWorkspaceTransactions(workspaceId: string) {
@@ -140,6 +142,32 @@ async function findWorkspaceTransactions(workspaceId: string) {
       wallet: walletMap.get(row.wallet_id) ?? null,
       destination_wallet: null,
     }));
+  }
+}
+
+async function findWorkspaceInsightTransactions(workspaceId: string, fromDate: Date) {
+  try {
+    return await prisma.transaction.findMany({
+      where: {
+        workspace_id: workspaceId,
+        status: 'CONFIRMED',
+        date: { gte: fromDate },
+      },
+      select: {
+        type: true,
+        amount: true,
+        date: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+  } catch (error) {
+    if (isMissingTableError(error)) return [];
+    throw error;
   }
 }
 
@@ -312,6 +340,61 @@ async function getWorkspaceEventSnapshot(workspaceId: string) {
   }
 }
 
+async function findWorkspaceDashboardReadModel(workspaceId: string) {
+  try {
+    return await prisma.dashboardReadModel.findUnique({
+      where: { workspace_id: workspaceId },
+      select: {
+        as_of_date: true,
+        current_balance: true,
+        projected_balance_30d: true,
+        projected_negative_date: true,
+        month_confirmed_income: true,
+        month_confirmed_expense: true,
+        month_planned_income: true,
+        month_planned_expense: true,
+        upcoming_events_count_14d: true,
+        next_critical_date: true,
+        updated_at: true,
+      },
+    });
+  } catch (error) {
+    if (isMissingTableError(error)) return null;
+    throw error;
+  }
+}
+
+async function findWorkspaceDailyCashProjection(params: {
+  workspaceId: string;
+  fromDate: Date;
+  toDate: Date;
+}) {
+  try {
+    return await prisma.dailyCashProjection.findMany({
+      where: {
+        workspace_id: params.workspaceId,
+        date: {
+          gte: params.fromDate,
+          lte: params.toDate,
+        },
+      },
+      orderBy: { date: 'asc' },
+      select: {
+        date: true,
+        opening_balance: true,
+        inflow_confirmed: true,
+        outflow_confirmed: true,
+        inflow_planned: true,
+        outflow_planned: true,
+        closing_balance: true,
+      },
+    });
+  } catch (error) {
+    if (isMissingTableError(error)) return [];
+    throw error;
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
@@ -320,7 +403,10 @@ export async function GET(req: Request) {
     const workspaceId = context.workspaceId;
 
     const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const projectionEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30, 23, 59, 59, 999);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     const workspace = await findWorkspaceSnapshot(workspaceId);
@@ -331,13 +417,41 @@ export async function GET(req: Request) {
       getWorkspacePreference(workspaceId, context.userId),
     ]);
 
-    const [wallets, currentMonthTransactionCount, eventSnapshot] = await Promise.all([
+    const [dashboardReadModelFlag, projectionEngineFlag] = await Promise.all([
+      resolveFeatureFlagState({
+        key: 'dashboard_read_model_v2',
+        plan,
+        workspaceId,
+        userId: context.userId,
+      }),
+      resolveFeatureFlagState({
+        key: 'financial_projection_engine_v2',
+        plan,
+        workspaceId,
+        userId: context.userId,
+      }),
+    ]);
+    const shouldUseDashboardReadModel = dashboardReadModelFlag.enabled;
+    const shouldUseProjectionEngine = projectionEngineFlag.enabled;
+
+    const [wallets, currentMonthTransactionCount, eventSnapshot, dashboardReadModel, dailyCashProjection] = await Promise.all([
       findWorkspaceWallets(workspaceId),
       countWorkspaceTransactions(workspaceId, monthStart, nextMonthStart),
       getWorkspaceEventSnapshot(workspaceId),
+      shouldUseDashboardReadModel ? findWorkspaceDashboardReadModel(workspaceId) : Promise.resolve(null),
+      shouldUseDashboardReadModel && shouldUseProjectionEngine
+        ? findWorkspaceDailyCashProjection({
+            workspaceId,
+            fromDate: todayStart,
+            toDate: projectionEnd,
+          })
+        : Promise.resolve([]),
     ]);
 
-    const transactions = await findWorkspaceTransactions(workspaceId);
+    const [transactions, insightTransactions] = await Promise.all([
+      findWorkspaceTransactions(workspaceId),
+      findWorkspaceInsightTransactions(workspaceId, previousMonthStart),
+    ]);
     const [goals, investments, debts, recurringDebts] =
       scope === 'transactions'
         ? [undefined, undefined, undefined, undefined]
@@ -371,9 +485,12 @@ export async function GET(req: Request) {
       whatsapp_last_test_sent_at: workspaceWhatsAppConfig.lastTestSentAt,
     };
 
-    const totalBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
+    const fallbackBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
+    const totalBalance = dashboardReadModel ? Number(dashboardReadModel.current_balance || 0) : fallbackBalance;
     const totalInvested = (investments ?? []).reduce<number>((acc, item) => acc + Number(item.current_amount), 0);
-    const insights = plan === 'FREE' ? [] : buildFinancialInsights(transactions as any, totalBalance);
+    const insightsBase = insightTransactions.length > 0 ? insightTransactions : transactions;
+    const insights = plan === 'FREE' ? [] : buildFinancialInsights(insightsBase as any, totalBalance);
+    void logWorkspaceFinancialConsistencySnapshot(workspaceId);
 
     return NextResponse.json({
       totalBalance,
@@ -397,6 +514,44 @@ export async function GET(req: Request) {
       workspaces: context.workspaces,
       recentEvents: eventSnapshot.recentEvents,
       insights,
+      runtimeFlags: {
+        dashboardReadModelV2: {
+          enabled: shouldUseDashboardReadModel,
+          source: dashboardReadModelFlag.source,
+          reason: dashboardReadModelFlag.reason,
+        },
+        financialProjectionEngineV2: {
+          enabled: shouldUseProjectionEngine,
+          source: projectionEngineFlag.source,
+          reason: projectionEngineFlag.reason,
+        },
+      },
+      projection: shouldUseDashboardReadModel && dashboardReadModel
+        ? {
+            asOfDate: dashboardReadModel.as_of_date,
+            currentBalance: Number(dashboardReadModel.current_balance || 0),
+            projectedBalance30d: Number(dashboardReadModel.projected_balance_30d || 0),
+            projectedNegativeDate: dashboardReadModel.projected_negative_date,
+            monthConfirmedIncome: Number(dashboardReadModel.month_confirmed_income || 0),
+            monthConfirmedExpense: Number(dashboardReadModel.month_confirmed_expense || 0),
+            monthPlannedIncome: Number(dashboardReadModel.month_planned_income || 0),
+            monthPlannedExpense: Number(dashboardReadModel.month_planned_expense || 0),
+            upcomingEventsCount14d: dashboardReadModel.upcoming_events_count_14d,
+            nextCriticalDate: dashboardReadModel.next_critical_date,
+            updatedAt: dashboardReadModel.updated_at,
+            daily: shouldUseProjectionEngine
+              ? dailyCashProjection.map((row) => ({
+                  date: row.date,
+                  openingBalance: Number(row.opening_balance || 0),
+                  inflowConfirmed: Number(row.inflow_confirmed || 0),
+                  outflowConfirmed: Number(row.outflow_confirmed || 0),
+                  inflowPlanned: Number(row.inflow_planned || 0),
+                  outflowPlanned: Number(row.outflow_planned || 0),
+                  closingBalance: Number(row.closing_balance || 0),
+                }))
+              : [],
+          }
+        : null,
       onboarding: {
         completed: Boolean(preference.onboarding_completed),
         dismissed: Boolean(preference.onboarding_dismissed),

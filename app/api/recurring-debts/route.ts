@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import { mapRecurringDebtStatusToLegacyDebtStatus } from '@/lib/domain/financial-domain';
 import {
   computeNextRecurringDebtDueDate,
   getRecurringDebtDefaultDueDay,
-  mapConventionalStatusToLegacyDebtStatus,
 } from '@/lib/debts';
 import {
   findWorkspaceRecurringDebts,
@@ -15,6 +15,7 @@ import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
+import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -162,6 +163,7 @@ export async function POST(req: Request) {
       type: 'recurring_debt.created',
       payload: { recurringDebtId: recurringDebt.id },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(recurringDebt, { status: 201 });
   } catch (error: any) {
@@ -202,7 +204,7 @@ export async function PATCH(req: Request) {
       const amount = parseAmount(body.amount);
       const category = body.category?.trim();
       const dueDay = parseInteger(body.dueDay);
-      const status = body.status ? mapConventionalStatusToLegacyDebtStatus(body.status) : undefined;
+      const status = body.status ? mapRecurringDebtStatusToLegacyDebtStatus(body.status) : undefined;
 
       const updated = await prisma.debt.update({
         where: { id: existingLegacyDebt.id },
@@ -222,6 +224,7 @@ export async function PATCH(req: Request) {
         type: 'recurring_debt.updated.legacy',
         payload: { recurringDebtId: existingLegacyDebt.id },
       });
+      await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
       return NextResponse.json({ ...updated, source: 'legacy_debt', legacy_debt_id: updated.id });
     }
@@ -284,6 +287,7 @@ export async function PATCH(req: Request) {
       type: 'recurring_debt.updated',
       payload: { recurringDebtId: recurringDebt.id },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(recurringDebt);
   } catch (error: any) {
@@ -327,6 +331,7 @@ export async function DELETE(req: Request) {
         type: 'recurring_debt.deleted.legacy',
         payload: { recurringDebtId: existingLegacyDebt.id },
       });
+      await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
       return NextResponse.json({ success: true });
     }
 
@@ -346,6 +351,7 @@ export async function DELETE(req: Request) {
       type: 'recurring_debt.deleted',
       payload: { recurringDebtId: existing.id },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

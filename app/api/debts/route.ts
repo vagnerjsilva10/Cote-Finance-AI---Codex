@@ -1,12 +1,13 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
-import { CONVENTIONAL_DEBT_CATEGORIES, isRecurringDebtCategory, mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
+import { isRecurringDebtCategory, mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
 import {
   HttpError,
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
+import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -156,6 +157,7 @@ export async function POST(req: Request) {
         debtId: debt.id,
       },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(debt, { status: 201 });
   } catch (error: any) {
@@ -243,6 +245,7 @@ export async function PATCH(req: Request) {
         debtId: debt.id,
       },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json(debt);
   } catch (error: any) {
@@ -293,6 +296,7 @@ export async function DELETE(req: Request) {
         debtId: existing.id,
       },
     });
+    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

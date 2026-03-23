@@ -21,7 +21,9 @@ function normalizeFeatureFlagCode(value: unknown): FeatureFlagCode {
     value === 'whatsapp_automation' ||
     value === 'pix_checkout' ||
     value === 'meta_tracking' ||
-    value === 'beta_superadmin_modules'
+    value === 'beta_superadmin_modules' ||
+    value === 'dashboard_read_model_v2' ||
+    value === 'financial_projection_engine_v2'
     ? value
     : 'advanced_ai_insights';
 }

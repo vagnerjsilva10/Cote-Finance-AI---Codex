@@ -51,6 +51,10 @@ model Workspace {
   goals                 Goal[]
   debts                 Debt[]
   recurring_debts       RecurringDebt[]
+  recurrence_rules      RecurrenceRule[]
+  daily_cash_projections DailyCashProjection[]
+  calendar_event_read_models CalendarEventReadModel[]
+  dashboard_read_model DashboardReadModel?
   investments           Investment[]
   category_suggestions  CategorySuggestion[]
   subscription          WorkspaceSubscription?
@@ -82,7 +86,7 @@ model Debt {
   due_day               Int
   due_date              DateTime?
   category              String
-  status                String    @default("ACTIVE") // ACTIVE, PAID
+  status                String    @default("ACTIVE") // ACTIVE(OPEN), PAID, OVERDUE, INSTALLMENT
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
 
@@ -111,6 +115,35 @@ model RecurringDebt {
   workspace Workspace @relation(fields: [workspace_id], references: [id])
 
   @@index([workspace_id, status, next_due_date])
+  @@index([workspace_id, created_at])
+}
+
+model RecurrenceRule {
+  id              String    @id @default(uuid())
+  workspace_id    String
+  wallet_id       String
+  category_id     String?
+  kind            String // INCOME, EXPENSE
+  title           String
+  description     String?
+  amount          Decimal   @db.Decimal(12, 2)
+  payment_method  String    @default("OTHER") // PIX, CARD, CASH, BANK_TRANSFER, BOLETO, DEBIT, OTHER
+  frequency       String    @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY, YEARLY
+  interval        Int       @default(1)
+  start_date      DateTime
+  end_date        DateTime?
+  anchor_day      Int?
+  timezone        String?
+  status          String    @default("ACTIVE") // ACTIVE, PAUSED, ENDED
+  last_projected_at DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+  wallet    Wallet    @relation(fields: [wallet_id], references: [id])
+  category  Category? @relation(fields: [category_id], references: [id])
+
+  @@index([workspace_id, status, start_date, end_date])
   @@index([workspace_id, created_at])
 }
 
@@ -163,6 +196,9 @@ model Wallet {
   workspace          Workspace     @relation(fields: [workspace_id], references: [id])
   transactions       Transaction[] @relation("PrimaryWalletTransactions")
   incoming_transfers Transaction[] @relation("DestinationWalletTransactions")
+  recurrence_rules   RecurrenceRule[]
+
+  @@unique([workspace_id, name])
 }
 
 model Transaction {
@@ -177,7 +213,9 @@ model Transaction {
   amount         Decimal   @db.Decimal(12, 2)
   date           DateTime
   due_date       DateTime?
-  status         String    @default("CONFIRMED") // PENDING, CONFIRMED, CANCELLED
+  status         String    @default("CONFIRMED") // PENDING, CONFIRMED, CANCELLED (accepts CANCELED as alias)
+  origin_type    String    @default("MANUAL") // MANUAL, RECURRENCE, INSTALLMENT, DEBT, GOAL, SYSTEM
+  origin_id      String?
   description    String
   receipt_url    String?
 
@@ -190,6 +228,13 @@ model Transaction {
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
+
+  @@index([workspace_id, date])
+  @@index([workspace_id, status, date])
+  @@index([workspace_id, wallet_id, date])
+  @@index([workspace_id, status, due_date])
+  @@index([workspace_id, origin_type, origin_id])
+  @@index([workspace_id, wallet_id, due_date])
 }
 
 model Category {
@@ -200,6 +245,83 @@ model Category {
 
   transactions Transaction[]
   suggestions  CategorySuggestion[]
+  recurrence_rules RecurrenceRule[]
+}
+
+model DailyCashProjection {
+  id               String   @id @default(uuid())
+  workspace_id     String
+  date             DateTime
+  opening_balance  Decimal  @db.Decimal(12, 2)
+  inflow_confirmed Decimal  @default(0) @db.Decimal(12, 2)
+  outflow_confirmed Decimal @default(0) @db.Decimal(12, 2)
+  inflow_planned   Decimal  @default(0) @db.Decimal(12, 2)
+  outflow_planned  Decimal  @default(0) @db.Decimal(12, 2)
+  closing_balance  Decimal  @db.Decimal(12, 2)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@unique([workspace_id, date])
+  @@index([workspace_id, date])
+}
+
+model CalendarEventReadModel {
+  id                   String    @id @default(uuid())
+  workspace_id         String
+  occurrence_key       String
+  event_id             String
+  series_date          DateTime
+  source_type          String
+  source_id            String?
+  title                String
+  description          String?
+  type                 String
+  amount               Decimal?  @db.Decimal(12, 2)
+  category             String?
+  date                 DateTime
+  end_date             DateTime?
+  recurrence           String
+  recurrence_interval  Int
+  is_recurring         Boolean
+  status               String
+  flow                 String
+  reminder_enabled     Boolean
+  reminder_days_before Int
+  color_token          String?
+  is_manual            Boolean
+  is_overdue           Boolean
+  is_derived           Boolean
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@unique([workspace_id, occurrence_key])
+  @@index([workspace_id, date])
+  @@index([workspace_id, status, date])
+}
+
+model DashboardReadModel {
+  id                      String    @id @default(uuid())
+  workspace_id            String    @unique
+  as_of_date              DateTime
+  current_balance         Decimal   @db.Decimal(12, 2)
+  projected_balance_30d   Decimal   @db.Decimal(12, 2)
+  projected_negative_date DateTime?
+  month_confirmed_income  Decimal   @default(0) @db.Decimal(12, 2)
+  month_confirmed_expense Decimal   @default(0) @db.Decimal(12, 2)
+  month_planned_income    Decimal   @default(0) @db.Decimal(12, 2)
+  month_planned_expense   Decimal   @default(0) @db.Decimal(12, 2)
+  upcoming_events_count_14d Int     @default(0)
+  next_critical_date      DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@index([workspace_id, updated_at])
 }
 
 model CategorySuggestion {
@@ -277,7 +399,7 @@ model FinancialEvent {
   recurrence           String    @default("NONE") // NONE, DAILY, WEEKLY, MONTHLY, YEARLY
   recurrence_interval  Int       @default(1)
   is_recurring         Boolean   @default(false)
-  status               String    @default("PENDING") // PENDING, PAID, RECEIVED, OVERDUE, CANCELED
+  status               String    @default("PENDING") // PENDING, PAID, RECEIVED, OVERDUE, CANCELED (accepts CANCELLED as alias)
   source_type          String    @default("MANUAL") // MANUAL, EXPENSE, INCOME, GOAL, SUBSCRIPTION, INSTALLMENT, CARD_BILL, SYSTEM
   source_id            String?
   reminder_enabled     Boolean   @default(false)
@@ -303,7 +425,7 @@ model FinancialEventOccurrence {
   title                String?
   description          String?
   amount               Decimal? @db.Decimal(12, 2)
-  status               String? // PENDING, PAID, RECEIVED, OVERDUE, CANCELED
+  status               String? // PENDING, PAID, RECEIVED, OVERDUE, CANCELED (accepts CANCELLED as alias)
   reminder_enabled     Boolean?
   reminder_days_before Int?
   is_deleted           Boolean  @default(false)
