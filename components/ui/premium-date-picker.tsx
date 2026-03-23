@@ -71,7 +71,7 @@ export function PremiumDatePicker({
           onClick={handleOpenPicker}
           disabled={disabled}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] transition group-hover:border-[var(--border-strong)] group-hover:text-[var(--text-primary)]"
-          aria-label="Abrir calendário"
+          aria-label="Abrir calendÃ¡rio"
         >
           <CalendarDays size={16} />
         </button>
