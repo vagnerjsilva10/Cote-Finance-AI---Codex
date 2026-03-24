@@ -60,7 +60,8 @@ import { cn } from '@/lib/utils';
 import { FinancialCalendarView } from '@/components/financial-calendar/financial-calendar-view';
 import { PremiumDatePicker } from '@/components/ui/premium-date-picker';
 import { FormContainer, FormField, FormGrid } from '@/components/ui/form-system';
-import { DashboardContainer } from '@/app/app/modules/dashboard/components/dashboard-container';
+import { DashboardContainer as DashboardPageContainer } from '@/app/app/modules/dashboard/components/dashboard-container';
+import { DashboardContainer as DashboardOverview } from '@/components/dashboard/DashboardContainer';
 import { TransactionsContainer } from '@/app/app/modules/transactions/components/transactions-container';
 import { DebtsContainer } from '@/app/app/modules/debts/components/debts-container';
 import { GoalsContainer } from '@/app/app/modules/goals/components/goals-container';
@@ -72,12 +73,13 @@ import { OnboardingContainer } from '@/app/app/modules/settings/components/onboa
 import { SettingsContainer } from '@/app/app/modules/settings/components/settings-container';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
-import { fetchDashboardCalendarReadPayload, fetchDashboardResource } from '@/app/app/modules/dashboard/data-client';
+import { fetchDashboardOverviewResource, fetchDashboardResource } from '@/app/app/modules/dashboard/data-client';
 import { fetchTransactionsContext } from '@/app/app/modules/transactions/data-client';
 import { fetchGoalsContext } from '@/app/app/modules/goals/data-client';
 import { fetchInvestmentsContext } from '@/app/app/modules/investments/data-client';
 import { fetchDebtsContext, fetchRecurringDebtsContext } from '@/app/app/modules/debts/data-client';
 import { ResourceClientError } from '@/app/app/modules/shared/resource-client';
+import type { DashboardOverviewPayload } from '@/lib/dashboard/overview';
 import {
   CONVENTIONAL_DEBT_CATEGORIES,
   RECURRING_DEBT_FREQUENCIES,
@@ -468,6 +470,7 @@ type WorkspaceDashboardSnapshot = {
   debts: Debt[];
   recurringDebts: RecurringDebt[];
   workspaceEvents: WorkspaceEventItem[];
+  dashboardOverview: DashboardOverviewPayload | null;
   dashboardInsights: string[];
   isWhatsAppConnected: boolean;
   workspaceWhatsAppPhoneNumber: string;
@@ -1284,7 +1287,7 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃ’O') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃO') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
@@ -2307,605 +2310,28 @@ const SubscriptionView = ({
 };
 
 type DashboardViewProps = {
-  transactions: Transaction[];
-  insights: string[];
-  projection: DashboardProjection | null;
-  calendarReadModel: DashboardCalendarReadModel | null;
-  totalBalance: number;
-  onAddTransaction: () => void;
+  overview: DashboardOverviewPayload | null;
+  loading: boolean;
   currentPlan: SubscriptionPlan;
+  onAddTransaction: () => void;
   onUpgrade: () => void;
 };
 
 const DashboardView = ({
-  transactions,
-  insights,
-  projection,
-  calendarReadModel,
-  totalBalance,
-  onAddTransaction,
+  overview,
+  loading,
   currentPlan,
+  onAddTransaction,
   onUpgrade,
 }: DashboardViewProps) => {
-  const now = React.useMemo(() => new Date(), []);
-  const enrichedTransactions = React.useMemo(
-    () =>
-      transactions.map((tx) => ({
-        ...tx,
-        parsedDate: parseTransactionDate(tx.date),
-      })),
-    [transactions]
-  );
-
-  const currentMonthTransactions = React.useMemo(
-    () =>
-      enrichedTransactions.filter((tx) => {
-        if (!tx.parsedDate) return false;
-        return (
-          tx.parsedDate.getMonth() === now.getMonth() &&
-          tx.parsedDate.getFullYear() === now.getFullYear()
-        );
-      }),
-    [enrichedTransactions, now]
-  );
-
-  const monthIncomeFromTransactions = currentMonthTransactions
-    .filter((tx) => tx.type === 'income')
-    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
-
-  const monthExpensesFromTransactions = currentMonthTransactions
-    .filter((tx) => tx.type === 'expense')
-    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
-
-  const monthIncome = projection ? projection.monthConfirmedIncome : monthIncomeFromTransactions;
-  const monthExpenses = projection ? projection.monthConfirmedExpense : monthExpensesFromTransactions;
-
-  const monthBalance = monthIncome - monthExpenses;
-  const savingsRate = monthIncome > 0 ? (monthBalance / monthIncome) * 100 : 0;
-
-  const expenseByCategory = currentMonthTransactions.reduce((acc, tx) => {
-    if (tx.type !== 'expense') return acc;
-    const category = tx.cat || 'Sem categoria';
-    acc.set(category, (acc.get(category) || 0) + parseCurrency(tx.amount));
-    return acc;
-  }, new Map<string, number>());
-
-  const largestExpenseEntry = [...expenseByCategory.entries()].sort((a, b) => b[1] - a[1])[0];
-
-  const chartData = React.useMemo(() => {
-    const months = Array.from({ length: 6 }, (_, index) => {
-      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
-      const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-      return {
-        key: `${date.getFullYear()}-${date.getMonth()}`,
-        name: `${label.charAt(0).toUpperCase()}${label.slice(1)}`,
-        income: 0,
-        expense: 0,
-      };
-    });
-
-    const monthMap = new Map(months.map((month) => [month.key, month]));
-
-    for (const tx of enrichedTransactions) {
-      if (!tx.parsedDate) continue;
-      const key = `${tx.parsedDate.getFullYear()}-${tx.parsedDate.getMonth()}`;
-      const bucket = monthMap.get(key);
-      if (!bucket) continue;
-      const amount = parseCurrency(tx.amount);
-      if (tx.type === 'income') {
-        bucket.income += amount;
-      } else {
-        bucket.expense += amount;
-      }
-    }
-
-    return months;
-  }, [enrichedTransactions, now]);
-
-  const recentTransactions = React.useMemo(
-    () =>
-      [...enrichedTransactions]
-        .sort((a, b) => (b.parsedDate?.getTime() ?? 0) - (a.parsedDate?.getTime() ?? 0))
-        .slice(0, 8),
-    [enrichedTransactions]
-  );
-
-  const monthLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  const projectionDelta30d = projection ? projection.projectedBalance30d - projection.currentBalance : null;
-  const projectionPreviewRows = React.useMemo(() => {
-    if (!projection) return [] as Array<{
-      dateLabel: string;
-      closingBalance: number;
-      plannedNet: number;
-    }>;
-
-    return projection.daily.slice(0, 6).map((row) => ({
-      dateLabel: formatIsoDateShort(row.date),
-      closingBalance: row.closingBalance,
-      plannedNet: row.inflowPlanned - row.outflowPlanned,
-    }));
-  }, [projection]);
-  const projectionCurveRows = React.useMemo(() => {
-    if (!projection) return [] as Array<{ dateLabel: string; closingBalance: number }>;
-    return projection.daily.map((row) => ({
-      dateLabel: formatIsoDateShort(row.date),
-      closingBalance: row.closingBalance,
-    }));
-  }, [projection]);
-  const upcomingEvents = calendarReadModel?.upcomingEvents ?? [];
-  const upcomingInflow = upcomingEvents.reduce((acc, item) => {
-    if (item.flow !== 'in') return acc;
-    return acc + Number(item.amount || 0);
-  }, 0);
-  const upcomingOutflow = upcomingEvents.reduce((acc, item) => {
-    if (item.flow !== 'out') return acc;
-    return acc + Number(item.amount || 0);
-  }, 0);
-  const upcomingInflowCount = upcomingEvents.filter((item) => item.flow === 'in').length;
-  const upcomingOutflowCount = upcomingEvents.filter((item) => item.flow === 'out').length;
-  const monthProjectedNet = projection
-    ? projection.monthPlannedIncome - projection.monthPlannedExpense
-    : calendarReadModel
-      ? calendarReadModel.totalExpectedInflow - calendarReadModel.totalExpectedOutflow
-      : null;
-  const currentBalanceValue = projection ? projection.currentBalance : totalBalance;
-  const projectedBalanceValue = projection ? projection.projectedBalance30d : null;
-  const smartAlerts: Array<{ id: string; tone: 'danger' | 'warning' | 'info'; title: string; message: string }> = [];
-
-  if (projection?.projectedNegativeDate) {
-    smartAlerts.push({
-      id: 'negative-balance-forecast',
-      tone: 'danger',
-      title: 'Risco de saldo negativo',
-      message: `A projeção aponta saldo negativo em ${formatIsoDateShort(projection.projectedNegativeDate)}.`,
-    });
-  }
-
-  if ((calendarReadModel?.overdueCount || 0) > 0) {
-    smartAlerts.push({
-      id: 'overdue-events',
-      tone: 'danger',
-      title: 'Compromissos em atraso',
-      message: `${calendarReadModel?.overdueCount || 0} evento(s) estão em atraso e pressionam o caixa.`,
-    });
-  }
-
-  if ((calendarReadModel?.criticalDaysCount || 0) > 0) {
-    smartAlerts.push({
-      id: 'critical-days',
-      tone: 'warning',
-      title: 'Datas críticas no calendário',
-      message: `${calendarReadModel?.criticalDaysCount || 0} dia(s) com pressão relevante de saldo neste período.`,
-    });
-  }
-
-  if ((monthProjectedNet || 0) < 0) {
-    smartAlerts.push({
-      id: 'negative-month-net',
-      tone: 'warning',
-      title: 'Fluxo previsto do mês negativo',
-      message: `A soma prevista do mês está em ${formatCurrency(monthProjectedNet || 0)}.`,
-    });
-  }
-
-  const firstInsight = insights[0];
-  if (firstInsight) {
-    smartAlerts.push({
-      id: 'insight-priority',
-      tone: 'info',
-      title: 'Leitura inteligente',
-      message: firstInsight,
-    });
-  }
-
-  const dashboardAlerts = smartAlerts.slice(0, 4);
-
-  const mapUpcomingStatusLabel = (status: string) => {
-    const normalized = String(status || '').toUpperCase();
-    if (normalized === 'OVERDUE') return 'Atrasado';
-    if (normalized === 'PAID') return 'Pago';
-    if (normalized === 'RECEIVED') return 'Recebido';
-    if (normalized === 'CANCELED') return 'Cancelado';
-    return 'Pendente';
-  };
-
   return (
-    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h3 className="page-title-premium text-[var(--text-primary)]">Visão Geral</h3>
-          <p className="text-sm text-[var(--text-secondary)] capitalize">Resumo de {monthLabel}</p>
-        </div>
-        <button
-          onClick={onAddTransaction}
-          className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft)]"
-        >
-          <Plus size={16} /> Nova Transação
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Saldo atual"
-          value={formatCurrency(currentBalanceValue)}
-          trend="disponível hoje"
-          trendValue={currentBalanceValue >= 0 ? 'Em dia' : 'Atenção'}
-          icon={Wallet}
-          trendType={currentBalanceValue >= 0 ? 'up' : 'down'}
-        />
-        <StatCard
-          label="Saldo previsto (30 dias)"
-          value={projectedBalanceValue === null ? '--' : formatCurrency(projectedBalanceValue)}
-          trend={
-            projectedBalanceValue === null
-              ? 'adicione movimentações para visualizar previsões'
-              : 'comparado ao saldo atual'
-          }
-          trendValue={
-            projectionDelta30d === null
-              ? 'Sem projeção'
-              : `${projectionDelta30d >= 0 ? '+' : '-'}${formatCurrency(Math.abs(projectionDelta30d))}`
-          }
-          icon={Gauge}
-          trendType={projectionDelta30d !== null && projectionDelta30d < 0 ? 'down' : 'up'}
-        />
-        <StatCard
-          label="Próximas entradas"
-          value={formatCurrency(upcomingInflow)}
-          trend="eventos previstos"
-          trendValue={`${upcomingInflowCount}`}
-          icon={TrendingUp}
-        />
-        <StatCard
-          label="Próximas saídas"
-          value={formatCurrency(upcomingOutflow)}
-          trend="compromissos previstos"
-          trendValue={`${upcomingOutflowCount}`}
-          icon={TrendingDown}
-          trendType="down"
-        />
-      </div>
-
-      <div className="app-surface-card rounded-2xl p-5 sm:p-6">
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="card-title-premium text-[var(--text-primary)]">Resumo para decisão</h3>
-            <p className="text-sm text-[var(--text-secondary)]">
-              {projection
-                ? `Atualizado em ${formatIsoDateShort(projection.updatedAt)}`
-                : 'Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.'}
-            </p>
-          </div>
-          <span className="inline-flex w-fit items-center rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
-            {dashboardAlerts.length > 0
-              ? `${dashboardAlerts.length} alerta(s) relevante(s)`
-              : 'Sem alertas críticos'}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 lg:col-span-2">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Alertas relevantes</p>
-            <div className="mt-3 space-y-2">
-              {dashboardAlerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className={cn(
-                    'rounded-lg border px-3 py-2',
-                    alert.tone === 'danger'
-                      ? 'border-[color:color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--danger)_14%,transparent)]'
-                      : alert.tone === 'warning'
-                        ? 'border-[color:color-mix(in_srgb,var(--warning)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--warning)_14%,transparent)]'
-                        : 'border-[color:color-mix(in_srgb,var(--primary)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_14%,transparent)]'
-                  )}
-                >
-                  <p className="text-sm font-bold text-[var(--text-primary)]">{alert.title}</p>
-                  <p className="mt-1 text-xs text-[var(--text-secondary)]">{alert.message}</p>
-                </div>
-              ))}
-              {dashboardAlerts.length === 0 ? (
-                <p className="text-sm text-[var(--text-secondary)]">
-                  Nenhum alerta crítico no momento. Seu fluxo financeiro está estável.
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Resumo do mês</p>
-            <p
-              className={cn(
-                'mt-2 text-2xl font-black',
-                (monthProjectedNet || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]'
-              )}
-            >
-              {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              Confirmado: {formatCurrency(monthBalance)}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">
-              Previsto: {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
-            </p>
-            <p className="mt-3 text-xs text-[var(--text-secondary)]">
-              {monthProjectedNet === null
-                ? 'Adicione movimentações para visualizar a tendência do mês.'
-                : monthProjectedNet >= 0
-                  ? 'Tendência positiva para o fechamento do mês.'
-                  : 'O mês tende a fechar negativo se nada mudar.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Próximas movimentações</p>
-            <div className="mt-3 space-y-2">
-              {upcomingEvents.slice(0, 6).map((event) => (
-                <div
-                  key={`dashboard-upcoming-${event.id}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{event.title}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">
-                      {formatIsoDateShort(event.date)} â€¢ {mapUpcomingStatusLabel(event.status)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={cn(
-                        'text-sm font-black',
-                        event.flow === 'in'
-                          ? 'text-[var(--positive)]'
-                          : event.flow === 'out'
-                            ? 'text-[var(--danger)]'
-                            : 'text-[var(--text-primary)]'
-                      )}
-                    >
-                      {event.amount === null ? '--' : formatCurrency(event.amount)}
-                    </p>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                      {event.flow === 'in' ? 'Entrada' : event.flow === 'out' ? 'Saída' : 'Neutro'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {upcomingEvents.length === 0 ? (
-                <p className="text-sm text-[var(--text-secondary)]">
-                  Adicione movimentações para visualizar previsões de entradas e saídas.
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
-            {projectionCurveRows.length > 0 ? (
-              <div className="mt-3 h-[180px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={projectionCurveRows}>
-                    <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
-                    <XAxis dataKey="dateLabel" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis
-                      stroke="var(--text-muted)"
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => formatCurrency(Number(value || 0))}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--bg-surface)',
-                        border: '1px solid var(--border-default)',
-                        borderRadius: '12px',
-                        boxShadow: 'var(--shadow-soft)',
-                      }}
-                      formatter={(value) => [formatCurrency(Number(value || 0)), 'Saldo previsto']}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="closingBalance"
-                      stroke="var(--primary)"
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
-        <div className="app-surface-card lg:col-span-2 rounded-2xl p-5 sm:p-6">
-          <div className="mb-6">
-            <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
-            <p className="text-sm text-[var(--text-secondary)]">Ãšltimos 6 meses</p>
-          </div>
-
-          <div className="h-[280px] w-full sm:h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
-                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis
-                  stroke="var(--text-muted)"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(Number(value || 0))}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-default)',
-                    borderRadius: '12px',
-                    boxShadow: 'var(--shadow-soft)',
-                  }}
-                  formatter={(value, name) => [
-                    formatCurrency(Number(value || 0)),
-                    name === 'income' ? 'Receitas' : 'Despesas',
-                  ]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="income"
-                  name="income"
-                  stroke="var(--positive)"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 4, fill: 'var(--positive)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="expense"
-                  name="expense"
-                  stroke="var(--danger)"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 4, fill: 'var(--danger)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="app-surface-card rounded-2xl p-5 sm:p-6">
-          <h3 className="card-title-premium mb-6 text-[var(--text-primary)]">Insights do mês</h3>
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)] p-5">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] bg-[var(--warning-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--warning)]">
-                Alerta
-              </div>
-              <p className="label-premium text-[var(--text-muted)]">Maior gasto do mês</p>
-              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">
-                {largestExpenseEntry ? formatCurrency(largestExpenseEntry[1]) : formatCurrency(0)}
-              </p>
-              <p className="mt-2 text-sm text-[var(--text-primary)]">
-                {largestExpenseEntry ? largestExpenseEntry[0] : 'Sem despesas registradas no mês atual.'}
-              </p>
-              <p className="mt-3 text-xs font-semibold text-[var(--warning)]">
-                Ação sugerida: revise essa categoria e defina limite para os próximos 7 dias.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--primary)]">
-                Tendência
-              </div>
-              <p className="label-premium text-[var(--text-muted)]">Despesas no mês</p>
-              <p className="mt-2 text-xl font-black text-[var(--text-primary)]">{formatCurrency(monthExpenses)}</p>
-              <p className="mt-2 text-sm text-[var(--text-primary)]">
-                Você gastou <span className="font-bold text-[var(--danger)]">{formatCurrency(monthExpenses)}</span>{' '}
-                em{' '}
-                <span className="font-bold text-[var(--text-primary)]">
-                  {currentMonthTransactions.filter((tx) => tx.type === 'expense').length}
-                </span>{' '}
-                transações no período atual.
-              </p>
-              <p className="mt-3 text-xs font-semibold text-[var(--primary)]">
-                Ação sugerida: acompanhe o relatório de categorias para conter desvios.
-              </p>
-            </div>
-
-            {currentPlan === 'FREE' ? (
-              <div className="app-surface-subtle rounded-[var(--radius-md)] p-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
-                  Disponível no Pro
-                </p>
-                <p className="text-sm leading-relaxed text-[var(--text-primary)]">
-                  Receba insights financeiros automáticos com base no seu histórico para identificar padrões,
-                  desperdícios e oportunidades de ajuste.
-                </p>
-                <button
-                  type="button"
-                  onClick={onUpgrade}
-                  className="app-button-primary mt-4 rounded-xl px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-soft)]"
-                >
-                  Liberar insights automáticos
-                </button>
-              </div>
-            ) : (
-              insights.map((insight, index) => (
-                <div
-                  key={`${index}-${insight.slice(0, 24)}`}
-                  className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] p-5"
-                >
-                  <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--primary)]">
-                    Insight IA
-                  </p>
-                  <p className="text-sm font-semibold text-[var(--text-muted)]">Leitura principal</p>
-                  <p className="mt-2 text-lg font-black text-[var(--text-primary)]">{extractInsightMetric(insight) ?? 'Sem métrica numérica'}</p>
-                  <p className="mt-2 text-sm text-[var(--text-primary)]">{insight}</p>
-                  <p className="mt-3 text-xs font-semibold text-[var(--primary)]">{getInsightActionHint(insight)}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="app-table-shell overflow-hidden rounded-2xl">
-        <div className="flex items-center justify-between border-b border-[var(--border-default)] px-6 py-4">
-          <h3 className="card-title-premium text-[var(--text-primary)]">Ãšltimas transações</h3>
-          <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">
-            {recentTransactions.length} registros
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-left">
-            <thead>
-              <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface)]">
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                  Categoria
-                </th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                  Descrição
-                </th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                  Data
-                </th>
-                <th className="px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] text-right">
-                  Valor
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.06]">
-              {recentTransactions.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
-                    Nenhuma transação encontrada.
-                  </td>
-                </tr>
-              )}
-              {recentTransactions.map((tx) => (
-                <tr key={tx.id} className="transition-colors hover:bg-[var(--bg-surface-elevated)]/40">
-                  <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.cat || 'Sem categoria'}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{tx.desc}</td>
-                  <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{tx.date}</td>
-                  <td
-                    className={cn(
-                      'px-6 py-4 text-sm font-bold text-right',
-                      getBaseTypeColorClass(tx.type)
-                    )}
-                  >
-                    {tx.amount}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <DashboardOverview
+      overview={overview}
+      loading={loading}
+      currentPlan={currentPlan}
+      onAddTransaction={onAddTransaction}
+      onUpgrade={onUpgrade}
+    />
   );
 };
 
@@ -3458,9 +2884,9 @@ const IntegrationsView = ({
                   {[
                     { label: 'Número vinculado', value: linkedPhoneNumber || 'Nenhum número salvo' },
                     { label: 'Status atual', value: connectionLabel },
-                    { label: 'Ãšltima tentativa', value: lastAttemptLabel },
-                    { label: 'Ãšltimo teste', value: lastTestLabel },
-                    { label: 'Ãšltimo erro', value: lastErrorLabel },
+                    { label: 'Última tentativa', value: lastAttemptLabel },
+                    { label: 'Último teste', value: lastTestLabel },
+                    { label: 'Último erro', value: lastErrorLabel },
                     { label: 'Ação disponível', value: nextActionLabel },
                   ].map((item) => (
                     <div
@@ -8553,6 +7979,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = React.useState<Tab>('dashboard');
   const [dataLoading, setDataLoading] = React.useState(false);
+  const [dashboardOverview, setDashboardOverview] = React.useState<DashboardOverviewPayload | null>(null);
   const [totalBalance, setTotalBalance] = React.useState(0);
   const [dashboardInsights, setDashboardInsights] = React.useState<string[]>([]);
   const [dashboardProjection, setDashboardProjection] = React.useState<DashboardProjection | null>(null);
@@ -8676,9 +8103,6 @@ export default function App() {
     if (!user) return;
     const silent = Boolean(options?.silent);
     const scope = options?.scope === 'transactions' ? 'transactions' : 'full';
-    if (!silent) {
-      setDataLoading(true);
-    }
 
     const preferredWorkspaceId = !activeWorkspaceId && user?.id ? readActiveWorkspacePreference(user.id) : null;
     const workspaceIdForRequest = activeWorkspaceId || preferredWorkspaceId || null;
@@ -8745,17 +8169,7 @@ export default function App() {
             .filter(Boolean)
         : null;
       const mappedProjection = mapApiProjectionToClientProjection(data.projection);
-      let mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
-      try {
-        const calendarPayload = await fetchDashboardCalendarReadPayload({
-          getAuthHeaders,
-          workspaceIdOverride: workspaceIdForRequest,
-          upcomingDays: 14,
-        });
-        mappedCalendarReadModel = mapApiDashboardCalendarReadModel(calendarPayload);
-      } catch (calendarError) {
-        console.warn('Dashboard calendar read model fallback:', calendarError);
-      }
+      const mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
 
       if (data.totalBalance !== undefined) {
         setTotalBalance(Number(data.totalBalance));
@@ -8918,6 +8332,7 @@ export default function App() {
           debts: mappedDebts ?? baseSnapshot?.debts ?? [],
           recurringDebts: mappedRecurringDebts ?? baseSnapshot?.recurringDebts ?? [],
           workspaceEvents: mappedWorkspaceEvents ?? baseSnapshot?.workspaceEvents ?? [],
+          dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverview ?? null,
           dashboardInsights: mappedInsights ?? baseSnapshot?.dashboardInsights ?? [],
           isWhatsAppConnected:
             data.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED',
@@ -8946,17 +8361,15 @@ export default function App() {
         );
       }
     } finally {
-      if (!silent) {
-        setDataLoading(false);
-      }
     }
-  }, [activeWorkspaceId, getAuthHeaders, setupUserOnServer, user]);
+  }, [activeWorkspaceId, dashboardOverview, getAuthHeaders, setupUserOnServer, user]);
 
   React.useEffect(() => {
     if (user) {
       void fetchDashboardData({ silent: hasFetchedDashboardRef.current });
     }
   }, [user, fetchDashboardData]);
+
   const [isAssistantOpen, setIsAssistantOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
@@ -9156,6 +8569,7 @@ export default function App() {
   const lastUserIdRef = React.useRef<string | null>(null);
   const lastWorkspaceIdRef = React.useRef<string | null>(null);
   const hasFetchedDashboardRef = React.useRef(false);
+  const hasFetchedDashboardOverviewRef = React.useRef(false);
   const uiFeedbackTimeoutRef = React.useRef<number | null>(null);
   const headerSearchRef = React.useRef<HTMLDivElement | null>(null);
   const quickCreateMenuRef = React.useRef<HTMLDivElement | null>(null);
@@ -9204,6 +8618,7 @@ export default function App() {
     setDebts(snapshot.debts);
     setRecurringDebts(snapshot.recurringDebts ?? []);
     setWorkspaceEvents(snapshot.workspaceEvents);
+    setDashboardOverview(snapshot.dashboardOverview ?? null);
     setDashboardInsights(snapshot.dashboardInsights);
     setDashboardProjection(snapshot.dashboardProjection ?? null);
     setDashboardCalendarReadModel(snapshot.dashboardCalendarReadModel ?? null);
@@ -9238,6 +8653,7 @@ export default function App() {
         debts: baseSnapshot?.debts ?? debts,
         recurringDebts: baseSnapshot?.recurringDebts ?? recurringDebts,
         workspaceEvents: baseSnapshot?.workspaceEvents ?? workspaceEvents,
+        dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverview ?? null,
         dashboardInsights: baseSnapshot?.dashboardInsights ?? dashboardInsights,
         isWhatsAppConnected: baseSnapshot?.isWhatsAppConnected ?? isWhatsAppConnected,
         workspaceWhatsAppPhoneNumber: baseSnapshot?.workspaceWhatsAppPhoneNumber ?? workspaceWhatsAppPhoneNumber,
@@ -9268,9 +8684,66 @@ export default function App() {
       transactions,
       user?.id,
       workspaceEvents,
+      dashboardOverview,
       workspaceWhatsAppPhoneNumber,
     ]
   );
+
+  const fetchDashboardOverviewData = React.useCallback(async (options?: { silent?: boolean }) => {
+    if (!user) return;
+
+    const silent = Boolean(options?.silent);
+    if (!silent) {
+      setDataLoading(true);
+    }
+
+    const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+
+    try {
+      let payload: DashboardOverviewPayload;
+      try {
+        payload = await fetchDashboardOverviewResource({
+          getAuthHeaders,
+          workspaceIdOverride: workspaceIdForRequest,
+        });
+      } catch (error) {
+        if (error instanceof ResourceClientError && error.status === 404) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (!session?.access_token) {
+            throw error;
+          }
+          await setupUserOnServer(session.access_token, session.user?.id);
+          payload = await fetchDashboardOverviewResource({
+            getAuthHeaders,
+            workspaceIdOverride: workspaceIdForRequest,
+          });
+        } else {
+          throw error;
+        }
+      }
+
+      setDashboardOverview(payload);
+      const resolvedWorkspaceId = payload.workspaceId || workspaceIdForRequest || activeWorkspaceId;
+      if (resolvedWorkspaceId) {
+        upsertWorkspaceSnapshot(resolvedWorkspaceId, { dashboardOverview: payload });
+      }
+      hasFetchedDashboardOverviewRef.current = true;
+    } catch (error) {
+      console.error('Dashboard overview fetch error:', error);
+    } finally {
+      if (!silent) {
+        setDataLoading(false);
+      }
+    }
+  }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
+
+  React.useEffect(() => {
+    if (user) {
+      void fetchDashboardOverviewData({ silent: hasFetchedDashboardOverviewRef.current });
+    }
+  }, [user, fetchDashboardOverviewData]);
 
   const refreshTransactionsResource = React.useCallback(
     async (options?: TransactionsResourceRefreshOptions) => {
@@ -9336,19 +8809,7 @@ export default function App() {
         : null;
       const mappedProjection = syncProjection ? mapApiProjectionToClientProjection(data?.projection) : null;
 
-      let mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
-      if (syncCalendarReadModel) {
-        try {
-          const calendarPayload = await fetchDashboardCalendarReadPayload({
-            getAuthHeaders,
-            workspaceIdOverride: workspaceIdForRequest,
-            upcomingDays: 14,
-          });
-          mappedCalendarReadModel = mapApiDashboardCalendarReadModel(calendarPayload);
-        } catch (calendarError) {
-          console.warn('Transactions refresh calendar read model fallback:', calendarError);
-        }
-      }
+      const mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
 
       const workspaceSnapshotPatch: Partial<WorkspaceDashboardSnapshot> = {};
 
@@ -9528,7 +8989,7 @@ export default function App() {
       syncWorkspaceEvents: false,
       syncInsights: false,
       syncProjection: true,
-      syncCalendarReadModel: true,
+      syncCalendarReadModel: false,
       syncTotalsAndPlan: false,
       syncUsageAndLimits: false,
       syncWhatsAppState: false,
@@ -9539,13 +9000,15 @@ export default function App() {
     (delayMs = 500) => {
       if (typeof window === 'undefined') {
         void refreshProjectionAndCalendarResource();
+        void fetchDashboardOverviewData({ silent: true });
         return;
       }
       window.setTimeout(() => {
         void refreshProjectionAndCalendarResource();
+        void fetchDashboardOverviewData({ silent: true });
       }, Math.max(0, delayMs));
     },
-    [refreshProjectionAndCalendarResource]
+    [fetchDashboardOverviewData, refreshProjectionAndCalendarResource]
   );
 
   const refreshTransactionsAfterMutation = React.useCallback(() => {
@@ -9574,6 +9037,7 @@ export default function App() {
       setRecurringDebts([]);
       setBills([]);
       setWorkspaceEvents([]);
+      setDashboardOverview(null);
       setSubscriptionSummary(null);
       setSubscriptionError(null);
       setIsSubscriptionLoading(false);
@@ -9603,6 +9067,7 @@ export default function App() {
         setActiveWorkspaceId(null);
       }
       hasFetchedDashboardRef.current = false;
+      hasFetchedDashboardOverviewRef.current = false;
       lastWorkspaceIdRef.current = null;
       lastUserIdRef.current = nextUserId;
     }
@@ -13712,18 +13177,15 @@ React.useEffect(() => {
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'dashboard' && (
-                <DashboardContainer>
+                <DashboardPageContainer>
                   <DashboardView
-                    transactions={transactions}
-                    insights={dashboardInsights}
-                    projection={dashboardProjection}
-                    calendarReadModel={dashboardCalendarReadModel}
-                    totalBalance={totalBalance}
-                    onAddTransaction={handleOpenCreateTransaction}
+                    overview={dashboardOverview}
+                    loading={dataLoading}
                     currentPlan={currentPlan}
+                    onAddTransaction={handleOpenCreateTransaction}
                     onUpgrade={() => void handleUpgrade('Pro Mensal')}
                   />
-                </DashboardContainer>
+                </DashboardPageContainer>
               )}
               {activeTab === 'transactions' && (
                 <TransactionsContainer>
@@ -14257,6 +13719,23 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
