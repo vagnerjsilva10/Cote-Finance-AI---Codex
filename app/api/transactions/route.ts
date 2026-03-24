@@ -610,6 +610,7 @@ export async function PATCH(req: Request) {
         destination_wallet_id: true,
         amount: true,
         type: true,
+        status: true,
         payment_method: true,
         category_id: true,
         description: true,
@@ -678,18 +679,25 @@ export async function PATCH(req: Request) {
       ? normalizePaymentMethod(body.paymentMethod, nextType)
       : (existingTransaction.payment_method as TransactionPaymentMethod);
 
-    const previousEffects = buildLedgerEffects({
-      type: existingTransaction.type as TransactionType,
-      amount: Number(existingTransaction.amount),
-      walletId: existingTransaction.wallet_id,
-      destinationWalletId: existingTransaction.destination_wallet_id,
-    });
-    const nextEffects = buildLedgerEffects({
-      type: nextType,
-      amount: nextAmount,
-      walletId,
-      destinationWalletId: nextDestinationWalletId,
-    });
+    const existingStatus = normalizeTransactionStatus(existingTransaction.status, 'CONFIRMED');
+    const previousEffects =
+      existingStatus === 'CONFIRMED'
+        ? buildLedgerEffects({
+            type: existingTransaction.type as TransactionType,
+            amount: Number(existingTransaction.amount),
+            walletId: existingTransaction.wallet_id,
+            destinationWalletId: existingTransaction.destination_wallet_id,
+          })
+        : [];
+    const nextEffects =
+      existingStatus === 'CONFIRMED'
+        ? buildLedgerEffects({
+            type: nextType,
+            amount: nextAmount,
+            walletId,
+            destinationWalletId: nextDestinationWalletId,
+          })
+        : [];
     const mergedEffects = mergeLedgerEffects(previousEffects, nextEffects);
 
     const transaction = await prisma.$transaction(async (tx) => {
@@ -787,6 +795,7 @@ export async function DELETE(req: Request) {
         destination_wallet_id: true,
         amount: true,
         type: true,
+        status: true,
       },
     });
 
@@ -794,15 +803,18 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     }
 
-    const previousEffects = buildLedgerEffects({
-      type: existingTransaction.type as TransactionType,
-      amount: Number(existingTransaction.amount),
-      walletId: existingTransaction.wallet_id,
-      destinationWalletId: existingTransaction.destination_wallet_id,
-    }).map((effect) => ({
-      walletId: effect.walletId,
-      delta: -effect.delta,
-    }));
+    const previousEffects =
+      normalizeTransactionStatus(existingTransaction.status, 'CONFIRMED') === 'CONFIRMED'
+        ? buildLedgerEffects({
+            type: existingTransaction.type as TransactionType,
+            amount: Number(existingTransaction.amount),
+            walletId: existingTransaction.wallet_id,
+            destinationWalletId: existingTransaction.destination_wallet_id,
+          }).map((effect) => ({
+            walletId: effect.walletId,
+            delta: -effect.delta,
+          }))
+        : [];
 
     await prisma.$transaction(async (tx) => {
       await applyLedgerEffects(tx, previousEffects);

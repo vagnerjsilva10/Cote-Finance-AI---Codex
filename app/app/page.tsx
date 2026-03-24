@@ -73,13 +73,16 @@ import { OnboardingContainer } from '@/app/app/modules/settings/components/onboa
 import { SettingsContainer } from '@/app/app/modules/settings/components/settings-container';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
-import { fetchDashboardOverviewResource, fetchDashboardResource } from '@/app/app/modules/dashboard/data-client';
+import { fetchDashboardOverviewResource } from '@/app/app/modules/dashboard/data-client';
 import { fetchTransactionsContext } from '@/app/app/modules/transactions/data-client';
 import { fetchGoalsContext } from '@/app/app/modules/goals/data-client';
 import { fetchInvestmentsContext } from '@/app/app/modules/investments/data-client';
 import { fetchDebtsContext, fetchRecurringDebtsContext } from '@/app/app/modules/debts/data-client';
+import { fetchWorkspaceShellResource } from '@/app/app/modules/workspace-shell/data-client';
+import { fetchReportsOverviewResource } from '@/app/app/modules/reports/data-client';
 import { ResourceClientError } from '@/app/app/modules/shared/resource-client';
 import type { DashboardOverviewPayload } from '@/lib/dashboard/overview';
+import type { ReportsOverviewPayload } from '@/domain/reports/report-overview';
 import {
   CONVENTIONAL_DEBT_CATEGORIES,
   RECURRING_DEBT_FREQUENCIES,
@@ -471,6 +474,7 @@ type WorkspaceDashboardSnapshot = {
   recurringDebts: RecurringDebt[];
   workspaceEvents: WorkspaceEventItem[];
   dashboardOverview: DashboardOverviewPayload | null;
+  reportsOverview?: ReportsOverviewPayload | null;
   dashboardInsights: string[];
   isWhatsAppConnected: boolean;
   workspaceWhatsAppPhoneNumber: string;
@@ -4391,6 +4395,7 @@ type ReportsViewProps = {
   transactions: Transaction[];
   totalBalance: number;
   projection: DashboardProjection | null;
+  reportOverview: ReportsOverviewPayload | null;
   goals: Goal[];
   onExportPDF: () => void;
   onExportCSV: () => void;
@@ -4406,6 +4411,7 @@ const ReportsView = ({
   transactions,
   totalBalance,
   projection,
+  reportOverview,
   goals,
   onExportPDF,
   onExportCSV,
@@ -4425,17 +4431,24 @@ const ReportsView = ({
     [transactions]
   );
 
-  const totalIncome = transactions
-    .filter((tx) => tx.type === 'income')
-    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+  const totalIncome =
+    reportOverview?.summary.totalIncome ??
+    transactions.filter((tx) => tx.type === 'income').reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
 
-  const totalExpenses = transactions
-    .filter((tx) => tx.type === 'expense')
-    .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
+  const totalExpenses =
+    reportOverview?.summary.totalExpenses ??
+    transactions.filter((tx) => tx.type === 'expense').reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
 
-  const balance = totalIncome - totalExpenses;
+  const balance = reportOverview?.summary.balance ?? totalIncome - totalExpenses;
 
   const revenueExpense12Months = React.useMemo(() => {
+    if (reportOverview) {
+      return reportOverview.revenueExpense12Months.map((item) => ({
+        name: item.label,
+        income: item.income,
+        expense: item.expense,
+      }));
+    }
     const months = Array.from({ length: 12 }, (_, index) => {
       const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
       const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
@@ -4463,9 +4476,18 @@ const ReportsView = ({
     }
 
     return months;
-  }, [enrichedTransactions, now]);
+  }, [enrichedTransactions, now, reportOverview]);
 
   const savingsRate6Months = React.useMemo(() => {
+    if (reportOverview) {
+      return reportOverview.savingsRate6Months.map((item) => ({
+        key: item.label,
+        name: item.label,
+        income: item.income,
+        expense: item.expense,
+        savingsRate: item.savingsRate,
+      }));
+    }
     const months = Array.from({ length: 6 }, (_, index) => {
       const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
       const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
@@ -4499,9 +4521,12 @@ const ReportsView = ({
     }
 
     return months;
-  }, [enrichedTransactions, now]);
+  }, [enrichedTransactions, now, reportOverview]);
 
   const categoryData = React.useMemo(() => {
+    if (reportOverview) {
+      return reportOverview.categoryData;
+    }
     const expenseByCategory = new Map<string, number>();
     for (const tx of transactions) {
       if (tx.type !== 'expense') continue;
@@ -4517,11 +4542,14 @@ const ReportsView = ({
         value,
         color: palette[index % palette.length],
       }));
-  }, [transactions]);
+  }, [reportOverview, transactions]);
 
   const pieData = categoryData.length > 0 ? categoryData : [{ name: 'Sem dados', value: 1, color: 'var(--text-muted)' }];
 
   const expenseDeepDive = React.useMemo(() => {
+    if (reportOverview) {
+      return reportOverview.expenseDeepDive;
+    }
     const currentMonthReference = new Date(now.getFullYear(), now.getMonth(), 1);
     const previousMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
@@ -4612,9 +4640,12 @@ const ReportsView = ({
       recurringHeavyCategories,
       largestExpense,
     };
-  }, [enrichedTransactions, now]);
+  }, [enrichedTransactions, now, reportOverview]);
 
   const balanceForecast = React.useMemo(() => {
+    if (reportOverview) {
+      return reportOverview.balanceForecast;
+    }
     const horizonDays = [7, 15, 30];
     if (projection && projection.daily.length > 0) {
       const firstDailyPoint = projection.daily[0];
@@ -4685,10 +4716,11 @@ const ReportsView = ({
       projectedNegativeInDays,
       source: 'legacy' as const,
     };
-  }, [enrichedTransactions, now, projection, totalBalance]);
+  }, [enrichedTransactions, now, projection, reportOverview, totalBalance]);
 
   const premiumSmartAlerts = React.useMemo(
     () =>
+      reportOverview?.premiumSmartAlerts ??
       buildPremiumSmartAlerts({
         transactions,
         totalBalance,
@@ -4696,7 +4728,7 @@ const ReportsView = ({
         now,
         includeOkState: true,
       }),
-    [goals, now, totalBalance, transactions]
+    [goals, now, reportOverview, totalBalance, transactions]
   );
 
   const trendDirectionLabel =
@@ -7980,6 +8012,7 @@ export default function App() {
   const [activeTab, setActiveTab] = React.useState<Tab>('dashboard');
   const [dataLoading, setDataLoading] = React.useState(false);
   const [dashboardOverview, setDashboardOverview] = React.useState<DashboardOverviewPayload | null>(null);
+  const [reportsOverview, setReportsOverview] = React.useState<ReportsOverviewPayload | null>(null);
   const [totalBalance, setTotalBalance] = React.useState(0);
   const [dashboardInsights, setDashboardInsights] = React.useState<string[]>([]);
   const [dashboardProjection, setDashboardProjection] = React.useState<DashboardProjection | null>(null);
@@ -8112,9 +8145,9 @@ export default function App() {
 
     const usageStorageKey = user?.id ? `cote-ai-usage-${user.id}-${getCurrentMonthKey()}` : null;
     try {
-      let data: any;
+      let data;
       try {
-        data = await fetchDashboardResource({
+        data = await fetchWorkspaceShellResource({
           getAuthHeaders,
           scope,
           workspaceIdOverride: workspaceIdForRequest,
@@ -8124,16 +8157,15 @@ export default function App() {
           const {
             data: { session },
           } = await supabase.auth.getSession();
-          if (session?.access_token) {
-            await setupUserOnServer(session.access_token, session.user?.id);
-            data = await fetchDashboardResource({
-              getAuthHeaders,
-              scope,
-              workspaceIdOverride: workspaceIdForRequest,
-            });
-          } else {
+          if (!session?.access_token) {
             throw error;
           }
+          await setupUserOnServer(session.access_token, session.user?.id);
+          data = await fetchWorkspaceShellResource({
+            getAuthHeaders,
+            scope,
+            workspaceIdOverride: workspaceIdForRequest,
+          });
         } else {
           throw error;
         }
@@ -8162,47 +8194,7 @@ export default function App() {
                 : null,
           }))
         : null;
-      const mappedInsights = Array.isArray(data.insights)
-        ? data.insights
-            .filter((item: unknown) => typeof item === 'string')
-            .map((item: string) => item.trim())
-            .filter(Boolean)
-        : null;
-      const mappedProjection = mapApiProjectionToClientProjection(data.projection);
-      const mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
 
-      if (data.totalBalance !== undefined) {
-        setTotalBalance(Number(data.totalBalance));
-      }
-      if (data.plan) {
-        setCurrentPlan(normalizePlan(data.plan));
-      } else {
-        setCurrentPlan('FREE');
-      }
-      if (data.limits?.reports === 'basic' || data.limits?.reports === 'full') {
-        setReportAccessLevel(data.limits.reports);
-      } else {
-        setReportAccessLevel(data.plan === 'FREE' ? 'basic' : 'full');
-      }
-      if (typeof data.currentMonthTransactionCount === 'number') {
-        setCurrentMonthTransactionCount(Math.max(0, data.currentMonthTransactionCount));
-      }
-      if (typeof data.currentMonthAiUsage === 'number') {
-        const normalizedUsage = Math.max(0, data.currentMonthAiUsage);
-        setAiUsageCount(normalizedUsage);
-        if (usageStorageKey) {
-          window.localStorage.setItem(usageStorageKey, String(normalizedUsage));
-        }
-      }
-      if (Array.isArray(data.workspaces)) {
-        setWorkspaces(
-          data.workspaces.map((workspace: any) => ({
-            id: workspace.id,
-            name: workspace.name,
-            role: workspace.role,
-          }))
-        );
-      }
       if (Array.isArray(data.wallets)) {
         setWallets(
           data.wallets.map((wallet: any) => ({
@@ -8214,6 +8206,27 @@ export default function App() {
       } else if (scope === 'full') {
         setWallets([]);
       }
+
+      setCurrentPlan(normalizePlan(data.plan));
+      setReportAccessLevel(data.limits?.reports === 'basic' ? 'basic' : 'full');
+      setCurrentMonthTransactionCount(Math.max(0, Number(data.currentMonthTransactionCount || 0)));
+
+      const normalizedUsage = Math.max(0, Number(data.currentMonthAiUsage || 0));
+      setAiUsageCount(normalizedUsage);
+      if (usageStorageKey) {
+        window.localStorage.setItem(usageStorageKey, String(normalizedUsage));
+      }
+
+      setWorkspaces(
+        Array.isArray(data.workspaces)
+          ? data.workspaces.map((workspace: any) => ({
+              id: workspace.id,
+              name: workspace.name,
+              role: workspace.role,
+            }))
+          : []
+      );
+
       if (typeof data.activeWorkspaceId === 'string') {
         setActiveWorkspaceId((current) => current || data.activeWorkspaceId);
       }
@@ -8225,59 +8238,48 @@ export default function App() {
       } else if (scope === 'full') {
         setWorkspaceEvents([]);
       }
+
       if (data.workspace) {
+        const workspacePayload = data.workspace;
         const workspaceStatus = String(data.workspace.whatsapp_status || '').toUpperCase();
         setIsWhatsAppConnected(workspaceStatus === 'CONNECTED');
-        if (typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number) {
-          setWorkspaceWhatsAppPhoneNumber(`+${data.workspace.whatsapp_phone_number}`);
-        } else {
-          setWorkspaceWhatsAppPhoneNumber('');
-        }
-        const dashboardState = resolveWhatsAppConnectionState({
-          statusValue: workspaceStatus,
-          diagnosticValue: data.workspace.whatsapp_last_connection_state,
-        });
+        setWorkspaceWhatsAppPhoneNumber(
+          typeof workspacePayload.whatsapp_phone_number === 'string' && workspacePayload.whatsapp_phone_number
+            ? `+${workspacePayload.whatsapp_phone_number}`
+            : ''
+        );
         setWhatsAppDiagnostic((current) => ({
           numeroConectado:
-            typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
-              ? `+${data.workspace.whatsapp_phone_number}`
+            typeof workspacePayload.whatsapp_phone_number === 'string' && workspacePayload.whatsapp_phone_number
+              ? `+${workspacePayload.whatsapp_phone_number}`
               : null,
-          connectionState: dashboardState,
+          connectionState: resolveWhatsAppConnectionState({
+            statusValue: workspaceStatus,
+            diagnosticValue: workspacePayload.whatsapp_last_connection_state,
+          }),
           lastValidatedAt:
-            typeof data.workspace.whatsapp_last_validated_at === 'string'
-              ? data.workspace.whatsapp_last_validated_at
+            typeof workspacePayload.whatsapp_last_validated_at === 'string'
+              ? workspacePayload.whatsapp_last_validated_at
               : null,
           lastTestSentAt:
-            typeof data.workspace.whatsapp_last_test_sent_at === 'string'
-              ? data.workspace.whatsapp_last_test_sent_at
+            typeof workspacePayload.whatsapp_last_test_sent_at === 'string'
+              ? workspacePayload.whatsapp_last_test_sent_at
               : null,
           lastErrorMessage:
-            typeof data.workspace.whatsapp_last_error_message === 'string'
-              ? data.workspace.whatsapp_last_error_message
+            typeof workspacePayload.whatsapp_last_error_message === 'string'
+              ? workspacePayload.whatsapp_last_error_message
               : null,
           metaResult: current?.metaResult ?? null,
         }));
       }
-      if (mappedInsights) {
-        setDashboardInsights(mappedInsights);
-      } else if (scope === 'full') {
-        setDashboardInsights([]);
-      }
-      setDashboardProjection(mappedProjection);
-      if (mappedCalendarReadModel) {
-        setDashboardCalendarReadModel(mappedCalendarReadModel);
-      } else if (scope === 'full') {
-        setDashboardCalendarReadModel(null);
-      }
+
+      const nextTotalBalance = Array.isArray(data.wallets)
+        ? data.wallets.reduce((acc: number, wallet: any) => acc + Number(wallet.balance || 0), 0)
+        : 0;
+      setTotalBalance(nextTotalBalance);
 
       if (mappedTransactions) {
         setTransactions(mappedTransactions);
-        if (typeof data.currentMonthTransactionCount !== 'number') {
-          const localMonthCount = mappedTransactions.filter((tx: Transaction) =>
-            isInCurrentMonth(parseTransactionDate(tx.date))
-          ).length;
-          setCurrentMonthTransactionCount(localMonthCount);
-        }
       } else if (scope === 'full') {
         setTransactions([]);
       }
@@ -8309,23 +8311,11 @@ export default function App() {
           workspaceDashboardCacheRef.current[resolvedWorkspaceId] ??
           (user?.id ? readDashboardSnapshot(user.id, resolvedWorkspaceId) : null);
         const workspaceSnapshot: WorkspaceDashboardSnapshot = {
-          totalBalance:
-            data.totalBalance !== undefined ? Number(data.totalBalance) : Number(baseSnapshot?.totalBalance ?? 0),
-          currentPlan: data.plan ? normalizePlan(data.plan) : baseSnapshot?.currentPlan ?? 'FREE',
-          reportAccessLevel:
-            data.limits?.reports === 'basic' || data.limits?.reports === 'full'
-              ? data.limits.reports
-              : data.plan === 'FREE'
-                ? 'basic'
-                : baseSnapshot?.reportAccessLevel ?? 'full',
-          currentMonthTransactionCount:
-            typeof data.currentMonthTransactionCount === 'number'
-              ? Math.max(0, data.currentMonthTransactionCount)
-              : baseSnapshot?.currentMonthTransactionCount ?? 0,
-          aiUsageCount:
-            typeof data.currentMonthAiUsage === 'number'
-              ? Math.max(0, data.currentMonthAiUsage)
-              : baseSnapshot?.aiUsageCount ?? 0,
+          totalBalance: nextTotalBalance,
+          currentPlan: normalizePlan(data.plan),
+          reportAccessLevel: data.limits?.reports === 'basic' ? 'basic' : 'full',
+          currentMonthTransactionCount: Math.max(0, Number(data.currentMonthTransactionCount || 0)),
+          aiUsageCount: normalizedUsage,
           transactions: mappedTransactions ?? baseSnapshot?.transactions ?? [],
           goals: mappedGoals ?? baseSnapshot?.goals ?? [],
           investments: mappedInvestments ?? baseSnapshot?.investments ?? [],
@@ -8333,16 +8323,17 @@ export default function App() {
           recurringDebts: mappedRecurringDebts ?? baseSnapshot?.recurringDebts ?? [],
           workspaceEvents: mappedWorkspaceEvents ?? baseSnapshot?.workspaceEvents ?? [],
           dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverview ?? null,
-          dashboardInsights: mappedInsights ?? baseSnapshot?.dashboardInsights ?? [],
-          isWhatsAppConnected:
-            data.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED',
+          reportsOverview: baseSnapshot?.reportsOverview ?? reportsOverview ?? null,
+          dashboardInsights: baseSnapshot?.dashboardInsights ?? [],
+          isWhatsAppConnected: Boolean(
+            data.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED'
+          ),
           workspaceWhatsAppPhoneNumber:
             data.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
               ? `+${data.workspace.whatsapp_phone_number}`
               : baseSnapshot?.workspaceWhatsAppPhoneNumber ?? '',
-          dashboardProjection: mappedProjection ?? baseSnapshot?.dashboardProjection ?? null,
-          dashboardCalendarReadModel:
-            mappedCalendarReadModel ?? baseSnapshot?.dashboardCalendarReadModel ?? null,
+          dashboardProjection: baseSnapshot?.dashboardProjection ?? null,
+          dashboardCalendarReadModel: baseSnapshot?.dashboardCalendarReadModel ?? null,
         };
         workspaceDashboardCacheRef.current[resolvedWorkspaceId] = workspaceSnapshot;
         if (user?.id) {
@@ -8352,17 +8343,9 @@ export default function App() {
 
       hasFetchedDashboardRef.current = true;
     } catch (error) {
-      console.error('Fetch error:', error);
-      if (!silent) {
-        setDashboardInsights((current) =>
-          current.length > 0
-            ? current
-            : ['Não foi possível atualizar os dados agora. Exibindo o último estado conhecido.']
-        );
-      }
-    } finally {
+      console.error('Workspace shell fetch error:', error);
     }
-  }, [activeWorkspaceId, dashboardOverview, getAuthHeaders, setupUserOnServer, user]);
+  }, [activeWorkspaceId, dashboardOverview, getAuthHeaders, reportsOverview, setupUserOnServer, user]);
 
   React.useEffect(() => {
     if (user) {
@@ -8619,6 +8602,7 @@ export default function App() {
     setRecurringDebts(snapshot.recurringDebts ?? []);
     setWorkspaceEvents(snapshot.workspaceEvents);
     setDashboardOverview(snapshot.dashboardOverview ?? null);
+    setReportsOverview(snapshot.reportsOverview ?? null);
     setDashboardInsights(snapshot.dashboardInsights);
     setDashboardProjection(snapshot.dashboardProjection ?? null);
     setDashboardCalendarReadModel(snapshot.dashboardCalendarReadModel ?? null);
@@ -8654,6 +8638,7 @@ export default function App() {
         recurringDebts: baseSnapshot?.recurringDebts ?? recurringDebts,
         workspaceEvents: baseSnapshot?.workspaceEvents ?? workspaceEvents,
         dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverview ?? null,
+        reportsOverview: baseSnapshot?.reportsOverview ?? reportsOverview ?? null,
         dashboardInsights: baseSnapshot?.dashboardInsights ?? dashboardInsights,
         isWhatsAppConnected: baseSnapshot?.isWhatsAppConnected ?? isWhatsAppConnected,
         workspaceWhatsAppPhoneNumber: baseSnapshot?.workspaceWhatsAppPhoneNumber ?? workspaceWhatsAppPhoneNumber,
@@ -8680,6 +8665,7 @@ export default function App() {
       isWhatsAppConnected,
       recurringDebts,
       reportAccessLevel,
+      reportsOverview,
       totalBalance,
       transactions,
       user?.id,
@@ -8745,6 +8731,51 @@ export default function App() {
     }
   }, [user, fetchDashboardOverviewData]);
 
+  const fetchReportsOverviewData = React.useCallback(async (options?: { silent?: boolean }) => {
+    if (!user) return;
+
+    const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+    try {
+      let payload: ReportsOverviewPayload;
+      try {
+        payload = await fetchReportsOverviewResource({
+          getAuthHeaders,
+          workspaceIdOverride: workspaceIdForRequest,
+        });
+      } catch (error) {
+        if (error instanceof ResourceClientError && error.status === 404) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (!session?.access_token) {
+            throw error;
+          }
+          await setupUserOnServer(session.access_token, session.user?.id);
+          payload = await fetchReportsOverviewResource({
+            getAuthHeaders,
+            workspaceIdOverride: workspaceIdForRequest,
+          });
+        } else {
+          throw error;
+        }
+      }
+
+      setReportsOverview(payload);
+      const resolvedWorkspaceId = workspaceIdForRequest || activeWorkspaceId;
+      if (resolvedWorkspaceId) {
+        upsertWorkspaceSnapshot(resolvedWorkspaceId, { reportsOverview: payload });
+      }
+    } catch (error) {
+      console.error('Reports overview fetch error:', error);
+    }
+  }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
+
+  React.useEffect(() => {
+    if (user) {
+      void fetchReportsOverviewData();
+    }
+  }, [user, fetchReportsOverviewData]);
+
   const refreshTransactionsResource = React.useCallback(
     async (options?: TransactionsResourceRefreshOptions) => {
       if (!user) return;
@@ -8760,13 +8791,11 @@ export default function App() {
         syncUsageAndLimits = true,
         syncWhatsAppState = true,
       } = options ?? {};
-      const useLiteDashboardScope = !syncProjection && !syncInsights && !syncCalendarReadModel;
 
       const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
       const data = await fetchTransactionsContext({
         getAuthHeaders,
         workspaceIdOverride: workspaceIdForRequest,
-        lite: useLiteDashboardScope,
       });
 
       const shouldMapTransactions =
@@ -8800,14 +8829,9 @@ export default function App() {
           : []
         : null;
       const mappedInsights = syncInsights
-        ? Array.isArray(data?.insights)
-          ? data.insights
-              .filter((item: unknown) => typeof item === 'string')
-              .map((item: string) => item.trim())
-              .filter(Boolean)
-          : []
+        ? []
         : null;
-      const mappedProjection = syncProjection ? mapApiProjectionToClientProjection(data?.projection) : null;
+      const mappedProjection = null;
 
       const mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
 
@@ -8843,8 +8867,9 @@ export default function App() {
       }
 
       if (syncTotalsAndPlan) {
-        if (typeof data?.totalBalance !== 'undefined') {
-          const nextTotalBalance = Number(data.totalBalance);
+        const nextTotalBalance =
+          mappedWallets?.reduce((acc, wallet) => acc + Number(wallet.balance || 0), 0) ?? null;
+        if (nextTotalBalance !== null) {
           setTotalBalance((current) => (current === nextTotalBalance ? current : nextTotalBalance));
           workspaceSnapshotPatch.totalBalance = nextTotalBalance;
         }
@@ -8931,7 +8956,8 @@ export default function App() {
     if (resolvedWorkspaceId) {
       upsertWorkspaceSnapshot(resolvedWorkspaceId, { goals: mappedGoals });
     }
-  }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, upsertWorkspaceSnapshot, user]);
+    void fetchReportsOverviewData({ silent: true });
+  }, [activeWorkspaceId, fetchReportsOverviewData, getAuthHeaders, resolveWorkspaceIdForResourceRequest, upsertWorkspaceSnapshot, user]);
 
   const refreshInvestmentsResource = React.useCallback(async () => {
     if (!user) return;
@@ -9004,11 +9030,11 @@ export default function App() {
         return;
       }
       window.setTimeout(() => {
-        void refreshProjectionAndCalendarResource();
         void fetchDashboardOverviewData({ silent: true });
+        void fetchReportsOverviewData({ silent: true });
       }, Math.max(0, delayMs));
     },
-    [fetchDashboardOverviewData, refreshProjectionAndCalendarResource]
+    [fetchDashboardOverviewData, fetchReportsOverviewData, refreshProjectionAndCalendarResource]
   );
 
   const refreshTransactionsAfterMutation = React.useCallback(() => {
@@ -13307,6 +13333,7 @@ React.useEffect(() => {
                   transactions={transactions}
                   totalBalance={totalBalance}
                   projection={dashboardProjection}
+                  reportOverview={reportsOverview}
                   goals={goals}
                   onExportPDF={handleExportPDF}
                   onExportCSV={handleExportCSV}
