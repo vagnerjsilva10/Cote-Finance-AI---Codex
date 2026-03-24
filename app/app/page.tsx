@@ -281,9 +281,9 @@ type RecurringDebtFormData = {
   frequency: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
   interval: string;
   startDate: string;
+  weekday: string;
   endDate: string;
   dueDay: string;
-  status: 'Ativa' | 'Pausada' | 'Encerrada';
   notes: string;
   source?: 'recurring_debt' | 'legacy_debt';
   legacyDebtId?: string | null;
@@ -903,6 +903,32 @@ const parseInputDateValue = (value: string | null | undefined) => {
   if (!match) return null;
   const parsed = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const WEEKDAY_LABELS: Record<number, string> = {
+  0: 'Domingo',
+  1: 'Segunda-feira',
+  2: 'Terça-feira',
+  3: 'Quarta-feira',
+  4: 'Quinta-feira',
+  5: 'Sexta-feira',
+  6: 'Sábado',
+};
+
+const parseWeekdayValue = (value: string) => {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 6) return null;
+  return parsed;
+};
+
+const alignDateToWeekday = (startDateInput: string, weekdayInput: string) => {
+  const startDate = parseInputDateValue(startDateInput);
+  const targetWeekday = parseWeekdayValue(weekdayInput);
+  if (!startDate || targetWeekday === null) return startDateInput;
+
+  const offset = (targetWeekday - startDate.getDay() + 7) % 7;
+  const aligned = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + offset);
+  return toInputDateValue(aligned);
 };
 
 const getDefaultDebtDueDateInput = (reference = new Date(), fallbackDueDay = 10) =>
@@ -6287,9 +6313,9 @@ const RecurringDebtModal = ({
         frequency: initialDraft?.frequency ?? 'MONTHLY',
         interval: initialDraft?.interval ?? '1',
         startDate: initialDraft?.startDate ?? new Date().toISOString().slice(0, 10),
+        weekday: initialDraft?.weekday ?? String(parseInputDateValue(initialDraft?.startDate || '')?.getDay() ?? new Date().getDay()),
         endDate: initialDraft?.endDate ?? '',
         dueDay: initialDraft?.dueDay ?? getRecurringDebtDefaultDueDay(category),
-        status: initialDraft?.status ?? 'Ativa',
         notes: initialDraft?.notes ?? '',
         source: initialDraft?.source,
         legacyDebtId: initialDraft?.legacyDebtId ?? null,
@@ -6303,9 +6329,9 @@ const RecurringDebtModal = ({
       frequency: initialData.frequency,
       interval: String(initialData.interval),
       startDate: initialData.startDate ? String(initialData.startDate).slice(0, 10) : new Date().toISOString().slice(0, 10),
+      weekday: String(parseInputDateValue(initialData.startDate ? String(initialData.startDate).slice(0, 10) : '')?.getDay() ?? new Date().getDay()),
       endDate: initialData.endDate ? String(initialData.endDate).slice(0, 10) : '',
       dueDay: initialData.dueDay ? String(initialData.dueDay) : getRecurringDebtDefaultDueDay(initialData.category),
-      status: initialData.status,
       notes: initialData.notes ?? '',
       source: initialData.source,
       legacyDebtId: initialData.legacyDebtId ?? null,
@@ -6320,6 +6346,7 @@ const RecurringDebtModal = ({
   const frequencyId = React.useId();
   const intervalId = React.useId();
   const startDateId = React.useId();
+  const weekdayId = React.useId();
   const endDateId = React.useId();
   const dueDayId = React.useId();
 
@@ -6333,8 +6360,25 @@ const RecurringDebtModal = ({
 
   if (!isOpen) return null;
 
-  const isMonthlyFamily =
-    formData.frequency === 'MONTHLY' || formData.frequency === 'QUARTERLY' || formData.frequency === 'YEARLY';
+  const isMonthly = formData.frequency === 'MONTHLY';
+  const isWeekly = formData.frequency === 'WEEKLY';
+  const frequencyIntervalUnit =
+    formData.frequency === 'MONTHLY'
+      ? 'mês(es)'
+      : formData.frequency === 'WEEKLY'
+        ? 'semana(s)'
+        : formData.frequency === 'YEARLY'
+          ? 'ano(s)'
+          : 'trimestre(s)';
+  const availableFrequencyOptions =
+    formData.frequency === 'QUARTERLY'
+      ? [
+          { value: 'WEEKLY', label: 'Semanal' },
+          { value: 'MONTHLY', label: 'Mensal' },
+          { value: 'YEARLY', label: 'Anual' },
+          { value: 'QUARTERLY', label: 'Trimestral (legado)' },
+        ]
+      : RECURRING_DEBT_FREQUENCIES.filter((item) => item.value !== 'QUARTERLY');
 
   const descriptionInvalid = hasAttemptedSubmit && formData.creditor.trim().length === 0;
   const amountInvalid = hasAttemptedSubmit && parseMoneyInput(formData.amount) <= 0;
@@ -6343,7 +6387,7 @@ const RecurringDebtModal = ({
   const startDateInvalid = hasAttemptedSubmit && formData.startDate.trim().length === 0;
   const dueDayInvalid =
     hasAttemptedSubmit &&
-    isMonthlyFamily &&
+    isMonthly &&
     !(Number(formData.dueDay) >= 1 && Number(formData.dueDay) <= 31);
 
   const isValid =
@@ -6382,7 +6426,7 @@ const RecurringDebtModal = ({
       >
         <FormContainer
           title={initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}
-          subtitle="Use para cobranças recorrentes com frequência e próxima cobrança definidas."
+          subtitle="Use para cobranças recorrentes com frequência e primeira cobrança definidas."
           onClose={onClose}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
@@ -6451,26 +6495,26 @@ const RecurringDebtModal = ({
               </select>
             </FormField>
 
-            <FormField label="Status">
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
-                className="app-field w-full rounded-xl px-4 py-2 text-sm"
-              >
-                <option>Ativa</option>
-                <option>Pausada</option>
-                <option>Encerrada</option>
-              </select>
-            </FormField>
-
             <FormField label="Frequência" htmlFor={frequencyId}>
               <select
                 id={frequencyId}
                 value={formData.frequency}
-                onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
+                onChange={(e) =>
+                  setFormData((prev) => {
+                    const nextFrequency = e.target.value as RecurringDebtFormData['frequency'];
+                    const nextStartDate =
+                      nextFrequency === 'WEEKLY' ? alignDateToWeekday(prev.startDate, prev.weekday) : prev.startDate;
+
+                    return {
+                      ...prev,
+                      frequency: nextFrequency,
+                      startDate: nextStartDate,
+                    };
+                  })
+                }
                 className="app-field w-full rounded-xl px-4 py-2 text-sm"
               >
-                {RECURRING_DEBT_FREQUENCIES.map((item) => (
+                {availableFrequencyOptions.map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
@@ -6478,22 +6522,31 @@ const RecurringDebtModal = ({
               </select>
             </FormField>
 
-            <FormField label="Repetir a cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo mínimo de 1.' : null}>
-              <input
-                id={intervalId}
-                type="number"
-                min={1}
-                value={formData.interval}
-                onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
-                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', intervalInvalid && 'app-field-error')}
-              />
+            <FormField label="A cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo mínimo de 1.' : null}>
+              <div className="flex items-center gap-2">
+                <input
+                  id={intervalId}
+                  type="number"
+                  min={1}
+                  value={formData.interval}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
+                  className={cn('app-field w-24 rounded-xl px-4 py-2 text-sm', intervalInvalid && 'app-field-error')}
+                />
+                <span className="text-sm font-semibold text-[var(--text-secondary)]">{frequencyIntervalUnit}</span>
+              </div>
             </FormField>
 
-            <FormField label="Data inicial" htmlFor={startDateId} required error={startDateInvalid ? 'Informe a data inicial.' : null}>
+            <FormField label="Primeira cobrança" htmlFor={startDateId} required error={startDateInvalid ? 'Informe a primeira cobrança.' : null}>
               <PremiumDatePicker
                 id={startDateId}
                 value={formData.startDate}
-                onChange={(value) => setFormData((prev) => ({ ...prev, startDate: value }))}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    startDate: value,
+                    weekday: String(parseInputDateValue(value)?.getDay() ?? prev.weekday),
+                  }))
+                }
                 placeholder="Selecione a data"
                 invalid={startDateInvalid}
               />
@@ -6508,7 +6561,7 @@ const RecurringDebtModal = ({
               />
             </FormField>
 
-            {isMonthlyFamily ? (
+            {isMonthly ? (
               <FormField
                 label="Dia da cobrança"
                 htmlFor={dueDayId}
@@ -6525,6 +6578,32 @@ const RecurringDebtModal = ({
                   onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
                   className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', dueDayInvalid && 'app-field-error')}
                 />
+              </FormField>
+            ) : null}
+
+            {isWeekly ? (
+              <FormField label="Dia da semana" htmlFor={weekdayId} className="sm:col-span-2">
+                <select
+                  id={weekdayId}
+                  value={formData.weekday}
+                  onChange={(event) =>
+                    setFormData((prev) => {
+                      const weekday = event.target.value;
+                      return {
+                        ...prev,
+                        weekday,
+                        startDate: alignDateToWeekday(prev.startDate, weekday),
+                      };
+                    })
+                  }
+                  className="app-field w-full rounded-xl px-4 py-2 text-sm"
+                >
+                  {Object.entries(WEEKDAY_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </FormField>
             ) : null}
 
@@ -11132,7 +11211,7 @@ React.useEffect(() => {
       frequency: 'MONTHLY',
       interval: '1',
       startDate: new Date().toISOString().slice(0, 10),
-      status: 'Ativa',
+      weekday: String(new Date().getDay()),
     });
     setIsRecurringDebtModalOpen(true);
   };
@@ -11189,8 +11268,7 @@ React.useEffect(() => {
       interval: Number(debt.interval || 1),
       startDate: debt.startDate,
       endDate: debt.endDate.trim() ? debt.endDate : null,
-      dueDay: debt.dueDay.trim() ? Number(debt.dueDay) : null,
-      status: debt.status,
+      dueDay: debt.frequency === 'MONTHLY' && debt.dueDay.trim() ? Number(debt.dueDay) : null,
       notes: debt.notes.trim() || null,
     };
 

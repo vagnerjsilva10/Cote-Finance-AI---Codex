@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     const startDate = parseDate(body.startDate) ?? new Date();
     const endDate = body.endDate ? parseDate(body.endDate) : null;
     const dueDay = parseInteger(body.dueDay) ?? parseInteger(getRecurringDebtDefaultDueDay(category));
-    const status = normalizeRecurringDebtStatus(body.status);
+    const status = normalizeRecurringDebtStatus(undefined);
     const notes = typeof body.notes === 'string' ? body.notes.trim() || null : null;
 
     if (!creditor) {
@@ -145,12 +145,12 @@ export async function POST(req: Request) {
         interval,
         start_date: startDate,
         end_date: endDate === null ? (null as unknown as Date) : endDate,
-        due_day: frequency === 'MONTHLY' || frequency === 'QUARTERLY' || frequency === 'YEARLY' ? dueDay : null,
+        due_day: frequency === 'MONTHLY' ? dueDay : null,
         next_due_date: computeNextRecurringDebtDueDate({
           frequency,
           interval,
           startDate,
-          dueDay,
+          dueDay: frequency === 'MONTHLY' ? dueDay : undefined,
         }),
         status,
         notes,
