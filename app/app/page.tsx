@@ -83,7 +83,6 @@ import {
   RECURRING_DEBT_FREQUENCIES,
   RECURRING_DEBT_PRESETS,
   computeConventionalDebtNextDueDate,
-  getRecurringDebtDefaultDueDay,
   getRecurringDebtFrequencyLabel,
   isRecurringDebtCategory,
   mapLegacyDebtStatusToLabel,
@@ -283,7 +282,6 @@ type RecurringDebtFormData = {
   startDate: string;
   weekday: string;
   endDate: string;
-  dueDay: string;
   notes: string;
   source?: 'recurring_debt' | 'legacy_debt';
   legacyDebtId?: string | null;
@@ -6320,7 +6318,6 @@ const RecurringDebtModal = ({
         startDate: initialDraft?.startDate ?? new Date().toISOString().slice(0, 10),
         weekday: initialDraft?.weekday ?? String(parseInputDateValue(initialDraft?.startDate || '')?.getDay() ?? new Date().getDay()),
         endDate: initialDraft?.endDate ?? '',
-        dueDay: initialDraft?.dueDay ?? getRecurringDebtDefaultDueDay(category),
         notes: initialDraft?.notes ?? '',
         source: initialDraft?.source,
         legacyDebtId: initialDraft?.legacyDebtId ?? null,
@@ -6336,7 +6333,6 @@ const RecurringDebtModal = ({
       startDate: initialData.startDate ? String(initialData.startDate).slice(0, 10) : new Date().toISOString().slice(0, 10),
       weekday: String(parseInputDateValue(initialData.startDate ? String(initialData.startDate).slice(0, 10) : '')?.getDay() ?? new Date().getDay()),
       endDate: initialData.endDate ? String(initialData.endDate).slice(0, 10) : '',
-      dueDay: initialData.dueDay ? String(initialData.dueDay) : getRecurringDebtDefaultDueDay(initialData.category),
       notes: initialData.notes ?? '',
       source: initialData.source,
       legacyDebtId: initialData.legacyDebtId ?? null,
@@ -6353,7 +6349,6 @@ const RecurringDebtModal = ({
   const startDateId = React.useId();
   const weekdayId = React.useId();
   const endDateId = React.useId();
-  const dueDayId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -6365,7 +6360,6 @@ const RecurringDebtModal = ({
 
   if (!isOpen) return null;
 
-  const isMonthly = formData.frequency === 'MONTHLY';
   const isWeekly = formData.frequency === 'WEEKLY';
   const frequencyIntervalUnit =
     formData.frequency === 'MONTHLY'
@@ -6390,18 +6384,13 @@ const RecurringDebtModal = ({
   const categoryInvalid = hasAttemptedSubmit && formData.category.trim().length === 0;
   const intervalInvalid = hasAttemptedSubmit && Number(formData.interval) < 1;
   const startDateInvalid = hasAttemptedSubmit && formData.startDate.trim().length === 0;
-  const dueDayInvalid =
-    hasAttemptedSubmit &&
-    isMonthly &&
-    !(Number(formData.dueDay) >= 1 && Number(formData.dueDay) <= 31);
 
   const isValid =
     !descriptionInvalid &&
     !amountInvalid &&
     !categoryInvalid &&
     !intervalInvalid &&
-    !startDateInvalid &&
-    !dueDayInvalid;
+    !startDateInvalid;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -6485,9 +6474,7 @@ const RecurringDebtModal = ({
             <FormField label="Categoria" required error={categoryInvalid ? 'Selecione uma categoria.' : null}>
               <select
                 value={formData.category}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
                 className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', categoryInvalid && 'app-field-error')}
               >
                 {[...RECURRING_DEBT_PRESETS.map((item) => item.category), 'Outros']
@@ -6565,26 +6552,6 @@ const RecurringDebtModal = ({
                 placeholder="Selecione a data"
               />
             </FormField>
-
-            {isMonthly ? (
-              <FormField
-                label="Dia da cobrança"
-                htmlFor={dueDayId}
-                className="sm:col-span-2"
-                required
-                error={dueDayInvalid ? 'Informe um dia entre 1 e 31.' : null}
-              >
-                <input
-                  id={dueDayId}
-                  type="number"
-                  min={1}
-                  max={31}
-                  value={formData.dueDay}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                  className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', dueDayInvalid && 'app-field-error')}
-                />
-              </FormField>
-            ) : null}
 
             {isWeekly ? (
               <FormField label="Dia da semana" htmlFor={weekdayId} className="sm:col-span-2">
@@ -11214,7 +11181,6 @@ React.useEffect(() => {
     setRecurringDebtDraft({
       creditor: resolvedCategory,
       category: resolvedCategory,
-      dueDay: getRecurringDebtDefaultDueDay(resolvedCategory),
       frequency: 'MONTHLY',
       interval: '1',
       startDate: new Date().toISOString().slice(0, 10),
@@ -11260,6 +11226,12 @@ React.useEffect(() => {
   };
 
   const handleSubmitRecurringDebt = async (debt: RecurringDebtFormData) => {
+    const parsedStartDate = parseInputDateValue(debt.startDate);
+    const derivedMonthlyDueDay = parsedStartDate?.getDate() ?? null;
+    const monthlyDueDay =
+      editingRecurringDebt?.source === 'legacy_debt'
+        ? editingRecurringDebt.dueDay ?? derivedMonthlyDueDay
+        : derivedMonthlyDueDay;
     const payload = {
       ...(editingRecurringDebt
         ? {
@@ -11275,7 +11247,7 @@ React.useEffect(() => {
       interval: Number(debt.interval || 1),
       startDate: debt.startDate,
       endDate: debt.endDate.trim() ? debt.endDate : null,
-      dueDay: debt.frequency === 'MONTHLY' && debt.dueDay.trim() ? Number(debt.dueDay) : null,
+      dueDay: debt.frequency === 'MONTHLY' ? monthlyDueDay : null,
       notes: debt.notes.trim() || null,
     };
 

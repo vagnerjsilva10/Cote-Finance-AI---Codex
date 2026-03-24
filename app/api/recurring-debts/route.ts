@@ -4,7 +4,6 @@ import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
 import { mapRecurringDebtStatusToLegacyDebtStatus } from '@/lib/domain/financial-domain';
 import {
   computeNextRecurringDebtDueDate,
-  getRecurringDebtDefaultDueDay,
 } from '@/lib/debts';
 import {
   findWorkspaceRecurringDebts,
@@ -121,7 +120,14 @@ export async function POST(req: Request) {
     const interval = Math.max(1, parseInteger(body.interval) ?? 1);
     const startDate = parseDate(body.startDate) ?? new Date();
     const endDate = body.endDate ? parseDate(body.endDate) : null;
-    const dueDay = parseInteger(body.dueDay) ?? parseInteger(getRecurringDebtDefaultDueDay(category));
+    const dueDayInput = parseInteger(body.dueDay);
+    const dueDay =
+      frequency === 'MONTHLY'
+        ? (() => {
+            if (dueDayInput !== null && dueDayInput >= 1 && dueDayInput <= 31) return dueDayInput;
+            return startDate.getDate();
+          })()
+        : null;
     const status = normalizeRecurringDebtStatus(undefined);
     const notes = typeof body.notes === 'string' ? body.notes.trim() || null : null;
 
@@ -145,12 +151,12 @@ export async function POST(req: Request) {
         interval,
         start_date: startDate,
         end_date: endDate === null ? (null as unknown as Date) : endDate,
-        due_day: frequency === 'MONTHLY' ? dueDay : null,
+        due_day: dueDay,
         next_due_date: computeNextRecurringDebtDueDate({
           frequency,
           interval,
           startDate,
-          dueDay: frequency === 'MONTHLY' ? dueDay : undefined,
+          dueDay: dueDay ?? undefined,
         }),
         status,
         notes,
@@ -231,7 +237,7 @@ export async function PATCH(req: Request) {
 
     const existing = await prisma.recurringDebt.findFirst({
       where: { id: body.id, workspace_id: context.workspaceId },
-      select: { id: true, start_date: true, next_due_date: true },
+      select: { id: true, start_date: true, next_due_date: true, frequency: true, interval: true },
     });
 
     if (!existing) {
@@ -243,13 +249,23 @@ export async function PATCH(req: Request) {
     const startDate = body.startDate ? parseDate(body.startDate) ?? undefined : undefined;
     const endDate = body.endDate === null ? null : body.endDate ? parseDate(body.endDate) ?? undefined : undefined;
     const dueDay = body.dueDay !== undefined ? parseInteger(body.dueDay) : undefined;
+    const effectiveFrequency = frequency ?? existing.frequency;
+    const effectiveInterval = interval ?? existing.interval;
+    const effectiveStartDate = startDate ?? existing.start_date;
+    const resolvedMonthlyDueDay =
+      effectiveFrequency === 'MONTHLY'
+        ? (() => {
+            if (dueDay !== undefined && dueDay !== null && dueDay >= 1 && dueDay <= 31) return dueDay;
+            return effectiveStartDate.getDate();
+          })()
+        : null;
     const nextDueDate =
       frequency || interval !== undefined || startDate || dueDay !== undefined
         ? computeNextRecurringDebtDueDate({
-            frequency: frequency || 'MONTHLY',
-            interval: interval ?? 1,
-            startDate: startDate ?? existing.start_date,
-            dueDay: dueDay ?? undefined,
+            frequency: effectiveFrequency,
+            interval: effectiveInterval,
+            startDate: effectiveStartDate,
+            dueDay: resolvedMonthlyDueDay ?? undefined,
             currentDueDate: existing.next_due_date,
           })
         : undefined;
@@ -264,7 +280,10 @@ export async function PATCH(req: Request) {
       frequency,
       interval,
       start_date: startDate,
-      due_day: dueDay,
+      due_day:
+        frequency !== undefined || startDate !== undefined || dueDay !== undefined
+          ? resolvedMonthlyDueDay
+          : undefined,
       next_due_date: nextDueDate,
       status: body.status ? normalizeRecurringDebtStatus(body.status) : undefined,
       notes: typeof body.notes === 'string' ? body.notes.trim() || null : undefined,
