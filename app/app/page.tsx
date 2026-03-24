@@ -6127,9 +6127,10 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
   if (!isOpen) return null;
 
+  const isEditingDebt = Boolean(initialData);
   const creditorInvalid = hasAttemptedSubmit && formData.creditor.trim().length === 0;
   const originalInvalid = hasAttemptedSubmit && parseMoneyInput(formData.originalAmount) <= 0;
-  const remainingInvalid = hasAttemptedSubmit && parseMoneyInput(formData.remainingAmount) < 0;
+  const remainingInvalid = hasAttemptedSubmit && isEditingDebt && parseMoneyInput(formData.remainingAmount) < 0;
   const interestInvalid = hasAttemptedSubmit && Number(formData.interestRateMonthly) < 0;
   const dueDateInvalid = hasAttemptedSubmit && !Boolean(parseInputDateValue(formData.dueDate));
 
@@ -6214,27 +6215,6 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </FormField>
 
-            <FormField label="Saldo em aberto" error={remainingInvalid ? 'O saldo em aberto não pode ser negativo.' : null}>
-              <MoneyInput
-                value={formData.remainingAmount}
-                onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
-                placeholder="R$ 0,00"
-                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', remainingInvalid && 'app-field-error')}
-              />
-            </FormField>
-
-            <FormField label="Juros (% ao mês)" htmlFor={interestId} error={interestInvalid ? 'A taxa de juros não pode ser negativa.' : null}>
-              <input
-                id={interestId}
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.interestRateMonthly}
-                onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
-                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', interestInvalid && 'app-field-error')}
-              />
-            </FormField>
-
             <FormField label="Data do vencimento" htmlFor={dueDateId} required error={dueDateInvalid ? 'Selecione uma data válida.' : null}>
               <PremiumDatePicker
                 id={dueDateId}
@@ -6260,24 +6240,49 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               </select>
             </FormField>
 
-            <FormField label="Status" htmlFor={statusId}>
-              <select
-                id={statusId}
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    status: e.target.value as DebtFormData['status'],
-                  }))
-                }
-                className="app-field w-full rounded-xl px-4 py-2 text-sm"
-              >
-                <option>Em aberto</option>
-                <option>Quitada</option>
-                <option>Atrasada</option>
-                <option>Parcelada</option>
-              </select>
+            <FormField label="Juros (% ao mês) (opcional)" htmlFor={interestId} error={interestInvalid ? 'A taxa de juros não pode ser negativa.' : null}>
+              <input
+                id={interestId}
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.interestRateMonthly}
+                onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', interestInvalid && 'app-field-error')}
+              />
             </FormField>
+
+            {isEditingDebt ? (
+              <FormField label="Saldo em aberto" error={remainingInvalid ? 'O saldo em aberto não pode ser negativo.' : null}>
+                <MoneyInput
+                  value={formData.remainingAmount}
+                  onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
+                  placeholder="R$ 0,00"
+                  className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', remainingInvalid && 'app-field-error')}
+                />
+              </FormField>
+            ) : null}
+
+            {isEditingDebt ? (
+              <FormField label="Status" htmlFor={statusId}>
+                <select
+                  id={statusId}
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      status: e.target.value as DebtFormData['status'],
+                    }))
+                  }
+                  className="app-field w-full rounded-xl px-4 py-2 text-sm"
+                >
+                  <option>Em aberto</option>
+                  <option>Quitada</option>
+                  <option>Atrasada</option>
+                  <option>Parcelada</option>
+                </select>
+              </FormField>
+            ) : null}
           </FormGrid>
         </FormContainer>
       </motion.div>
@@ -11157,16 +11162,18 @@ React.useEffect(() => {
 
   const handleSubmitDebt = async (debt: DebtFormData) => {
     const parsedDueDate = parseInputDateValue(debt.dueDate);
+    const parsedOriginalAmount = parseMoneyInput(debt.originalAmount);
+    const isEditingDebt = Boolean(editingDebtId);
     const payload = {
       ...(editingDebtId ? { id: String(editingDebtId) } : {}),
       creditor: debt.creditor.trim(),
-      originalAmount: parseMoneyInput(debt.originalAmount),
-      remainingAmount: parseMoneyInput(debt.remainingAmount),
+      originalAmount: parsedOriginalAmount,
+      remainingAmount: isEditingDebt ? parseMoneyInput(debt.remainingAmount) : parsedOriginalAmount,
       interestRateMonthly: Number(debt.interestRateMonthly || 0),
       dueDate: parsedDueDate ? toInputDateValue(parsedDueDate) : null,
       dueDay: parsedDueDate ? parsedDueDate.getDate() : undefined,
       category: debt.category,
-      status: debt.status,
+      status: isEditingDebt ? debt.status : 'Em aberto',
     };
 
     const response = await fetch('/api/debts', {

@@ -109,7 +109,6 @@ export async function POST(req: Request) {
 
     const creditor = (body.creditor || '').trim();
     const originalAmount = parseAmount(body.originalAmount);
-    const remainingAmount = parseAmount(body.remainingAmount);
     const interestRateMonthly = parseAmount(body.interestRateMonthly);
     const dueDay = parseInteger(body.dueDay);
     const dueDate = parseDate(body.dueDate);
@@ -117,16 +116,14 @@ export async function POST(req: Request) {
     if (isRecurringDebtCategory(category)) {
       return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
     }
-    const status = normalizeDebtStatus(body.status);
+    const remainingAmount = originalAmount;
+    const status = normalizeDebtStatus(undefined);
 
     if (!creditor) {
       return NextResponse.json({ error: 'Creditor is required' }, { status: 400 });
     }
     if (!originalAmount || originalAmount <= 0) {
       return NextResponse.json({ error: 'Invalid original amount' }, { status: 400 });
-    }
-    if (remainingAmount === null || remainingAmount < 0) {
-      return NextResponse.json({ error: 'Invalid remaining amount' }, { status: 400 });
     }
     if (interestRateMonthly === null || interestRateMonthly < 0) {
       return NextResponse.json({ error: 'Invalid monthly interest rate' }, { status: 400 });
