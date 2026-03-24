@@ -11,9 +11,15 @@ export async function fetchDashboardResource(params: {
   getAuthHeaders: AuthHeadersResolver;
   scope?: DashboardScope;
   workspaceIdOverride?: string | null;
+  query?: string;
 }) {
   const scope = params.scope === 'transactions' ? 'transactions' : 'full';
-  const path = `/api/dashboard${scope === 'transactions' ? '?scope=transactions' : ''}`;
+  const query = new URLSearchParams(params.query || '');
+  if (!query.has('scope') && scope === 'transactions') {
+    query.set('scope', 'transactions');
+  }
+  const queryString = query.toString();
+  const path = `/api/dashboard${queryString ? `?${queryString}` : ''}`;
   return fetchResourceJson<any>({
     path,
     getAuthHeaders: params.getAuthHeaders,

@@ -400,6 +400,8 @@ export async function GET(req: Request) {
     const context = await resolveWorkspaceContext(req);
     const requestUrl = new URL(req.url);
     const scope = requestUrl.searchParams.get('scope') === 'transactions' ? 'transactions' : 'full';
+    const isLiteTransactionsScope =
+      scope === 'transactions' && requestUrl.searchParams.get('lite') === '1';
     const workspaceId = context.workspaceId;
 
     const now = new Date();
@@ -417,20 +419,25 @@ export async function GET(req: Request) {
       getWorkspacePreference(workspaceId, context.userId),
     ]);
 
-    const [dashboardReadModelFlag, projectionEngineFlag] = await Promise.all([
-      resolveFeatureFlagState({
-        key: 'dashboard_read_model_v2',
-        plan,
-        workspaceId,
-        userId: context.userId,
-      }),
-      resolveFeatureFlagState({
-        key: 'financial_projection_engine_v2',
-        plan,
-        workspaceId,
-        userId: context.userId,
-      }),
-    ]);
+    const [dashboardReadModelFlag, projectionEngineFlag] = isLiteTransactionsScope
+      ? [
+          { enabled: false, source: 'lite_scope', reason: 'Skipped for lightweight transaction refresh' },
+          { enabled: false, source: 'lite_scope', reason: 'Skipped for lightweight transaction refresh' },
+        ]
+      : await Promise.all([
+          resolveFeatureFlagState({
+            key: 'dashboard_read_model_v2',
+            plan,
+            workspaceId,
+            userId: context.userId,
+          }),
+          resolveFeatureFlagState({
+            key: 'financial_projection_engine_v2',
+            plan,
+            workspaceId,
+            userId: context.userId,
+          }),
+        ]);
     const shouldUseDashboardReadModel = dashboardReadModelFlag.enabled;
     const shouldUseProjectionEngine = projectionEngineFlag.enabled;
 
@@ -450,7 +457,9 @@ export async function GET(req: Request) {
 
     const [transactions, insightTransactions] = await Promise.all([
       findWorkspaceTransactions(workspaceId),
-      findWorkspaceInsightTransactions(workspaceId, previousMonthStart),
+      isLiteTransactionsScope
+        ? Promise.resolve([] as Awaited<ReturnType<typeof findWorkspaceInsightTransactions>>)
+        : findWorkspaceInsightTransactions(workspaceId, previousMonthStart),
     ]);
     const [goals, investments, debts, recurringDebts] =
       scope === 'transactions'
@@ -489,8 +498,13 @@ export async function GET(req: Request) {
     const totalBalance = dashboardReadModel ? Number(dashboardReadModel.current_balance || 0) : fallbackBalance;
     const totalInvested = (investments ?? []).reduce<number>((acc, item) => acc + Number(item.current_amount), 0);
     const insightsBase = insightTransactions.length > 0 ? insightTransactions : transactions;
-    const insights = plan === 'FREE' ? [] : buildFinancialInsights(insightsBase as any, totalBalance);
-    void logWorkspaceFinancialConsistencySnapshot(workspaceId);
+    const insights =
+      plan === 'FREE' || isLiteTransactionsScope
+        ? []
+        : buildFinancialInsights(insightsBase as any, totalBalance);
+    if (!isLiteTransactionsScope) {
+      void logWorkspaceFinancialConsistencySnapshot(workspaceId);
+    }
 
     return NextResponse.json({
       totalBalance,

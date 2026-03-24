@@ -77,5 +77,8 @@ function run(command, args) {
   }
 }
 
+if (process.env.PRISMA_SKIP_MIGRATE_DEPLOY !== '1') {
+  run('npx', ['prisma', 'migrate', 'deploy']);
+}
 run('npx', ['prisma', 'generate']);
 run('npx', ['next', 'build']);

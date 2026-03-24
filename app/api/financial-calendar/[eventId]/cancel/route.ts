@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { parseOccurrenceActionDto } from '@/lib/server/financial-calendar-dto';
 import { buildFinancialCalendarErrorResponse } from '@/lib/server/financial-calendar-http';
-import { cancelFinancialEvent, syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { cancelFinancialEvent } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
@@ -33,7 +34,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
         occurrenceDate: result.occurrenceDate,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(result);
   } catch (error) {

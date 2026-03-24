@@ -5,7 +5,7 @@ import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
-import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
         goalId: goal.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(goal, { status: 201 });
   } catch (error: any) {
@@ -146,7 +146,7 @@ export async function PATCH(req: Request) {
         goalId: goal.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(goal);
   } catch (error: any) {
@@ -190,7 +190,7 @@ export async function DELETE(req: Request) {
         goalId: existingGoal.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

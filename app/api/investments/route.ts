@@ -57,7 +57,7 @@ const buildMissingTableResponse = () =>
   NextResponse.json(
     {
       error:
-        'Tabela de investimentos indisponível. Execute `npx prisma db push` para aplicar o schema atual.',
+        'Tabela de investimentos indisponível. Execute `npx prisma migrate deploy` para aplicar as migrations do schema atual.',
     },
     { status: 503 }
   );

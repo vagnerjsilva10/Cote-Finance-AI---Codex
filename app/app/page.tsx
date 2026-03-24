@@ -9287,11 +9287,13 @@ export default function App() {
         syncUsageAndLimits = true,
         syncWhatsAppState = true,
       } = options ?? {};
+      const useLiteDashboardScope = !syncProjection && !syncInsights && !syncCalendarReadModel;
 
       const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
       const data = await fetchTransactionsContext({
         getAuthHeaders,
         workspaceIdOverride: workspaceIdForRequest,
+        lite: useLiteDashboardScope,
       });
 
       const shouldMapTransactions =
@@ -9532,6 +9534,34 @@ export default function App() {
       syncWhatsAppState: false,
     });
   }, [refreshTransactionsResource]);
+
+  const triggerDeferredProjectionRefresh = React.useCallback(
+    (delayMs = 500) => {
+      if (typeof window === 'undefined') {
+        void refreshProjectionAndCalendarResource();
+        return;
+      }
+      window.setTimeout(() => {
+        void refreshProjectionAndCalendarResource();
+      }, Math.max(0, delayMs));
+    },
+    [refreshProjectionAndCalendarResource]
+  );
+
+  const refreshTransactionsAfterMutation = React.useCallback(() => {
+    void refreshTransactionsResource({
+      syncTransactions: true,
+      syncWallets: true,
+      syncWorkspaceEvents: true,
+      syncInsights: false,
+      syncProjection: false,
+      syncCalendarReadModel: false,
+      syncTotalsAndPlan: true,
+      syncUsageAndLimits: true,
+      syncWhatsAppState: false,
+    });
+    triggerDeferredProjectionRefresh(700);
+  }, [refreshTransactionsResource, triggerDeferredProjectionRefresh]);
 
   React.useEffect(() => {
     const nextUserId = user?.id ?? null;
@@ -11069,7 +11099,7 @@ React.useEffect(() => {
       }
 
       setEditingTransactionId(null);
-      await refreshTransactionsResource();
+      refreshTransactionsAfterMutation();
       return true;
     }
 
@@ -11134,7 +11164,7 @@ React.useEffect(() => {
         sortTransactionsByNewest(current.map((item) => (item.id === optimisticId ? savedTransaction : item)))
       );
       setEditingTransactionId(null);
-      void refreshTransactionsResource();
+      refreshTransactionsAfterMutation();
       return true;
     } catch (error) {
       setTransactions(previousTransactionsSnapshot);
@@ -11204,7 +11234,7 @@ React.useEffect(() => {
         setIsTransactionModalOpen(false);
       }
 
-      void refreshTransactionsResource();
+      refreshTransactionsAfterMutation();
     } catch (error) {
       setTransactions(previousTransactionsSnapshot);
       setTotalBalance(previousTotalBalance);
@@ -11395,7 +11425,8 @@ React.useEffect(() => {
     setEditingDebtId(null);
     setDebtDraft(null);
     setDebtFeedbackMessage(editingDebtId ? 'Dívida atualizada com sucesso.' : 'Dívida adicionada com sucesso.');
-    await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+    await refreshDebtsResource();
+    triggerDeferredProjectionRefresh();
   };
 
   const handleOpenCreateDebt = () => {
@@ -11452,7 +11483,8 @@ React.useEffect(() => {
           setIsDebtModalOpen(false);
         }
         setDebtFeedbackMessage('Dívida removida com sucesso.');
-        await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+        await refreshDebtsResource();
+        triggerDeferredProjectionRefresh();
       } catch (error) {
         showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
       }
@@ -11485,7 +11517,8 @@ React.useEffect(() => {
     }
 
     setDebtFeedbackMessage('Pagamento registrado com sucesso.');
-    await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+    await refreshDebtsResource();
+    triggerDeferredProjectionRefresh();
   };
 
   const handleSettleDebt = async (id: string | number) => {
@@ -11504,7 +11537,8 @@ React.useEffect(() => {
         throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao quitar dívida.');
       }
       setDebtFeedbackMessage('Dívida quitada com sucesso.');
-      await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+      await refreshDebtsResource();
+      triggerDeferredProjectionRefresh();
     } catch (error) {
       showUiFeedback(error instanceof Error ? error.message : 'Falha ao quitar dívida.');
     }
@@ -11532,7 +11566,8 @@ React.useEffect(() => {
         throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao reabrir dívida.');
       }
       setDebtFeedbackMessage('Dívida reaberta com sucesso.');
-      await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+      await refreshDebtsResource();
+      triggerDeferredProjectionRefresh();
     } catch (error) {
       showUiFeedback(error instanceof Error ? error.message : 'Falha ao reabrir dívida.');
     }
@@ -11582,7 +11617,8 @@ React.useEffect(() => {
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft(null);
     setDebtFeedbackMessage(editingRecurringDebt ? 'Recorrência atualizada com sucesso.' : 'Recorrência criada com sucesso.');
-    await Promise.all([refreshRecurringDebtsResource(), refreshProjectionAndCalendarResource()]);
+    await refreshRecurringDebtsResource();
+    triggerDeferredProjectionRefresh();
   };
 
   const handleStartEditRecurringDebt = (id: string | number) => {
@@ -11619,7 +11655,8 @@ React.useEffect(() => {
           setIsRecurringDebtModalOpen(false);
         }
         setDebtFeedbackMessage('Recorrência removida com sucesso.');
-        await Promise.all([refreshRecurringDebtsResource(), refreshProjectionAndCalendarResource()]);
+        await refreshRecurringDebtsResource();
+        triggerDeferredProjectionRefresh();
       } catch (error) {
         showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir recorrência.');
       }
@@ -11648,7 +11685,8 @@ React.useEffect(() => {
         throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao atualizar status da recorrência.');
       }
       setDebtFeedbackMessage(nextStatus === 'Ativa' ? 'Recorrência reativada com sucesso.' : 'Recorrência pausada com sucesso.');
-      await Promise.all([refreshRecurringDebtsResource(), refreshProjectionAndCalendarResource()]);
+      await refreshRecurringDebtsResource();
+      triggerDeferredProjectionRefresh();
     } catch (error) {
       showUiFeedback(error instanceof Error ? error.message : 'Falha ao atualizar status da recorrência.');
     }
@@ -11757,12 +11795,13 @@ React.useEffect(() => {
         syncWallets: true,
         syncWorkspaceEvents: true,
         syncInsights: false,
-        syncProjection: true,
+        syncProjection: false,
         syncCalendarReadModel: false,
         syncTotalsAndPlan: true,
         syncUsageAndLimits: false,
         syncWhatsAppState: false,
       });
+      triggerDeferredProjectionRefresh(700);
     } catch (error) {
       console.error('Create wallet error:', error);
       setCreateWalletError(error instanceof Error ? error.message : 'Falha ao criar carteira.');
@@ -11809,12 +11848,13 @@ React.useEffect(() => {
         syncWallets: true,
         syncWorkspaceEvents: true,
         syncInsights: false,
-        syncProjection: true,
+        syncProjection: false,
         syncCalendarReadModel: false,
         syncTotalsAndPlan: true,
         syncUsageAndLimits: false,
         syncWhatsAppState: false,
       });
+      triggerDeferredProjectionRefresh(700);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao excluir carteira.';
       setDeleteWalletError(message);
@@ -14217,6 +14257,9 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
+
+
 
 
 

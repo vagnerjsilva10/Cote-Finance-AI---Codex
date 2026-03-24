@@ -17,7 +17,7 @@ import {
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { getRuntimePlanLimits, getTransactionUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
-import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -53,7 +53,7 @@ const VALID_STATUSES = new Set<TransactionStatus>(TRANSACTION_STATUSES);
 const VALID_ORIGIN_TYPES = new Set(['MANUAL', 'RECURRENCE', 'INSTALLMENT', 'DEBT', 'GOAL', 'SYSTEM']);
 
 const SCHEMA_SYNC_REQUIRED_ERROR =
-  'Banco de dados desatualizado para transações. Rode a migration/db push para adicionar destination_wallet_id, payment_method e receipt_url.';
+  'Banco de dados desatualizado para transacoes. Aplique as migrations pendentes para adicionar destination_wallet_id, payment_method e receipt_url.';
 
 const hasOwn = <K extends string>(obj: object, key: K) =>
   Object.prototype.hasOwnProperty.call(obj, key);
@@ -540,7 +540,7 @@ export async function POST(req: Request) {
       return createdTransaction;
     });
 
-    await logWorkspaceEventSafe({
+    void logWorkspaceEventSafe({
       workspaceId: context.workspaceId,
       userId: context.userId,
       type: 'transaction.created',
@@ -554,13 +554,13 @@ export async function POST(req: Request) {
       },
     });
 
-    await upsertCategorySuggestionSafe({
+    void upsertCategorySuggestionSafe({
       workspaceId: context.workspaceId,
       categoryId,
       categoryName: normalizedCategoryName,
       description,
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(transaction);
   } catch (error: any) {
@@ -717,7 +717,7 @@ export async function PATCH(req: Request) {
       });
     });
 
-    await logWorkspaceEventSafe({
+    void logWorkspaceEventSafe({
       workspaceId: context.workspaceId,
       userId: context.userId,
       type: 'transaction.updated',
@@ -728,26 +728,16 @@ export async function PATCH(req: Request) {
 
     const effectiveCategoryId = categoryId ?? existingTransaction.category_id;
     const effectiveDescription = nextDescription || existingTransaction.description;
-    if (effectiveCategoryId && effectiveDescription) {
-      let effectiveCategoryName = (body.category || '').trim();
-      if (!effectiveCategoryName) {
-        const categoryRecord = await prisma.category.findUnique({
-          where: { id: effectiveCategoryId },
-          select: { name: true },
-        });
-        effectiveCategoryName = categoryRecord?.name || '';
-      }
-
-      if (effectiveCategoryName) {
-        await upsertCategorySuggestionSafe({
-          workspaceId: context.workspaceId,
-          categoryId: effectiveCategoryId,
-          categoryName: effectiveCategoryName,
-          description: effectiveDescription,
-        });
-      }
+    const effectiveCategoryName = (body.category || '').trim();
+    if (effectiveCategoryId && effectiveDescription && effectiveCategoryName) {
+      void upsertCategorySuggestionSafe({
+        workspaceId: context.workspaceId,
+        categoryId: effectiveCategoryId,
+        categoryName: effectiveCategoryName,
+        description: effectiveDescription,
+      });
     }
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(transaction);
   } catch (error: any) {
@@ -821,7 +811,7 @@ export async function DELETE(req: Request) {
       });
     });
 
-    await logWorkspaceEventSafe({
+    void logWorkspaceEventSafe({
       workspaceId: context.workspaceId,
       userId: context.userId,
       type: 'transaction.deleted',
@@ -829,7 +819,7 @@ export async function DELETE(req: Request) {
         transactionId: existingTransaction.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -14,7 +14,7 @@ import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
-import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -46,7 +46,7 @@ const buildMissingTableResponse = () =>
   NextResponse.json(
     {
       error:
-        'Tabela de recorrências de dívida indisponível. Execute `npx prisma db push` para aplicar o schema atual.',
+        'Tabela de recorrências de dívida indisponível. Execute `npx prisma migrate deploy` para aplicar as migrations do schema atual.',
     },
     { status: 503 }
   );
@@ -169,7 +169,7 @@ export async function POST(req: Request) {
       type: 'recurring_debt.created',
       payload: { recurringDebtId: recurringDebt.id },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(recurringDebt, { status: 201 });
   } catch (error: any) {
@@ -230,7 +230,7 @@ export async function PATCH(req: Request) {
         type: 'recurring_debt.updated.legacy',
         payload: { recurringDebtId: existingLegacyDebt.id },
       });
-      await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+      await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
       return NextResponse.json({ ...updated, source: 'legacy_debt', legacy_debt_id: updated.id });
     }
@@ -306,7 +306,7 @@ export async function PATCH(req: Request) {
       type: 'recurring_debt.updated',
       payload: { recurringDebtId: recurringDebt.id },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(recurringDebt);
   } catch (error: any) {
@@ -350,7 +350,7 @@ export async function DELETE(req: Request) {
         type: 'recurring_debt.deleted.legacy',
         payload: { recurringDebtId: existingLegacyDebt.id },
       });
-      await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+      await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
       return NextResponse.json({ success: true });
     }
 
@@ -370,7 +370,7 @@ export async function DELETE(req: Request) {
       type: 'recurring_debt.deleted',
       payload: { recurringDebtId: existing.id },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

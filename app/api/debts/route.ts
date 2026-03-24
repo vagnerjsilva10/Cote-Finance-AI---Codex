@@ -7,7 +7,7 @@ import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
-import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -70,7 +70,7 @@ const isMissingTableError = (error: unknown) => {
 const buildMissingTableResponse = () =>
   NextResponse.json(
     {
-      error: 'Tabela de dívidas indisponível. Execute `npx prisma db push` para aplicar o schema atual.',
+      error: 'Tabela de dívidas indisponível. Execute `npx prisma migrate deploy` para aplicar as migrations do schema atual.',
     },
     { status: 503 }
   );
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
         debtId: debt.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(debt, { status: 201 });
   } catch (error: any) {
@@ -258,7 +258,7 @@ export async function PATCH(req: Request) {
         debtId: debt.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(debt);
   } catch (error: any) {
@@ -309,7 +309,7 @@ export async function DELETE(req: Request) {
         debtId: existing.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

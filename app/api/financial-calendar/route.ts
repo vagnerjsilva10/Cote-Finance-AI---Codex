@@ -8,8 +8,8 @@ import {
   createManualFinancialEvent,
   getFinancialCalendarSnapshot,
   markFinancialCalendarEventStatus,
-  syncWorkspaceFinancialCalendarSourcesSafe,
 } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 import { logWorkspaceEventSafe, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
 export const dynamic = 'force-dynamic';
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
         sourceType: created.source_type,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
@@ -124,7 +124,7 @@ export async function PATCH(req: Request) {
         status: result.status,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(result);
   } catch (error: any) {

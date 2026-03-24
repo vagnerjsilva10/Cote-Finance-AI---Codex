@@ -235,6 +235,9 @@ model Transaction {
   @@index([workspace_id, status, due_date])
   @@index([workspace_id, origin_type, origin_id])
   @@index([workspace_id, wallet_id, due_date])
+  @@index([workspace_id, destination_wallet_id, date])
+  @@index([workspace_id, category_id, date])
+  @@index([workspace_id, created_at])
 }
 
 model Category {

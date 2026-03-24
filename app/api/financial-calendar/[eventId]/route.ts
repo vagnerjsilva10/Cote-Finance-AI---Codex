@@ -5,9 +5,9 @@ import {
 import { buildFinancialCalendarErrorResponse } from '@/lib/server/financial-calendar-http';
 import {
   deleteManualFinancialEvent,
-  syncWorkspaceFinancialCalendarSourcesSafe,
   updateManualFinancialEvent,
 } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 import {
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
@@ -38,7 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ eventI
         financialEventId: updated.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -65,7 +65,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ event
         financialEventId: eventId,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json(result);
   } catch (error) {

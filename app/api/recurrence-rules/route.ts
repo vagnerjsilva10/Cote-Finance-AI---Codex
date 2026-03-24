@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
-import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
 import {
   cancelFutureRecurringRuleTransactions,
   getRecurringRulesSchemaErrorMessage,
@@ -265,7 +265,7 @@ export async function POST(req: Request) {
         kind: rule.kind,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({ ...rule, projection }, { status: 201 });
   } catch (error: any) {
@@ -372,7 +372,7 @@ export async function PATCH(req: Request) {
         recurrenceRuleId: updated.id,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({ ...updated, projection });
   } catch (error: any) {
@@ -428,7 +428,7 @@ export async function DELETE(req: Request) {
         canceledTransactions: canceled.canceled,
       },
     });
-    await syncWorkspaceFinancialCalendarSourcesSafe(context.workspaceId);
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
     return NextResponse.json({
       success: true,

@@ -8,6 +8,7 @@
         "prebuild": "npm run clean && npm run check:encoding",
         "prelint": "npm run check:encoding",
         "prisma:generate": "prisma generate",
+        "prisma:migrate:deploy": "prisma migrate deploy",
         "build": "node scripts/build-with-prisma.js",
         "start": "node .next/standalone/server.js",
         "lint": "eslint .",
