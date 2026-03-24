@@ -1362,7 +1362,7 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'transaction.created': 'Transação criada',
     'transaction.updated': 'Transação atualizada',
     'transaction.deleted': 'Transação removida',
-    'workspace.created': 'Workspace criado',
+    'workspace.created': 'Conta criada',
     'onboarding.completed': 'Onboarding concluído',
     'workspace.whatsapp.connected': 'WhatsApp conectado',
     'workspace.whatsapp.disconnected': 'WhatsApp desconectado',
@@ -1373,9 +1373,9 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'whatsapp.test.requested': 'Teste de WhatsApp iniciado',
     'whatsapp.test.delivered': 'Teste de WhatsApp entregue',
     'whatsapp.test.failed': 'Falha no teste de WhatsApp',
-    'whatsapp.connect.status_webhook': 'Webhook da conexão do WhatsApp',
-    'whatsapp.test.status_webhook': 'Webhook do teste do WhatsApp',
-    'whatsapp.status_webhook': 'Webhook de status do WhatsApp',
+    'whatsapp.connect.status_webhook': 'Atualização da conexão no WhatsApp',
+    'whatsapp.test.status_webhook': 'Atualização do teste no WhatsApp',
+    'whatsapp.status_webhook': 'Atualização de status no WhatsApp',
     'whatsapp.disconnected': 'WhatsApp desconectado',
     'stripe.checkout.created': 'Checkout iniciado',
     'stripe.portal.created': 'Portal de assinatura aberto',
@@ -1395,10 +1395,10 @@ const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
   const messages: Record<string, string> = {
     'transaction.created': 'Uma nova movimentação foi registrada e já apareceu no seu painel.',
     'transaction.updated': 'Uma movimentação foi atualizada com os dados mais recentes.',
-    'transaction.deleted': 'Uma movimentação foi removida do histórico deste workspace.',
+    'transaction.deleted': 'Uma movimentação foi removida do histórico desta conta.',
     'workspace.created': 'Seu espaço financeiro foi criado e está pronto para uso.',
     'onboarding.completed': 'Sua configuração inicial foi concluída com sucesso.',
-    'workspace.whatsapp.connected': 'Os alertas no WhatsApp deste workspace foram ativados.',
+    'workspace.whatsapp.connected': 'Os alertas no WhatsApp desta conta foram ativados.',
     'workspace.whatsapp.disconnected': 'O envio de alertas no WhatsApp foi desativado.',
     'whatsapp.connect.requested': 'A solicitação de conexão foi aceita e aguarda confirmação real de entrega.',
     'whatsapp.connect.delivered': 'A mensagem de conexão foi entregue e o WhatsApp está validado.',
@@ -1410,19 +1410,19 @@ const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
     'whatsapp.connect.status_webhook': 'Recebemos uma atualização de status da tentativa de conexão.',
     'whatsapp.test.status_webhook': 'Recebemos uma atualização de status do teste enviado.',
     'whatsapp.status_webhook': 'Recebemos uma atualização de status do WhatsApp.',
-    'whatsapp.disconnected': 'A integração do WhatsApp foi desconectada deste workspace.',
+    'whatsapp.disconnected': 'A integração do WhatsApp foi desconectada desta conta.',
     'stripe.checkout.created': 'O fluxo de assinatura foi iniciado e aguarda a sua confirmação.',
     'stripe.portal.created': 'A área de gerenciamento da assinatura foi aberta.',
     'stripe.customer.subscription.created': 'Sua assinatura foi criada e está sendo preparada para uso.',
     'stripe.customer.subscription.updated': 'Houve uma atualização recente na sua assinatura.',
-    'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada neste workspace.',
+    'stripe.customer.subscription.deleted': 'Sua assinatura foi encerrada nesta conta.',
     'stripe.invoice.paid': 'Recebemos a confirmação do pagamento da sua assinatura.',
     'stripe.invoice.payment_failed': 'A última tentativa de cobrança não foi concluída.',
-    'ai.chat.used': 'Uma análise com IA foi gerada para este workspace.',
+    'ai.chat.used': 'Uma análise com IA foi gerada para esta conta.',
     'ai.classify.used': 'Uma classificação automática foi aplicada em uma movimentação.',
   };
 
-  return messages[event.type] || 'Uma atualização recente foi registrada neste workspace.';
+  return messages[event.type] || 'Uma atualização recente foi registrada nesta conta.';
 };
 
 const getNotificationStorageKey = (userId: string, workspaceId: string) =>
@@ -2099,7 +2099,7 @@ const SubscriptionView = ({
         <div className="app-surface-card rounded-[1.75rem] p-8 text-center">
           <p className="text-base font-semibold text-[var(--text-primary)]">Carregando assinatura...</p>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Estamos sincronizando o status do workspace e a cobrança atual.
+            Estamos sincronizando o status da conta e a cobrança atual.
           </p>
         </div>
       ) : error ? (
@@ -2144,7 +2144,7 @@ const SubscriptionView = ({
                   <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.billingLabel}</p>
                 </div>
                 <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">Workspace vinculado</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--text-muted)]">Conta vinculada</p>
                   <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{summary.workspaceName}</p>
                 </div>
               </div>
@@ -2155,7 +2155,7 @@ const SubscriptionView = ({
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Resumo rápido</p>
                 <h4 className="mt-2 text-xl font-black text-[var(--text-primary)]">Central de assinatura</h4>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                  Tudo o que importa para este workspace fica visível aqui. Quando uma ação exigir a Stripe,
+                  Tudo o que importa para esta conta fica visível aqui. Quando uma ação exigir a Stripe,
                   abrimos apenas a etapa necessária.
                 </p>
               </div>
@@ -2166,7 +2166,7 @@ const SubscriptionView = ({
                   <div>
                     <p className="text-sm font-semibold text-[var(--text-primary)]">Pagamento seguro</p>
                     <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                      Seus dados continuam protegidos pela Stripe e sincronizados com o billing do workspace.
+                      Seus dados continuam protegidos pela Stripe e sincronizados com a cobrança da conta.
                     </p>
                   </div>
                 </div>
@@ -2681,7 +2681,7 @@ const DashboardView = ({
         <div className="app-surface-card lg:col-span-2 rounded-2xl p-5 sm:p-6">
           <div className="mb-6">
             <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
-            <p className="text-sm text-[var(--text-secondary)]">Ultimos 6 meses</p>
+            <p className="text-sm text-[var(--text-secondary)]">Últimos 6 meses</p>
           </div>
 
           <div className="h-[280px] w-full sm:h-[320px]">
@@ -3356,7 +3356,7 @@ const IntegrationsView = ({
                   {[
                     'Resumo diário com saldo, entradas e saídas',
                     'Alertas de vencimentos e compromissos próximos',
-                    'Teste de envio e configuração por workspace',
+                    'Teste de envio e configuração por conta',
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <CheckCircle2 size={16} className="mt-0.5 text-[var(--text-secondary)]" />
@@ -3412,9 +3412,9 @@ const IntegrationsView = ({
                   {[
                     { label: 'Número vinculado', value: linkedPhoneNumber || 'Nenhum número salvo' },
                     { label: 'Status atual', value: connectionLabel },
-                    { label: 'Ultima tentativa', value: lastAttemptLabel },
-                    { label: 'Ultimo teste', value: lastTestLabel },
-                    { label: 'Ultimo erro', value: lastErrorLabel },
+                    { label: 'Última tentativa', value: lastAttemptLabel },
+                    { label: 'Último teste', value: lastTestLabel },
+                    { label: 'Último erro', value: lastErrorLabel },
                     { label: 'Ação disponível', value: nextActionLabel },
                   ].map((item) => (
                     <div
@@ -3516,7 +3516,7 @@ const IntegrationsView = ({
             </div>
 
             <p className="mt-4 text-xs leading-relaxed text-[var(--text-muted)]">
-              Depois da confirmação de entrega, o workspace passa a receber um resumo automático por dia e o teste manual fica liberado.
+              Depois da confirmação de entrega, a conta passa a receber um resumo automático diário, e o teste manual fica liberado.
             </p>
           </div>
         </div>
@@ -4044,7 +4044,7 @@ const DebtsView = ({
                       {debt.notes ? <p className="text-sm leading-7 text-[var(--text-secondary)]">{debt.notes}</p> : null}
                       {debt.source === 'legacy_debt' ? (
                         <p className="text-[11px] leading-5 text-[var(--text-secondary)]">
-                          Registro legado mantido por compatibilidade. Você pode editar normalmente sem perder histórico.
+                          Registro anterior mantido para preservar seu histórico. Você pode editar normalmente.
                         </p>
                       ) : null}
                     </div>
@@ -4520,7 +4520,7 @@ const PortfolioView = ({
           <div className="space-y-3">
             {walletAllocation.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[var(--border-default)] px-4 py-6 text-sm text-[var(--text-muted)]">
-                Nenhuma carteira cadastrada ainda. Crie uma conta financeira para começar a organizar o saldo do workspace.
+                Nenhuma carteira cadastrada ainda. Crie uma conta financeira para começar a organizar seu saldo.
               </div>
             )}
 
@@ -5067,7 +5067,7 @@ const ReportsView = ({
         ? 'Direção de queda'
         : 'Direção estável';
   const trendMetricValue = `${balanceForecast.dailyNetFlow >= 0 ? '+' : '-'}${formatCurrency(Math.abs(balanceForecast.dailyNetFlow))}/dia`;
-  const trendBasisLabel = balanceForecast.source === 'read-model' ? 'base read model' : 'base 60 dias';
+  const trendBasisLabel = balanceForecast.source === 'read-model' ? 'base da projeção diária' : 'base dos últimos 60 dias';
   const trendActionHint =
     balanceForecast.trend === 'positive'
       ? 'Ação sugerida: manter a cadência atual e ampliar reserva de segurança.'
@@ -5249,14 +5249,14 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <h4 className="label-premium text-[var(--text-primary)]">Previsão de saldo</h4>
                 <p className="text-sm text-[var(--text-secondary)] mt-2">
                   {balanceForecast.source === 'read-model'
-                    ? 'Projecao baseada no read model diario (confirmado + planejado).'
+                    ? 'Projeção baseada no histórico diário (confirmado + planejado).'
                     : 'Projeção baseada no ritmo médio das suas movimentações dos últimos 60 dias.'}
                 </p>
               </div>
               <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-4 py-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Tendência</p>
                 <p className="mt-1 text-sm font-black text-[var(--text-primary)]">{trendMetricValue}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{`${trendDirectionLabel} " ${trendBasisLabel}`}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{`${trendDirectionLabel} · ${trendBasisLabel}`}</p>
               </div>
             </div>
 
@@ -5778,18 +5778,18 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                 disabled={!isValid || isSubmitting}
                 className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
               >
-                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteracoes' : 'Criar meta'}
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar meta'}
               </button>
             </>
           }
         >
-          <FormField label="Titulo" htmlFor={titleId} required error={titleInvalid ? 'Informe o titulo da meta.' : null}>
+          <FormField label="Título" htmlFor={titleId} required error={titleInvalid ? 'Informe o título da meta.' : null}>
             <input
               id={titleId}
               type="text"
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              placeholder="Ex: Reserva de emergencia"
+              placeholder="Ex.: Reserva de emergência"
               className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', titleInvalid && 'app-field-error')}
             />
           </FormField>
@@ -5953,7 +5953,7 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
                 disabled={!isValid || isSubmitting}
                 className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
               >
-                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteracoes' : 'Adicionar investimento'}
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
               </button>
             </>
           }
@@ -6127,7 +6127,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar divida.');
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar dívida.');
     } finally {
       setIsSubmitting(false);
     }
@@ -6141,8 +6141,8 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
         className="theme-modal-surface w-full max-w-lg rounded-3xl p-5 shadow-2xl sm:p-6"
       >
         <FormContainer
-          title={initialData ? 'Editar divida unica' : 'Nova divida unica'}
-          subtitle="Use para obrigacoes especificas com valor total definido."
+          title={initialData ? 'Editar dívida avulsa' : 'Nova dívida avulsa'}
+          subtitle="Use para obrigações específicas com valor total definido."
           onClose={onClose}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
@@ -6162,7 +6162,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 disabled={!isValid || isSubmitting}
                 className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
               >
-                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteracoes' : 'Criar divida unica'}
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida avulsa'}
               </button>
             </>
           }
@@ -6209,7 +6209,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               />
             </FormField>
 
-            <FormField label="Data do vencimento" htmlFor={dueDateId} required error={dueDateInvalid ? 'Selecione uma data valida.' : null}>
+            <FormField label="Data do vencimento" htmlFor={dueDateId} required error={dueDateInvalid ? 'Selecione uma data válida.' : null}>
               <PremiumDatePicker
                 id={dueDateId}
                 value={formData.dueDate}
@@ -6279,7 +6279,7 @@ const RecurringDebtModal = ({
       const category =
         typeof initialDraft?.category === 'string' && initialDraft.category.trim().length > 0
           ? initialDraft.category
-          : RECURRING_DEBT_PRESETS[0]?.category ?? 'Agua';
+          : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
       return {
         creditor: initialDraft?.creditor ?? category,
         amount: initialDraft?.amount ?? '',
@@ -6367,7 +6367,7 @@ const RecurringDebtModal = ({
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar recorrencia.');
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar recorrência.');
     } finally {
       setIsSubmitting(false);
     }
@@ -6381,8 +6381,8 @@ const RecurringDebtModal = ({
         className="theme-modal-surface w-full max-w-2xl rounded-3xl p-5 shadow-2xl sm:p-6"
       >
         <FormContainer
-          title={initialData ? 'Editar recorrencia' : 'Nova divida recorrente'}
-          subtitle="Use para cobrancas repetidas com frequencia e proxima cobranca definidas."
+          title={initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}
+          subtitle="Use para cobranças recorrentes com frequência e próxima cobrança definidas."
           onClose={onClose}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
@@ -6402,17 +6402,17 @@ const RecurringDebtModal = ({
                 disabled={!isValid || isSubmitting}
                 className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
               >
-                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrencia' : 'Criar recorrencia'}
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrência' : 'Criar recorrência'}
               </button>
             </>
           }
         >
           <FormGrid>
             <FormField
-              label="Descricao"
+              label="Descrição"
               htmlFor={descriptionId}
               required
-              error={descriptionInvalid ? 'Informe a descricao da cobranca.' : null}
+              error={descriptionInvalid ? 'Informe a descrição da cobrança.' : null}
             >
               <input
                 id={descriptionId}
@@ -6424,7 +6424,7 @@ const RecurringDebtModal = ({
               />
             </FormField>
 
-            <FormField label="Valor da cobranca" required error={amountInvalid ? 'Informe um valor maior que zero.' : null}>
+            <FormField label="Valor da cobrança" required error={amountInvalid ? 'Informe um valor maior que zero.' : null}>
               <MoneyInput
                 value={formData.amount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
@@ -6463,7 +6463,7 @@ const RecurringDebtModal = ({
               </select>
             </FormField>
 
-            <FormField label="Frequencia" htmlFor={frequencyId}>
+            <FormField label="Frequência" htmlFor={frequencyId}>
               <select
                 id={frequencyId}
                 value={formData.frequency}
@@ -6478,7 +6478,7 @@ const RecurringDebtModal = ({
               </select>
             </FormField>
 
-            <FormField label="Repetir a cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo minimo de 1.' : null}>
+            <FormField label="Repetir a cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo mínimo de 1.' : null}>
               <input
                 id={intervalId}
                 type="number"
@@ -6510,7 +6510,7 @@ const RecurringDebtModal = ({
 
             {isMonthlyFamily ? (
               <FormField
-                label="Dia da cobranca"
+                label="Dia da cobrança"
                 htmlFor={dueDayId}
                 className="sm:col-span-2"
                 required
@@ -6528,13 +6528,13 @@ const RecurringDebtModal = ({
               </FormField>
             ) : null}
 
-            <FormField label="Observacoes" className="sm:col-span-2" hint="Opcional">
+            <FormField label="Observações" className="sm:col-span-2" hint="Opcional">
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                 rows={3}
                 className="app-field w-full resize-none rounded-xl px-4 py-2 text-sm"
-                placeholder="Ex: cobranca obrigatoria do condominio"
+                placeholder="Ex.: cobrança obrigatória do condomínio"
               />
             </FormField>
           </FormGrid>
@@ -7586,7 +7586,7 @@ const LoginView = ({
       authDebug('resend_confirmation:done', { email: pendingConfirmationEmail });
       setNotice('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     } catch (err: any) {
-      authDebug('resend_confirmation:failed', { message: String(err?.message || err || 'erro desconhecido') });
+      authDebug('resend_confirmation:failed', { message: String(err?.message || err || 'erro inesperado') });
       setError(err?.message || 'Não foi possível reenviar o e-mail de confirmação.');
     } finally {
       setLoading(false);
@@ -7780,7 +7780,7 @@ const LoginView = ({
       authDebug('oauth_google:redirecting', { callbackUrl });
     } catch (err: any) {
       const rawMessage = String(err?.message || '');
-      authDebug('oauth_google:failed', { message: rawMessage || 'erro desconhecido' });
+      authDebug('oauth_google:failed', { message: rawMessage || 'erro inesperado' });
       if (/unsupported provider|provider is not enabled|oauth/i.test(rawMessage)) {
         setError(
           'Google OAuth não está habilitado no Supabase. Ative o provider Google e configure a Redirect URL /auth/callback.'
@@ -7822,7 +7822,7 @@ const LoginView = ({
               {isLogin
                 ? loginMethod === 'otp'
                   ? 'Receba um código no e-mail e valide sua entrada sem depender da senha.'
-                  : 'Acesse seu workspace com segurança e continue de onde parou.'
+                  : 'Acesse sua conta com segurança e continue de onde parou.'
                 : 'Comece a organizar suas finanças em minutos.'}
             </p>
           </div>
@@ -9469,7 +9469,7 @@ React.useEffect(() => {
             ? payload.message
             : connectionState === 'connected'
               ? 'O WhatsApp foi conectado com sucesso.'
-              : 'A Meta aceitou a conexão. Agora falta a confirmação de entrega pelo webhook.',
+              : 'A Meta aceitou a conexão. Agora falta apenas a confirmação final de entrega.',
       });
     } catch (error: any) {
       const message =
@@ -9548,7 +9548,7 @@ React.useEffect(() => {
         message:
           typeof payload?.message === 'string'
             ? payload.message
-            : 'A Meta aceitou o teste. Agora falta a confirmação de entrega pelo webhook.',
+            : 'A Meta aceitou o teste. Agora falta apenas a confirmação final de entrega.',
       });
     } catch (error: any) {
       const message =
@@ -9739,7 +9739,7 @@ React.useEffect(() => {
     if (currentPlan !== 'FREE' && !isWhatsAppConnected) {
       notifications.push({
         id: 'whatsapp-not-connected',
-        title: 'Conecte o WhatsApp do workspace',
+        title: 'Conecte o WhatsApp da conta',
         message: 'Ative alertas e resumos automáticos direto no seu celular.',
         tone: 'info',
         targetTab: 'integrations',
@@ -10405,7 +10405,7 @@ React.useEffect(() => {
         });
       } catch (error) {
         console.error('Upgrade error:', error);
-        const message = error instanceof Error ? error.message : 'erro desconhecido';
+        const message = error instanceof Error ? error.message : 'erro inesperado';
         showUiFeedback(`Erro ao iniciar upgrade: ${message}`);
       }
     },
@@ -10469,7 +10469,7 @@ React.useEffect(() => {
             (subscriptionSummary?.canOpenCheckout || isFreePlan)
           ) {
             const shouldUpgrade = window.confirm(
-              'Este workspace ainda não tem uma assinatura regularizada. Deseja abrir o checkout agora?'
+              'Esta conta ainda não tem uma assinatura regularizada. Deseja abrir o checkout agora?'
             );
             if (shouldUpgrade) {
               void handleUpgrade(buildPlanLabelFromSummary(subscriptionSummary));
@@ -10484,7 +10484,7 @@ React.useEffect(() => {
         }
       } catch (error) {
         console.error('Portal error:', error);
-        const message = error instanceof Error ? error.message : 'erro desconhecido';
+        const message = error instanceof Error ? error.message : 'erro inesperado';
         showUiFeedback(`Erro ao abrir assinatura: ${message}`);
       } finally {
         setSubscriptionActionLoading(null);
@@ -11284,7 +11284,7 @@ React.useEffect(() => {
         const message =
           typeof payload?.error === 'string'
             ? payload.error
-            : `Falha ao criar workspace (HTTP ${response.status}).`;
+            : `Falha ao criar conta (HTTP ${response.status}).`;
         throw new Error(message);
       }
 
@@ -11437,14 +11437,14 @@ React.useEffect(() => {
 
   const handleDeleteWorkspace = async () => {
     if (!activeWorkspace) {
-      setDeleteWorkspaceError('Selecione um workspace válido para excluir.');
+      setDeleteWorkspaceError('Selecione uma conta válida para excluir.');
       return;
     }
 
     const expectedName = activeWorkspace.name.trim();
     const providedName = deleteWorkspaceConfirmationName.trim();
     if (providedName !== expectedName) {
-      setDeleteWorkspaceError('Digite o nome do workspace exatamente para confirmar a exclusão.');
+      setDeleteWorkspaceError('Digite o nome da conta exatamente para confirmar a exclusão.');
       return;
     }
 
@@ -11464,7 +11464,7 @@ React.useEffect(() => {
         const message =
           typeof payload?.error === 'string'
             ? payload.error
-            : `Falha ao excluir workspace (HTTP ${response.status}).`;
+            : `Falha ao excluir conta (HTTP ${response.status}).`;
         throw new Error(message);
       }
 
@@ -11477,10 +11477,10 @@ React.useEffect(() => {
       setActiveWorkspaceId(nextWorkspaceId);
       setIsDeleteWorkspaceModalOpen(false);
       setDeleteWorkspaceConfirmationName('');
-      setSettingsSavedAt(`Workspace "${activeWorkspace.name}" excluído com sucesso.`);
+      setSettingsSavedAt(`Conta "${activeWorkspace.name}" excluída com sucesso.`);
       navigateToTab('dashboard');
     } catch (error) {
-      setDeleteWorkspaceError(error instanceof Error ? error.message : 'Falha ao excluir workspace.');
+      setDeleteWorkspaceError(error instanceof Error ? error.message : 'Falha ao excluir conta.');
     } finally {
       setIsDeletingWorkspace(false);
     }
@@ -11686,7 +11686,7 @@ React.useEffect(() => {
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Nova conta</p>
-                  <h3 className="page-title-premium text-[var(--text-primary)]">Criar workspace</h3>
+                  <h3 className="page-title-premium text-[var(--text-primary)]">Criar conta</h3>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
                     Crie uma nova conta para separar finanças pessoais, empresa ou operações diferentes dentro do mesmo
                     painel.
@@ -11974,7 +11974,7 @@ React.useEffect(() => {
           >
             <button
               type="button"
-              aria-label="Fechar confirmação de exclusão de workspace"
+              aria-label="Fechar confirmação de exclusão de conta"
               onClick={() => {
                 if (isDeletingWorkspace) return;
                 setIsDeleteWorkspaceModalOpen(false);
@@ -11993,10 +11993,10 @@ React.useEffect(() => {
               <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--danger)]">Ação irreversível</p>
                 <h3 className="card-title-premium text-[var(--text-primary)]">
-                  Excluir workspace &quot;{activeWorkspace.name}&quot;
+                  Excluir conta &quot;{activeWorkspace.name}&quot;
                 </h3>
                 <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                  Para confirmar, digite o nome do workspace exatamente como está. Todos os dados vinculados serão
+                  Para confirmar, digite o nome da conta exatamente como está. Todos os dados vinculados serão
                   apagados permanentemente.
                 </p>
               </div>
@@ -12039,7 +12039,7 @@ React.useEffect(() => {
                   disabled={isDeletingWorkspace}
                   className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm font-bold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isDeletingWorkspace ? 'Excluindo workspace...' : 'Excluir workspace'}
+                  {isDeletingWorkspace ? 'Excluindo conta...' : 'Excluir conta'}
                 </button>
               </div>
             </motion.div>
@@ -12067,7 +12067,7 @@ React.useEffect(() => {
                   <p className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-black mb-2">
                     Onboarding Cote Finance AI
                   </p>
-                  <h3 className="page-title-premium text-[var(--text-primary)]">Setup inteligente do seu workspace</h3>
+                  <h3 className="page-title-premium text-[var(--text-primary)]">Configuração inteligente da sua conta</h3>
                   <p className="text-sm text-[var(--text-secondary)]">Etapa {onboardingStep + 1} de 9</p>
                 </div>
                 <button
@@ -12477,7 +12477,7 @@ React.useEffect(() => {
                       checked={onboardingAiSuggestionsEnabled}
                       onChange={(event) => setOnboardingAiSuggestionsEnabled(event.target.checked)}
                     />
-                    Ativar sugestões de IA para este workspace
+                    Ativar sugestões de IA para esta conta
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                     <button
@@ -13582,7 +13582,7 @@ React.useEffect(() => {
                   <div className="app-surface-card rounded-2xl p-6 space-y-4">
                     <div className="flex items-center justify-between gap-2">
                       <h4 className="label-premium text-[var(--text-primary)]">
-                        Atividade do workspace
+                        Atividade da conta
                       </h4>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                         {workspaceEvents.length} eventos
@@ -13590,7 +13590,7 @@ React.useEffect(() => {
                     </div>
                     {workspaceEvents.length === 0 ? (
                       <p className="text-sm text-[var(--text-secondary)]">
-                        Nenhum evento recente encontrado para este workspace.
+                        Nenhum evento recente encontrado para esta conta.
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -13620,16 +13620,16 @@ React.useEffect(() => {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="space-y-2">
                         <h4 className="label-premium text-[var(--danger)]">Zona de risco</h4>
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">Excluir workspace atual</p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">Excluir conta atual</p>
                         <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
                           Essa ação é irreversível e remove carteiras, transações, metas, dívidas, investimentos e eventos
-                          deste workspace.
+                          desta conta.
                         </p>
                         {!canDeleteActiveWorkspace && (
                           <p className="text-xs text-[var(--text-muted)]">
                             {workspaces.length <= 1
                               ? 'Crie outra conta antes de excluir a atual.'
-                              : 'Somente o proprietário da conta pode excluir este workspace.'}
+                              : 'Somente o proprietário da conta pode excluir esta conta.'}
                           </p>
                         )}
                       </div>
@@ -13639,7 +13639,7 @@ React.useEffect(() => {
                         onClick={handleOpenDeleteWorkspaceModal}
                         className="inline-flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] px-4 py-2 text-sm font-bold text-[var(--danger)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Excluir workspace
+                        Excluir conta
                       </button>
                     </div>
                   </div>
@@ -13815,6 +13815,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
 
 

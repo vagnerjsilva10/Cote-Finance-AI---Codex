@@ -36,7 +36,7 @@ export default function DashboardAuthBridgePage() {
         <div className="mx-auto mb-4 size-10 rounded-full border-4 border-[var(--primary)] border-t-transparent animate-spin" />
         <h1 className="text-lg font-bold text-[var(--text-primary)]">Preparando seu acesso</h1>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
-          Estamos concluindo o login com seguranca e carregando seu workspace.
+          Estamos concluindo o login com segurança e carregando sua conta.
         </p>
       </div>
     </main>

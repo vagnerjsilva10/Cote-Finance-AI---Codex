@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { LegalPage } from '@/app/_shared/legal-page';
 
 export const metadata: Metadata = {
@@ -11,20 +11,20 @@ const sections = [
     title: '1. Uso da plataforma',
     paragraphs: [
       'Ao criar uma conta no Cote Finance AI, você concorda em usar a plataforma de forma lícita, responsável e compatível com a finalidade do produto.',
-      'O acesso ao sistema é pessoal e vinculado ao seu usuário e aos workspaces autorizados. Você é responsável por manter suas credenciais seguras.',
+      'O acesso ao sistema é pessoal e vinculado ao seu usuário e às contas autorizadas. Você é responsável por manter suas credenciais seguras.',
     ],
   },
   {
-    title: '2. Conta, workspace e responsabilidade',
+    title: '2. Conta e responsabilidade',
     paragraphs: [
-      'Cada workspace representa um ambiente próprio dentro do SaaS. Você é responsável pelos dados que cadastra, edita, importa ou compartilha dentro desse ambiente.',
+      'Cada conta representa um ambiente financeiro próprio dentro do SaaS. Você é responsável pelos dados que cadastra, edita, importa ou compartilha nesse ambiente.',
       'É proibido utilizar a plataforma para praticar fraude, abuso, violação de direitos de terceiros, engenharia reversa indevida ou qualquer atividade ilícita.',
     ],
   },
   {
     title: '3. Planos, cobrança e cancelamento',
     paragraphs: [
-      'Os recursos disponíveis variam conforme o plano contratado. Planos pagos podem incluir renovação recorrente, período de teste, upgrade, downgrade e cancelamento conforme a política de billing vigente.',
+      'Os recursos disponíveis variam conforme o plano contratado. Planos pagos podem incluir renovação recorrente, período de teste, upgrade, downgrade e cancelamento conforme a política de cobrança vigente.',
       'O cancelamento interrompe futuras cobranças, mas não necessariamente remove imediatamente o acesso a períodos já pagos ou em teste, conforme o status da assinatura.',
     ],
   },
@@ -49,7 +49,7 @@ export default function TermosDeUsoPage() {
     <LegalPage
       eyebrow="Termos"
       title="Termos de Uso"
-      description="Estes termos regulam o uso do Cote Finance AI, incluindo acesso à plataforma, responsabilidades da conta, regras de billing e limites gerais de uso do serviço."
+      description="Estes termos regulam o uso do Cote Finance AI, incluindo acesso à plataforma, responsabilidades da conta, regras de cobrança e limites gerais de uso do serviço."
       lastUpdated="7 de março de 2026"
       sections={sections}
       currentPage="termos"

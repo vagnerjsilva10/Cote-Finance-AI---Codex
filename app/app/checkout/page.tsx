@@ -707,8 +707,8 @@ function CheckoutPageContent() {
           clearCachedCheckout(plan, interval, workspaceId);
           setSuccessMessage(
             status === 'processing'
-              ? 'Pagamento recebido e em processamento. Seu workspace sera atualizado pelo webhook do Stripe.'
-              : 'Pagamento confirmado. O plano do workspace sera atualizado em instantes.'
+              ? 'Pagamento recebido e em processamento. Sua conta será atualizada automaticamente em instantes.'
+              : 'Pagamento confirmado. O plano da sua conta será atualizado em instantes.'
           );
           if (pendingPurchaseValue > 0 && plan) {
             trackPixelStandard('Purchase', { value: pendingPurchaseValue, currency: 'BRL' });
@@ -731,7 +731,7 @@ function CheckoutPageContent() {
         if (status === 'succeeded' || status === 'processing') {
           clearCachedCheckout(plan, interval, workspaceId);
           setSuccessMessage(
-            'Método de pagamento confirmado. O Stripe vai ativar a assinatura do workspace via webhook.'
+            'Método de pagamento confirmado. A assinatura da sua conta será ativada automaticamente em instantes.'
           );
           window.history.replaceState({}, '', getCheckoutPath({ plan, interval, workspaceId }));
           return;
@@ -818,7 +818,7 @@ function CheckoutPageContent() {
         if (!isCancelled) {
           if (!typedPayload.requiresConfirmation) {
             clearCachedCheckout(plan, interval, typedPayload.workspaceId);
-            setSuccessMessage('A assinatura não exige confirmação adicional. O workspace será atualizado em instantes.');
+            setSuccessMessage('A assinatura não exige confirmação adicional. Sua conta será atualizada em instantes.');
           }
           setCheckoutData(typedPayload);
         }
@@ -870,7 +870,7 @@ function CheckoutPageContent() {
   const showLegacyFallback = !publishableKey;
   const checkoutPlanName = checkoutData?.planName || summaryPlan?.name || 'Pro';
   const checkoutPriceLabel = checkoutData?.priceLabel || (plan && interval ? formatBillingPrice(plan, interval) : 'R$ 29 / mês');
-  const checkoutWorkspaceName = checkoutData?.workspaceName || 'Meu Workspace';
+  const checkoutWorkspaceName = checkoutData?.workspaceName || 'Minha conta';
   const checkoutPlanDescription =
     checkoutData?.planDescription ||
     pixData?.planDescription ||
@@ -1101,12 +1101,12 @@ function CheckoutPageContent() {
                 </div>
 
                 <div className="rounded-2xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">Workspace selecionado</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">Conta selecionada</p>
                   <p className="mt-3 text-xl font-semibold text-[var(--text-primary)]">
                     {checkoutWorkspaceName}
                   </p>
                   <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                    Esta assinatura será vinculada a este workspace. Você poderá gerenciar tudo depois na sua área de assinatura.
+                    Esta assinatura será vinculada a esta conta. Você poderá gerenciar tudo depois na sua área de assinatura.
                   </p>
                 </div>
               </div>
@@ -1258,7 +1258,7 @@ function CheckoutPageContent() {
                   <Loader2 className="mb-4 size-8 animate-spin text-[var(--primary)]" />
                   <p className="text-lg font-semibold text-[var(--text-primary)]">Preparando checkout seguro...</p>
                   <p className="mt-2 max-w-sm text-sm text-[var(--text-secondary)]">
-                    Estamos validando o workspace, cliente Stripe e a assinatura recorrente antes de renderizar o Payment
+                    Estamos validando sua conta, os dados da Stripe e a assinatura recorrente antes de carregar o formulário de pagamento
                     Element.
                   </p>
                 </div>
@@ -1421,7 +1421,7 @@ function CheckoutPageContent() {
                     </div>
                   </div>
                   <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-secondary)]">Workspace</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-secondary)]">Conta</p>
                     <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{checkoutWorkspaceName}</p>
                   </div>
                 </div>
@@ -1477,6 +1477,7 @@ export default function CheckoutPage() {
     </React.Suspense>
   );
 }
+
 
 
 

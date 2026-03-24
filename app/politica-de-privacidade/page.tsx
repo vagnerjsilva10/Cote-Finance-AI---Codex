@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { LegalPage } from '@/app/_shared/legal-page';
 
 export const metadata: Metadata = {
@@ -10,12 +10,12 @@ const sections = [
   {
     title: '1. Dados que coletamos',
     paragraphs: [
-      'Coletamos os dados necessários para criar sua conta, autenticar seu acesso, manter seu workspace ativo e oferecer os recursos financeiros do produto.',
+      'Coletamos os dados necessários para criar sua conta, autenticar seu acesso, manter sua conta ativa e oferecer os recursos financeiros do produto.',
       'Esses dados podem incluir nome, e-mail, dados de autenticação, preferências de uso e informações financeiras que você registrar no sistema.',
     ],
     bullets: [
       'Dados cadastrais e de autenticação',
-      'Informações do workspace e do plano contratado',
+      'Informações da conta e do plano contratado',
       'Transações, metas, dívidas, investimentos e demais registros inseridos por você',
       'Dados técnicos mínimos para segurança, desempenho e auditoria',
     ],
@@ -38,7 +38,7 @@ const sections = [
     title: '4. Segurança e retenção',
     paragraphs: [
       'Adotamos medidas técnicas e organizacionais razoáveis para proteger sua conta e seus dados contra acesso não autorizado, alteração indevida, perda e uso abusivo.',
-      'Mantemos os dados pelo tempo necessário para operar a conta, cumprir obrigações legais, resolver disputas e preservar a integridade do histórico do workspace.',
+      'Mantemos os dados pelo tempo necessário para operar a conta, cumprir obrigações legais, resolver disputas e preservar a integridade do histórico da conta.',
     ],
   },
   {

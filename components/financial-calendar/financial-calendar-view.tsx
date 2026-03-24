@@ -728,7 +728,7 @@ export function FinancialCalendarView({
       <section className="app-surface-card rounded-[2rem] p-6 sm:p-8">
         <div className="max-w-2xl space-y-3">
           <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">{'Calend\u00e1rio Financeiro Inteligente'}</p>
-          <h3 className="page-title-premium text-[var(--text-primary)]">{'Selecione um workspace para ler o m\u00eas financeiro'}</h3>
+          <h3 className="page-title-premium text-[var(--text-primary)]">{'Selecione uma conta para visualizar o m\u00eas financeiro'}</h3>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
             {'O calend\u00e1rio precisa de um contexto ativo para carregar entradas, sa\u00eddas, vencimentos e alertas do per\u00edodo.'}
           </p>

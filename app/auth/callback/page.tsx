@@ -83,7 +83,7 @@ async function runWithRetry<T>(
 
 function normalizeAuthErrorMessage(message: string) {
   if (/Unable to exchange external code/i.test(message)) {
-    return 'Nao foi possivel concluir o login com Google. Tente novamente para gerar um novo link de autenticacao.';
+    return 'Não foi possível concluir o login com Google. Tente novamente para gerar um novo link de autenticação.';
   }
 
   if (/code verifier|invalid request/i.test(message)) {
@@ -91,7 +91,7 @@ function normalizeAuthErrorMessage(message: string) {
   }
 
   if (/timeout|upstream request timeout/i.test(message)) {
-    return 'O login demorou alem do esperado. Tente novamente em alguns segundos.';
+    return 'O login demorou além do esperado. Tente novamente em alguns segundos.';
   }
 
   return message;
@@ -139,7 +139,7 @@ export default function AuthCallbackPage() {
           await runWithRetry(
             'callback_get_session_initial',
             () => supabase.auth.getSession(),
-            'Nao foi possivel ler a sessao inicial.'
+            'Não foi possível ler a sessão inicial.'
           )
         ).data.session;
 
@@ -151,7 +151,7 @@ export default function AuthCallbackPage() {
                 access_token: hashAccessToken,
                 refresh_token: hashRefreshToken,
               }),
-            'Nao foi possivel validar os tokens de retorno da autenticacao.'
+            'Não foi possível validar os tokens de retorno da autenticação.'
           );
 
           if (hashSessionError) {
@@ -167,7 +167,7 @@ export default function AuthCallbackPage() {
           const { data: exchangeData, error: exchangeError } = await runWithRetry(
             'callback_exchange_code',
             () => supabase.auth.exchangeCodeForSession(authCode),
-            'A troca do codigo de autenticacao demorou demais.'
+            'A troca do código de autenticação demorou demais.'
           );
 
           if (exchangeError) {
@@ -175,7 +175,7 @@ export default function AuthCallbackPage() {
               await runWithRetry(
                 'callback_get_session_after_exchange_error',
                 () => supabase.auth.getSession(),
-                'Nao foi possivel recuperar sessao apos falha na troca do codigo.'
+                'Não foi possível recuperar a sessão após falha na troca do código.'
               )
             ).data.session;
 
@@ -189,7 +189,7 @@ export default function AuthCallbackPage() {
           }
         } else if (!resolvedSession?.access_token && tokenHash && authType) {
           if (!isEmailOtpType(authType)) {
-            throw new Error('Tipo de confirmacao invalido.');
+            throw new Error('Tipo de confirmação inválido.');
           }
 
           const { data: verifyData, error: verifyError } = await runWithRetry(
@@ -199,7 +199,7 @@ export default function AuthCallbackPage() {
                 token_hash: tokenHash,
                 type: authType,
               }),
-            'A validacao do token de autenticacao demorou demais.'
+            'A validação do token de autenticação demorou demais.'
           );
 
           if (verifyError) {
@@ -217,7 +217,7 @@ export default function AuthCallbackPage() {
             await runWithRetry(
               'callback_get_session_before_poll',
               () => supabase.auth.getSession(),
-              'Nao foi possivel recuperar a sessao apos autenticacao.'
+              'Não foi possível recuperar a sessão após a autenticação.'
             )
           ).data.session;
 
@@ -228,7 +228,7 @@ export default function AuthCallbackPage() {
             await runWithRetry(
               'callback_poll_session',
               () => supabase.auth.getSession(),
-              'A sessao nao ficou disponivel a tempo.'
+              'A sessão não ficou disponível a tempo.'
             )
           ).data.session;
           attempts += 1;
@@ -237,7 +237,7 @@ export default function AuthCallbackPage() {
         if (!session?.access_token) {
           authDebug('callback_missing_session', { attempts });
           setError(
-            'Nao foi possivel concluir a autenticacao. Verifique as Redirect URLs do Supabase e tente novamente.'
+            'Não foi possível concluir a autenticação. Verifique as Redirect URLs do Supabase e tente novamente.'
           );
           return;
         }
@@ -257,7 +257,7 @@ export default function AuthCallbackPage() {
               clearTimeout(timeoutId);
             });
           },
-          'Nao foi possivel finalizar seu acesso no servidor.'
+          'Não foi possível finalizar seu acesso no servidor.'
         );
 
         const setupPayload = await setupResponse.json().catch(() => ({}));
@@ -265,7 +265,7 @@ export default function AuthCallbackPage() {
           throw new Error(
             typeof setupPayload?.error === 'string'
               ? setupPayload.error
-              : 'Falha ao preparar seu ambiente apos autenticacao.'
+              : 'Falha ao preparar seu ambiente após autenticação.'
           );
         }
 
@@ -275,7 +275,7 @@ export default function AuthCallbackPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          const rawMessage = err instanceof Error ? err.message : 'Falha na autenticacao.';
+          const rawMessage = err instanceof Error ? err.message : 'Falha na autenticação.';
           authDebug('callback_failed', { message: rawMessage });
           setError(normalizeAuthErrorMessage(rawMessage));
         }
@@ -293,7 +293,7 @@ export default function AuthCallbackPage() {
       <div className="marketing-panel w-full max-w-md p-6 text-center">
         {error ? (
           <>
-            <h1 className="mb-2 text-lg font-bold text-[var(--text-primary)]">Falha na autenticacao</h1>
+            <h1 className="mb-2 text-lg font-bold text-[var(--text-primary)]">Falha na autenticação</h1>
             <p className="mb-4 text-sm text-[var(--danger)]">{error}</p>
             <button
               onClick={() => router.replace('/app?auth=login')}
@@ -305,7 +305,7 @@ export default function AuthCallbackPage() {
         ) : (
           <>
             <div className="mx-auto mb-4 size-10 animate-spin rounded-full border-4 border-[var(--primary)] border-t-transparent" />
-            <h1 className="mb-2 text-lg font-bold text-[var(--text-primary)]">Concluindo autenticacao</h1>
+            <h1 className="mb-2 text-lg font-bold text-[var(--text-primary)]">Concluindo autenticação</h1>
             <p className="text-sm text-[var(--text-secondary)]">Aguarde enquanto preparamos seu ambiente.</p>
           </>
         )}
@@ -313,3 +313,4 @@ export default function AuthCallbackPage() {
     </main>
   );
 }
+
