@@ -10,6 +10,8 @@ export const runtime = 'nodejs';
 
 export async function GET() {
   const dbUrl = process.env.DATABASE_URL || '';
+  const hasDirectDatabaseUrl = Boolean(process.env.DIRECT_DATABASE_URL);
+  const migrateInBuildEnabled = process.env.PRISMA_RUN_MIGRATIONS === '1';
   const dbIssue = getDatabaseConfigValidationIssue();
   let dbHost = 'unknown';
   let dbPort = 'unknown';
@@ -33,6 +35,8 @@ export async function GET() {
       {
         dbHost,
         dbPort,
+        hasDirectDatabaseUrl,
+        migrateInBuildEnabled,
         status: 'error',
         error: dbIssue,
       },
@@ -43,12 +47,20 @@ export async function GET() {
   try {
     // Test connection
     await prisma.$queryRaw`SELECT 1`;
-    return NextResponse.json({ dbHost, dbPort, status: 'connected' });
+    return NextResponse.json({
+      dbHost,
+      dbPort,
+      hasDirectDatabaseUrl,
+      migrateInBuildEnabled,
+      status: 'connected',
+    });
   } catch (error: any) {
     const prismaError = asPrismaServiceUnavailableError(error);
     return NextResponse.json({ 
       dbHost, 
       dbPort, 
+      hasDirectDatabaseUrl,
+      migrateInBuildEnabled,
       status: 'error', 
       error: prismaError?.message || error.message 
     }, { status: prismaError ? 503 : 500 });

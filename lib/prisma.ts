@@ -9,7 +9,9 @@ export const DATABASE_URL_MISSING_ERROR =
 export const DATABASE_URL_INVALID_ERROR =
   'DATABASE_URL invalida. Use postgresql:// ou postgres:// sem aspas extras.';
 export const PRISMA_UNAVAILABLE_MESSAGE =
-  'Banco de dados indisponivel. Verifique DATABASE_URL no ambiente antes de usar o app.';
+  'Banco de dados indisponivel no momento. Verifique a configuracao do ambiente e tente novamente.';
+export const DATABASE_SCHEMA_MISMATCH_MESSAGE =
+  'A estrutura do banco de dados nao esta alinhada com a versao atual da aplicacao.';
 
 export class PrismaServiceUnavailableError extends Error {
   detail?: string;
@@ -102,7 +104,7 @@ export function asPrismaServiceUnavailableError(error: unknown) {
 
   if (
     name === 'PrismaClientInitializationError' ||
-    /Error validating datasource `db`|Environment variable not found: DATABASE_URL|Can't reach database server|Authentication failed against database server|Timed out fetching a new connection|the URL must start with the protocol `postgresql:\/\/` or `postgres:\/\/`|P1001|P1012/i.test(
+    /Error validating datasource `db`|Environment variable not found: DATABASE_URL|Can't reach database server|Authentication failed against database server|Timed out fetching a new connection|Timed out trying to acquire a postgres advisory lock|the URL must start with the protocol `postgresql:\/\/` or `postgres:\/\/`|P1001|P1002|P1012/i.test(
       message
     )
   ) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, DATABASE_SCHEMA_MISMATCH_MESSAGE, prisma } from '@/lib/prisma';
 import { mapRecurringDebtStatusToLegacyDebtStatus } from '@/lib/domain/financial-domain';
 import {
   computeNextRecurringDebtDueDate,
@@ -45,8 +45,7 @@ const isMissingTableError = (error: unknown) => {
 const buildMissingTableResponse = () =>
   NextResponse.json(
     {
-      error:
-        'Tabela de recorrências de dívida indisponível. Execute `npx prisma migrate deploy` para aplicar as migrations do schema atual.',
+      error: DATABASE_SCHEMA_MISMATCH_MESSAGE,
     },
     { status: 503 }
   );

@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, DATABASE_SCHEMA_MISMATCH_MESSAGE, prisma } from '@/lib/prisma';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -56,8 +56,7 @@ const resolveInvestmentWallet = async (workspaceId: string, walletId?: string) =
 const buildMissingTableResponse = () =>
   NextResponse.json(
     {
-      error:
-        'Tabela de investimentos indisponível. Execute `npx prisma migrate deploy` para aplicar as migrations do schema atual.',
+      error: DATABASE_SCHEMA_MISMATCH_MESSAGE,
     },
     { status: 503 }
   );

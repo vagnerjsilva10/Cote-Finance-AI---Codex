@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { asPrismaServiceUnavailableError, prisma } from '@/lib/prisma';
+import { asPrismaServiceUnavailableError, DATABASE_SCHEMA_MISMATCH_MESSAGE, prisma } from '@/lib/prisma';
 import {
   TRANSACTION_PAYMENT_METHODS,
   TRANSACTION_STATUSES,
@@ -53,7 +53,7 @@ const VALID_STATUSES = new Set<TransactionStatus>(TRANSACTION_STATUSES);
 const VALID_ORIGIN_TYPES = new Set(['MANUAL', 'RECURRENCE', 'INSTALLMENT', 'DEBT', 'GOAL', 'SYSTEM']);
 
 const SCHEMA_SYNC_REQUIRED_ERROR =
-  'Banco de dados desatualizado para transacoes. Aplique as migrations pendentes para adicionar destination_wallet_id, payment_method e receipt_url.';
+  DATABASE_SCHEMA_MISMATCH_MESSAGE;
 
 const hasOwn = <K extends string>(obj: object, key: K) =>
   Object.prototype.hasOwnProperty.call(obj, key);

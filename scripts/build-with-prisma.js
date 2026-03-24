@@ -5,7 +5,7 @@ const { spawnSync } = require('child_process');
 const DATABASE_ENV_KEYS = ['DATABASE_URL', 'DIRECT_DATABASE_URL', 'SHADOW_DATABASE_URL'];
 const DATABASE_URL_PROTOCOL_REGEX = /^(postgresql|postgres):\/\//i;
 
-const ENV_FILES = ['.env', '.env.local', '.env.production'];
+const ENV_FILES = ['.env.local', '.env.production', '.env'];
 
 function sanitizeValue(value) {
   if (typeof value !== 'string') return value;
@@ -35,7 +35,7 @@ function loadEnvFiles() {
       if (separatorIndex <= 0) continue;
 
       const key = line.slice(0, separatorIndex).trim();
-      if (!key || typeof process.env[key] === 'string') continue;
+      if (!key) continue;
 
       const rawValue = line.slice(separatorIndex + 1).trim();
       process.env[key] = sanitizeValue(rawValue);
@@ -52,6 +52,8 @@ for (const key of DATABASE_ENV_KEYS) {
 }
 
 const databaseUrl = process.env.DATABASE_URL;
+const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
+const shouldRunMigrations = process.env.PRISMA_RUN_MIGRATIONS === '1';
 
 if (!databaseUrl) {
   console.error('[build] DATABASE_URL ausente. Configure a conexao PostgreSQL no Vercel antes do deploy.');
@@ -63,6 +65,22 @@ if (!DATABASE_URL_PROTOCOL_REGEX.test(databaseUrl)) {
     '[build] DATABASE_URL invalida. Use postgresql:// ou postgres:// sem aspas extras no painel do Vercel.'
   );
   process.exit(1);
+}
+
+if (shouldRunMigrations) {
+  if (!directDatabaseUrl) {
+    console.error(
+      '[build] DIRECT_DATABASE_URL ausente. Rode migrations apenas com conexao direta configurada.'
+    );
+    process.exit(1);
+  }
+
+  if (!DATABASE_URL_PROTOCOL_REGEX.test(directDatabaseUrl)) {
+    console.error(
+      '[build] DIRECT_DATABASE_URL invalida. Use postgresql:// ou postgres:// sem aspas extras no painel do Vercel.'
+    );
+    process.exit(1);
+  }
 }
 
 function run(command, args) {
@@ -77,8 +95,10 @@ function run(command, args) {
   }
 }
 
-if (process.env.PRISMA_SKIP_MIGRATE_DEPLOY !== '1') {
+if (shouldRunMigrations && process.env.PRISMA_SKIP_MIGRATE_DEPLOY !== '1') {
   run('npx', ['prisma', 'migrate', 'deploy']);
+} else {
+  console.log('[build] Prisma migrate deploy ignorado no build. Use `npm run prisma:migrate:deploy` em operacao controlada.');
 }
 run('npx', ['prisma', 'generate']);
 run('npx', ['next', 'build']);

@@ -580,5 +580,5 @@ export function isRecurringRulesSchemaMismatchError(error: unknown) {
 }
 
 export function getRecurringRulesSchemaErrorMessage() {
-  return 'Banco de dados desatualizado para regras de recorrencia. Execute `npx prisma migrate deploy` e `npx prisma generate`.';
+  return 'A estrutura do banco de dados nao esta alinhada com a versao atual das regras de recorrencia.';
 }
