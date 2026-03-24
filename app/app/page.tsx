@@ -21,6 +21,7 @@ import {
   Home,
   Send,
   Bell,
+  AlertTriangle,
   Search,
   ExternalLink,
   CheckCircle2,
@@ -58,6 +59,17 @@ import {
 import { cn } from '@/lib/utils';
 import { FinancialCalendarView } from '@/components/financial-calendar/financial-calendar-view';
 import { PremiumDatePicker } from '@/components/ui/premium-date-picker';
+import { FormContainer, FormField, FormGrid } from '@/components/ui/form-system';
+import { DashboardContainer } from '@/app/app/modules/dashboard/components/dashboard-container';
+import { TransactionsContainer } from '@/app/app/modules/transactions/components/transactions-container';
+import { DebtsContainer } from '@/app/app/modules/debts/components/debts-container';
+import { GoalsContainer } from '@/app/app/modules/goals/components/goals-container';
+import { GoalsView } from '@/app/app/modules/goals/components/goals-view';
+import { CalendarContainer } from '@/app/app/modules/calendar/components/calendar-container';
+import { InvestmentsContainer } from '@/app/app/modules/investments/components/investments-container';
+import { InvestmentsView } from '@/app/app/modules/investments/components/investments-view';
+import { OnboardingContainer } from '@/app/app/modules/settings/components/onboarding-container';
+import { SettingsContainer } from '@/app/app/modules/settings/components/settings-container';
 import { supabase } from '@/lib/supabase';
 import { getCheckoutPath, parseCheckoutPlanLabel } from '@/lib/billing/plans';
 import { fetchDashboardCalendarReadPayload, fetchDashboardResource } from '@/app/app/modules/dashboard/data-client';
@@ -95,7 +107,131 @@ type Tab =
   | 'settings'
   | 'agenda';
 
+const APP_TAB_QUERY_PARAM = 'tab';
+const APP_TABS: Tab[] = [
+  'dashboard',
+  'transactions',
+  'goals',
+  'debts',
+  'investments',
+  'portfolio',
+  'reports',
+  'assistant',
+  'integrations',
+  'subscription',
+  'settings',
+  'agenda',
+];
+
+const TAB_LABELS: Record<Tab, string> = {
+  dashboard: 'Dashboard',
+  transactions: 'Transações',
+  goals: 'Metas',
+  debts: 'Dívidas',
+  investments: 'Investimentos',
+  portfolio: 'Carteira',
+  reports: 'Relatórios',
+  assistant: 'Assistente IA',
+  integrations: 'Integrações',
+  subscription: 'Minha assinatura',
+  settings: 'Configurações',
+  agenda: 'Calendário financeiro',
+};
+
+type NavigationSearchItem = {
+  tab: Tab;
+  label: string;
+  description: string;
+  keywords: string[];
+};
+
+type UiFeedbackTone = 'success' | 'error' | 'info';
+
+const MAIN_NAV_ITEMS: Array<{ tab: Tab; label: string; icon: LucideIcon }> = [
+  { tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { tab: 'transactions', label: 'Transações', icon: ReceiptText },
+  { tab: 'agenda', label: 'Calendário', icon: Calendar },
+  { tab: 'debts', label: 'Dívidas', icon: CreditCard },
+  { tab: 'goals', label: 'Metas', icon: Target },
+  { tab: 'investments', label: 'Investimentos', icon: TrendingUp },
+  { tab: 'portfolio', label: 'Carteira', icon: Wallet },
+  { tab: 'reports', label: 'Relatórios', icon: PieChart },
+];
+
+const SECONDARY_NAV_ITEMS: Array<{ tab: Tab; label: string; icon: LucideIcon }> = [
+  { tab: 'assistant', label: 'Assistente IA', icon: MessageSquare },
+  { tab: 'settings', label: 'Configurações', icon: Settings },
+];
+
+const NAVIGATION_SEARCH_ITEMS: NavigationSearchItem[] = [
+  {
+    tab: 'dashboard',
+    label: 'Dashboard',
+    description: 'Saldo atual, previsão e alertas principais.',
+    keywords: ['início', 'resumo', 'saldo', 'visão geral', 'painel'],
+  },
+  {
+    tab: 'transactions',
+    label: 'Transações',
+    description: 'Entradas, saídas e histórico de movimentações.',
+    keywords: ['movimentações', 'receitas', 'despesas', 'lançamentos'],
+  },
+  {
+    tab: 'agenda',
+    label: 'Calendário financeiro',
+    description: 'Próximos compromissos e recebimentos.',
+    keywords: ['agenda', 'calendário', 'vencimentos', 'próximos dias'],
+  },
+  {
+    tab: 'debts',
+    label: 'Dívidas',
+    description: 'Controle de contas a pagar e parcelamentos.',
+    keywords: ['parcelas', 'contas a pagar', 'juros', 'dívidas'],
+  },
+  {
+    tab: 'goals',
+    label: 'Metas',
+    description: 'Objetivos financeiros e progresso acumulado.',
+    keywords: ['objetivos', 'planejamento', 'reserva', 'metas'],
+  },
+  {
+    tab: 'investments',
+    label: 'Investimentos',
+    description: 'Ativos, rendimento e evolução da carteira.',
+    keywords: ['ativos', 'rentabilidade', 'aportes', 'investimentos'],
+  },
+  {
+    tab: 'portfolio',
+    label: 'Carteira',
+    description: 'Contas, saldo consolidado e distribuição.',
+    keywords: ['contas', 'bancos', 'caixa'],
+  },
+  {
+    tab: 'reports',
+    label: 'Relatórios',
+    description: 'Análise mensal e tendências.',
+    keywords: ['gráficos', 'análise', 'comparativos', 'relatórios'],
+  },
+  {
+    tab: 'assistant',
+    label: 'Assistente IA',
+    description: 'Perguntas e orientacoes financeiras.',
+    keywords: ['chat', 'ia', 'assistente'],
+  },
+  {
+    tab: 'settings',
+    label: 'Configurações',
+    description: 'Perfil e preferências da conta.',
+    keywords: ['perfil', 'ajustes', 'configuração', 'preferências'],
+  },
+];
+
+const isTabValue = (value: unknown): value is Tab =>
+  typeof value === 'string' && (APP_TABS as string[]).includes(value);
+
 type TransactionFlowType = 'Receita' | 'Despesa' | 'Transferência';
+type IncomeScheduleMode = 'SINGLE' | 'RECURRING';
+type IncomeRecurrenceFrequency = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type PaymentMethodLabel =
   | 'PIX'
   | 'Cartão'
@@ -109,6 +245,9 @@ type TransactionFormData = {
   description: string;
   amount: string;
   flowType: TransactionFlowType;
+  incomeScheduleMode: IncomeScheduleMode;
+  recurrenceFrequency: IncomeRecurrenceFrequency;
+  recurrenceEndDate: string;
   category: string;
   paymentMethod: PaymentMethodLabel;
   wallet: string;
@@ -334,6 +473,18 @@ type WorkspaceDashboardSnapshot = {
   workspaceWhatsAppPhoneNumber: string;
   dashboardProjection: DashboardProjection | null;
   dashboardCalendarReadModel?: DashboardCalendarReadModel | null;
+};
+
+type TransactionsResourceRefreshOptions = {
+  syncTransactions?: boolean;
+  syncWallets?: boolean;
+  syncWorkspaceEvents?: boolean;
+  syncInsights?: boolean;
+  syncProjection?: boolean;
+  syncCalendarReadModel?: boolean;
+  syncTotalsAndPlan?: boolean;
+  syncUsageAndLimits?: boolean;
+  syncWhatsAppState?: boolean;
 };
 
 const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 1;
@@ -1033,6 +1184,9 @@ const createInitialOnboardingTransaction = (): TransactionFormData => ({
   description: '',
   amount: '',
   flowType: 'Despesa',
+  incomeScheduleMode: 'SINGLE',
+  recurrenceFrequency: 'MONTHLY',
+  recurrenceEndDate: '',
   category: 'Alimentação',
   paymentMethod: 'PIX',
   wallet: DEFAULT_TRANSACTION_WALLET,
@@ -2248,6 +2402,8 @@ const DashboardView = ({
     : calendarReadModel
       ? calendarReadModel.totalExpectedInflow - calendarReadModel.totalExpectedOutflow
       : null;
+  const currentBalanceValue = projection ? projection.currentBalance : totalBalance;
+  const projectedBalanceValue = projection ? projection.projectedBalance30d : null;
   const smartAlerts: Array<{ id: string; tone: 'danger' | 'warning' | 'info'; title: string; message: string }> = [];
 
   if (projection?.projectedNegativeDate) {
@@ -2324,198 +2480,66 @@ const DashboardView = ({
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Entradas do mês"
-          value={formatCurrency(monthIncome)}
-          trend="transações de entrada"
-          trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'income').length}`}
+          label="Saldo atual"
+          value={formatCurrency(currentBalanceValue)}
+          trend="disponível hoje"
+          trendValue={currentBalanceValue >= 0 ? 'Em dia' : 'Atenção'}
+          icon={Wallet}
+          trendType={currentBalanceValue >= 0 ? 'up' : 'down'}
+        />
+        <StatCard
+          label="Saldo previsto (30 dias)"
+          value={projectedBalanceValue === null ? '--' : formatCurrency(projectedBalanceValue)}
+          trend={
+            projectedBalanceValue === null
+              ? 'adicione movimentações para visualizar previsões'
+              : 'comparado ao saldo atual'
+          }
+          trendValue={
+            projectionDelta30d === null
+              ? 'Sem projeção'
+              : `${projectionDelta30d >= 0 ? '+' : '-'}${formatCurrency(Math.abs(projectionDelta30d))}`
+          }
+          icon={Gauge}
+          trendType={projectionDelta30d !== null && projectionDelta30d < 0 ? 'down' : 'up'}
+        />
+        <StatCard
+          label="Próximas entradas"
+          value={formatCurrency(upcomingInflow)}
+          trend="eventos previstos"
+          trendValue={`${upcomingInflowCount}`}
           icon={TrendingUp}
         />
         <StatCard
-          label="Despesas do mês"
-          value={formatCurrency(monthExpenses)}
-          trend="transações de saída"
-          trendValue={`${currentMonthTransactions.filter((tx) => tx.type === 'expense').length}`}
+          label="Próximas saídas"
+          value={formatCurrency(upcomingOutflow)}
+          trend="compromissos previstos"
+          trendValue={`${upcomingOutflowCount}`}
           icon={TrendingDown}
           trendType="down"
-        />
-        <StatCard
-          label="Saldo do mês"
-          value={formatCurrency(monthBalance)}
-          trend="entradas - despesas"
-          trendValue={monthBalance >= 0 ? 'Positivo' : 'Negativo'}
-          icon={Wallet}
-          trendType={monthBalance >= 0 ? 'up' : 'down'}
-        />
-        <StatCard
-          label="Taxa de economia"
-          value={`${savingsRate.toFixed(1)}%`}
-          trend="economia sobre receitas"
-          trendValue="No mês atual"
-          icon={Gauge}
-          trendType={savingsRate >= 0 ? 'up' : 'down'}
         />
       </div>
 
       <div className="app-surface-card rounded-2xl p-5 sm:p-6">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="card-title-premium text-[var(--text-primary)]">Painel financeiro canonico</h3>
+            <h3 className="card-title-premium text-[var(--text-primary)]">Resumo para decisão</h3>
             <p className="text-sm text-[var(--text-secondary)]">
               {projection
-                ? `Projecao atualizada em ${formatIsoDateShort(projection.updatedAt)}`
-                : 'Base de projecao ainda indisponivel para este workspace.'}
+                ? `Atualizado em ${formatIsoDateShort(projection.updatedAt)}`
+                : 'Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.'}
             </p>
           </div>
-          <span
-            className={cn(
-              'inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest',
-              projection && calendarReadModel
-                ? 'border-[color:color-mix(in_srgb,var(--positive)_35%,transparent)] text-[var(--positive)] bg-[color:var(--positive-soft)]'
-                : 'border-[color:color-mix(in_srgb,var(--warning)_35%,transparent)] text-[var(--warning)] bg-[var(--warning-soft)]'
-            )}
-          >
-            {projection && calendarReadModel ? 'Read models ativos' : 'Modo de compatibilidade'}
+          <span className="inline-flex w-fit items-center rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+            {dashboardAlerts.length > 0
+              ? `${dashboardAlerts.length} alerta(s) relevante(s)`
+              : 'Sem alertas críticos'}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Saldo atual confirmado</p>
-            <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
-              {projection ? formatCurrency(projection.currentBalance) : formatCurrency(totalBalance)}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              Dinheiro que ja entrou/saiu e impactou o caixa real.
-            </p>
-          </div>
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Saldo previsto (30 dias)</p>
-            <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
-              {projection ? formatCurrency(projection.projectedBalance30d) : '--'}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              {projectionDelta30d === null
-                ? 'Aguardando curva diaria materializada.'
-                : `${projectionDelta30d >= 0 ? '+' : '-'}${formatCurrency(Math.abs(projectionDelta30d))} frente ao saldo atual.`}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Proximas entradas</p>
-            <p className="mt-2 text-2xl font-black text-[var(--positive)]">{formatCurrency(upcomingInflow)}</p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              {upcomingInflowCount} evento(s) para entrar em breve.
-            </p>
-          </div>
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Proximas saidas</p>
-            <p className="mt-2 text-2xl font-black text-[var(--danger)]">{formatCurrency(upcomingOutflow)}</p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              {upcomingOutflowCount} compromisso(s) previstos no horizonte.
-            </p>
-          </div>
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Datas criticas</p>
-            <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">
-              {projection?.projectedNegativeDate ? formatIsoDateShort(projection.projectedNegativeDate) : 'Sem risco'}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              {calendarReadModel
-                ? `${calendarReadModel.criticalDaysCount} dia(s) critico(s) no calendario.`
-                : projection?.nextCriticalDate
-                  ? `Proxima data critica: ${formatIsoDateShort(projection.nextCriticalDate)}`
-                  : 'Sem data critica no horizonte atual.'}
-            </p>
-          </div>
-          <div className="app-surface-subtle rounded-2xl p-4">
-            <p className="label-premium text-[var(--text-muted)]">Resumo do mes</p>
-            <p
-              className={cn(
-                'mt-2 text-2xl font-black',
-                (monthProjectedNet || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]'
-              )}
-            >
-              {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-              Confirmado: {formatCurrency(monthBalance)} | Previsto: {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
-            </p>
-          </div>
-        </div>
-
-        {projectionCurveRows.length > 0 ? (
-          <div className="mt-5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Curva de saldo do mes</p>
-            <div className="mt-3 h-[170px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={projectionCurveRows}>
-                  <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
-                  <XAxis dataKey="dateLabel" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis
-                    stroke="var(--text-muted)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => formatCurrency(Number(value || 0))}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--bg-surface)',
-                      border: '1px solid var(--border-default)',
-                      borderRadius: '12px',
-                      boxShadow: 'var(--shadow-soft)',
-                    }}
-                    formatter={(value) => [formatCurrency(Number(value || 0)), 'Saldo projetado']}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="closingBalance"
-                    stroke="var(--primary)"
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        ) : null}
-
-        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Proximos eventos financeiros</p>
-            <div className="mt-3 space-y-2">
-              {upcomingEvents.slice(0, 6).map((event) => (
-                <div
-                  key={`dashboard-upcoming-${event.id}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{event.title}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">
-                      {formatIsoDateShort(event.date)} • {mapUpcomingStatusLabel(event.status)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={cn('text-sm font-black', event.flow === 'in' ? 'text-[var(--positive)]' : event.flow === 'out' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]')}>
-                      {event.amount === null ? '--' : formatCurrency(event.amount)}
-                    </p>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                      {event.flow === 'in' ? 'Entrada' : event.flow === 'out' ? 'Saida' : 'Neutro'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {upcomingEvents.length === 0 ? (
-                <p className="text-sm text-[var(--text-secondary)]">Sem eventos futuros no read model para os proximos dias.</p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Alertas inteligentes</p>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 lg:col-span-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Alertas relevantes</p>
             <div className="mt-3 space-y-2">
               {dashboardAlerts.map((alert) => (
                 <div
@@ -2534,34 +2558,123 @@ const DashboardView = ({
                 </div>
               ))}
               {dashboardAlerts.length === 0 ? (
-                <p className="text-sm text-[var(--text-secondary)]">Sem alertas criticos no momento.</p>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Nenhum alerta crítico no momento. Seu fluxo financeiro está estável.
+                </p>
               ) : null}
             </div>
           </div>
+
+          <div className="app-surface-subtle rounded-2xl p-4">
+            <p className="label-premium text-[var(--text-muted)]">Resumo do mês</p>
+            <p
+              className={cn(
+                'mt-2 text-2xl font-black',
+                (monthProjectedNet || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]'
+              )}
+            >
+              {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">
+              Confirmado: {formatCurrency(monthBalance)}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">
+              Previsto: {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
+            </p>
+            <p className="mt-3 text-xs text-[var(--text-secondary)]">
+              {monthProjectedNet === null
+                ? 'Adicione movimentações para visualizar a tendência do mês.'
+                : monthProjectedNet >= 0
+                  ? 'Tendência positiva para o fechamento do mês.'
+                  : 'O mês tende a fechar negativo se nada mudar.'}
+            </p>
+          </div>
         </div>
 
-        {projectionPreviewRows.length > 0 ? (
-          <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {projectionPreviewRows.map((row) => (
-              <div
-                key={`projection-preview-${row.dateLabel}`}
-                className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3"
-              >
-                <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">{row.dateLabel}</p>
-                <p className="mt-1 text-base font-black text-[var(--text-primary)]">
-                  {formatCurrency(row.closingBalance)}
+        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Próximas movimentações</p>
+            <div className="mt-3 space-y-2">
+              {upcomingEvents.slice(0, 6).map((event) => (
+                <div
+                  key={`dashboard-upcoming-${event.id}`}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{event.title}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {formatIsoDateShort(event.date)} • {mapUpcomingStatusLabel(event.status)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p
+                      className={cn(
+                        'text-sm font-black',
+                        event.flow === 'in'
+                          ? 'text-[var(--positive)]'
+                          : event.flow === 'out'
+                            ? 'text-[var(--danger)]'
+                            : 'text-[var(--text-primary)]'
+                      )}
+                    >
+                      {event.amount === null ? '--' : formatCurrency(event.amount)}
+                    </p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                      {event.flow === 'in' ? 'Entrada' : event.flow === 'out' ? 'Saída' : 'Neutro'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {upcomingEvents.length === 0 ? (
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Adicione movimentações para visualizar previsões de entradas e saídas.
                 </p>
-                <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">
-                  Planejado no dia: {formatCurrency(row.plannedNet)}
-                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
+            {projectionCurveRows.length > 0 ? (
+              <div className="mt-3 h-[180px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={projectionCurveRows}>
+                    <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
+                    <XAxis dataKey="dateLabel" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis
+                      stroke="var(--text-muted)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => formatCurrency(Number(value || 0))}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-surface)',
+                        border: '1px solid var(--border-default)',
+                        borderRadius: '12px',
+                        boxShadow: 'var(--shadow-soft)',
+                      }}
+                      formatter={(value) => [formatCurrency(Number(value || 0)), 'Saldo previsto']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="closingBalance"
+                      stroke="var(--primary)"
+                      strokeWidth={2.5}
+                      dot={false}
+                      activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-            ))}
+            ) : (
+              <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.
+              </p>
+            )}
           </div>
-        ) : (
-          <div className="mt-5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-            Sem curva diaria materializada ainda. Registre ou sincronize movimentacoes para gerar a projecao.
-          </div>
-        )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
@@ -2695,7 +2808,7 @@ const DashboardView = ({
 
       <div className="app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-[var(--border-default)] px-6 py-4">
-          <h3 className="card-title-premium text-[var(--text-primary)]">Ultimas transacoes</h3>
+          <h3 className="card-title-premium text-[var(--text-primary)]">Últimas transações</h3>
           <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
@@ -4008,113 +4121,6 @@ const DebtsView = ({
       ) : null}
     </div>
   );
-};type GoalsViewProps = {
-  goals: Goal[];
-  onAddGoal: () => void;
-  onEditGoal: (id: string | number) => void;
-  onDeleteGoal: (id: string | number) => void;
-};
-
-const GoalsView = ({ goals, onAddGoal, onEditGoal, onDeleteGoal }: GoalsViewProps) => {
-  const totalGoals = goals.length;
-  const targetTotal = goals.reduce((acc, goal) => acc + goal.target, 0);
-  const accumulatedTotal = goals.reduce((acc, goal) => acc + goal.current, 0);
-
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-[var(--text-primary)]">Metas</h3>
-        <button
-          onClick={onAddGoal}
-          className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
-        >
-          <Plus size={18} /> Nova Meta
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Total de metas</p>
-          <p className="text-2xl font-black text-[var(--text-primary)]">{totalGoals}</p>
-        </div>
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Meta total</p>
-          <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(targetTotal)}</p>
-        </div>
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Valor acumulado</p>
-          <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(accumulatedTotal)}</p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {goals.length === 0 && (
-          <div className="app-surface-card rounded-2xl p-6 text-center text-[var(--text-muted)] text-sm">
-            Nenhuma meta cadastrada.
-          </div>
-        )}
-
-        {goals.map((goal) => {
-          const progress = goal.target > 0 ? Math.min(100, (goal.current / goal.target) * 100) : 0;
-          const remaining = Math.max(0, goal.target - goal.current);
-
-          return (
-            <div key={goal.id} className="app-surface-card rounded-2xl p-5">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-[var(--text-primary)]">{goal.name}</h4>
-                    <span className="px-2 py-0.5 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest">
-                      {goal.category}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {goal.deadline ? `Prazo: ${new Date(goal.deadline).toLocaleDateString('pt-BR')}` : 'Sem prazo definido'}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => onEditGoal(goal.id)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                  >
-                    <Pencil size={12} /> Editar
-                  </button>
-                  <button
-                    onClick={() => onDeleteGoal(goal.id)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-[var(--bg-app)] text-[var(--danger)] hover:bg-[var(--bg-surface)] transition-colors"
-                  >
-                    <Trash2 size={12} /> Excluir
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="h-2.5 w-full bg-[var(--bg-surface-elevated)] rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--primary)] rounded-full transition-all" style={{ width: `${progress}%` }} />
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="text-[var(--text-secondary)]">{formatCurrency(goal.current)} acumulado</span>
-                  <span className="text-[var(--text-muted)]">Meta: {formatCurrency(goal.target)}</span>
-                  <span className="text-[var(--positive)] font-bold">{progress.toFixed(1)}%</span>
-                </div>
-
-                <p className="text-xs text-[var(--text-muted)]">Faltam {formatCurrency(remaining)} para concluir.</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-type InvestmentsViewProps = {
-  investments: Investment[];
-  onAddInvestment: () => void;
-  onEditInvestment: (id: string | number) => void;
-  onDeleteInvestment: (id: string | number) => void;
 };
 
 type PortfolioViewProps = {
@@ -4742,125 +4748,6 @@ const PortfolioView = ({
   );
 };
 
-const InvestmentsView = ({
-  investments,
-  onAddInvestment,
-  onEditInvestment,
-  onDeleteInvestment,
-}: InvestmentsViewProps) => {
-  const totalInvested = investments.reduce((acc, inv) => acc + inv.invested, 0);
-  const currentValue = investments.reduce((acc, inv) => acc + inv.value, 0);
-  const profit = currentValue - totalInvested;
-  const profitPercentage = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
-
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="page-title-premium text-[var(--text-primary)]">Investimentos</h3>
-        <button
-          onClick={onAddInvestment}
-          className="app-button-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
-        >
-          <Plus size={18} /> Novo Investimento
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Total investido</p>
-          <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalInvested)}</p>
-        </div>
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Valor atual</p>
-          <p className="text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(currentValue)}</p>
-        </div>
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Rendimento</p>
-          <p className={cn('text-2xl font-black', profit >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
-            {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
-          </p>
-        </div>
-        <div className="app-surface-card rounded-2xl p-5">
-          <p className="label-premium mb-2 text-[var(--text-muted)]">Rentabilidade %</p>
-          <p className={cn('text-2xl font-black', profitPercentage >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
-            {profitPercentage.toFixed(2)}%
-          </p>
-        </div>
-      </div>
-
-      <div className="app-table-shell rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface)]">
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Nome</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Tipo</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Carteira</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Investido</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Valor atual</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Rendimento</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Rentab. %</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Ret. esp. % a.a.</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800">
-              {investments.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
-                    Nenhum investimento cadastrado.
-                  </td>
-                </tr>
-              )}
-
-              {investments.map((item) => {
-                const itemProfit = item.value - item.invested;
-                const itemProfitPct = item.invested > 0 ? (itemProfit / item.invested) * 100 : 0;
-
-                return (
-                  <tr key={item.id} className="hover:bg-[var(--bg-surface-elevated)]/30 transition-colors group">
-                    <td className="px-6 py-4 text-sm font-semibold text-[var(--text-primary)]">{item.label}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-wider">
-                        {item.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{item.walletName}</td>
-                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{formatCurrency(item.invested)}</td>
-                    <td className="px-6 py-4 text-sm text-[var(--text-primary)]">{formatCurrency(item.value)}</td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfit >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
-                      {itemProfit >= 0 ? '+' : ''}{formatCurrency(itemProfit)}
-                    </td>
-                    <td className={cn('px-6 py-4 text-sm font-bold', itemProfitPct >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
-                      {itemProfitPct.toFixed(2)}%
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{item.expectedReturnAnnual.toFixed(2)}%</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => onEditInvestment(item.id)}
-                          className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => onDeleteInvestment(item.id)}
-                          className="p-2 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
 type ReportsViewProps = {
   transactions: Transaction[];
   totalBalance: number;
@@ -5363,7 +5250,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="text-sm text-[var(--text-secondary)] mt-2">
                   {balanceForecast.source === 'read-model'
                     ? 'Projecao baseada no read model diario (confirmado + planejado).'
-                    : 'Projecao baseada no ritmo medio das suas movimentacoes dos ultimos 60 dias.'}
+                    : 'Projeção baseada no ritmo médio das suas movimentações dos últimos 60 dias.'}
                 </p>
               </div>
               <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:var(--primary-soft)] px-4 py-3">
@@ -5821,90 +5708,117 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
 
   const [formData, setFormData] = React.useState<GoalFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const titleId = React.useId();
+  const categoryId = React.useId();
+  const deadlineId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) return;
     setFormData(getInitialFormData());
     setIsSubmitting(false);
+    setHasAttemptedSubmit(false);
+    setSubmitError(null);
   }, [isOpen, getInitialFormData]);
 
   if (!isOpen) return null;
 
-  const isValid =
-    formData.title.trim().length > 0 &&
-    parseMoneyInput(formData.target) > 0 &&
-    parseMoneyInput(formData.accumulated) >= 0 &&
-    formData.category.trim().length > 0;
+  const titleInvalid = hasAttemptedSubmit && formData.title.trim().length === 0;
+  const targetInvalid = hasAttemptedSubmit && parseMoneyInput(formData.target) <= 0;
+  const accumulatedInvalid = hasAttemptedSubmit && parseMoneyInput(formData.accumulated) < 0;
+  const categoryInvalid = hasAttemptedSubmit && formData.category.trim().length === 0;
 
-  const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+  const isValid = !titleInvalid && !targetInvalid && !accumulatedInvalid && !categoryInvalid;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setHasAttemptedSubmit(true);
+    setSubmitError(null);
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar meta.');
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar meta.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] p-4 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface p-6 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface w-full max-w-lg rounded-3xl p-5 shadow-2xl sm:p-6"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar Meta' : 'Nova Meta'}</h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Titulo</label>
+        <FormContainer
+          title={initialData ? 'Editar meta' : 'Nova meta'}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={submitError}
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={!isValid || isSubmitting}
+                className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteracoes' : 'Criar meta'}
+              </button>
+            </>
+          }
+        >
+          <FormField label="Titulo" htmlFor={titleId} required error={titleInvalid ? 'Informe o titulo da meta.' : null}>
             <input
+              id={titleId}
               type="text"
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              placeholder="Ex: Reserva de Emergencia"
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
+              placeholder="Ex: Reserva de emergencia"
+              className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', titleInvalid && 'app-field-error')}
             />
-          </div>
+          </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Meta (R$)</label>
+          <FormGrid>
+            <FormField label="Meta (R$)" required error={targetInvalid ? 'Informe um valor maior que zero.' : null}>
               <MoneyInput
                 value={formData.target}
                 onChange={(value) => setFormData((prev) => ({ ...prev, target: value }))}
                 placeholder="R$ 0,00"
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', targetInvalid && 'app-field-error')}
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Acumulado (R$)</label>
+            <FormField label="Acumulado (R$)" error={accumulatedInvalid ? 'O acumulado não pode ser negativo.' : null}>
               <MoneyInput
                 value={formData.accumulated}
                 onChange={(value) => setFormData((prev) => ({ ...prev, accumulated: value }))}
                 placeholder="R$ 0,00"
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', accumulatedInvalid && 'app-field-error')}
               />
-            </div>
-          </div>
+            </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Categoria</label>
+            <FormField label="Categoria" htmlFor={categoryId} required error={categoryInvalid ? 'Selecione uma categoria.' : null}>
               <select
+                id={categoryId}
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', categoryInvalid && 'app-field-error')}
               >
                 {GOAL_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -5912,32 +5826,18 @@ const GoalModal = ({ isOpen, onClose, onSubmit, initialData = null }: GoalModalP
                   </option>
                 ))}
               </select>
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Prazo</label>
-              <input
-                type="date"
+            <FormField label="Prazo" htmlFor={deadlineId} hint="Opcional">
+              <PremiumDatePicker
+                id={deadlineId}
                 value={formData.deadline}
-                onChange={(e) => setFormData((prev) => ({ ...prev, deadline: e.target.value }))}
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                onChange={(value) => setFormData((prev) => ({ ...prev, deadline: value }))}
+                placeholder="Selecione a data"
               />
-            </div>
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!isValid || isSubmitting}
-            className={cn(
-              'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
-              !isValid || isSubmitting
-                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
-            )}
-          >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar meta'}
-          </button>
-        </div>
+            </FormField>
+          </FormGrid>
+        </FormContainer>
       </motion.div>
     </div>
   );
@@ -5981,140 +5881,163 @@ const InvestmentModal = ({ isOpen, onClose, onSubmit, wallets, initialData = nul
 
   const [formData, setFormData] = React.useState<InvestmentFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const nameId = React.useId();
+  const typeId = React.useId();
+  const walletId = React.useId();
+  const returnId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) return;
     setFormData(getInitialFormData());
     setIsSubmitting(false);
+    setHasAttemptedSubmit(false);
+    setSubmitError(null);
   }, [isOpen, getInitialFormData]);
 
   if (!isOpen) return null;
 
-  const isValid =
-    formData.name.trim().length > 0 &&
-    formData.walletId.trim().length > 0 &&
-    parseMoneyInput(formData.invested) >= 0 &&
-    parseMoneyInput(formData.current) >= 0 &&
-    Number(formData.expectedReturnAnnual) >= 0;
+  const nameInvalid = hasAttemptedSubmit && formData.name.trim().length === 0;
+  const walletInvalid = hasAttemptedSubmit && formData.walletId.trim().length === 0;
+  const investedInvalid = hasAttemptedSubmit && parseMoneyInput(formData.invested) < 0;
+  const currentInvalid = hasAttemptedSubmit && parseMoneyInput(formData.current) < 0;
+  const returnInvalid = hasAttemptedSubmit && Number(formData.expectedReturnAnnual) < 0;
 
-  const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+  const isValid = !nameInvalid && !walletInvalid && !investedInvalid && !currentInvalid && !returnInvalid;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setHasAttemptedSubmit(true);
+    setSubmitError(null);
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar investimento.');
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar investimento.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] p-4 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface w-full max-w-lg rounded-3xl p-5 shadow-2xl sm:p-6"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar Investimento' : 'Novo Investimento'}</h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Nome</label>
+        <FormContainer
+          title={initialData ? 'Editar investimento' : 'Novo investimento'}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={submitError}
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={!isValid || isSubmitting}
+                className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteracoes' : 'Adicionar investimento'}
+              </button>
+            </>
+          }
+        >
+          <FormField label="Nome" htmlFor={nameId} required error={nameInvalid ? 'Informe o nome do investimento.' : null}>
             <input
+              id={nameId}
               type="text"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="Ex: Tesouro Selic 2029"
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
+              className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', nameInvalid && 'app-field-error')}
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Tipo</label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
-              className="app-field block w-full min-w-0 rounded-xl px-4 py-2 text-sm"
-            >
-              {INVESTMENT_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FormGrid>
+            <FormField label="Tipo" htmlFor={typeId}>
+              <select
+                id={typeId}
+                value={formData.type}
+                onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
+                className="app-field w-full rounded-xl px-4 py-2 text-sm"
+              >
+                {INVESTMENT_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </FormField>
 
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Carteira</label>
-            <select
-              value={formData.walletId}
-              onChange={(e) => setFormData((prev) => ({ ...prev, walletId: e.target.value }))}
-              className="app-field block w-full min-w-0 rounded-xl px-4 py-2 text-sm"
-            >
-              <option value="">Selecione uma carteira</option>
-              {wallets.map((wallet) => (
-                <option key={wallet.id} value={wallet.id}>
-                  {wallet.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            <FormField label="Carteira" htmlFor={walletId} required error={walletInvalid ? 'Selecione uma carteira.' : null}>
+              <select
+                id={walletId}
+                value={formData.walletId}
+                onChange={(e) => setFormData((prev) => ({ ...prev, walletId: e.target.value }))}
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', walletInvalid && 'app-field-error')}
+              >
+                <option value="">Selecione uma carteira</option>
+                {wallets.map((wallet) => (
+                  <option key={wallet.id} value={wallet.id}>
+                    {wallet.name}
+                  </option>
+                ))}
+              </select>
+            </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Valor investido (R$)</label>
+            <FormField label="Valor investido (R$)" error={investedInvalid ? 'O valor investido não pode ser negativo.' : null}>
               <MoneyInput
                 value={formData.invested}
                 onChange={(value) => setFormData((prev) => ({ ...prev, invested: value }))}
                 placeholder="R$ 0,00"
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', investedInvalid && 'app-field-error')}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Valor atual (R$)</label>
+            </FormField>
+
+            <FormField label="Valor atual (R$)" error={currentInvalid ? 'O valor atual não pode ser negativo.' : null}>
               <MoneyInput
                 value={formData.current}
                 onChange={(value) => setFormData((prev) => ({ ...prev, current: value }))}
                 placeholder="R$ 0,00"
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', currentInvalid && 'app-field-error')}
               />
-            </div>
-          </div>
+            </FormField>
 
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Retorno esperado (% a.a.)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.expectedReturnAnnual}
-              onChange={(e) => setFormData((prev) => ({ ...prev, expectedReturnAnnual: e.target.value }))}
-              placeholder="0.00"
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            />
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!isValid || isSubmitting}
-            className={cn(
-              'w-full mt-2 py-3 rounded-xl font-bold transition-all shadow-lg',
-              !isValid || isSubmitting
-                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
-            )}
-          >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Adicionar investimento'}
-          </button>
-        </div>
+            <FormField
+              label="Retorno esperado (% a.a.)"
+              htmlFor={returnId}
+              className="sm:col-span-2"
+              error={returnInvalid ? 'O retorno esperado deve ser zero ou positivo.' : null}
+            >
+              <input
+                id={returnId}
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.expectedReturnAnnual}
+                onChange={(e) => setFormData((prev) => ({ ...prev, expectedReturnAnnual: e.target.value }))}
+                placeholder="0.00"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', returnInvalid && 'app-field-error')}
+              />
+            </FormField>
+          </FormGrid>
+        </FormContainer>
       </motion.div>
     </div>
   );
@@ -6160,115 +6083,148 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
   const [formData, setFormData] = React.useState<DebtFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const creditorId = React.useId();
+  const interestId = React.useId();
+  const dueDateId = React.useId();
+  const categoryId = React.useId();
+  const statusId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) return;
     setFormData(getInitialFormData());
     setIsSubmitting(false);
+    setHasAttemptedSubmit(false);
+    setSubmitError(null);
   }, [isOpen, getInitialFormData]);
 
   if (!isOpen) return null;
 
-  const isValid =
-    formData.creditor.trim().length > 0 &&
-    parseMoneyInput(formData.originalAmount) > 0 &&
-    parseMoneyInput(formData.remainingAmount) >= 0 &&
-    Number(formData.interestRateMonthly) >= 0 &&
-    Boolean(parseInputDateValue(formData.dueDate));
+  const creditorInvalid = hasAttemptedSubmit && formData.creditor.trim().length === 0;
+  const originalInvalid = hasAttemptedSubmit && parseMoneyInput(formData.originalAmount) <= 0;
+  const remainingInvalid = hasAttemptedSubmit && parseMoneyInput(formData.remainingAmount) < 0;
+  const interestInvalid = hasAttemptedSubmit && Number(formData.interestRateMonthly) < 0;
+  const dueDateInvalid = hasAttemptedSubmit && !Boolean(parseInputDateValue(formData.dueDate));
 
-  const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+  const isValid =
+    !creditorInvalid &&
+    !originalInvalid &&
+    !remainingInvalid &&
+    !interestInvalid &&
+    !dueDateInvalid;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setHasAttemptedSubmit(true);
+    setSubmitError(null);
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar dívida.');
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar divida.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] p-4 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface p-8 rounded-3xl max-w-md w-full shadow-2xl"
+        className="theme-modal-surface w-full max-w-lg rounded-3xl p-5 shadow-2xl sm:p-6"
       >
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar dívida única' : 'Nova dívida única'}</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para obrigações específicas com valor total definido.</p>
-          </div>
-          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Credor</label>
+        <FormContainer
+          title={initialData ? 'Editar divida unica' : 'Nova divida unica'}
+          subtitle="Use para obrigacoes especificas com valor total definido."
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={submitError}
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={!isValid || isSubmitting}
+                className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alteracoes' : 'Criar divida unica'}
+              </button>
+            </>
+          }
+        >
+          <FormField label="Credor" htmlFor={creditorId} required error={creditorInvalid ? 'Informe o credor.' : null}>
             <input
+              id={creditorId}
               type="text"
               value={formData.creditor}
               onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
+              className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', creditorInvalid && 'app-field-error')}
               placeholder="Ex: Banco X"
             />
-          </div>
+          </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Valor total</label>
+          <FormGrid>
+            <FormField label="Valor total" required error={originalInvalid ? 'Informe um valor total maior que zero.' : null}>
               <MoneyInput
                 value={formData.originalAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, originalAmount: value }))}
                 placeholder="R$ 0,00"
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', originalInvalid && 'app-field-error')}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Saldo em aberto</label>
+            </FormField>
+
+            <FormField label="Saldo em aberto" error={remainingInvalid ? 'O saldo em aberto não pode ser negativo.' : null}>
               <MoneyInput
                 value={formData.remainingAmount}
                 onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
                 placeholder="R$ 0,00"
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', remainingInvalid && 'app-field-error')}
               />
-            </div>
-          </div>
+            </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Juros (% mês)</label>
+            <FormField label="Juros (% ao mês)" htmlFor={interestId} error={interestInvalid ? 'A taxa de juros não pode ser negativa.' : null}>
               <input
+                id={interestId}
                 type="number"
                 min="0"
                 step="0.01"
                 value={formData.interestRateMonthly}
                 onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', interestInvalid && 'app-field-error')}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Data do vencimento</label>
+            </FormField>
+
+            <FormField label="Data do vencimento" htmlFor={dueDateId} required error={dueDateInvalid ? 'Selecione uma data valida.' : null}>
               <PremiumDatePicker
+                id={dueDateId}
                 value={formData.dueDate}
                 onChange={(value) => setFormData((prev) => ({ ...prev, dueDate: value }))}
                 placeholder="Selecione a data"
+                invalid={dueDateInvalid}
               />
-            </div>
-          </div>
+            </FormField>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Categoria</label>
+            <FormField label="Categoria" htmlFor={categoryId} className="sm:col-span-1">
               <select
+                id={categoryId}
                 value={formData.category}
                 onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className="app-field w-full rounded-xl px-4 py-2 text-sm"
               >
                 {DEBT_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -6276,10 +6232,11 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Status</label>
+            </FormField>
+
+            <FormField label="Status" htmlFor={statusId}>
               <select
+                id={statusId}
                 value={formData.status}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -6287,29 +6244,16 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                     status: e.target.value as DebtFormData['status'],
                   }))
                 }
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                className="app-field w-full rounded-xl px-4 py-2 text-sm"
               >
                 <option>Em aberto</option>
                 <option>Quitada</option>
                 <option>Atrasada</option>
                 <option>Parcelada</option>
               </select>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!isValid || isSubmitting}
-            className={cn(
-              'w-full mt-4 rounded-xl py-3 font-bold transition-all shadow-lg',
-              !isValid || isSubmitting
-                ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-                : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
-            )}
-          >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar dívida única'}
-          </button>
-        </div>
+            </FormField>
+          </FormGrid>
+        </FormContainer>
       </motion.div>
     </div>
   );
@@ -6335,7 +6279,7 @@ const RecurringDebtModal = ({
       const category =
         typeof initialDraft?.category === 'string' && initialDraft.category.trim().length > 0
           ? initialDraft.category
-          : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
+          : RECURRING_DEBT_PRESETS[0]?.category ?? 'Agua';
       return {
         creditor: initialDraft?.creditor ?? category,
         amount: initialDraft?.amount ?? '',
@@ -6370,185 +6314,237 @@ const RecurringDebtModal = ({
 
   const [formData, setFormData] = React.useState<RecurringDebtFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const descriptionId = React.useId();
+  const frequencyId = React.useId();
+  const intervalId = React.useId();
+  const startDateId = React.useId();
+  const endDateId = React.useId();
+  const dueDayId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) return;
     setFormData(getInitialFormData());
     setIsSubmitting(false);
+    setHasAttemptedSubmit(false);
+    setSubmitError(null);
   }, [isOpen, getInitialFormData]);
 
   if (!isOpen) return null;
 
-  const isMonthlyFamily = formData.frequency === 'MONTHLY' || formData.frequency === 'QUARTERLY' || formData.frequency === 'YEARLY';
-  const isValid =
-    formData.creditor.trim().length > 0 &&
-    parseMoneyInput(formData.amount) > 0 &&
-    formData.category.trim().length > 0 &&
-    Number(formData.interval) >= 1 &&
-    formData.startDate.trim().length > 0 &&
-    (!isMonthlyFamily || (Number(formData.dueDay) >= 1 && Number(formData.dueDay) <= 31));
+  const isMonthlyFamily =
+    formData.frequency === 'MONTHLY' || formData.frequency === 'QUARTERLY' || formData.frequency === 'YEARLY';
 
-  const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+  const descriptionInvalid = hasAttemptedSubmit && formData.creditor.trim().length === 0;
+  const amountInvalid = hasAttemptedSubmit && parseMoneyInput(formData.amount) <= 0;
+  const categoryInvalid = hasAttemptedSubmit && formData.category.trim().length === 0;
+  const intervalInvalid = hasAttemptedSubmit && Number(formData.interval) < 1;
+  const startDateInvalid = hasAttemptedSubmit && formData.startDate.trim().length === 0;
+  const dueDayInvalid =
+    hasAttemptedSubmit &&
+    isMonthlyFamily &&
+    !(Number(formData.dueDay) >= 1 && Number(formData.dueDay) <= 31);
+
+  const isValid =
+    !descriptionInvalid &&
+    !amountInvalid &&
+    !categoryInvalid &&
+    !intervalInvalid &&
+    !startDateInvalid &&
+    !dueDayInvalid;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setHasAttemptedSubmit(true);
+    setSubmitError(null);
+    if (!isValid) return;
+
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao salvar recorrência.');
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar recorrencia.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] backdrop-blur-sm p-4">
+    <div className="theme-modal-backdrop fixed inset-0 z-[110] flex items-center justify-center bg-[var(--bg-app)] p-4 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="theme-modal-surface p-8 rounded-3xl max-w-2xl w-full shadow-2xl"
+        className="theme-modal-surface w-full max-w-2xl rounded-3xl p-5 shadow-2xl sm:p-6"
       >
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar recorrência' : 'Nova dívida recorrente'}</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">Use para cobranças repetidas com frequência e próxima cobrança definidas.</p>
-          </div>
-          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Descrição</label>
-            <input
-              type="text"
-              value={formData.creditor}
-              onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-              placeholder="Ex: Aluguel"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Valor da cobrança</label>
-            <MoneyInput
-              value={formData.amount}
-              onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
-              placeholder="R$ 0,00"
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Categoria</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
+        <FormContainer
+          title={initialData ? 'Editar recorrencia' : 'Nova divida recorrente'}
+          subtitle="Use para cobrancas repetidas com frequencia e proxima cobranca definidas."
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={submitError}
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={!isValid || isSubmitting}
+                className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrencia' : 'Criar recorrencia'}
+              </button>
+            </>
+          }
+        >
+          <FormGrid>
+            <FormField
+              label="Descricao"
+              htmlFor={descriptionId}
+              required
+              error={descriptionInvalid ? 'Informe a descricao da cobranca.' : null}
             >
-              {[...RECURRING_DEBT_PRESETS.map((item) => item.category), 'Outros']
-                .filter((value, index, array) => array.indexOf(value) === index)
-                .map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+              <input
+                id={descriptionId}
+                type="text"
+                value={formData.creditor}
+                onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', descriptionInvalid && 'app-field-error')}
+                placeholder="Ex: Aluguel"
+              />
+            </FormField>
+
+            <FormField label="Valor da cobranca" required error={amountInvalid ? 'Informe um valor maior que zero.' : null}>
+              <MoneyInput
+                value={formData.amount}
+                onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
+                placeholder="R$ 0,00"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', amountInvalid && 'app-field-error')}
+              />
+            </FormField>
+
+            <FormField label="Categoria" required error={categoryInvalid ? 'Selecione uma categoria.' : null}>
+              <select
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, category: e.target.value, dueDay: getRecurringDebtDefaultDueDay(e.target.value) }))
+                }
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', categoryInvalid && 'app-field-error')}
+              >
+                {[...RECURRING_DEBT_PRESETS.map((item) => item.category), 'Outros']
+                  .filter((value, index, array) => array.indexOf(value) === index)
+                  .map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+              </select>
+            </FormField>
+
+            <FormField label="Status">
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
+                className="app-field w-full rounded-xl px-4 py-2 text-sm"
+              >
+                <option>Ativa</option>
+                <option>Pausada</option>
+                <option>Encerrada</option>
+              </select>
+            </FormField>
+
+            <FormField label="Frequencia" htmlFor={frequencyId}>
+              <select
+                id={frequencyId}
+                value={formData.frequency}
+                onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
+                className="app-field w-full rounded-xl px-4 py-2 text-sm"
+              >
+                {RECURRING_DEBT_FREQUENCIES.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Status</label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as RecurringDebtFormData['status'] }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            >
-              <option>Ativa</option>
-              <option>Pausada</option>
-              <option>Encerrada</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Frequência</label>
-            <select
-              value={formData.frequency}
-              onChange={(e) => setFormData((prev) => ({ ...prev, frequency: e.target.value as RecurringDebtFormData['frequency'] }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            >
-              {RECURRING_DEBT_FREQUENCIES.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Repetir a cada</label>
-            <input
-              type="number"
-              min={1}
-              value={formData.interval}
-              onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Data inicial</label>
-            <input
-              type="date"
-              value={formData.startDate}
-              onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Data final (opcional)</label>
-            <input
-              type="date"
-              value={formData.endDate}
-              onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
-              className="app-field w-full rounded-xl py-2 px-4 text-sm"
-            />
-          </div>
-          {isMonthlyFamily ? (
-            <div className="space-y-2 md:col-span-2">
-              <label className="label-premium text-[var(--text-muted)]">Dia da cobrança</label>
+              </select>
+            </FormField>
+
+            <FormField label="Repetir a cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo minimo de 1.' : null}>
               <input
+                id={intervalId}
                 type="number"
                 min={1}
-                max={31}
-                value={formData.dueDay}
-                onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
-                className="app-field w-full rounded-xl py-2 px-4 text-sm"
+                value={formData.interval}
+                onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', intervalInvalid && 'app-field-error')}
               />
-            </div>
-          ) : null}
-          <div className="space-y-2 md:col-span-2">
-            <label className="label-premium text-[var(--text-muted)]">Observações</label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              className="app-field w-full resize-none rounded-xl py-2 px-4 text-sm"
-              placeholder="Ex: cobrança obrigatória do condomínio"
-            />
-          </div>
-        </div>
+            </FormField>
 
-        <button
-          onClick={handleSubmit}
-          disabled={!isValid || isSubmitting}
-          className={cn(
-            'mt-6 w-full rounded-xl py-3 font-bold transition-all shadow-lg',
-            !isValid || isSubmitting
-              ? 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
-              : 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[color:var(--primary-soft)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)]'
-          )}
-        >
-          {isSubmitting ? 'Salvando...' : initialData ? 'Salvar recorrência' : 'Criar recorrência'}
-        </button>
+            <FormField label="Data inicial" htmlFor={startDateId} required error={startDateInvalid ? 'Informe a data inicial.' : null}>
+              <PremiumDatePicker
+                id={startDateId}
+                value={formData.startDate}
+                onChange={(value) => setFormData((prev) => ({ ...prev, startDate: value }))}
+                placeholder="Selecione a data"
+                invalid={startDateInvalid}
+              />
+            </FormField>
+
+            <FormField label="Data final (opcional)" htmlFor={endDateId}>
+              <PremiumDatePicker
+                id={endDateId}
+                value={formData.endDate}
+                onChange={(value) => setFormData((prev) => ({ ...prev, endDate: value }))}
+                placeholder="Selecione a data"
+              />
+            </FormField>
+
+            {isMonthlyFamily ? (
+              <FormField
+                label="Dia da cobranca"
+                htmlFor={dueDayId}
+                className="sm:col-span-2"
+                required
+                error={dueDayInvalid ? 'Informe um dia entre 1 e 31.' : null}
+              >
+                <input
+                  id={dueDayId}
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={formData.dueDay}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, dueDay: e.target.value }))}
+                  className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', dueDayInvalid && 'app-field-error')}
+                />
+              </FormField>
+            ) : null}
+
+            <FormField label="Observacoes" className="sm:col-span-2" hint="Opcional">
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                rows={3}
+                className="app-field w-full resize-none rounded-xl px-4 py-2 text-sm"
+                placeholder="Ex: cobranca obrigatoria do condominio"
+              />
+            </FormField>
+          </FormGrid>
+        </FormContainer>
       </motion.div>
     </div>
   );
-};type TransactionModalProps = {
+};
+
+type TransactionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (tx: TransactionFormData) => Promise<boolean | void> | boolean | void;
@@ -6624,6 +6620,9 @@ const TransactionModal = ({
         description: '',
         amount: '',
         flowType: draftFlowType,
+        incomeScheduleMode: initialDraft?.incomeScheduleMode ?? 'SINGLE',
+        recurrenceFrequency: initialDraft?.recurrenceFrequency ?? 'MONTHLY',
+        recurrenceEndDate: initialDraft?.recurrenceEndDate ?? '',
         category: getDefaultCategoryForFlow(draftFlowType),
         receiptUrl: null,
         date: new Date().toISOString().split('T')[0],
@@ -6646,6 +6645,9 @@ const TransactionModal = ({
       description: initialData.desc,
       amount: formatMoneyInput(parseCurrency(initialData.amount)),
       flowType: initialData.flowType,
+      incomeScheduleMode: 'SINGLE',
+      recurrenceFrequency: 'MONTHLY',
+      recurrenceEndDate: '',
       category: initialData.cat || 'Outros',
       paymentMethod: initialData.paymentMethod || getDefaultPaymentMethodForFlow(initialData.flowType),
       wallet: normalizeWalletSelection(initialData.wallet),
@@ -6661,12 +6663,31 @@ const TransactionModal = ({
   const [formData, setFormData] = React.useState<TransactionFormData>(getInitialFormData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [suggestedCategory, setSuggestedCategory] = React.useState<string | null>(null);
   const [isLoadingSuggestion, setIsLoadingSuggestion] = React.useState(false);
   const [isParsingReceipt, setIsParsingReceipt] = React.useState(false);
   const [receiptStatus, setReceiptStatus] = React.useState<string | null>(null);
   const [selectedReceiptName, setSelectedReceiptName] = React.useState<string | null>(null);
   const receiptInputRef = React.useRef<HTMLInputElement | null>(null);
+  const descriptionId = React.useId();
+  const dateId = React.useId();
+  const categoryId = React.useId();
+  const paymentMethodId = React.useId();
+  const recurrenceFrequencyId = React.useId();
+  const recurrenceEndDateId = React.useId();
+  const walletId = React.useId();
+  const destinationWalletId = React.useId();
+  const recurrenceFrequencyOptions = React.useMemo(
+    () =>
+      [
+        { value: 'MONTHLY' as const, label: 'Mensal' },
+        { value: 'WEEKLY' as const, label: 'Semanal' },
+        { value: 'YEARLY' as const, label: 'Anual' },
+      ] satisfies Array<{ value: IncomeRecurrenceFrequency; label: string }>,
+    []
+  );
+
   const availableCategories = React.useMemo(
     () => getAvailableCategoriesForFlow(formData.flowType),
     [formData.flowType]
@@ -6677,6 +6698,7 @@ const TransactionModal = ({
     setFormData(getInitialFormData());
     setIsSubmitting(false);
     setHasAttemptedSubmit(false);
+    setSubmitError(null);
     setSuggestedCategory(null);
     setIsLoadingSuggestion(false);
     setIsParsingReceipt(false);
@@ -6748,34 +6770,11 @@ const TransactionModal = ({
     };
   }, [formData.description, isOpen, onSuggestCategory]);
 
-  React.useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') return;
-
-    const html = document.documentElement;
-    const body = document.body;
-    const previousHtmlOverflow = html.style.overflow;
-    const previousBodyOverflow = body.style.overflow;
-    const previousBodyPaddingRight = body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - html.clientWidth;
-
-    html.style.overflow = 'hidden';
-    body.style.overflow = 'hidden';
-
-    if (scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      html.style.overflow = previousHtmlOverflow;
-      body.style.overflow = previousBodyOverflow;
-      body.style.paddingRight = previousBodyPaddingRight;
-    };
-  }, [isOpen]);
-
   const handleReceiptUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !onParseReceipt) return;
 
+    setSubmitError(null);
     setSelectedReceiptName(file.name);
     setIsParsingReceipt(true);
     setReceiptStatus('Analisando comprovante...');
@@ -6794,7 +6793,7 @@ const TransactionModal = ({
         }));
         setReceiptStatus('Dados detectados automaticamente. Revise antes de salvar.');
       } else {
-        setReceiptStatus('Não foi possível extrair dados do comprovante.');
+        setReceiptStatus('N?o foi poss?vel extrair dados do comprovante.');
       }
     } catch {
       setReceiptStatus('Falha ao processar comprovante.');
@@ -6807,27 +6806,46 @@ const TransactionModal = ({
   if (!isOpen) return null;
 
   const parsedAmount = parseMoneyInput(formData.amount);
+  const isIncomeFlow = formData.flowType === 'Receita';
   const isTransferFlow = mapFlowTypeToBaseType(formData.flowType) === 'transfer';
+  const canUseRecurringIncome = isIncomeFlow && !initialData;
+  const isRecurringIncome = canUseRecurringIncome && formData.incomeScheduleMode === 'RECURRING';
   const hasDescription = formData.description.trim().length > 0;
   const hasCategory = formData.category.trim().length > 0;
   const hasWallet = formData.wallet.trim().length > 0;
   const hasDate = formData.date.trim().length > 0;
+  const hasValidRecurrenceEndDate =
+    !isRecurringIncome ||
+    !formData.recurrenceEndDate.trim() ||
+    new Date(`${formData.recurrenceEndDate}T00:00:00`).getTime() >=
+      new Date(`${formData.date}T00:00:00`).getTime();
   const hasValidDestinationWallet =
     !isTransferFlow ||
     (formData.destinationWallet.trim().length > 0 && formData.destinationWallet !== formData.wallet);
 
-  const isValid = hasDescription && parsedAmount > 0 && hasCategory && hasWallet && hasValidDestinationWallet && hasDate;
+  const isValid =
+    hasDescription &&
+    parsedAmount > 0 &&
+    hasCategory &&
+    hasWallet &&
+    hasValidDestinationWallet &&
+    hasDate &&
+    hasValidRecurrenceEndDate;
 
   const amountInvalid = hasAttemptedSubmit && parsedAmount <= 0;
   const descriptionInvalid = hasAttemptedSubmit && !hasDescription;
   const categoryInvalid = hasAttemptedSubmit && !hasCategory;
   const walletInvalid = hasAttemptedSubmit && !hasWallet;
   const dateInvalid = hasAttemptedSubmit && !hasDate;
+  const recurrenceEndDateInvalid = hasAttemptedSubmit && !hasValidRecurrenceEndDate;
   const destinationWalletInvalid = hasAttemptedSubmit && isTransferFlow && !hasValidDestinationWallet;
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (isSubmitting) return;
+
     setHasAttemptedSubmit(true);
+    setSubmitError(null);
     if (!isValid) return;
 
     setIsSubmitting(true);
@@ -6836,6 +6854,8 @@ const TransactionModal = ({
       if (shouldClose !== false) {
         onClose();
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Falha ao salvar transação.');
     } finally {
       setIsSubmitting(false);
     }
@@ -6856,164 +6876,285 @@ const TransactionModal = ({
         <div className="mb-4 flex justify-center sm:hidden">
           <div className="h-1.5 w-12 rounded-full bg-[var(--bg-surface-elevated)]" />
         </div>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="page-title-premium text-[var(--text-primary)]">{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]" disabled={isSubmitting}>
-            <X size={20} />
-          </button>
-        </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Tipo</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {TRANSACTION_FLOW_TYPES.map((flowType) => (
-                <button
-                  key={flowType}
-                  type="button"
-                  aria-pressed={formData.flowType === flowType}
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      flowType,
-                      category: getAvailableCategoriesForFlow(flowType).includes(prev.category)
-                        ? prev.category
-                        : getDefaultCategoryForFlow(flowType),
-                      paymentMethod:
-                        flowType === 'Transferência'
-                          ? 'Transferência bancária'
-                          : prev.paymentMethod === 'Transferência bancária'
-                            ? 'PIX'
-                            : prev.paymentMethod,
-                    }))
-                  }
-                  className={cn(
-                    'app-selection-chip flex min-w-0 items-center justify-between gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
-                    formData.flowType === flowType && 'is-selected'
-                  )}
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    {React.createElement(getFlowTypeIcon(flowType), { size: 16 })}
-                    <span className="truncate">{flowType}</span>
-                  </span>
-                  <span className="app-selection-chip-check" aria-hidden="true">
-                    <CheckCircle2 size={12} />
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+        <FormContainer
+          title={initialData ? 'Editar transação' : 'Nova transação'}
+          subtitle="Padrão único para receitas, despesas e transferências em fluxo compacto."
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={submitError}
+          bodyClassName="space-y-3.5"
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
+              >
+                {isSubmitting ? 'Salvando...' : initialData ? 'Salvar transação' : 'Criar transação'}
+              </button>
+            </>
+          }
+        >
+          <FormGrid>
+            <FormField label="Tipo da transação" className="sm:col-span-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {TRANSACTION_FLOW_TYPES.map((flowType) => (
+                  <button
+                    key={flowType}
+                    type="button"
+                    aria-pressed={formData.flowType === flowType}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        flowType,
+                        incomeScheduleMode:
+                          flowType === 'Receita' ? prev.incomeScheduleMode : 'SINGLE',
+                        category: getAvailableCategoriesForFlow(flowType).includes(prev.category)
+                          ? prev.category
+                          : getDefaultCategoryForFlow(flowType),
+                        paymentMethod:
+                          flowType === 'Transferência'
+                            ? 'Transferência bancária'
+                            : prev.paymentMethod === 'Transferência bancária'
+                              ? 'PIX'
+                              : prev.paymentMethod,
+                        destinationWallet:
+                          flowType === 'Transferência'
+                            ? normalizeDestinationWalletSelection(prev.destinationWallet, prev.wallet)
+                            : '',
+                      }))
+                    }
+                    className={cn(
+                      'app-selection-chip flex min-w-0 items-center justify-between gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
+                      formData.flowType === flowType && 'is-selected'
+                    )}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      {React.createElement(getFlowTypeIcon(flowType), { size: 16 })}
+                      <span className="truncate">{flowType}</span>
+                    </span>
+                    <span className="app-selection-chip-check" aria-hidden="true">
+                      <CheckCircle2 size={12} />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </FormField>
 
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Valor (R$)</label>
-            <MoneyInput
-              value={formData.amount}
-              onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
-              placeholder="R$ 0,00"
-              className={cn(
-                'app-field w-full rounded-xl py-2 px-4 text-sm',
-                parsedAmount > 0 && 'app-field-filled',
-                amountInvalid && 'app-field-error'
-              )}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">Descrição</label>
-            <input
-              type="text"
-              value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Ex: Supermercado"
-              className={cn(
-                'app-field w-full rounded-xl py-2 px-4 text-sm',
-                formData.description.trim().length > 0 && 'app-field-filled',
-                descriptionInvalid && 'app-field-error'
-              )}
-            />
-          </div>
-
-          {(isLoadingSuggestion || suggestedCategory) && (
-            <div className="app-surface-subtle rounded-xl p-3 text-xs text-[var(--text-secondary)]">
-              {isLoadingSuggestion ? (
-                <span>Buscando sugestão de categoria...</span>
-              ) : suggestedCategory ? (
-                <div className="flex items-center justify-between gap-2">
-                  <span>
-                    Sugestão: <span className="font-bold text-[var(--text-secondary)]">{suggestedCategory}</span>
-                  </span>
+            {canUseRecurringIncome ? (
+              <FormField label="Tipo de receita" className="sm:col-span-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button
                     type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
-                    className="rounded-md bg-[color:var(--primary-soft)] px-2 py-1 text-[var(--text-secondary)] transition-colors hover:bg-[color:var(--primary-soft)]"
+                    aria-pressed={formData.incomeScheduleMode === 'SINGLE'}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        incomeScheduleMode: 'SINGLE',
+                      }))
+                    }
+                    className={cn(
+                      'app-selection-chip flex items-center justify-between gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
+                      formData.incomeScheduleMode === 'SINGLE' && 'is-selected'
+                    )}
                   >
-                    Usar sugestão
+                    <span className="truncate">Receita única</span>
+                    <span className="app-selection-chip-check" aria-hidden="true">
+                      <CheckCircle2 size={12} />
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={formData.incomeScheduleMode === 'RECURRING'}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        incomeScheduleMode: 'RECURRING',
+                      }))
+                    }
+                    className={cn(
+                      'app-selection-chip flex items-center justify-between gap-2 rounded-2xl px-3 py-3 text-sm font-bold sm:px-4 sm:py-3.5',
+                      formData.incomeScheduleMode === 'RECURRING' && 'is-selected'
+                    )}
+                  >
+                    <span className="truncate">Receita recorrente</span>
+                    <span className="app-selection-chip-check" aria-hidden="true">
+                      <CheckCircle2 size={12} />
+                    </span>
                   </button>
                 </div>
-              ) : null}
-            </div>
-          )}
+              </FormField>
+            ) : null}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="min-w-0 overflow-hidden space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Data</label>
-              <div
+            <FormField
+              label="Valor (R$)"
+              required
+              error={amountInvalid ? 'Informe um valor maior que zero.' : null}
+            >
+              <MoneyInput
+                value={formData.amount}
+                onChange={(value) => setFormData((prev) => ({ ...prev, amount: value }))}
+                placeholder="R$ 0,00"
                 className={cn(
-                  'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
-                  dateInvalid && 'border-[color:var(--danger)]'
+                  'app-field h-11 w-full rounded-xl px-4 text-sm',
+                  parsedAmount > 0 && 'app-field-filled',
+                  amountInvalid && 'app-field-error'
                 )}
-              >
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                  className={cn(
-                    'app-field block w-full min-w-0 max-w-full appearance-none border-0 bg-transparent px-4 py-2 text-sm text-[var(--text-primary)] [color-scheme:dark] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
-                    formData.date.trim().length > 0 && 'app-field-filled',
-                    dateInvalid && 'app-field-error'
-                  )}
-                />
-              </div>
-            </div>
+              />
+            </FormField>
 
-            <div className="min-w-0 overflow-hidden space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Categoria</label>
-              <div
-                className={cn(
-                  'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
-                  categoryInvalid && 'border-[color:var(--danger)]'
-                )}
-              >
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                  className={cn(
-                    'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
-                    formData.category.trim().length > 0 && 'app-field-filled',
-                    categoryInvalid && 'app-field-error'
-                  )}
-                >
-                  {availableCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">
-              Método de pagamento
-            </label>
-            <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
-              <select
-                value={formData.paymentMethod}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethodLabel }))
+            <FormField
+              label="Descrição"
+              htmlFor={descriptionId}
+              required
+              error={descriptionInvalid ? 'Informe a descrição da transação.' : null}
+            >
+              <input
+                id={descriptionId}
+                type="text"
+                value={formData.description}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, description: event.target.value }))
                 }
-                className="app-field app-field-filled block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]"
+                placeholder="Ex: Supermercado"
+                className={cn(
+                  'app-field h-11 w-full rounded-xl px-4 text-sm',
+                  hasDescription && 'app-field-filled',
+                  descriptionInvalid && 'app-field-error'
+                )}
+              />
+            </FormField>
+
+            {(isLoadingSuggestion || suggestedCategory) && (
+              <div className="app-surface-subtle rounded-xl p-3 text-xs text-[var(--text-secondary)] sm:col-span-2">
+                {isLoadingSuggestion ? (
+                  <span>Buscando sugestão de categoria...</span>
+                ) : suggestedCategory ? (
+                  <div className="flex items-center justify-between gap-2">
+                    <span>
+                      Sugestão: <span className="font-bold">{suggestedCategory}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, category: suggestedCategory }))}
+                      className="rounded-md bg-[color:var(--primary-soft)] px-2 py-1 text-[var(--text-primary)] transition-colors hover:opacity-90"
+                    >
+                      Usar sugestão
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            <FormField
+              label={isRecurringIncome ? 'Data de recebimento' : 'Data'}
+              htmlFor={dateId}
+              required
+              error={dateInvalid ? 'Selecione uma data válida.' : null}
+            >
+              <PremiumDatePicker
+                id={dateId}
+                value={formData.date}
+                onChange={(value) => setFormData((prev) => ({ ...prev, date: value }))}
+                placeholder="Selecione a data"
+                invalid={dateInvalid}
+              />
+            </FormField>
+
+            {isRecurringIncome ? (
+              <>
+                <FormField label="Frequência" htmlFor={recurrenceFrequencyId} required>
+                  <select
+                    id={recurrenceFrequencyId}
+                    value={formData.recurrenceFrequency}
+                    onChange={(event) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        recurrenceFrequency: event.target.value as IncomeRecurrenceFrequency,
+                      }))
+                    }
+                    className="app-field app-field-filled h-11 w-full rounded-xl px-4 text-sm"
+                  >
+                    {recurrenceFrequencyOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+
+                <FormField
+                  label="Data de término"
+                  htmlFor={recurrenceEndDateId}
+                  hint="Opcional"
+                  error={
+                    recurrenceEndDateInvalid
+                      ? 'A data de término precisa ser igual ou posterior à data de recebimento.'
+                      : null
+                  }
+                >
+                  <PremiumDatePicker
+                    id={recurrenceEndDateId}
+                    value={formData.recurrenceEndDate}
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        recurrenceEndDate: value,
+                      }))
+                    }
+                    placeholder="Sem data final"
+                    min={formData.date}
+                    invalid={recurrenceEndDateInvalid}
+                  />
+                </FormField>
+              </>
+            ) : null}
+
+            <FormField
+              label="Categoria"
+              htmlFor={categoryId}
+              required
+              error={categoryInvalid ? 'Selecione uma categoria.' : null}
+            >
+              <select
+                id={categoryId}
+                value={formData.category}
+                onChange={(event) => setFormData((prev) => ({ ...prev, category: event.target.value }))}
+                className={cn(
+                  'app-field h-11 w-full rounded-xl px-4 text-sm',
+                  hasCategory && 'app-field-filled',
+                  categoryInvalid && 'app-field-error'
+                )}
+              >
+                {availableCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            <FormField label="Método de pagamento" htmlFor={paymentMethodId}>
+              <select
+                id={paymentMethodId}
+                value={formData.paymentMethod}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    paymentMethod: event.target.value as PaymentMethodLabel,
+                  }))
+                }
+                className="app-field app-field-filled h-11 w-full rounded-xl px-4 text-sm"
               >
                 {PAYMENT_METHODS.map((method) => (
                   <option key={method} value={method}>
@@ -7021,59 +7162,32 @@ const TransactionModal = ({
                   </option>
                 ))}
               </select>
-            </div>
-          </div>
+            </FormField>
 
-          <div className="space-y-2">
-            <label className="label-premium text-[var(--text-muted)]">
-              Comprovante (JPG, PNG, PDF)
-            </label>
-            <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] p-3 sm:flex-row sm:items-center">
-              <button
-                type="button"
-                onClick={() => receiptInputRef.current?.click()}
-                disabled={isParsingReceipt || isSubmitting}
-                className="shrink-0 rounded-lg bg-[var(--bg-surface-elevated)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-surface-elevated)] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {selectedReceiptName ? 'Trocar arquivo' : 'Escolher arquivo'}
-              </button>
-              <span className="min-w-0 flex-1 truncate text-left text-sm text-[var(--text-secondary)]">
-                {selectedReceiptName ?? 'Nenhum arquivo selecionado'}
-              </span>
-              <input
-                ref={receiptInputRef}
-                type="file"
-                accept=".jpg,.jpeg,.png,.pdf"
-                onChange={handleReceiptUpload}
-                disabled={isParsingReceipt || isSubmitting}
-                className="hidden"
-              />
-            </div>
-            {receiptStatus && <p className="text-[11px] text-[var(--text-secondary)]">{receiptStatus}</p>}
-          </div>
-
-          {formData.category === 'Auto (IA)' && (
-            <div className="rounded-xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-3 text-xs text-[var(--text-secondary)]">
-              A categoria será classificada automaticamente com base na descrição.
-            </div>
-          )}
-
-          {formData.flowType === 'Transferência' ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="min-w-0 overflow-hidden space-y-2">
-                <label className="label-premium text-[var(--text-muted)]">Conta origem</label>
-                <div
-                  className={cn(
-                    'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
-                    walletInvalid && 'border-[color:var(--danger)]'
-                  )}
+            {isTransferFlow ? (
+              <>
+                <FormField
+                  label="Conta origem"
+                  htmlFor={walletId}
+                  required
+                  error={walletInvalid ? 'Selecione a conta de origem.' : null}
                 >
                   <select
+                    id={walletId}
                     value={formData.wallet}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
+                    onChange={(event) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        wallet: event.target.value,
+                        destinationWallet: normalizeDestinationWalletSelection(
+                          prev.destinationWallet,
+                          event.target.value
+                        ),
+                      }))
+                    }
                     className={cn(
-                      'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
-                      formData.wallet.trim().length > 0 && 'app-field-filled',
+                      'app-field h-11 w-full rounded-xl px-4 text-sm',
+                      hasWallet && 'app-field-filled',
                       walletInvalid && 'app-field-error'
                     )}
                   >
@@ -7083,50 +7197,62 @@ const TransactionModal = ({
                       </option>
                     ))}
                   </select>
-                </div>
-              </div>
-              <div className="min-w-0 overflow-hidden space-y-2">
-                <label className="label-premium text-[var(--text-muted)]">Conta destino</label>
-                <div
-                  className={cn(
-                    'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
-                    destinationWalletInvalid && 'border-[color:var(--danger)]'
-                  )}
+                </FormField>
+
+                <FormField
+                  label="Conta destino"
+                  htmlFor={destinationWalletId}
+                  required
+                  error={
+                    destinationWalletInvalid
+                      ? !formData.destinationWallet.trim()
+                        ? 'Selecione a conta de destino.'
+                        : 'Conta origem e destino não podem ser iguais.'
+                      : null
+                  }
                 >
                   <select
+                    id={destinationWalletId}
                     value={formData.destinationWallet}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, destinationWallet: e.target.value }))}
+                    onChange={(event) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        destinationWallet: event.target.value,
+                      }))
+                    }
                     className={cn(
-                      'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
+                      'app-field h-11 w-full rounded-xl px-4 text-sm',
                       formData.destinationWallet.trim().length > 0 && 'app-field-filled',
                       destinationWalletInvalid && 'app-field-error'
                     )}
                   >
                     <option value="">Selecione</option>
-                    {walletChoices.map((wallet) => (
-                      <option key={wallet} value={wallet}>
-                        {wallet}
-                      </option>
-                    ))}
+                    {walletChoices
+                      .filter((wallet) => wallet !== formData.wallet)
+                      .map((wallet) => (
+                        <option key={wallet} value={wallet}>
+                          {wallet}
+                        </option>
+                      ))}
                   </select>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <label className="label-premium text-[var(--text-muted)]">Conta / Carteira</label>
-              <div
-                className={cn(
-                  'w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent',
-                  walletInvalid && 'border-[color:var(--danger)]'
-                )}
+                </FormField>
+              </>
+            ) : (
+              <FormField
+                label="Conta / Carteira"
+                htmlFor={walletId}
+                required
+                error={walletInvalid ? 'Selecione uma conta.' : null}
               >
                 <select
+                  id={walletId}
                   value={formData.wallet}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, wallet: e.target.value }))}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, wallet: event.target.value }))
+                  }
                   className={cn(
-                    'app-field block w-full min-w-0 max-w-full border-0 bg-transparent px-4 py-2 pr-10 text-sm text-[var(--text-primary)] focus:outline-none sm:rounded-xl sm:border sm:border-[var(--border-default)] sm:bg-[var(--bg-surface-elevated)] sm:focus:border-[var(--primary)]',
-                    formData.wallet.trim().length > 0 && 'app-field-filled',
+                    'app-field h-11 w-full rounded-xl px-4 text-sm',
+                    hasWallet && 'app-field-filled',
                     walletInvalid && 'app-field-error'
                   )}
                 >
@@ -7136,29 +7262,57 @@ const TransactionModal = ({
                     </option>
                   ))}
                 </select>
+              </FormField>
+            )}
+
+            {!isRecurringIncome ? (
+              <FormField
+                label="Comprovante"
+                hint="JPG, PNG ou PDF. Opcional."
+                className="sm:col-span-2"
+              >
+                <div className="app-surface-subtle flex flex-col gap-3 rounded-xl border border-[var(--border-default)] p-3 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => receiptInputRef.current?.click()}
+                    disabled={isParsingReceipt || isSubmitting}
+                    className="app-button-secondary rounded-lg px-3 py-2 text-xs font-bold"
+                  >
+                    {selectedReceiptName ? 'Trocar arquivo' : 'Escolher arquivo'}
+                  </button>
+                  <span className="min-w-0 flex-1 truncate text-sm text-[var(--text-secondary)]">
+                    {selectedReceiptName ?? 'Nenhum arquivo selecionado'}
+                  </span>
+                  <input
+                    ref={receiptInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={handleReceiptUpload}
+                    disabled={isParsingReceipt || isSubmitting}
+                    className="hidden"
+                  />
+                </div>
+                {receiptStatus ? <p className="text-xs text-[var(--text-secondary)]">{receiptStatus}</p> : null}
+              </FormField>
+            ) : (
+              <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-2 text-xs text-[var(--text-secondary)] sm:col-span-2">
+                Receita recorrente cria próximas entradas automaticamente no calendário e na projeção de saldo.
               </div>
-            </div>
-          )}
+            )}
 
-          {formData.flowType === 'Transferência' && formData.destinationWallet === formData.wallet && (
-            <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--danger-soft)] p-3 text-xs text-[var(--text-secondary)]">
-              Conta origem e destino não podem ser iguais.
-            </div>
-          )}
+            {formData.category === 'Auto (IA)' ? (
+              <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-2 text-xs text-[var(--text-secondary)] sm:col-span-2">
+                A categoria será classificada automaticamente com base na descrição.
+              </div>
+            ) : null}
 
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="app-cta-primary mt-2 w-full rounded-xl py-3 font-bold"
-          >
-            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar alterações' : 'Criar transação'}
-          </button>
-          {hasAttemptedSubmit && !isValid && (
-            <p className="text-xs text-[color:var(--danger)]">
-              Preencha os campos obrigatórios para continuar.
-            </p>
-          )}
-        </div>
+            {hasAttemptedSubmit && !isValid ? (
+              <p className="text-xs text-[var(--danger)] sm:col-span-2">
+                Revise os campos obrigatórios para continuar.
+              </p>
+            ) : null}
+          </FormGrid>
+        </FormContainer>
       </motion.div>
     </div>
   );
@@ -8167,12 +8321,21 @@ export default function App() {
   const [loginModeFromQuery, setLoginModeFromQuery] = React.useState<'login' | 'signup'>('login');
   const [pendingPlanFromQuery, setPendingPlanFromQuery] = React.useState<string | null>(null);
   const [pendingPlanHandled, setPendingPlanHandled] = React.useState(false);
+  const [headerSearchTerm, setHeaderSearchTerm] = React.useState('');
+  const [isHeaderSearchOpen, setIsHeaderSearchOpen] = React.useState(false);
+  const [uiFeedback, setUiFeedback] = React.useState<{
+    id: number;
+    tone: UiFeedbackTone;
+    message: string;
+  } | null>(null);
+  const tabHistoryInitializedRef = React.useRef(false);
+  const suppressNextTabHistorySyncRef = React.useRef(false);
 
   React.useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const authMode = searchParams.get('auth');
     const pendingPlan = searchParams.get('plan');
-    const requestedTab = searchParams.get('tab');
+    const requestedTab = searchParams.get(APP_TAB_QUERY_PARAM);
     if (authMode === 'signup' || authMode === 'login') {
       setLoginModeFromQuery(authMode);
     }
@@ -8180,23 +8343,39 @@ export default function App() {
       setPendingPlanFromQuery(pendingPlan);
       setPendingPlanHandled(false);
     }
-    if (
-      requestedTab === 'dashboard' ||
-      requestedTab === 'transactions' ||
-      requestedTab === 'goals' ||
-      requestedTab === 'debts' ||
-      requestedTab === 'investments' ||
-      requestedTab === 'portfolio' ||
-      requestedTab === 'reports' ||
-      requestedTab === 'assistant' ||
-      requestedTab === 'integrations' ||
-      requestedTab === 'subscription' ||
-      requestedTab === 'settings' ||
-      requestedTab === 'agenda'
-    ) {
+    if (isTabValue(requestedTab)) {
       setActiveTab(requestedTab);
     }
   }, []);
+
+  React.useEffect(() => {
+    const url = new URL(window.location.href);
+    const urlTabParam = url.searchParams.get(APP_TAB_QUERY_PARAM);
+    const urlTab = isTabValue(urlTabParam) ? urlTabParam : 'dashboard';
+
+    if (!tabHistoryInitializedRef.current) {
+      tabHistoryInitializedRef.current = true;
+      if (urlTab !== activeTab || !urlTabParam) {
+        url.searchParams.set(APP_TAB_QUERY_PARAM, activeTab);
+        window.history.replaceState(
+          { tab: activeTab },
+          '',
+          `${url.pathname}${url.search}${url.hash}`
+        );
+      }
+      return;
+    }
+
+    if (suppressNextTabHistorySyncRef.current) {
+      suppressNextTabHistorySyncRef.current = false;
+      return;
+    }
+
+    if (urlTab === activeTab) return;
+
+    url.searchParams.set(APP_TAB_QUERY_PARAM, activeTab);
+    window.history.pushState({ tab: activeTab }, '', `${url.pathname}${url.search}${url.hash}`);
+  }, [activeTab]);
 
   const getAuthHeaders = React.useCallback(
     async (withJsonContentType = false, workspaceIdOverride?: string | null) => {
@@ -8634,6 +8813,23 @@ export default function App() {
     window.localStorage.setItem(notificationStorageKey, JSON.stringify(notificationPreferences));
   }, [notificationPreferences, notificationStorageKey]);
 
+  React.useEffect(() => {
+    if (!uiFeedback) return;
+
+    if (uiFeedbackTimeoutRef.current) {
+      window.clearTimeout(uiFeedbackTimeoutRef.current);
+    }
+    uiFeedbackTimeoutRef.current = window.setTimeout(() => {
+      setUiFeedback(null);
+    }, 4200);
+
+    return () => {
+      if (uiFeedbackTimeoutRef.current) {
+        window.clearTimeout(uiFeedbackTimeoutRef.current);
+      }
+    };
+  }, [uiFeedback]);
+
   const hasUserMessages = React.useMemo(
     () => messages.some((message) => message.role === 'user'),
     [messages]
@@ -8647,6 +8843,25 @@ export default function App() {
     isFreePlan && currentMonthTransactionCount >= FREE_TRANSACTION_LIMIT_PER_MONTH;
   const aiLimitReached = isFreePlan && aiUsageCount >= FREE_AI_LIMIT_PER_MONTH;
   const planLabel = getPlanLabel(currentPlan);
+  const activeTabTitle = TAB_LABELS[activeTab];
+  const normalizedHeaderSearchTerm = headerSearchTerm.trim().toLowerCase();
+  const headerSearchResults = React.useMemo(() => {
+    const baseItems =
+      normalizedHeaderSearchTerm.length === 0
+        ? NAVIGATION_SEARCH_ITEMS
+        : NAVIGATION_SEARCH_ITEMS.filter((item) => {
+            const normalizedLabel = item.label.toLowerCase();
+            const normalizedDescription = item.description.toLowerCase();
+            const keywordMatch = item.keywords.some((keyword) => keyword.toLowerCase().includes(normalizedHeaderSearchTerm));
+            return (
+              normalizedLabel.includes(normalizedHeaderSearchTerm) ||
+              normalizedDescription.includes(normalizedHeaderSearchTerm) ||
+              keywordMatch
+            );
+          });
+
+    return baseItems.slice(0, 6);
+  }, [normalizedHeaderSearchTerm]);
   const editingTransaction = React.useMemo(
     () => transactions.find((tx) => tx.id === editingTransactionId) ?? null,
     [transactions, editingTransactionId]
@@ -8670,9 +8885,40 @@ export default function App() {
   const lastUserIdRef = React.useRef<string | null>(null);
   const lastWorkspaceIdRef = React.useRef<string | null>(null);
   const hasFetchedDashboardRef = React.useRef(false);
+  const uiFeedbackTimeoutRef = React.useRef<number | null>(null);
+  const headerSearchRef = React.useRef<HTMLDivElement | null>(null);
   const quickCreateMenuRef = React.useRef<HTMLDivElement | null>(null);
   const avatarInputRef = React.useRef<HTMLInputElement | null>(null);
   const workspaceDashboardCacheRef = React.useRef<Record<string, WorkspaceDashboardSnapshot>>({});
+
+  const showUiFeedback = React.useCallback((message: string, tone: UiFeedbackTone = 'error') => {
+    setUiFeedback({
+      id: Date.now(),
+      tone,
+      message,
+    });
+  }, []);
+
+  const dismissUiFeedback = React.useCallback(() => {
+    setUiFeedback(null);
+  }, []);
+
+  const navigateToTab = React.useCallback(
+    (tab: Tab, options?: { openAssistant?: boolean }) => {
+      if (!isTabValue(tab)) return;
+      setActiveTab(tab);
+      if (options?.openAssistant || tab === 'assistant') {
+        setIsAssistantOpen(true);
+      }
+      setIsSidebarOpen(false);
+      setIsQuickCreateOpen(false);
+      setIsProfileMenuOpen(false);
+      setIsNotificationsOpen(false);
+      setIsHeaderSearchOpen(false);
+      setHeaderSearchTerm('');
+    },
+    []
+  );
 
   const applyDashboardSnapshot = React.useCallback((snapshot: WorkspaceDashboardSnapshot) => {
     setIsDisconnectingWhatsApp(false);
@@ -8755,146 +9001,188 @@ export default function App() {
     ]
   );
 
-  const refreshTransactionsResource = React.useCallback(async () => {
-    if (!user) return;
-    const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
-    const data = await fetchTransactionsContext({
-      getAuthHeaders,
-      workspaceIdOverride: workspaceIdForRequest,
-    });
+  const refreshTransactionsResource = React.useCallback(
+    async (options?: TransactionsResourceRefreshOptions) => {
+      if (!user) return;
 
-    const mappedTransactions = Array.isArray(data?.transactions)
-      ? data.transactions.map((tx: any) => mapApiTransactionToClientTransaction(tx))
-      : [];
-    const mappedWallets = Array.isArray(data?.wallets)
-      ? data.wallets.map((wallet: any) => ({
-          id: String(wallet.id),
-          name: String(wallet.name || 'Conta'),
-          balance: Number(wallet.balance || 0),
-        }))
-      : [];
-    const mappedWorkspaceEvents = Array.isArray(data?.recentEvents)
-      ? data.recentEvents.map((event: any) => ({
-          id: String(event.id),
-          type: String(event.type || 'workspace.event'),
-          created_at: String(event.created_at || new Date().toISOString()),
-          user_id: typeof event.user_id === 'string' ? event.user_id : null,
-          payload:
-            event.payload && typeof event.payload === 'object'
-              ? (event.payload as Record<string, unknown>)
-              : null,
-        }))
-      : [];
-    const mappedInsights = Array.isArray(data?.insights)
-      ? data.insights
-          .filter((item: unknown) => typeof item === 'string')
-          .map((item: string) => item.trim())
-          .filter(Boolean)
-      : [];
-    const mappedProjection = mapApiProjectionToClientProjection(data?.projection);
-    let mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
-    try {
-      const calendarPayload = await fetchDashboardCalendarReadPayload({
+      const {
+        syncTransactions = true,
+        syncWallets = true,
+        syncWorkspaceEvents = true,
+        syncInsights = true,
+        syncProjection = true,
+        syncCalendarReadModel = true,
+        syncTotalsAndPlan = true,
+        syncUsageAndLimits = true,
+        syncWhatsAppState = true,
+      } = options ?? {};
+
+      const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+      const data = await fetchTransactionsContext({
         getAuthHeaders,
         workspaceIdOverride: workspaceIdForRequest,
-        upcomingDays: 14,
       });
-      mappedCalendarReadModel = mapApiDashboardCalendarReadModel(calendarPayload);
-    } catch (calendarError) {
-      console.warn('Transactions refresh calendar read model fallback:', calendarError);
-    }
 
-    setTransactions(mappedTransactions);
-    setWallets(mappedWallets);
-    setWorkspaceEvents(mappedWorkspaceEvents);
-    setDashboardInsights(mappedInsights);
-    setDashboardProjection(mappedProjection);
-    if (mappedCalendarReadModel) {
-      setDashboardCalendarReadModel(mappedCalendarReadModel);
-    }
+      const shouldMapTransactions =
+        syncTransactions || (syncUsageAndLimits && typeof data?.currentMonthTransactionCount !== 'number');
+      const mappedTransactions = shouldMapTransactions
+        ? Array.isArray(data?.transactions)
+          ? data.transactions.map((tx: any) => mapApiTransactionToClientTransaction(tx))
+          : []
+        : null;
+      const mappedWallets = syncWallets
+        ? Array.isArray(data?.wallets)
+          ? data.wallets.map((wallet: any) => ({
+              id: String(wallet.id),
+              name: String(wallet.name || 'Conta'),
+              balance: Number(wallet.balance || 0),
+            }))
+          : []
+        : null;
+      const mappedWorkspaceEvents = syncWorkspaceEvents
+        ? Array.isArray(data?.recentEvents)
+          ? data.recentEvents.map((event: any) => ({
+              id: String(event.id),
+              type: String(event.type || 'workspace.event'),
+              created_at: String(event.created_at || new Date().toISOString()),
+              user_id: typeof event.user_id === 'string' ? event.user_id : null,
+              payload:
+                event.payload && typeof event.payload === 'object'
+                  ? (event.payload as Record<string, unknown>)
+                  : null,
+            }))
+          : []
+        : null;
+      const mappedInsights = syncInsights
+        ? Array.isArray(data?.insights)
+          ? data.insights
+              .filter((item: unknown) => typeof item === 'string')
+              .map((item: string) => item.trim())
+              .filter(Boolean)
+          : []
+        : null;
+      const mappedProjection = syncProjection ? mapApiProjectionToClientProjection(data?.projection) : null;
 
-    if (typeof data?.totalBalance !== 'undefined') {
-      setTotalBalance(Number(data.totalBalance));
-    }
-    if (data?.plan) {
-      setCurrentPlan(normalizePlan(data.plan));
-    }
-    if (data?.limits?.reports === 'basic' || data?.limits?.reports === 'full') {
-      setReportAccessLevel(data.limits.reports);
-    } else if (data?.plan === 'FREE') {
-      setReportAccessLevel('basic');
-    } else if (data?.plan) {
-      setReportAccessLevel('full');
-    }
-    if (typeof data?.currentMonthTransactionCount === 'number') {
-      setCurrentMonthTransactionCount(Math.max(0, data.currentMonthTransactionCount));
-    } else {
-      const localMonthCount = mappedTransactions.filter((tx: Transaction) =>
-        isInCurrentMonth(parseTransactionDate(tx.date))
-      ).length;
-      setCurrentMonthTransactionCount(localMonthCount);
-    }
-    if (typeof data?.currentMonthAiUsage === 'number') {
-      const normalizedUsage = Math.max(0, data.currentMonthAiUsage);
-      setAiUsageCount(normalizedUsage);
-      if (user?.id) {
-        const usageStorageKey = `cote-ai-usage-${user.id}-${getCurrentMonthKey()}`;
-        window.localStorage.setItem(usageStorageKey, String(normalizedUsage));
+      let mappedCalendarReadModel: DashboardCalendarReadModel | null = null;
+      if (syncCalendarReadModel) {
+        try {
+          const calendarPayload = await fetchDashboardCalendarReadPayload({
+            getAuthHeaders,
+            workspaceIdOverride: workspaceIdForRequest,
+            upcomingDays: 14,
+          });
+          mappedCalendarReadModel = mapApiDashboardCalendarReadModel(calendarPayload);
+        } catch (calendarError) {
+          console.warn('Transactions refresh calendar read model fallback:', calendarError);
+        }
       }
-    }
-    if (data?.workspace) {
-      const workspaceStatus = String(data.workspace.whatsapp_status || '').toUpperCase();
-      setIsWhatsAppConnected(workspaceStatus === 'CONNECTED');
-      setWorkspaceWhatsAppPhoneNumber(
-        typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
-          ? `+${data.workspace.whatsapp_phone_number}`
-          : ''
-      );
-    }
 
-    const resolvedWorkspaceId =
-      typeof data?.activeWorkspaceId === 'string' ? data.activeWorkspaceId : workspaceIdForRequest || activeWorkspaceId;
-    if (resolvedWorkspaceId) {
-      upsertWorkspaceSnapshot(resolvedWorkspaceId, {
-        totalBalance: typeof data?.totalBalance !== 'undefined' ? Number(data.totalBalance) : totalBalance,
-        currentPlan: data?.plan ? normalizePlan(data.plan) : currentPlan,
-        reportAccessLevel:
-          data?.limits?.reports === 'basic' || data?.limits?.reports === 'full'
-            ? data.limits.reports
-            : data?.plan === 'FREE'
-              ? 'basic'
-              : reportAccessLevel,
-        currentMonthTransactionCount:
-          typeof data?.currentMonthTransactionCount === 'number'
-            ? Math.max(0, data.currentMonthTransactionCount)
-            : mappedTransactions.filter((tx: Transaction) => isInCurrentMonth(parseTransactionDate(tx.date))).length,
-        aiUsageCount: typeof data?.currentMonthAiUsage === 'number' ? Math.max(0, data.currentMonthAiUsage) : aiUsageCount,
-        transactions: mappedTransactions,
-        workspaceEvents: mappedWorkspaceEvents,
-        dashboardInsights: mappedInsights,
-        dashboardProjection: mappedProjection,
-        dashboardCalendarReadModel:
-          mappedCalendarReadModel ?? workspaceDashboardCacheRef.current[resolvedWorkspaceId]?.dashboardCalendarReadModel ?? null,
-        isWhatsAppConnected:
-          data?.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED',
-        workspaceWhatsAppPhoneNumber:
-          data?.workspace && typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
+      const workspaceSnapshotPatch: Partial<WorkspaceDashboardSnapshot> = {};
+
+      if (syncTransactions && mappedTransactions) {
+        setTransactions(mappedTransactions);
+        workspaceSnapshotPatch.transactions = mappedTransactions;
+      }
+
+      if (syncWallets && mappedWallets) {
+        setWallets(mappedWallets);
+      }
+
+      if (syncWorkspaceEvents && mappedWorkspaceEvents) {
+        setWorkspaceEvents(mappedWorkspaceEvents);
+        workspaceSnapshotPatch.workspaceEvents = mappedWorkspaceEvents;
+      }
+
+      if (syncInsights && mappedInsights) {
+        setDashboardInsights(mappedInsights);
+        workspaceSnapshotPatch.dashboardInsights = mappedInsights;
+      }
+
+      if (syncProjection) {
+        setDashboardProjection(mappedProjection);
+        workspaceSnapshotPatch.dashboardProjection = mappedProjection;
+      }
+
+      if (syncCalendarReadModel && mappedCalendarReadModel) {
+        setDashboardCalendarReadModel(mappedCalendarReadModel);
+        workspaceSnapshotPatch.dashboardCalendarReadModel = mappedCalendarReadModel;
+      }
+
+      if (syncTotalsAndPlan) {
+        if (typeof data?.totalBalance !== 'undefined') {
+          const nextTotalBalance = Number(data.totalBalance);
+          setTotalBalance((current) => (current === nextTotalBalance ? current : nextTotalBalance));
+          workspaceSnapshotPatch.totalBalance = nextTotalBalance;
+        }
+
+        if (data?.plan) {
+          const nextPlan = normalizePlan(data.plan);
+          setCurrentPlan((current) => (current === nextPlan ? current : nextPlan));
+          workspaceSnapshotPatch.currentPlan = nextPlan;
+        }
+
+        if (data?.limits?.reports === 'basic' || data?.limits?.reports === 'full') {
+          const nextReportAccess = data.limits.reports;
+          setReportAccessLevel((current) => (current === nextReportAccess ? current : nextReportAccess));
+          workspaceSnapshotPatch.reportAccessLevel = nextReportAccess;
+        } else if (data?.plan === 'FREE') {
+          setReportAccessLevel((current) => (current === 'basic' ? current : 'basic'));
+          workspaceSnapshotPatch.reportAccessLevel = 'basic';
+        } else if (data?.plan) {
+          setReportAccessLevel((current) => (current === 'full' ? current : 'full'));
+          workspaceSnapshotPatch.reportAccessLevel = 'full';
+        }
+      }
+
+      if (syncUsageAndLimits) {
+        let nextMonthTransactionCount: number | null = null;
+        if (typeof data?.currentMonthTransactionCount === 'number') {
+          nextMonthTransactionCount = Math.max(0, data.currentMonthTransactionCount);
+        } else if (mappedTransactions) {
+          nextMonthTransactionCount = mappedTransactions.filter((tx: Transaction) =>
+            isInCurrentMonth(parseTransactionDate(tx.date))
+          ).length;
+        }
+
+        if (nextMonthTransactionCount !== null) {
+          setCurrentMonthTransactionCount((current) =>
+            current === nextMonthTransactionCount ? current : nextMonthTransactionCount
+          );
+          workspaceSnapshotPatch.currentMonthTransactionCount = nextMonthTransactionCount;
+        }
+
+        if (typeof data?.currentMonthAiUsage === 'number') {
+          const normalizedUsage = Math.max(0, data.currentMonthAiUsage);
+          setAiUsageCount((current) => (current === normalizedUsage ? current : normalizedUsage));
+          workspaceSnapshotPatch.aiUsageCount = normalizedUsage;
+          if (user.id) {
+            const usageStorageKey = `cote-ai-usage-${user.id}-${getCurrentMonthKey()}`;
+            window.localStorage.setItem(usageStorageKey, String(normalizedUsage));
+          }
+        }
+      }
+
+      if (syncWhatsAppState && data?.workspace) {
+        const workspaceStatus = String(data.workspace.whatsapp_status || '').toUpperCase();
+        const isConnected = workspaceStatus === 'CONNECTED';
+        const phoneNumber =
+          typeof data.workspace.whatsapp_phone_number === 'string' && data.workspace.whatsapp_phone_number
             ? `+${data.workspace.whatsapp_phone_number}`
-            : workspaceWhatsAppPhoneNumber,
-      });
-    }
-  }, [
-    activeWorkspaceId,
-    aiUsageCount,
-    currentPlan,
-    getAuthHeaders,
-    reportAccessLevel,
-    resolveWorkspaceIdForResourceRequest,
-    totalBalance,
-    upsertWorkspaceSnapshot,
-    user,
-    workspaceWhatsAppPhoneNumber,
-  ]);
+            : '';
+        setIsWhatsAppConnected((current) => (current === isConnected ? current : isConnected));
+        setWorkspaceWhatsAppPhoneNumber((current) => (current === phoneNumber ? current : phoneNumber));
+        workspaceSnapshotPatch.isWhatsAppConnected = isConnected;
+        workspaceSnapshotPatch.workspaceWhatsAppPhoneNumber = phoneNumber;
+      }
+
+      const resolvedWorkspaceId =
+        typeof data?.activeWorkspaceId === 'string' ? data.activeWorkspaceId : workspaceIdForRequest || activeWorkspaceId;
+      if (resolvedWorkspaceId && Object.keys(workspaceSnapshotPatch).length > 0) {
+        upsertWorkspaceSnapshot(resolvedWorkspaceId, workspaceSnapshotPatch);
+      }
+    },
+    [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, upsertWorkspaceSnapshot, user]
+  );
 
   const refreshGoalsResource = React.useCallback(async () => {
     if (!user) return;
@@ -8960,6 +9248,20 @@ export default function App() {
     }
   }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, upsertWorkspaceSnapshot, user]);
 
+  const refreshProjectionAndCalendarResource = React.useCallback(async () => {
+    await refreshTransactionsResource({
+      syncTransactions: false,
+      syncWallets: false,
+      syncWorkspaceEvents: false,
+      syncInsights: false,
+      syncProjection: true,
+      syncCalendarReadModel: true,
+      syncTotalsAndPlan: false,
+      syncUsageAndLimits: false,
+      syncWhatsAppState: false,
+    });
+  }, [refreshTransactionsResource]);
+
   React.useEffect(() => {
     const nextUserId = user?.id ?? null;
     if (lastUserIdRef.current !== nextUserId) {
@@ -9021,6 +9323,36 @@ React.useEffect(() => {
     if (!user?.id || !activeWorkspaceId) return;
     writeActiveWorkspacePreference(user.id, activeWorkspaceId);
   }, [activeWorkspaceId, user?.id]);
+
+  React.useEffect(() => {
+    const handlePopState = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const requestedTab = searchParams.get(APP_TAB_QUERY_PARAM);
+      suppressNextTabHistorySyncRef.current = true;
+      setActiveTab(isTabValue(requestedTab) ? requestedTab : 'dashboard');
+      setIsSidebarOpen(false);
+      setIsQuickCreateOpen(false);
+      setIsProfileMenuOpen(false);
+      setIsNotificationsOpen(false);
+      setIsHeaderSearchOpen(false);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  React.useEffect(() => {
+    if (!isHeaderSearchOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (headerSearchRef.current && event.target instanceof Node && !headerSearchRef.current.contains(event.target)) {
+        setIsHeaderSearchOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [isHeaderSearchOpen]);
 
   React.useEffect(() => {
     if (!isQuickCreateOpen) return;
@@ -9139,7 +9471,6 @@ React.useEffect(() => {
               ? 'O WhatsApp foi conectado com sucesso.'
               : 'A Meta aceitou a conexão. Agora falta a confirmação de entrega pelo webhook.',
       });
-      void refreshTransactionsResource();
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
@@ -9156,7 +9487,7 @@ React.useEffect(() => {
     } finally {
       setIsConnectingWhatsApp(false);
     }
-  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, refreshTransactionsResource, workspaceWhatsAppPhoneNumber]);
+  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
 
   const handleDisconnectWhatsApp = React.useCallback(async () => {
     setIsDisconnectingWhatsApp(true);
@@ -9179,7 +9510,6 @@ React.useEffect(() => {
             ? payload.message
             : 'A integração do WhatsApp foi desconectada com sucesso.',
       });
-      void refreshTransactionsResource();
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
@@ -9196,7 +9526,7 @@ React.useEffect(() => {
     } finally {
       setIsDisconnectingWhatsApp(false);
     }
-  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, refreshTransactionsResource]);
+  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse]);
 
   const handleSendWhatsAppTest = React.useCallback(async () => {
     setIsSendingWhatsAppTest(true);
@@ -9220,7 +9550,6 @@ React.useEffect(() => {
             ? payload.message
             : 'A Meta aceitou o teste. Agora falta a confirmação de entrega pelo webhook.',
       });
-      void refreshTransactionsResource();
     } catch (error: any) {
       const message =
         typeof error?.payload?.error === 'string'
@@ -9237,7 +9566,7 @@ React.useEffect(() => {
     } finally {
       setIsSendingWhatsAppTest(false);
     }
-  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, refreshTransactionsResource, workspaceWhatsAppPhoneNumber]);
+  }, [applyWhatsAppPayload, getAuthHeaders, parseWhatsAppResponse, workspaceWhatsAppPhoneNumber]);
 
   const derivedAgendaBills = React.useMemo<Bill[]>(() => {
     const now = new Date();
@@ -9487,13 +9816,10 @@ React.useEffect(() => {
       markNotificationAsRead(notification.id);
       setIsNotificationsOpen(false);
       if (notification.targetTab) {
-        setActiveTab(notification.targetTab);
-        if (notification.targetTab === 'assistant') {
-          setIsAssistantOpen(true);
-        }
+        navigateToTab(notification.targetTab, { openAssistant: notification.targetTab === 'assistant' });
       }
     },
-    [markNotificationAsRead, setActiveTab]
+    [markNotificationAsRead, navigateToTab]
   );
 
   const assistantFinancialContext = React.useMemo(() => {
@@ -9750,7 +10076,7 @@ React.useEffect(() => {
     const annualSaving = appliedTotal * 0.15 * 12;
 
     return {
-      categoryLabel: transportTotal > 0 ? 'transporte' : 'despesas variaveis',
+      categoryLabel: transportTotal > 0 ? 'transporte' : 'despesas variáveis',
       total: appliedTotal,
       annualSaving,
     };
@@ -9783,7 +10109,7 @@ React.useEffect(() => {
 
     if (!file) return;
     if (file.size > AVATAR_MAX_FILE_SIZE_BYTES) {
-      alert('Escolha uma imagem de até 5 MB.');
+      showUiFeedback('Escolha uma imagem de até 5 MB.');
       return;
     }
 
@@ -9795,7 +10121,7 @@ React.useEffect(() => {
       setSettingsSavedAt('Foto pronta. Clique em salvar alterações para concluir.');
     } catch (error) {
       console.error('Avatar processing error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao processar a foto.');
+      showUiFeedback(error instanceof Error ? error.message : 'Não foi possível processar a foto.');
     } finally {
       setIsAvatarProcessing(false);
     }
@@ -9807,7 +10133,7 @@ React.useEffect(() => {
     const normalizedAvatarUrl = settingsAvatarUrl.trim();
 
     if (!isValidAvatarUrl(normalizedAvatarUrl)) {
-      alert('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https válida.');
+      showUiFeedback('A foto de perfil precisa ser uma imagem enviada pelo sistema ou uma URL http/https válida.');
       return;
     }
 
@@ -9852,7 +10178,7 @@ React.useEffect(() => {
       );
     } catch (error) {
       console.error('Save settings error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao salvar configurações.');
+      showUiFeedback(error instanceof Error ? error.message : 'Falha ao salvar configurações.');
     }
   };
 
@@ -9901,7 +10227,7 @@ React.useEffect(() => {
       }
     } catch (error) {
       console.error('Onboarding save error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao salvar onboarding.');
+      showUiFeedback(error instanceof Error ? error.message : 'Falha ao salvar onboarding.');
     } finally {
       setIsSavingOnboarding(false);
     }
@@ -9928,7 +10254,7 @@ React.useEffect(() => {
       setIsWorkspaceOnboardingOpen(false);
     } catch (error) {
       console.error('Onboarding dismiss error:', error);
-      alert(error instanceof Error ? error.message : 'Falha ao atualizar onboarding.');
+      showUiFeedback(error instanceof Error ? error.message : 'Falha ao atualizar onboarding.');
     } finally {
       setIsDismissingOnboarding(false);
     }
@@ -9952,12 +10278,12 @@ React.useEffect(() => {
     };
 
     if (!payload.amount || parseMoneyInput(payload.amount) <= 0) {
-      alert('Preencha um valor maior que zero.');
+      showUiFeedback('Preencha um valor maior que zero.');
       return;
     }
 
     if (!payload.category.trim()) {
-      alert('Selecione uma categoria.');
+      showUiFeedback('Selecione uma categoria.');
       return;
     }
 
@@ -10068,7 +10394,7 @@ React.useEffect(() => {
       try {
         const selectedPlan = parseCheckoutPlanLabel(plan);
         if (!selectedPlan) {
-          alert('Plano invalido para checkout.');
+          showUiFeedback('Plano inválido para checkout.');
           return;
         }
 
@@ -10080,10 +10406,10 @@ React.useEffect(() => {
       } catch (error) {
         console.error('Upgrade error:', error);
         const message = error instanceof Error ? error.message : 'erro desconhecido';
-        alert(`Erro ao iniciar upgrade: ${message}`);
+        showUiFeedback(`Erro ao iniciar upgrade: ${message}`);
       }
     },
-    [activeWorkspaceId]
+    [activeWorkspaceId, showUiFeedback]
   );
 
   const buildPlanLabelFromSummary = React.useCallback((summary: SubscriptionOverview | null) => {
@@ -10143,7 +10469,7 @@ React.useEffect(() => {
             (subscriptionSummary?.canOpenCheckout || isFreePlan)
           ) {
             const shouldUpgrade = window.confirm(
-              'Este workspace ainda nao tem uma assinatura regularizada. Deseja abrir o checkout agora?'
+              'Este workspace ainda não tem uma assinatura regularizada. Deseja abrir o checkout agora?'
             );
             if (shouldUpgrade) {
               void handleUpgrade(buildPlanLabelFromSummary(subscriptionSummary));
@@ -10159,18 +10485,16 @@ React.useEffect(() => {
       } catch (error) {
         console.error('Portal error:', error);
         const message = error instanceof Error ? error.message : 'erro desconhecido';
-        alert(`Erro ao abrir assinatura: ${message}`);
+        showUiFeedback(`Erro ao abrir assinatura: ${message}`);
       } finally {
         setSubscriptionActionLoading(null);
       }
     },
-    [buildPlanLabelFromSummary, getAuthHeaders, handleUpgrade, isFreePlan, subscriptionSummary]
+    [buildPlanLabelFromSummary, getAuthHeaders, handleUpgrade, isFreePlan, showUiFeedback, subscriptionSummary]
   );
   const handleManageSubscription = React.useCallback(() => {
-    setActiveTab('subscription');
-    setIsProfileMenuOpen(false);
-    setIsSidebarOpen(false);
-  }, []);
+    navigateToTab('subscription');
+  }, [navigateToTab]);
 
   const handleSubscriptionAction = React.useCallback(
     async (action: 'cancel' | 'reactivate') => {
@@ -10190,7 +10514,17 @@ React.useEffect(() => {
         }
 
         setSubscriptionSummary(payload);
-        await fetchDashboardData();
+        const nextPlan = normalizePlan(payload.plan);
+        const nextReportAccessLevel: ReportAccessLevel = nextPlan === 'FREE' ? 'basic' : 'full';
+        setCurrentPlan((current) => (current === nextPlan ? current : nextPlan));
+        setReportAccessLevel((current) => (current === nextReportAccessLevel ? current : nextReportAccessLevel));
+        const resolvedWorkspaceId = activeWorkspaceId || payload.workspaceId || null;
+        if (resolvedWorkspaceId) {
+          upsertWorkspaceSnapshot(resolvedWorkspaceId, {
+            currentPlan: nextPlan,
+            reportAccessLevel: nextReportAccessLevel,
+          });
+        }
       } catch (error) {
         console.error('Subscription action error:', error);
         setSubscriptionError(error instanceof Error ? error.message : 'Falha ao atualizar assinatura.');
@@ -10198,7 +10532,7 @@ React.useEffect(() => {
         setSubscriptionActionLoading(null);
       }
     },
-    [fetchDashboardData, getAuthHeaders]
+    [activeWorkspaceId, getAuthHeaders, upsertWorkspaceSnapshot]
   );
 
   const handleChangePlan = React.useCallback(() => {
@@ -10417,18 +10751,55 @@ React.useEffect(() => {
     const resolvedCategory = await resolveTransactionCategory(tx);
     const absoluteAmount = parseMoneyInput(tx.amount);
     if (!absoluteAmount || absoluteAmount <= 0) {
-      alert('Valor inválido para transação.');
-      return false;
+      throw new Error('Valor inválido para transação.');
     }
     if (flowType === 'Transferência') {
       if (!tx.destinationWallet.trim()) {
-        alert('Selecione a conta de destino da transferência.');
-        return false;
+        throw new Error('Selecione a conta de destino da transferência.');
       }
       if (tx.destinationWallet === tx.wallet) {
-        alert('Conta origem e destino não podem ser iguais.');
-        return false;
+        throw new Error('Conta origem e destino não podem ser iguais.');
       }
+    }
+
+    const shouldCreateRecurringIncome =
+      !editingTransactionId &&
+      flowType === 'Receita' &&
+      tx.incomeScheduleMode === 'RECURRING';
+
+    if (shouldCreateRecurringIncome) {
+      const recurringPayload = {
+        kind: 'INCOME',
+        title: tx.description.trim(),
+        description: null,
+        amount: absoluteAmount,
+        wallet: tx.wallet,
+        category: resolvedCategory,
+        paymentMethod: mapPaymentMethodToBackend(tx.paymentMethod),
+        frequency: tx.recurrenceFrequency,
+        interval: 1,
+        startDate: tx.date,
+        endDate: tx.recurrenceEndDate.trim() ? tx.recurrenceEndDate : null,
+        status: 'ACTIVE',
+      };
+
+      const response = await fetch('/api/recurrence-rules', {
+        method: 'POST',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify(recurringPayload),
+      });
+      const responseData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          typeof responseData?.error === 'string'
+            ? responseData.error
+            : 'Falha ao salvar receita recorrente.'
+        );
+      }
+
+      setEditingTransactionId(null);
+      await refreshTransactionsResource();
+      return true;
     }
 
     const previousTransactionsSnapshot = transactions;
@@ -10484,8 +10855,7 @@ React.useEffect(() => {
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
-        alert(message);
-        return false;
+        throw new Error(message);
       }
 
       const savedTransaction = mapApiTransactionToClientTransaction(responseData);
@@ -10500,8 +10870,9 @@ React.useEffect(() => {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Save transaction error:', error);
-      alert('Falha ao salvar transação. Tente novamente.');
-      return false;
+      throw new Error(
+        error instanceof Error ? error.message : 'Falha ao salvar transação. Tente novamente.'
+      );
     }
   };
 
@@ -10553,7 +10924,7 @@ React.useEffect(() => {
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
-        alert(message);
+        showUiFeedback(message);
         return;
       }
 
@@ -10568,7 +10939,7 @@ React.useEffect(() => {
       setTotalBalance(previousTotalBalance);
       setCurrentMonthTransactionCount(previousMonthCount);
       console.error('Delete transaction error:', error);
-      alert('Falha ao excluir transação. Tente novamente.');
+      showUiFeedback('Falha ao excluir transação. Tente novamente.');
     }
   };
 
@@ -10633,7 +11004,7 @@ React.useEffect(() => {
         }
         await refreshGoalsResource();
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir meta.');
+        showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir meta.');
       }
     })();
   };
@@ -10700,7 +11071,7 @@ React.useEffect(() => {
         }
         await refreshInvestmentsResource();
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir investimento.');
+        showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir investimento.');
       }
     })();
   };
@@ -10737,7 +11108,7 @@ React.useEffect(() => {
     setEditingDebtId(null);
     setDebtDraft(null);
     setDebtFeedbackMessage(editingDebtId ? 'Dívida atualizada com sucesso.' : 'Dívida adicionada com sucesso.');
-    await Promise.all([refreshDebtsResource(), refreshTransactionsResource()]);
+    await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
   };
 
   const handleOpenCreateDebt = () => {
@@ -10795,9 +11166,9 @@ React.useEffect(() => {
           setIsDebtModalOpen(false);
         }
         setDebtFeedbackMessage('Dívida removida com sucesso.');
-        await Promise.all([refreshDebtsResource(), refreshTransactionsResource()]);
+        await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
+        showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir dívida.');
       }
     })();
   };
@@ -10841,7 +11212,7 @@ React.useEffect(() => {
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft(null);
     setDebtFeedbackMessage(editingRecurringDebt ? 'Recorrência atualizada com sucesso.' : 'Recorrência criada com sucesso.');
-    await Promise.all([refreshRecurringDebtsResource(), refreshTransactionsResource()]);
+    await Promise.all([refreshRecurringDebtsResource(), refreshProjectionAndCalendarResource()]);
   };
 
   const handleStartEditRecurringDebt = (id: string | number) => {
@@ -10878,9 +11249,9 @@ React.useEffect(() => {
           setIsRecurringDebtModalOpen(false);
         }
         setDebtFeedbackMessage('Recorrência removida com sucesso.');
-        await Promise.all([refreshRecurringDebtsResource(), refreshTransactionsResource()]);
+        await Promise.all([refreshRecurringDebtsResource(), refreshProjectionAndCalendarResource()]);
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Falha ao excluir recorrência.');
+        showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir recorrência.');
       }
     })();
   };
@@ -10983,7 +11354,17 @@ React.useEffect(() => {
       setNewWalletBank('');
       setNewWalletName('');
       setNewWalletInitialBalance('');
-      void refreshTransactionsResource();
+      void refreshTransactionsResource({
+        syncTransactions: false,
+        syncWallets: true,
+        syncWorkspaceEvents: true,
+        syncInsights: false,
+        syncProjection: true,
+        syncCalendarReadModel: false,
+        syncTotalsAndPlan: true,
+        syncUsageAndLimits: false,
+        syncWhatsAppState: false,
+      });
     } catch (error) {
       console.error('Create wallet error:', error);
       setCreateWalletError(error instanceof Error ? error.message : 'Falha ao criar carteira.');
@@ -11025,7 +11406,17 @@ React.useEffect(() => {
         message: `Carteira "${walletPendingDelete.name}" excluída com sucesso.`,
       });
       setWalletPendingDelete(null);
-      void refreshTransactionsResource();
+      void refreshTransactionsResource({
+        syncTransactions: false,
+        syncWallets: true,
+        syncWorkspaceEvents: true,
+        syncInsights: false,
+        syncProjection: true,
+        syncCalendarReadModel: false,
+        syncTotalsAndPlan: true,
+        syncUsageAndLimits: false,
+        syncWhatsAppState: false,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao excluir carteira.';
       setDeleteWalletError(message);
@@ -11087,7 +11478,7 @@ React.useEffect(() => {
       setIsDeleteWorkspaceModalOpen(false);
       setDeleteWorkspaceConfirmationName('');
       setSettingsSavedAt(`Workspace "${activeWorkspace.name}" excluído com sucesso.`);
-      setActiveTab('dashboard');
+      navigateToTab('dashboard');
     } catch (error) {
       setDeleteWorkspaceError(error instanceof Error ? error.message : 'Falha ao excluir workspace.');
     } finally {
@@ -11103,7 +11494,7 @@ React.useEffect(() => {
     flowType: TransactionFlowType,
     category?: string | null
   ) => {
-    setActiveTab('transactions');
+    navigateToTab('transactions');
     setIsQuickCreateOpen(false);
     handleOpenCreateTransaction({
       flowType,
@@ -11114,7 +11505,7 @@ React.useEffect(() => {
   };
 
   const handleQuickCreateResource = (targetTab: 'goals' | 'debts' | 'investments') => {
-    setActiveTab(targetTab);
+    navigateToTab(targetTab);
     setIsQuickCreateOpen(false);
 
     if (targetTab === 'goals') {
@@ -11128,6 +11519,26 @@ React.useEffect(() => {
     }
 
     handleOpenCreateInvestment();
+  };
+
+  const handleHeaderSearchSelect = React.useCallback(
+    (item: NavigationSearchItem) => {
+      navigateToTab(item.tab, { openAssistant: item.tab === 'assistant' });
+    },
+    [navigateToTab]
+  );
+
+  const handleHeaderSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      setIsHeaderSearchOpen(false);
+      return;
+    }
+
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const firstResult = headerSearchResults[0];
+    if (!firstResult) return;
+    handleHeaderSearchSelect(firstResult);
   };
 
   if (authLoading) {
@@ -11145,7 +11556,53 @@ React.useEffect(() => {
   return (
     <AppErrorBoundary>
       <div className="theme-app-shell flex h-screen overflow-hidden">
-      {showTutorial && <OnboardingTutorial onComplete={() => setShowTutorial(false)} />}
+      {showTutorial && (
+        <OnboardingContainer>
+          <OnboardingTutorial onComplete={() => setShowTutorial(false)} />
+        </OnboardingContainer>
+      )}
+
+      <AnimatePresence>
+        {uiFeedback && (
+          <motion.div
+            key={uiFeedback.id}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed right-4 top-4 z-[160] w-[min(24rem,calc(100vw-2rem))]"
+          >
+            <div
+              className={cn(
+                'theme-modal-surface flex items-start gap-3 rounded-2xl border px-4 py-3 shadow-[var(--shadow-soft)]',
+                uiFeedback.tone === 'success'
+                  ? 'border-[color:color-mix(in_srgb,var(--positive)_32%,transparent)]'
+                  : uiFeedback.tone === 'error'
+                    ? 'border-[color:color-mix(in_srgb,var(--danger)_32%,transparent)]'
+                    : 'border-[color:color-mix(in_srgb,var(--primary)_32%,transparent)]'
+              )}
+            >
+              <div className="mt-0.5 shrink-0 text-[var(--text-secondary)]">
+                {uiFeedback.tone === 'success' ? (
+                  <CheckCircle2 size={16} />
+                ) : uiFeedback.tone === 'error' ? (
+                  <AlertTriangle size={16} />
+                ) : (
+                  <Bell size={16} />
+                )}
+              </div>
+              <p className="flex-1 text-sm leading-relaxed text-[var(--text-primary)]">{uiFeedback.message}</p>
+              <button
+                type="button"
+                onClick={dismissUiFeedback}
+                className="rounded-lg p-1 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+                aria-label="Fechar mensagem"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isUpgradeLimitModalOpen && (
@@ -11188,7 +11645,7 @@ React.useEffect(() => {
                 <button
                   onClick={() => {
                     setIsUpgradeLimitModalOpen(false);
-                    setActiveTab('integrations');
+                    navigateToTab('integrations');
                     void handleUpgrade('Pro Mensal');
                   }}
                   className="flex-1 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--primary-hover)] transition-colors"
@@ -12155,108 +12612,30 @@ React.useEffect(() => {
           </div>
         </div>
 
-        <nav className={cn('flex-1 py-4 space-y-1 overflow-y-auto custom-scrollbar', isSidebarCollapsed ? 'px-2' : 'px-4')}>
-          <SidebarItem
-            icon={LayoutDashboard}
-            label="Dashboard"
-            active={activeTab === 'dashboard'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('dashboard');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={Calendar}
-            label="Calendario Financeiro"
-            active={activeTab === 'agenda'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('agenda');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={ReceiptText}
-            label="Transações"
-            active={activeTab === 'transactions'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('transactions');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={Target}
-            label="Metas"
-            active={activeTab === 'goals'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('goals');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={CreditCard}
-            label="Dívidas"
-            active={activeTab === 'debts'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('debts');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={TrendingUp}
-            label="Investimentos"
-            active={activeTab === 'investments'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('investments');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={Wallet}
-            label="Carteira"
-            active={activeTab === 'portfolio'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('portfolio');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={PieChart}
-            label="Relatórios"
-            active={activeTab === 'reports'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('reports');
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={MessageSquare}
-            label="Assistente IA"
-            active={activeTab === 'assistant'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('assistant');
-              setIsAssistantOpen(true);
-              setIsSidebarOpen(false);
-            }}
-          />
-          <SidebarItem
-            icon={Settings}
-            label="Configurações"
-            active={activeTab === 'settings'}
-            collapsed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveTab('settings');
-              setIsSidebarOpen(false);
-            }}
-          />
+                <nav className={cn('flex-1 space-y-1 overflow-y-auto custom-scrollbar py-4', isSidebarCollapsed ? 'px-2' : 'px-4')}>
+          {MAIN_NAV_ITEMS.map((item) => (
+            <SidebarItem
+              key={`main-nav-${item.tab}`}
+              icon={item.icon}
+              label={item.label}
+              active={activeTab === item.tab}
+              collapsed={isSidebarCollapsed}
+              onClick={() => navigateToTab(item.tab)}
+            />
+          ))}
+
+          <div className={cn('my-3 border-t border-[var(--border-default)]', isSidebarCollapsed ? 'mx-1' : 'mx-2')} />
+
+          {SECONDARY_NAV_ITEMS.map((item) => (
+            <SidebarItem
+              key={`secondary-nav-${item.tab}`}
+              icon={item.icon}
+              label={item.label}
+              active={activeTab === item.tab}
+              collapsed={isSidebarCollapsed}
+              onClick={() => navigateToTab(item.tab, { openAssistant: item.tab === 'assistant' })}
+            />
+          ))}
         </nav>
 
         <div className="p-4">
@@ -12336,30 +12715,8 @@ React.useEffect(() => {
             >
               <Menu size={20} />
             </button>
-              <h2 className="max-w-[44vw] truncate text-base font-bold capitalize text-[var(--text-primary)] sm:max-w-[18rem] lg:max-w-none lg:text-xl">
-              {activeTab === 'dashboard'
-                ? 'Dashboard'
-                : activeTab === 'transactions'
-                ? 'Transações'
-                : activeTab === 'goals'
-                ? 'Metas'
-                : activeTab === 'debts'
-                ? 'Dívidas'
-                : activeTab === 'investments'
-                ? 'Investimentos'
-                : activeTab === 'portfolio'
-                ? 'Carteira'
-                : activeTab === 'reports'
-                ? 'Relatórios'
-                : activeTab === 'assistant'
-                ? 'Assistente IA'
-                : activeTab === 'agenda'
-                ? 'Calendario Financeiro'
-                : activeTab === 'integrations'
-                ? 'Integrações'
-                : activeTab === 'subscription'
-                ? 'Minha assinatura'
-                : 'Configurações'}
+                            <h2 className="max-w-[44vw] truncate text-base font-bold capitalize text-[var(--text-primary)] sm:max-w-[18rem] lg:max-w-none lg:text-xl">
+                {activeTabTitle}
               </h2>
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">
@@ -12540,13 +12897,49 @@ React.useEffect(() => {
               )}
             </div>
 
-            <div className="relative hidden xl:block">
+            <div className="relative hidden xl:block" ref={headerSearchRef}>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
               <input
                 type="text"
-                placeholder="Buscar..."
-                className="app-field rounded-xl py-2 pl-10 pr-4 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)] transition-all w-64"
+                value={headerSearchTerm}
+                placeholder="Ir para Dashboard, Transações, Calendário..."
+                onFocus={() => setIsHeaderSearchOpen(true)}
+                onChange={(event) => {
+                  setHeaderSearchTerm(event.target.value);
+                  setIsHeaderSearchOpen(true);
+                }}
+                onKeyDown={handleHeaderSearchKeyDown}
+                className="app-field w-72 rounded-xl py-2 pl-10 pr-4 text-xs text-[var(--text-primary)] transition-all focus:border-[var(--primary)] focus:outline-none"
               />
+
+              {isHeaderSearchOpen && (
+                <div className="theme-modal-surface absolute right-0 z-50 mt-2 w-[22rem] overflow-hidden rounded-2xl border border-[var(--border-default)] shadow-[var(--shadow-soft)]">
+                  <div className="border-b border-[var(--border-default)] px-3 py-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                      Navegar no produto
+                    </p>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto p-2">
+                    {headerSearchResults.length > 0 ? (
+                      headerSearchResults.map((item) => (
+                        <button
+                          key={`header-search-${item.tab}`}
+                          type="button"
+                          onClick={() => handleHeaderSearchSelect(item)}
+                          className="w-full rounded-xl px-3 py-2 text-left transition-colors hover:bg-[var(--bg-surface)]"
+                        >
+                          <p className="text-sm font-semibold text-[var(--text-primary)]">{item.label}</p>
+                          <p className="mt-1 text-xs text-[var(--text-secondary)]">{item.description}</p>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3 py-4 text-sm text-[var(--text-secondary)]">
+                        Nenhum destino encontrado para sua busca.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
               <button
@@ -12804,8 +13197,7 @@ React.useEffect(() => {
                       <div className="p-2">
                         <button
                           onClick={() => {
-                            setActiveTab('settings');
-                            setIsProfileMenuOpen(false);
+                            navigateToTab('settings');
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] transition-all"
                         >
@@ -12882,52 +13274,64 @@ React.useEffect(() => {
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'dashboard' && (
-                <DashboardView
-                  transactions={transactions}
-                  insights={dashboardInsights}
-                  projection={dashboardProjection}
-                  calendarReadModel={dashboardCalendarReadModel}
-                  totalBalance={totalBalance}
-                  onAddTransaction={handleOpenCreateTransaction}
-                  currentPlan={currentPlan}
-                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
-                />
+                <DashboardContainer>
+                  <DashboardView
+                    transactions={transactions}
+                    insights={dashboardInsights}
+                    projection={dashboardProjection}
+                    calendarReadModel={dashboardCalendarReadModel}
+                    totalBalance={totalBalance}
+                    onAddTransaction={handleOpenCreateTransaction}
+                    currentPlan={currentPlan}
+                    onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                  />
+                </DashboardContainer>
               )}
               {activeTab === 'transactions' && (
-                <TransactionsView
-                  transactions={transactions}
-                  onAddTransaction={handleOpenCreateTransaction}
-                  onEditTransaction={handleStartEditTransaction}
-                  onDeleteTransaction={handleDeleteTransaction}
-                />
+                <TransactionsContainer>
+                  <TransactionsView
+                    transactions={transactions}
+                    onAddTransaction={handleOpenCreateTransaction}
+                    onEditTransaction={handleStartEditTransaction}
+                    onDeleteTransaction={handleDeleteTransaction}
+                  />
+                </TransactionsContainer>
               )}
               {activeTab === 'goals' && (
-                <GoalsView
-                  goals={goals}
-                  onAddGoal={handleOpenCreateGoal}
-                  onEditGoal={handleStartEditGoal}
-                  onDeleteGoal={handleDeleteGoal}
-                />
+                <GoalsContainer>
+                  <GoalsView
+                    goals={goals}
+                    onAddGoal={handleOpenCreateGoal}
+                    onEditGoal={handleStartEditGoal}
+                    onDeleteGoal={handleDeleteGoal}
+                    formatCurrency={formatCurrency}
+                  />
+                </GoalsContainer>
               )}
               {activeTab === 'debts' && (
-                <DebtsView
-                  debts={debts}
-                  recurringDebts={recurringDebts}
-                  onAddDebt={handleOpenCreateDebt}
-                  onAddRecurringDebt={handleOpenCreateRecurringDebt}
-                  onEditDebt={handleStartEditDebt}
-                  onDeleteDebt={handleDeleteDebt}
-                  onEditRecurringDebt={handleStartEditRecurringDebt}
-                  onDeleteRecurringDebt={handleDeleteRecurringDebt}
-                />
+                <DebtsContainer>
+                  <DebtsView
+                    debts={debts}
+                    recurringDebts={recurringDebts}
+                    onAddDebt={handleOpenCreateDebt}
+                    onAddRecurringDebt={handleOpenCreateRecurringDebt}
+                    onEditDebt={handleStartEditDebt}
+                    onDeleteDebt={handleDeleteDebt}
+                    onEditRecurringDebt={handleStartEditRecurringDebt}
+                    onDeleteRecurringDebt={handleDeleteRecurringDebt}
+                  />
+                </DebtsContainer>
               )}
               {activeTab === 'investments' && (
-                <InvestmentsView
-                  investments={investments}
-                  onAddInvestment={handleOpenCreateInvestment}
-                  onEditInvestment={handleStartEditInvestment}
-                  onDeleteInvestment={handleDeleteInvestment}
-                />
+                <InvestmentsContainer>
+                  <InvestmentsView
+                    investments={investments}
+                    onAddInvestment={handleOpenCreateInvestment}
+                    onEditInvestment={handleStartEditInvestment}
+                    onDeleteInvestment={handleDeleteInvestment}
+                    formatCurrency={formatCurrency}
+                  />
+                </InvestmentsContainer>
               )}
               {activeTab === 'portfolio' && (
                 <PortfolioView
@@ -12944,7 +13348,7 @@ React.useEffect(() => {
                     const destinationWallet =
                       wallets.find((wallet) => wallet.name !== sourceWallet)?.name ?? '';
 
-                    setActiveTab('transactions');
+                    navigateToTab('transactions');
                     handleOpenCreateTransaction({
                       flowType: 'Transferência',
                       wallet: sourceWallet,
@@ -12954,18 +13358,18 @@ React.useEffect(() => {
                     });
                   }}
                   onAddInvestment={() => {
-                    setActiveTab('investments');
+                    navigateToTab('investments');
                     handleOpenCreateInvestment();
                   }}
                   onAddDebt={() => {
-                    setActiveTab('debts');
+                    navigateToTab('debts');
                     handleOpenCreateDebt();
                   }}
                   onViewWalletHistory={() => {
-                    setActiveTab('transactions');
+                    navigateToTab('transactions');
                   }}
                   onAdjustWalletBalance={(walletName) => {
-                    setActiveTab('transactions');
+                    navigateToTab('transactions');
                     handleOpenCreateTransaction({
                       flowType: 'Receita',
                       wallet: walletName ?? wallets[0]?.name ?? '',
@@ -12975,22 +13379,24 @@ React.useEffect(() => {
                     });
                   }}
                   onDeleteWallet={handleRequestDeleteWallet}
-                  onOpenInvestments={() => setActiveTab('investments')}
-                  onOpenDebts={() => setActiveTab('debts')}
-                  onOpenReports={() => setActiveTab('reports')}
+                  onOpenInvestments={() => navigateToTab('investments')}
+                  onOpenDebts={() => navigateToTab('debts')}
+                  onOpenReports={() => navigateToTab('reports')}
                   onUpgrade={() => void handleUpgrade('Pro Mensal')}
                   actionFeedback={portfolioFeedback}
                   onDismissFeedback={() => setPortfolioFeedback(null)}
                 />
               )}
               {activeTab === 'agenda' && (
-                <FinancialCalendarView
-                  currentPlan={currentPlan}
-                  activeWorkspaceId={activeWorkspaceId}
-                  getAuthHeaders={getAuthHeaders}
-                  onUpgrade={() => void handleUpgrade('Pro Mensal')}
-                  onNavigateTab={(tab) => setActiveTab(tab)}
-                />
+                <CalendarContainer>
+                  <FinancialCalendarView
+                    currentPlan={currentPlan}
+                    activeWorkspaceId={activeWorkspaceId}
+                    getAuthHeaders={getAuthHeaders}
+                    onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                    onNavigateTab={(tab) => navigateToTab(tab)}
+                  />
+                </CalendarContainer>
               )}
               {activeTab === 'reports' && (
                 <ReportsView
@@ -13044,11 +13450,12 @@ React.useEffect(() => {
               )}
 
               {activeTab === 'settings' && (
+                <SettingsContainer>
                 <div className="max-w-3xl space-y-6 animate-in fade-in duration-500">
                   <div className="flex items-center justify-between gap-4">
                     <h3 className="page-title-premium text-[var(--text-primary)]">Configurações</h3>
                     <button
-                      onClick={() => setActiveTab('integrations')}
+                      onClick={() => navigateToTab('integrations')}
                       className="app-button-secondary px-3 py-2 rounded-xl text-xs font-bold transition-all"
                     >
                       Abrir Integrações
@@ -13256,6 +13663,7 @@ React.useEffect(() => {
                     </div>
                   </div>
                 </div>
+                </SettingsContainer>
               )}
             </motion.div>
           </AnimatePresence>
@@ -13407,4 +13815,9 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
+
+
+
+
 

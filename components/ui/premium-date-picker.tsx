@@ -12,6 +12,7 @@ type PremiumDatePickerProps = {
   className?: string;
   disabled?: boolean;
   min?: string;
+  invalid?: boolean;
   'data-testid'?: string;
 };
 
@@ -36,6 +37,7 @@ export function PremiumDatePicker({
   className,
   disabled = false,
   min,
+  invalid = false,
   'data-testid': dataTestId,
 }: PremiumDatePickerProps) {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -63,7 +65,9 @@ export function PremiumDatePicker({
         onClick={handleOpenPicker}
         disabled={disabled}
         className={cn(
-          'app-field flex h-[42px] w-full items-center justify-between gap-3 rounded-xl px-4 text-left text-sm transition',
+          'app-field flex h-11 w-full items-center justify-between gap-3 rounded-xl px-4 text-left text-sm transition',
+          hasValue && 'app-field-filled',
+          invalid && 'app-field-error',
           disabled && 'cursor-not-allowed opacity-70'
         )}
         aria-label={hasValue ? `Selecionar data, atual ${formatDisplayDate(value)}` : 'Selecionar data'}
