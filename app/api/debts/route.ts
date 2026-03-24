@@ -116,7 +116,6 @@ export async function POST(req: Request) {
     if (isRecurringDebtCategory(category)) {
       return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
     }
-    const remainingAmount = originalAmount;
     const status = normalizeDebtStatus(undefined);
 
     if (!creditor) {
@@ -131,12 +130,14 @@ export async function POST(req: Request) {
     if (!dueDate && (!dueDay || dueDay < 1 || dueDay > 31)) {
       return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
     }
+    const resolvedOriginalAmount = originalAmount;
+    const remainingAmount = resolvedOriginalAmount;
 
     const debt = await prisma.debt.create({
       data: {
         workspace_id: context.workspaceId,
         creditor,
-        original_amount: originalAmount,
+        original_amount: resolvedOriginalAmount,
         remaining_amount: remainingAmount,
         interest_rate_monthly: interestRateMonthly,
         due_day: dueDate ? dueDate.getDate() : (dueDay as number),
