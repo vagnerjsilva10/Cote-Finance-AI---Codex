@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -266,7 +266,9 @@ type GoalFormData = {
 type DebtFormData = {
   creditor: string;
   originalAmount: string;
+  paidAmount: string;
   remainingAmount: string;
+  hasInterest: boolean;
   interestRateMonthly: string;
   dueDate: string;
   category: string;
@@ -1167,6 +1169,26 @@ const GOAL_CATEGORIES = [
 ];
 
 const DEBT_CATEGORIES: readonly string[] = [...CONVENTIONAL_DEBT_CATEGORIES];
+const RECURRING_DEBT_CATEGORY_DESCRIPTION_DEFAULTS: Record<string, string> = {
+  agua: 'Conta de agua',
+  luz: 'Conta de energia',
+  internet: 'Conta de internet',
+  aluguel: 'Conta de aluguel',
+  telefone: 'Conta de telefone',
+  condominio: 'Conta de condominio',
+  assinatura: 'Assinatura recorrente',
+};
+
+const normalizeRecurringDebtCategory = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+const getRecurringDebtDescriptionDefault = (category: string) =>
+  RECURRING_DEBT_CATEGORY_DESCRIPTION_DEFAULTS[normalizeRecurringDebtCategory(category)] ||
+  `Conta de ${category || 'despesa recorrente'}`;
 
 const INVESTMENT_TYPES = [
   'Renda fixa',
@@ -1262,7 +1284,7 @@ const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => 
     .toUpperCase();
 
   if (normalized === 'PIX') return 'PIX';
-  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÒO') return 'Cartão';
+  if (normalized === 'CARD' || normalized === 'CARTAO' || normalized === 'CARTÃ’O') return 'Cartão';
   if (normalized === 'CASH' || normalized === 'DINHEIRO') return 'Dinheiro';
   if (
     normalized === 'BANK_TRANSFER' ||
@@ -1412,7 +1434,7 @@ const getWorkspaceEventLabel = (eventType: string) => {
     'ai.classify.used': 'Classificação automática usada',
   };
 
-  return labels[eventType] || eventType.replace(/\./g, ' ⬢ ');
+  return labels[eventType] || eventType.replace(/\./g, ' • ');
 };
 
 const getWorkspaceEventMessage = (event: WorkspaceEventItem) => {
@@ -2627,7 +2649,7 @@ const DashboardView = ({
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{event.title}</p>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {formatIsoDateShort(event.date)} • {mapUpcomingStatusLabel(event.status)}
+                      {formatIsoDateShort(event.date)} â€¢ {mapUpcomingStatusLabel(event.status)}
                     </p>
                   </div>
                   <div className="text-right">
@@ -2705,7 +2727,7 @@ const DashboardView = ({
         <div className="app-surface-card lg:col-span-2 rounded-2xl p-5 sm:p-6">
           <div className="mb-6">
             <h3 className="card-title-premium text-[var(--text-primary)]">Receitas vs Despesas</h3>
-            <p className="text-sm text-[var(--text-secondary)]">Últimos 6 meses</p>
+            <p className="text-sm text-[var(--text-secondary)]">Ãšltimos 6 meses</p>
           </div>
 
           <div className="h-[280px] w-full sm:h-[320px]">
@@ -2832,7 +2854,7 @@ const DashboardView = ({
 
       <div className="app-table-shell overflow-hidden rounded-2xl">
         <div className="flex items-center justify-between border-b border-[var(--border-default)] px-6 py-4">
-          <h3 className="card-title-premium text-[var(--text-primary)]">Últimas transações</h3>
+          <h3 className="card-title-premium text-[var(--text-primary)]">Ãšltimas transações</h3>
           <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest">
             {recentTransactions.length} registros
           </span>
@@ -3436,9 +3458,9 @@ const IntegrationsView = ({
                   {[
                     { label: 'Número vinculado', value: linkedPhoneNumber || 'Nenhum número salvo' },
                     { label: 'Status atual', value: connectionLabel },
-                    { label: 'Última tentativa', value: lastAttemptLabel },
-                    { label: 'Último teste', value: lastTestLabel },
-                    { label: 'Último erro', value: lastErrorLabel },
+                    { label: 'Ãšltima tentativa', value: lastAttemptLabel },
+                    { label: 'Ãšltimo teste', value: lastTestLabel },
+                    { label: 'Ãšltimo erro', value: lastErrorLabel },
                     { label: 'Ação disponível', value: nextActionLabel },
                   ].map((item) => (
                     <div
@@ -3713,8 +3735,12 @@ type DebtsViewProps = {
   onAddDebt: () => void;
   onAddRecurringDebt: (category?: string) => void;
   onEditDebt: (id: string | number) => void;
+  onRegisterDebtPayment: (id: string | number, amount: number, paymentDate: string) => Promise<void> | void;
+  onSettleDebt: (id: string | number) => Promise<void> | void;
+  onReopenDebt: (id: string | number) => Promise<void> | void;
   onDeleteDebt: (id: string | number) => void;
   onEditRecurringDebt: (id: string | number) => void;
+  onToggleRecurringDebtStatus: (id: string | number) => Promise<void> | void;
   onDeleteRecurringDebt: (id: string | number) => void;
   feedbackMessage?: string | null;
   onDismissFeedback?: () => void;
@@ -3725,8 +3751,12 @@ const DebtsView = ({
   onAddDebt,
   onAddRecurringDebt,
   onEditDebt,
+  onRegisterDebtPayment,
+  onSettleDebt,
+  onReopenDebt,
   onDeleteDebt,
   onEditRecurringDebt,
+  onToggleRecurringDebtStatus,
   onDeleteRecurringDebt,
   feedbackMessage = null,
   onDismissFeedback,
@@ -3735,18 +3765,37 @@ const DebtsView = ({
     debts.length === 0 && recurringDebts.length > 0 ? 'recurring' : 'single'
   );
   const [isCreateChooserOpen, setIsCreateChooserOpen] = React.useState(false);
+  const [paymentTargetDebtId, setPaymentTargetDebtId] = React.useState<string | number | null>(null);
+  const [paymentAmount, setPaymentAmount] = React.useState('');
+  const [paymentDate, setPaymentDate] = React.useState(toInputDateValue(new Date()));
+  const [isSubmittingPayment, setIsSubmittingPayment] = React.useState(false);
+  const [paymentError, setPaymentError] = React.useState<string | null>(null);
   const totalOriginal = debts.reduce((acc, debt) => acc + debt.originalAmount, 0);
   const totalRemaining = debts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
   const totalPaid = Math.max(0, totalOriginal - totalRemaining);
   const progress = totalOriginal > 0 ? (totalPaid / totalOriginal) * 100 : 0;
   const overdueDebts = debts.filter((debt) => debt.status === 'Atrasada');
-  const paidDebts = debts.filter((debt) => debt.status === 'Quitada').length;
+  const openDebts = debts.filter((debt) => debt.remainingAmount > 0);
   const activeRecurringDebts = recurringDebts.filter((debt) => debt.status === 'Ativa');
-  const recurringMonthlyTotal = activeRecurringDebts.reduce((acc, debt) => acc + debt.amount, 0);
+  const recurringMonthlyTotal = activeRecurringDebts.reduce((acc, debt) => {
+    const interval = Math.max(1, debt.interval || 1);
+    if (debt.frequency === 'WEEKLY') return acc + (debt.amount * 52) / 12 / interval;
+    if (debt.frequency === 'YEARLY') return acc + debt.amount / (12 * interval);
+    if (debt.frequency === 'QUARTERLY') return acc + debt.amount / (3 * interval);
+    return acc + debt.amount / interval;
+  }, 0);
   const nextRecurringCharge = [...activeRecurringDebts].sort(
     (left, right) => new Date(left.nextDueDate).getTime() - new Date(right.nextDueDate).getTime()
   )[0] ?? null;
-  const totalRegisteredItems = debts.length + recurringDebts.length;
+  const overallProgress =
+    openDebts.length > 0
+      ? openDebts.reduce((acc, debt) => acc + Math.max(0, Math.min(100, ((debt.originalAmount - debt.remainingAmount) / Math.max(1, debt.originalAmount)) * 100)), 0) / openDebts.length
+      : progress;
+  const paymentTargetDebt = paymentTargetDebtId === null ? null : debts.find((debt) => debt.id === paymentTargetDebtId) ?? null;
+  const parsedPaymentAmount = parseMoneyInput(paymentAmount);
+  const paymentAmountInvalid =
+    parsedPaymentAmount <= 0 ||
+    (paymentTargetDebt ? parsedPaymentAmount > Math.max(0, paymentTargetDebt.remainingAmount) : false);
   const getDebtStatusTone = (status: Debt['status']) => {
     if (status === 'Quitada') return 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
     if (status === 'Atrasada') return 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]';
@@ -3766,6 +3815,32 @@ const DebtsView = ({
     setIsCreateChooserOpen(false);
     onAddRecurringDebt(category);
   };
+  const openPaymentFlow = (debtId: string | number, remainingAmount: number) => {
+    setPaymentTargetDebtId(debtId);
+    setPaymentAmount(formatMoneyInput(Math.max(0, remainingAmount)));
+    setPaymentDate(toInputDateValue(new Date()));
+    setPaymentError(null);
+  };
+  const closePaymentFlow = () => {
+    if (isSubmittingPayment) return;
+    setPaymentTargetDebtId(null);
+    setPaymentAmount('');
+    setPaymentError(null);
+  };
+  const handleSubmitPayment = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!paymentTargetDebt || isSubmittingPayment || paymentAmountInvalid) return;
+    setIsSubmittingPayment(true);
+    setPaymentError(null);
+    try {
+      await onRegisterDebtPayment(paymentTargetDebt.id, parsedPaymentAmount, paymentDate);
+      closePaymentFlow();
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Falha ao registrar pagamento.');
+    } finally {
+      setIsSubmittingPayment(false);
+    }
+  };
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)] lg:p-7">
@@ -3781,27 +3856,34 @@ const DebtsView = ({
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Total em aberto</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining + recurringMonthlyTotal)}</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Dívida total</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining)}</p>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {recurringMonthlyTotal > 0
-                    ? `${formatCurrency(recurringMonthlyTotal)} em recorrências ativas`
-                    : 'Sem recorrências ativas no momento'}
+                  {openDebts.length > 0 ? `${openDebts.length} dívida(s) ativa(s)` : 'Sem dívidas ativas no momento'}
                 </p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalPaid)}</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Compromisso mensal</p>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(recurringMonthlyTotal)}</p>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {paidDebts > 0 ? `${paidDebts} dívida(s) j? quitadas` : 'Ainda não h? dívidas quitadas'}
+                  {activeRecurringDebts.length > 0
+                    ? `${activeRecurringDebts.length} conta(s) fixa(s) ativa(s)`
+                    : 'Sem contas fixas ativas'}
                 </p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Itens cadastrados</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{totalRegisteredItems}</p>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {debts.length} dívida(s) única(s) e {recurringDebts.length} recorrência(s)
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Progresso geral</p>
+                  {overdueDebts.length > 0 ? (
+                    <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--danger)]">
+                      {overdueDebts.length} vencida(s)
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{overallProgress.toFixed(1)}%</p>
+                <div className="mt-3 h-2 rounded-full bg-[var(--bg-surface-elevated)]">
+                  <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(overallProgress, 100)}%` }} />
+                </div>
               </div>
             </div>
           </div>
@@ -3909,6 +3991,9 @@ const DebtsView = ({
             <div className="grid gap-4 xl:grid-cols-2">
               {debts.map((debt) => {
                 const paidAmount = Math.max(0, debt.originalAmount - debt.remainingAmount);
+                const debtProgress =
+                  debt.originalAmount > 0 ? Math.max(0, Math.min(100, (paidAmount / debt.originalAmount) * 100)) : 0;
+                const isDebtSettled = debt.remainingAmount <= 0;
                 return (
                   <article
                     key={debt.id}
@@ -3925,12 +4010,9 @@ const DebtsView = ({
                             {debt.status}
                           </span>
                         </div>
-                        <p className="text-sm text-[var(--text-secondary)]">{debt.category} - vence em {formatDebtDueDateLabel(debt)}</p>
+                        <p className="text-sm text-[var(--text-secondary)]">{debt.category}</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Próximo vencimento: {formatDebtDueDateLabel(debt)}</p>
                         <div className="grid gap-3 sm:grid-cols-3">
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Em aberto</p>
-                            <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.remainingAmount)}</p>
-                          </div>
                           <div>
                             <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor total</p>
                             <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.originalAmount)}</p>
@@ -3939,12 +4021,43 @@ const DebtsView = ({
                             <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Quitado</p>
                             <p className="mt-1 text-base font-bold text-[var(--text-secondary)]">{formatCurrency(paidAmount)}</p>
                           </div>
+                          <div>
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Restante</p>
+                            <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.remainingAmount)}</p>
+                          </div>
                         </div>
+                        {debt.originalAmount > 0 ? (
+                          <div>
+                            <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-secondary)]">
+                              <span>{debtProgress.toFixed(1)}% quitado</span>
+                              <span>{formatCurrency(paidAmount)} / {formatCurrency(debt.originalAmount)}</span>
+                            </div>
+                            <div className="h-2 rounded-full bg-[var(--bg-surface-elevated)]">
+                              <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(debtProgress, 100)}%` }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-[var(--text-muted)]">Aguardando definição do valor total.</p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                         <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
                           <Pencil size={12} /> Editar
                         </button>
+                        {!isDebtSettled ? (
+                          <button onClick={() => openPaymentFlow(debt.id, debt.remainingAmount)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                            Registrar pagamento
+                          </button>
+                        ) : null}
+                        {!isDebtSettled ? (
+                          <button onClick={() => void onSettleDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)]">
+                            Quitar
+                          </button>
+                        ) : (
+                          <button onClick={() => void onReopenDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
+                            Reabrir
+                          </button>
+                        )}
                         <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                           <Trash2 size={12} /> Excluir
                         </button>
@@ -4010,7 +4123,7 @@ const DebtsView = ({
                       <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)]">{preset.description}</p>
                     </div>
                     <span className="rounded-full bg-[color:var(--primary-soft)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-                      Dia {preset.dueDay}
+                      Sugestão
                     </span>
                   </div>
                 </button>
@@ -4076,6 +4189,11 @@ const DebtsView = ({
                       <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
                         <Pencil size={12} /> Editar
                       </button>
+                      {debt.source === 'recurring_debt' ? (
+                        <button onClick={() => void onToggleRecurringDebtStatus(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                          {debt.status === 'Ativa' ? 'Pausar' : 'Ativar'}
+                        </button>
+                      ) : null}
                       <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                         <Trash2 size={12} /> Excluir
                       </button>
@@ -4087,6 +4205,77 @@ const DebtsView = ({
           )}
         </section>
       )}
+      {paymentTargetDebt ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Fechar registro de pagamento"
+            onClick={closePaymentFlow}
+            className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
+          />
+          <div className="relative z-10 w-full max-w-lg rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Registrar pagamento</p>
+                <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">{paymentTargetDebt.creditor}</h4>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                  Restante atual: {formatCurrency(paymentTargetDebt.remainingAmount)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closePaymentFlow}
+                className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+              >
+                Fechar
+              </button>
+            </div>
+            <form className="space-y-4" onSubmit={handleSubmitPayment}>
+              <FormField
+                label="Valor pago"
+                required
+                error={paymentAmountInvalid ? 'Informe um valor válido dentro do saldo restante.' : null}
+              >
+                <MoneyInput
+                  value={paymentAmount}
+                  onChange={setPaymentAmount}
+                  placeholder="R$ 0,00"
+                  className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', paymentAmountInvalid && 'app-field-error')}
+                />
+              </FormField>
+              <FormField label="Data do pagamento">
+                <PremiumDatePicker
+                  value={paymentDate}
+                  onChange={setPaymentDate}
+                  placeholder="Selecione a data"
+                />
+              </FormField>
+              {paymentError ? (
+                <p className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs text-[var(--danger)]">
+                  {paymentError}
+                </p>
+              ) : null}
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={closePaymentFlow}
+                  disabled={isSubmittingPayment}
+                  className="app-button-secondary rounded-xl px-4 py-2 text-sm font-bold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingPayment || paymentAmountInvalid}
+                  className="app-button-primary rounded-xl px-4 py-2 text-sm font-bold"
+                >
+                  {isSubmittingPayment ? 'Salvando...' : 'Registrar pagamento'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
       {isCreateChooserOpen ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
           <button
@@ -6086,7 +6275,9 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
       return {
         creditor: initialDraft?.creditor ?? '',
         originalAmount: initialDraft?.originalAmount ?? '',
+        paidAmount: initialDraft?.paidAmount ?? '0',
         remainingAmount: initialDraft?.remainingAmount ?? '',
+        hasInterest: initialDraft?.hasInterest ?? Number(initialDraft?.interestRateMonthly ?? 0) > 0,
         interestRateMonthly: initialDraft?.interestRateMonthly ?? '0',
         dueDate: initialDraft?.dueDate ?? getDefaultDebtDueDateInput(),
         category: draftCategory,
@@ -6097,7 +6288,9 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
     return {
       creditor: initialData.creditor,
       originalAmount: formatMoneyInput(initialData.originalAmount),
+      paidAmount: formatMoneyInput(Math.max(0, initialData.originalAmount - initialData.remainingAmount)),
       remainingAmount: formatMoneyInput(initialData.remainingAmount),
+      hasInterest: initialData.interestRateMonthly > 0,
       interestRateMonthly: String(initialData.interestRateMonthly),
       dueDate: initialData.dueDate ?? toInputDateValue(getDebtDueDateValue(initialData)),
       category: initialData.category,
@@ -6110,10 +6303,11 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const creditorId = React.useId();
+  const paidId = React.useId();
+  const hasInterestId = React.useId();
   const interestId = React.useId();
   const dueDateId = React.useId();
   const categoryId = React.useId();
-  const statusId = React.useId();
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -6125,17 +6319,19 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
 
   if (!isOpen) return null;
 
-  const isEditingDebt = Boolean(initialData);
+  const originalAmountValue = parseMoneyInput(formData.originalAmount);
+  const paidAmountValue = parseMoneyInput(formData.paidAmount);
   const creditorInvalid = hasAttemptedSubmit && formData.creditor.trim().length === 0;
-  const originalInvalid = hasAttemptedSubmit && parseMoneyInput(formData.originalAmount) <= 0;
-  const remainingInvalid = hasAttemptedSubmit && isEditingDebt && parseMoneyInput(formData.remainingAmount) < 0;
-  const interestInvalid = hasAttemptedSubmit && Number(formData.interestRateMonthly) < 0;
+  const originalInvalid = hasAttemptedSubmit && originalAmountValue <= 0;
+  const paidInvalid =
+    hasAttemptedSubmit && (paidAmountValue < 0 || (originalAmountValue > 0 && paidAmountValue > originalAmountValue));
+  const interestInvalid = hasAttemptedSubmit && formData.hasInterest && Number(formData.interestRateMonthly) < 0;
   const dueDateInvalid = hasAttemptedSubmit && !Boolean(parseInputDateValue(formData.dueDate));
 
   const isValid =
     !creditorInvalid &&
     !originalInvalid &&
-    !remainingInvalid &&
+    !paidInvalid &&
     !interestInvalid &&
     !dueDateInvalid;
 
@@ -6192,7 +6388,7 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
             </>
           }
         >
-          <FormField label="Credor" htmlFor={creditorId} required error={creditorInvalid ? 'Informe o credor.' : null}>
+          <FormField label="Descrição" htmlFor={creditorId} required error={creditorInvalid ? 'Informe a descrição da dívida.' : null}>
             <input
               id={creditorId}
               type="text"
@@ -6210,6 +6406,19 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
                 onChange={(value) => setFormData((prev) => ({ ...prev, originalAmount: value }))}
                 placeholder="R$ 0,00"
                 className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', originalInvalid && 'app-field-error')}
+              />
+            </FormField>
+
+            <FormField
+              label="Valor já pago"
+              htmlFor={paidId}
+              error={paidInvalid ? 'Informe um valor entre zero e o valor total.' : null}
+            >
+              <MoneyInput
+                value={formData.paidAmount}
+                onChange={(value) => setFormData((prev) => ({ ...prev, paidAmount: value }))}
+                placeholder="R$ 0,00"
+                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', paidInvalid && 'app-field-error')}
               />
             </FormField>
 
@@ -6238,47 +6447,35 @@ const DebtModal = ({ isOpen, onClose, onSubmit, initialData = null, initialDraft
               </select>
             </FormField>
 
-            <FormField label="Juros (% ao mês) (opcional)" htmlFor={interestId} error={interestInvalid ? 'A taxa de juros não pode ser negativa.' : null}>
-              <input
-                id={interestId}
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.interestRateMonthly}
-                onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
-                className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', interestInvalid && 'app-field-error')}
-              />
-            </FormField>
-
-            {isEditingDebt ? (
-              <FormField label="Saldo em aberto" error={remainingInvalid ? 'O saldo em aberto não pode ser negativo.' : null}>
-                <MoneyInput
-                  value={formData.remainingAmount}
-                  onChange={(value) => setFormData((prev) => ({ ...prev, remainingAmount: value }))}
-                  placeholder="R$ 0,00"
-                  className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', remainingInvalid && 'app-field-error')}
-                />
-              </FormField>
-            ) : null}
-
-            {isEditingDebt ? (
-              <FormField label="Status" htmlFor={statusId}>
-                <select
-                  id={statusId}
-                  value={formData.status}
-                  onChange={(e) =>
+            <FormField label="Possui juros?" htmlFor={hasInterestId}>
+              <label className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <input
+                  id={hasInterestId}
+                  type="checkbox"
+                  checked={formData.hasInterest}
+                  onChange={(event) =>
                     setFormData((prev) => ({
                       ...prev,
-                      status: e.target.value as DebtFormData['status'],
+                      hasInterest: event.target.checked,
+                      interestRateMonthly: event.target.checked ? prev.interestRateMonthly : '0',
                     }))
                   }
-                  className="app-field w-full rounded-xl px-4 py-2 text-sm"
-                >
-                  <option>Em aberto</option>
-                  <option>Quitada</option>
-                  <option>Atrasada</option>
-                  <option>Parcelada</option>
-                </select>
+                  className="size-4 rounded border-[var(--border-default)] bg-[var(--bg-app)]"
+                />
+                Aplicar taxa de juros mensal
+              </label>
+            </FormField>
+            {formData.hasInterest ? (
+              <FormField label="Juros (% ao mês) (opcional)" htmlFor={interestId} error={interestInvalid ? 'A taxa de juros não pode ser negativa.' : null}>
+                <input
+                  id={interestId}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.interestRateMonthly}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, interestRateMonthly: e.target.value }))}
+                  className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', interestInvalid && 'app-field-error')}
+                />
               </FormField>
             ) : null}
           </FormGrid>
@@ -6310,7 +6507,7 @@ const RecurringDebtModal = ({
           ? initialDraft.category
           : RECURRING_DEBT_PRESETS[0]?.category ?? 'Água';
       return {
-        creditor: initialDraft?.creditor ?? category,
+        creditor: initialDraft?.creditor ?? getRecurringDebtDescriptionDefault(category),
         amount: initialDraft?.amount ?? '',
         category,
         frequency: initialDraft?.frequency ?? 'MONTHLY',
@@ -6343,6 +6540,7 @@ const RecurringDebtModal = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [isDescriptionManuallyEdited, setIsDescriptionManuallyEdited] = React.useState(false);
   const descriptionId = React.useId();
   const frequencyId = React.useId();
   const intervalId = React.useId();
@@ -6352,7 +6550,9 @@ const RecurringDebtModal = ({
 
   React.useEffect(() => {
     if (!isOpen) return;
-    setFormData(getInitialFormData());
+    const initialFormData = getInitialFormData();
+    setFormData(initialFormData);
+    setIsDescriptionManuallyEdited(initialFormData.creditor.trim() !== getRecurringDebtDescriptionDefault(initialFormData.category));
     setIsSubmitting(false);
     setHasAttemptedSubmit(false);
     setSubmitError(null);
@@ -6361,6 +6561,7 @@ const RecurringDebtModal = ({
   if (!isOpen) return null;
 
   const isWeekly = formData.frequency === 'WEEKLY';
+  const isMonthly = formData.frequency === 'MONTHLY';
   const frequencyIntervalUnit =
     formData.frequency === 'MONTHLY'
       ? 'mês(es)'
@@ -6382,7 +6583,7 @@ const RecurringDebtModal = ({
   const descriptionInvalid = hasAttemptedSubmit && formData.creditor.trim().length === 0;
   const amountInvalid = hasAttemptedSubmit && parseMoneyInput(formData.amount) <= 0;
   const categoryInvalid = hasAttemptedSubmit && formData.category.trim().length === 0;
-  const intervalInvalid = hasAttemptedSubmit && Number(formData.interval) < 1;
+  const intervalInvalid = hasAttemptedSubmit && !isMonthly && Number(formData.interval) < 1;
   const startDateInvalid = hasAttemptedSubmit && formData.startDate.trim().length === 0;
 
   const isValid =
@@ -6456,7 +6657,11 @@ const RecurringDebtModal = ({
                 id={descriptionId}
                 type="text"
                 value={formData.creditor}
-                onChange={(e) => setFormData((prev) => ({ ...prev, creditor: e.target.value }))}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  setFormData((prev) => ({ ...prev, creditor: nextValue }));
+                  setIsDescriptionManuallyEdited(nextValue.trim() !== getRecurringDebtDescriptionDefault(formData.category));
+                }}
                 className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', descriptionInvalid && 'app-field-error')}
                 placeholder="Ex: Aluguel"
               />
@@ -6474,7 +6679,19 @@ const RecurringDebtModal = ({
             <FormField label="Categoria" required error={categoryInvalid ? 'Selecione uma categoria.' : null}>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => {
+                    const nextCategory = e.target.value;
+                    const nextDescription = isDescriptionManuallyEdited
+                      ? prev.creditor
+                      : getRecurringDebtDescriptionDefault(nextCategory);
+                    return {
+                      ...prev,
+                      category: nextCategory,
+                      creditor: nextDescription,
+                    };
+                  })
+                }
                 className={cn('app-field w-full rounded-xl px-4 py-2 text-sm', categoryInvalid && 'app-field-error')}
               >
                 {[...RECURRING_DEBT_PRESETS.map((item) => item.category), 'Outros']
@@ -6500,6 +6717,7 @@ const RecurringDebtModal = ({
                     return {
                       ...prev,
                       frequency: nextFrequency,
+                      interval: nextFrequency === 'MONTHLY' ? '1' : prev.interval,
                       startDate: nextStartDate,
                     };
                   })
@@ -6514,19 +6732,21 @@ const RecurringDebtModal = ({
               </select>
             </FormField>
 
-            <FormField label="A cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo mínimo de 1.' : null}>
-              <div className="flex items-center gap-2">
-                <input
-                  id={intervalId}
-                  type="number"
-                  min={1}
-                  value={formData.interval}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
-                  className={cn('app-field w-24 rounded-xl px-4 py-2 text-sm', intervalInvalid && 'app-field-error')}
-                />
-                <span className="text-sm font-semibold text-[var(--text-secondary)]">{frequencyIntervalUnit}</span>
-              </div>
-            </FormField>
+            {!isMonthly ? (
+              <FormField label="A cada" htmlFor={intervalId} required error={intervalInvalid ? 'Use um intervalo mínimo de 1.' : null}>
+                <div className="flex items-center gap-2">
+                  <input
+                    id={intervalId}
+                    type="number"
+                    min={1}
+                    value={formData.interval}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, interval: e.target.value }))}
+                    className={cn('app-field w-24 rounded-xl px-4 py-2 text-sm', intervalInvalid && 'app-field-error')}
+                  />
+                  <span className="text-sm font-semibold text-[var(--text-secondary)]">{frequencyIntervalUnit}</span>
+                </div>
+              </FormField>
+            ) : null}
 
             <FormField label="Primeira cobrança" htmlFor={startDateId} required error={startDateInvalid ? 'Informe a primeira cobrança.' : null}>
               <PremiumDatePicker
@@ -11127,20 +11347,34 @@ React.useEffect(() => {
     })();
   };
 
+  const deriveDebtStatusFromRemainingAndDueDate = React.useCallback(
+    (remainingAmount: number, dueDate: string | null | undefined): DebtFormData['status'] => {
+      if (remainingAmount <= 0) return 'Quitada';
+      const parsedDueDate = parseInputDateValue(dueDate ?? null);
+      if (parsedDueDate && startOfDay(parsedDueDate).getTime() < startOfDay(new Date()).getTime()) {
+        return 'Atrasada';
+      }
+      return 'Em aberto';
+    },
+    []
+  );
+
   const handleSubmitDebt = async (debt: DebtFormData) => {
     const parsedDueDate = parseInputDateValue(debt.dueDate);
     const parsedOriginalAmount = parseMoneyInput(debt.originalAmount);
-    const isEditingDebt = Boolean(editingDebtId);
+    const parsedPaidAmount = parseMoneyInput(debt.paidAmount);
+    const parsedRemainingAmount = Math.max(0, parsedOriginalAmount - parsedPaidAmount);
+    const derivedStatus = deriveDebtStatusFromRemainingAndDueDate(parsedRemainingAmount, parsedDueDate ? toInputDateValue(parsedDueDate) : null);
     const payload = {
       ...(editingDebtId ? { id: String(editingDebtId) } : {}),
       creditor: debt.creditor.trim(),
       originalAmount: parsedOriginalAmount,
-      remainingAmount: isEditingDebt ? parseMoneyInput(debt.remainingAmount) : parsedOriginalAmount,
-      interestRateMonthly: Number(debt.interestRateMonthly || 0),
+      remainingAmount: parsedRemainingAmount,
+      interestRateMonthly: debt.hasInterest ? Number(debt.interestRateMonthly || 0) : 0,
       dueDate: parsedDueDate ? toInputDateValue(parsedDueDate) : null,
       dueDay: parsedDueDate ? parsedDueDate.getDate() : undefined,
       category: debt.category,
-      status: isEditingDebt ? debt.status : 'Em aberto',
+      status: derivedStatus,
     };
 
     const response = await fetch('/api/debts', {
@@ -11179,7 +11413,7 @@ React.useEffect(() => {
     setDebtFeedbackMessage(null);
     setEditingRecurringDebtId(null);
     setRecurringDebtDraft({
-      creditor: resolvedCategory,
+      creditor: getRecurringDebtDescriptionDefault(resolvedCategory),
       category: resolvedCategory,
       frequency: 'MONTHLY',
       interval: '1',
@@ -11225,6 +11459,85 @@ React.useEffect(() => {
     })();
   };
 
+  const handleRegisterDebtPayment = async (id: string | number, amount: number, paymentDate: string) => {
+    const targetDebt = debts.find((debt) => debt.id === id);
+    if (!targetDebt) {
+      throw new Error('Dívida não encontrada para registrar pagamento.');
+    }
+    if (!(amount > 0)) {
+      throw new Error('Informe um valor de pagamento maior que zero.');
+    }
+    const nextRemainingAmount = Math.max(0, targetDebt.remainingAmount - amount);
+    const nextStatus = deriveDebtStatusFromRemainingAndDueDate(nextRemainingAmount, targetDebt.dueDate ?? paymentDate);
+
+    const response = await fetch('/api/debts', {
+      method: 'PATCH',
+      headers: await getAuthHeaders(true),
+      body: JSON.stringify({
+        id: String(id),
+        remainingAmount: nextRemainingAmount,
+        status: nextStatus,
+      }),
+    });
+    const responseData = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao registrar pagamento.');
+    }
+
+    setDebtFeedbackMessage('Pagamento registrado com sucesso.');
+    await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+  };
+
+  const handleSettleDebt = async (id: string | number) => {
+    try {
+      const response = await fetch('/api/debts', {
+        method: 'PATCH',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({
+          id: String(id),
+          remainingAmount: 0,
+          status: 'Quitada',
+        }),
+      });
+      const responseData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao quitar dívida.');
+      }
+      setDebtFeedbackMessage('Dívida quitada com sucesso.');
+      await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+    } catch (error) {
+      showUiFeedback(error instanceof Error ? error.message : 'Falha ao quitar dívida.');
+    }
+  };
+
+  const handleReopenDebt = async (id: string | number) => {
+    try {
+      const targetDebt = debts.find((debt) => debt.id === id);
+      if (!targetDebt) {
+        throw new Error('Dívida não encontrada para reabrir.');
+      }
+      const nextRemainingAmount = Math.max(0, targetDebt.originalAmount);
+      const nextStatus = deriveDebtStatusFromRemainingAndDueDate(nextRemainingAmount, targetDebt.dueDate);
+      const response = await fetch('/api/debts', {
+        method: 'PATCH',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({
+          id: String(id),
+          remainingAmount: nextRemainingAmount,
+          status: nextStatus,
+        }),
+      });
+      const responseData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao reabrir dívida.');
+      }
+      setDebtFeedbackMessage('Dívida reaberta com sucesso.');
+      await Promise.all([refreshDebtsResource(), refreshProjectionAndCalendarResource()]);
+    } catch (error) {
+      showUiFeedback(error instanceof Error ? error.message : 'Falha ao reabrir dívida.');
+    }
+  };
+
   const handleSubmitRecurringDebt = async (debt: RecurringDebtFormData) => {
     const parsedStartDate = parseInputDateValue(debt.startDate);
     const derivedMonthlyDueDay = parsedStartDate?.getDate() ?? null;
@@ -11244,7 +11557,7 @@ React.useEffect(() => {
       amount: parseMoneyInput(debt.amount),
       category: debt.category,
       frequency: debt.frequency,
-      interval: Number(debt.interval || 1),
+      interval: debt.frequency === 'MONTHLY' ? 1 : Number(debt.interval || 1),
       startDate: debt.startDate,
       endDate: debt.endDate.trim() ? debt.endDate : null,
       dueDay: debt.frequency === 'MONTHLY' ? monthlyDueDay : null,
@@ -11311,6 +11624,34 @@ React.useEffect(() => {
         showUiFeedback(error instanceof Error ? error.message : 'Falha ao excluir recorrência.');
       }
     })();
+  };
+
+  const handleToggleRecurringDebtStatus = async (id: string | number) => {
+    try {
+      const targetDebt = recurringDebts.find((debt) => debt.id === id);
+      if (!targetDebt) {
+        throw new Error('Recorrência não encontrada.');
+      }
+      const nextStatus = targetDebt.status === 'Ativa' ? 'Pausada' : 'Ativa';
+      const response = await fetch('/api/recurring-debts', {
+        method: 'PATCH',
+        headers: await getAuthHeaders(true),
+        body: JSON.stringify({
+          id: String(id),
+          source: targetDebt.source,
+          legacyDebtId: targetDebt.legacyDebtId ?? null,
+          status: nextStatus,
+        }),
+      });
+      const responseData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao atualizar status da recorrência.');
+      }
+      setDebtFeedbackMessage(nextStatus === 'Ativa' ? 'Recorrência reativada com sucesso.' : 'Recorrência pausada com sucesso.');
+      await Promise.all([refreshRecurringDebtsResource(), refreshProjectionAndCalendarResource()]);
+    } catch (error) {
+      showUiFeedback(error instanceof Error ? error.message : 'Falha ao atualizar status da recorrência.');
+    }
   };
 
   const handleOpenCreateWorkspaceModal = () => {
@@ -12521,11 +12862,11 @@ React.useEffect(() => {
                   </div>
                   <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-5">
                     <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-                      <li>⬢ insights financeiros completos</li>
-                      <li>⬢ previsões de saldo</li>
-                      <li>⬢ alertas de gastos fora do padrão</li>
-                      <li>⬢ resumos e lembretes no WhatsApp</li>
-                      <li>⬢ relatórios avançados</li>
+                      <li>• insights financeiros completos</li>
+                      <li>• previsões de saldo</li>
+                      <li>• alertas de gastos fora do padrão</li>
+                      <li>• resumos e lembretes no WhatsApp</li>
+                      <li>• relatórios avançados</li>
                     </ul>
                   </div>
                   <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
@@ -13373,8 +13714,12 @@ React.useEffect(() => {
                     onAddDebt={handleOpenCreateDebt}
                     onAddRecurringDebt={handleOpenCreateRecurringDebt}
                     onEditDebt={handleStartEditDebt}
+                    onRegisterDebtPayment={handleRegisterDebtPayment}
+                    onSettleDebt={handleSettleDebt}
+                    onReopenDebt={handleReopenDebt}
                     onDeleteDebt={handleDeleteDebt}
                     onEditRecurringDebt={handleStartEditRecurringDebt}
+                    onToggleRecurringDebtStatus={handleToggleRecurringDebtStatus}
                     onDeleteRecurringDebt={handleDeleteRecurringDebt}
                   />
                 </DebtsContainer>

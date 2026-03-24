@@ -109,29 +109,44 @@ export async function POST(req: Request) {
 
     const creditor = (body.creditor || '').trim();
     const originalAmount = parseAmount(body.originalAmount);
-    const interestRateMonthly = parseAmount(body.interestRateMonthly);
+    const remainingAmountInput = parseAmount(body.remainingAmount);
+    const interestRateMonthlyInput = parseAmount(body.interestRateMonthly);
+    const interestRateMonthly = interestRateMonthlyInput === null ? 0 : interestRateMonthlyInput;
     const dueDay = parseInteger(body.dueDay);
     const dueDate = parseDate(body.dueDate);
     const category = (body.category || '').trim() || 'Outros';
     if (isRecurringDebtCategory(category)) {
       return NextResponse.json({ error: 'Use a área de recorrências para contas mensais e demais dívidas recorrentes.' }, { status: 400 });
     }
-    const status = normalizeDebtStatus(undefined);
-
     if (!creditor) {
       return NextResponse.json({ error: 'Creditor is required' }, { status: 400 });
     }
     if (!originalAmount || originalAmount <= 0) {
       return NextResponse.json({ error: 'Invalid original amount' }, { status: 400 });
     }
-    if (interestRateMonthly === null || interestRateMonthly < 0) {
+    if (interestRateMonthly < 0) {
       return NextResponse.json({ error: 'Invalid monthly interest rate' }, { status: 400 });
     }
     if (!dueDate && (!dueDay || dueDay < 1 || dueDay > 31)) {
       return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
     }
     const resolvedOriginalAmount = originalAmount;
-    const remainingAmount = resolvedOriginalAmount;
+    const remainingAmount =
+      remainingAmountInput !== null ? remainingAmountInput : resolvedOriginalAmount;
+    if (remainingAmount < 0 || remainingAmount > resolvedOriginalAmount) {
+      return NextResponse.json({ error: 'Invalid remaining amount' }, { status: 400 });
+    }
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const dueDateStart = dueDate
+      ? new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate())
+      : null;
+    const status =
+      remainingAmount <= 0
+        ? normalizeDebtStatus('Quitada')
+        : dueDateStart && dueDateStart.getTime() < todayStart.getTime()
+          ? normalizeDebtStatus('Atrasada')
+          : normalizeDebtStatus('Em aberto');
 
     const debt = await prisma.debt.create({
       data: {
