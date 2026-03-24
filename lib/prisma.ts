@@ -23,6 +23,12 @@ export class PrismaServiceUnavailableError extends Error {
   }
 }
 
+function sanitizePrismaDiagnosticDetail(value: string) {
+  return value
+    .replace(/postgres(?:ql)?:\/\/([^:]+):([^@]+)@/gi, 'postgresql://$1:[REDACTED]@')
+    .replace(/(password|senha)=([^&\s]+)/gi, '$1=[REDACTED]');
+}
+
 function sanitizeDatabaseEnvValue(value: string | undefined) {
   if (typeof value !== 'string') return value;
 
@@ -104,11 +110,11 @@ export function asPrismaServiceUnavailableError(error: unknown) {
 
   if (
     name === 'PrismaClientInitializationError' ||
-    /Error validating datasource `db`|Environment variable not found: DATABASE_URL|Can't reach database server|Authentication failed against database server|Timed out fetching a new connection|Timed out trying to acquire a postgres advisory lock|the URL must start with the protocol `postgresql:\/\/` or `postgres:\/\/`|P1001|P1002|P1012/i.test(
+    /Error validating datasource `db`|Environment variable not found: DATABASE_URL|Can't reach database server|Authentication failed against database server|Timed out fetching a new connection|Timed out trying to acquire a postgres advisory lock|the URL must start with the protocol `postgresql:\/\/` or `postgres:\/\/`|P1000|P1001|P1002|P1012/i.test(
       message
     )
   ) {
-    return new PrismaServiceUnavailableError(message);
+    return new PrismaServiceUnavailableError(sanitizePrismaDiagnosticDetail(message));
   }
 
   return null;

@@ -62,7 +62,9 @@ export async function GET() {
       hasDirectDatabaseUrl,
       migrateInBuildEnabled,
       status: 'error', 
-      error: prismaError?.message || error.message 
+      error: prismaError?.message || error.message,
+      detail: prismaError?.detail || (error instanceof Error ? error.message : String(error || '')),
+      errorName: error instanceof Error ? error.name : 'UnknownError',
     }, { status: prismaError ? 503 : 500 });
   }
 }
