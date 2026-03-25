@@ -494,8 +494,80 @@ type TransactionsResourceRefreshOptions = {
   syncWhatsAppState?: boolean;
 };
 
+type CustomTransactionCategoryBuckets = {
+  income: string[];
+  expense: string[];
+};
+
 const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 1;
 const ACTIVE_WORKSPACE_STORAGE_VERSION = 1;
+const CUSTOM_TRANSACTION_CATEGORIES_STORAGE_VERSION = 1;
+
+function getCustomTransactionCategoriesStorageKey(userId: string, workspaceId: string) {
+  return `cote-custom-transaction-categories:v${CUSTOM_TRANSACTION_CATEGORIES_STORAGE_VERSION}:${userId}:${workspaceId}`;
+}
+
+function normalizeCustomCategoryLabel(value: string) {
+  return value
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 40);
+}
+
+function mergeTransactionCategoryLists(base: string[], custom: string[]) {
+  const baseSet = new Set(base.map((item) => item.toLocaleLowerCase('pt-BR')));
+  const customNormalized = custom
+    .map((item) => normalizeCustomCategoryLabel(item))
+    .filter((item) => item.length > 0 && !baseSet.has(item.toLocaleLowerCase('pt-BR')));
+
+  const othersIndex = base.findIndex((item) => item === 'Outros');
+  if (othersIndex < 0) {
+    return [...base, ...customNormalized];
+  }
+
+  return [...base.slice(0, othersIndex), ...customNormalized, ...base.slice(othersIndex)];
+}
+
+function readCustomTransactionCategories(userId: string, workspaceId: string): CustomTransactionCategoryBuckets {
+  if (typeof window === 'undefined') {
+    return { income: [], expense: [] };
+  }
+
+  try {
+    const raw = window.localStorage.getItem(getCustomTransactionCategoriesStorageKey(userId, workspaceId));
+    if (!raw) return { income: [], expense: [] };
+    const parsed = JSON.parse(raw) as Partial<CustomTransactionCategoryBuckets> | null;
+    const income = Array.isArray(parsed?.income)
+      ? parsed!.income
+          .map((item) => normalizeCustomCategoryLabel(String(item || '')))
+          .filter((item, index, array) => item.length > 0 && array.indexOf(item) === index)
+      : [];
+    const expense = Array.isArray(parsed?.expense)
+      ? parsed!.expense
+          .map((item) => normalizeCustomCategoryLabel(String(item || '')))
+          .filter((item, index, array) => item.length > 0 && array.indexOf(item) === index)
+      : [];
+    return { income, expense };
+  } catch {
+    return { income: [], expense: [] };
+  }
+}
+
+function writeCustomTransactionCategories(
+  userId: string,
+  workspaceId: string,
+  value: CustomTransactionCategoryBuckets
+) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(getCustomTransactionCategoriesStorageKey(userId, workspaceId), JSON.stringify(value));
+  } catch {
+    // Ignore storage failures.
+  }
+}
 
 function getDashboardSnapshotStorageKey(userId: string, workspaceId: string) {
   return `cote-dashboard-snapshot:v${DASHBOARD_SNAPSHOT_STORAGE_VERSION}:${userId}:${workspaceId}`;
@@ -1283,6 +1355,19 @@ const mapBackendTypeToFlowType = (rawType: string): TransactionFlowType => {
   if (rawType === 'income') return 'Receita';
   if (rawType === 'expense') return 'Despesa';
   return 'Despesa';
+};
+
+const isTransientDashboardOverviewError = (error: unknown) => {
+  if (error instanceof ResourceClientError) {
+    if (error.path === '/api/dashboard/overview' && [408, 429, 502, 503, 504].includes(error.status)) {
+      return true;
+    }
+  }
+
+  const message = error instanceof Error ? error.message : String(error || '');
+  return /tempo limite|timeout|failed to fetch|fetch failed|network|temporarily unavailable|upstream request timeout/i.test(
+    message
+  );
 };
 
 const normalizePaymentMethodLabel = (rawMethod: unknown): PaymentMethodLabel => {
@@ -6342,6 +6427,8 @@ type TransactionModalProps = {
     | null
   >;
   walletOptions: WalletAccount[];
+  customCategories?: CustomTransactionCategoryBuckets;
+  onCreateCategory?: (flowType: 'Receita' | 'Despesa', categoryName: string) => void;
   initialData?: Transaction | null;
   initialDraft?: Partial<TransactionFormData> | null;
 };
@@ -6353,6 +6440,8 @@ const TransactionModal = ({
   onSuggestCategory,
   onParseReceipt,
   walletOptions,
+  customCategories = { income: [], expense: [] },
+  onCreateCategory,
   initialData = null,
   initialDraft = null,
 }: TransactionModalProps) => {
@@ -6450,6 +6539,8 @@ const TransactionModal = ({
   const [isParsingReceipt, setIsParsingReceipt] = React.useState(false);
   const [receiptStatus, setReceiptStatus] = React.useState<string | null>(null);
   const [selectedReceiptName, setSelectedReceiptName] = React.useState<string | null>(null);
+  const [newCategoryName, setNewCategoryName] = React.useState('');
+  const [newCategoryError, setNewCategoryError] = React.useState<string | null>(null);
   const receiptInputRef = React.useRef<HTMLInputElement | null>(null);
   const descriptionId = React.useId();
   const dateId = React.useId();
@@ -6469,10 +6560,16 @@ const TransactionModal = ({
     []
   );
 
-  const availableCategories = React.useMemo(
-    () => getAvailableCategoriesForFlow(formData.flowType),
-    [formData.flowType]
-  );
+  const availableCategories = React.useMemo(() => {
+    const base = getAvailableCategoriesForFlow(formData.flowType);
+    if (formData.flowType === 'Receita') {
+      return mergeTransactionCategoryLists(base, customCategories.income);
+    }
+    if (formData.flowType === 'Despesa') {
+      return mergeTransactionCategoryLists(base, customCategories.expense);
+    }
+    return base;
+  }, [customCategories.expense, customCategories.income, formData.flowType]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -6485,6 +6582,8 @@ const TransactionModal = ({
     setIsParsingReceipt(false);
     setReceiptStatus(null);
     setSelectedReceiptName(null);
+    setNewCategoryName('');
+    setNewCategoryError(null);
   }, [isOpen, getInitialFormData]);
 
   React.useEffect(() => {
@@ -6620,6 +6719,31 @@ const TransactionModal = ({
   const dateInvalid = hasAttemptedSubmit && !hasDate;
   const recurrenceEndDateInvalid = hasAttemptedSubmit && !hasValidRecurrenceEndDate;
   const destinationWalletInvalid = hasAttemptedSubmit && isTransferFlow && !hasValidDestinationWallet;
+  const canCreateInlineCategory = (formData.flowType === 'Receita' || formData.flowType === 'Despesa') && formData.category === 'Outros';
+
+  const handleCreateCategory = () => {
+    if (!canCreateInlineCategory || !onCreateCategory) return;
+    if (formData.flowType !== 'Receita' && formData.flowType !== 'Despesa') return;
+
+    const normalizedLabel = normalizeCustomCategoryLabel(newCategoryName);
+    if (normalizedLabel.length < 2) {
+      setNewCategoryError('Informe pelo menos 2 caracteres.');
+      return;
+    }
+
+    const alreadyExists = availableCategories.some(
+      (category) => category.toLocaleLowerCase('pt-BR') === normalizedLabel.toLocaleLowerCase('pt-BR')
+    );
+    if (alreadyExists) {
+      setNewCategoryError('Essa categoria já existe.');
+      return;
+    }
+
+    onCreateCategory(formData.flowType, normalizedLabel);
+    setFormData((prev) => ({ ...prev, category: normalizedLabel }));
+    setNewCategoryName('');
+    setNewCategoryError(null);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -6924,6 +7048,39 @@ const TransactionModal = ({
                 ))}
               </select>
             </FormField>
+
+            {canCreateInlineCategory ? (
+              <div className="sm:col-span-2">
+                <div className="app-surface-subtle space-y-2 rounded-xl border border-[var(--border-default)] p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+                    Nova categoria
+                  </p>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(event) => {
+                        setNewCategoryName(event.target.value);
+                        if (newCategoryError) setNewCategoryError(null);
+                      }}
+                      placeholder={formData.flowType === 'Receita' ? 'Ex: Bônus' : 'Ex: Pets'}
+                      className="app-field h-11 flex-1 rounded-xl px-4 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleCreateCategory}
+                      className="app-button-secondary h-11 rounded-xl px-4 text-sm font-bold"
+                    >
+                      Adicionar categoria
+                    </button>
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    A categoria ficará disponível para {formData.flowType === 'Receita' ? 'receitas' : 'despesas'} nesta conta.
+                  </p>
+                  {newCategoryError ? <p className="text-xs font-semibold text-[var(--danger)]">{newCategoryError}</p> : null}
+                </div>
+              </div>
+            ) : null}
 
             <FormField label="Método de pagamento" htmlFor={paymentMethodId}>
               <select
@@ -8471,6 +8628,11 @@ export default function App() {
   const [transactionModalDraft, setTransactionModalDraft] = React.useState<Partial<TransactionFormData> | null>(
     null
   );
+  const [customTransactionCategories, setCustomTransactionCategories] =
+    React.useState<CustomTransactionCategoryBuckets>({
+      income: [],
+      expense: [],
+    });
 
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [goals, setGoals] = React.useState<Goal[]>([]);
@@ -8826,6 +8988,10 @@ export default function App() {
       hasFetchedDashboardOverviewRef.current = true;
     } catch (error) {
       console.error('Dashboard overview fetch error:', error);
+      if (isTransientDashboardOverviewError(error)) {
+        setDashboardOverviewError(null);
+        return;
+      }
       const friendlyMessage =
         error instanceof Error
           ? error.message
@@ -9312,6 +9478,14 @@ React.useEffect(() => {
   React.useEffect(() => {
     if (!user?.id || !activeWorkspaceId) return;
     writeActiveWorkspacePreference(user.id, activeWorkspaceId);
+  }, [activeWorkspaceId, user?.id]);
+
+  React.useEffect(() => {
+    if (!user?.id || !activeWorkspaceId) {
+      setCustomTransactionCategories({ income: [], expense: [] });
+      return;
+    }
+    setCustomTransactionCategories(readCustomTransactionCategories(user.id, activeWorkspaceId));
   }, [activeWorkspaceId, user?.id]);
 
   React.useEffect(() => {
@@ -10877,6 +11051,36 @@ React.useEffect(() => {
     setTransactionModalDraft(draft ?? null);
     setIsTransactionModalOpen(true);
   };
+
+  const handleCreateCustomTransactionCategory = React.useCallback(
+    (flowType: 'Receita' | 'Despesa', categoryName: string) => {
+      const normalizedCategory = normalizeCustomCategoryLabel(categoryName);
+      if (!normalizedCategory) return;
+
+      setCustomTransactionCategories((current) => {
+        const next: CustomTransactionCategoryBuckets =
+          flowType === 'Receita'
+            ? {
+                ...current,
+                income: current.income.includes(normalizedCategory)
+                  ? current.income
+                  : [...current.income, normalizedCategory],
+              }
+            : {
+                ...current,
+                expense: current.expense.includes(normalizedCategory)
+                  ? current.expense
+                  : [...current.expense, normalizedCategory],
+              };
+
+        if (user?.id && activeWorkspaceId) {
+          writeCustomTransactionCategories(user.id, activeWorkspaceId, next);
+        }
+        return next;
+      });
+    },
+    [activeWorkspaceId, user?.id]
+  );
 
   const handleStartEditTransaction = (id: string | number) => {
     setTransactionModalDraft(null);
@@ -12652,6 +12856,8 @@ React.useEffect(() => {
         onSuggestCategory={handleSuggestTransactionCategory}
         onParseReceipt={handleParseTransactionReceipt}
         walletOptions={wallets}
+        customCategories={customTransactionCategories}
+        onCreateCategory={handleCreateCustomTransactionCategory}
         initialData={editingTransaction}
         initialDraft={transactionModalDraft}
       />
