@@ -53,7 +53,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
       <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-0.5">
           <h3 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Resumo para decisão</h3>
-          <p className="text-[11px] text-[var(--text-secondary)]">
+          <p className="text-xs text-[var(--text-secondary)]">
             {loading
               ? 'Consolidando sinais da sua conta...'
               : forecast
@@ -61,7 +61,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
                 : 'Sem dados suficientes para consolidar alertas no momento.'}
           </p>
         </div>
-        <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--text-secondary)]">
+        <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-2 py-0.5 text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-secondary)]">
           {loading ? 'Analisando' : hasAlerts ? `${alerts.length} alerta(s)` : 'Sem alertas'}
         </span>
       </div>
@@ -75,19 +75,19 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
         ) : hasAlerts ? (
           visibleAlerts.map((alert) => (
             <article key={alert.id} className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5', getAlertToneClassName(alert.tone))}>
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">{ALERT_TONE_TAG[alert.tone]}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">{ALERT_TONE_TAG[alert.tone]}</p>
               <p className="text-sm font-semibold leading-tight text-[var(--text-primary)]">{alert.title}</p>
-              <p className="text-[11px] leading-snug text-[var(--text-secondary)]">{alert.message}</p>
+              <p className="text-xs leading-snug text-[var(--text-secondary)]">{alert.message}</p>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  className="rounded-md border border-white/10 bg-[rgba(8,15,27,0.62)] px-2 py-1 text-[10px] font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-white/20"
+                  className="rounded-md border border-white/10 bg-[rgba(8,15,27,0.62)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-white/20"
                 >
                   Ver despesas futuras
                 </button>
                 <button
                   type="button"
-                  className="rounded-md border border-white/10 bg-[rgba(8,15,27,0.62)] px-2 py-1 text-[10px] font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-white/20"
+                  className="rounded-md border border-white/10 bg-[rgba(8,15,27,0.62)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-white/20"
                 >
                   Ajustar orçamento
                 </button>
@@ -97,7 +97,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-2.5')}>
             <p className="text-sm font-semibold text-[var(--text-primary)]">Fluxo financeiro sob controle</p>
-            <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
+            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
               Nenhum alerta crítico no momento. Continue acompanhando para antecipar variações de caixa.
             </p>
           </div>
@@ -123,13 +123,13 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[186px] space-y-2.5 !p-3.5 sm:!p-4')}>
       <div className="space-y-0.5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Resumo do mês</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Resumo do mês</p>
         {loading ? (
           <DashboardSkeletonLine className="h-8 w-32 rounded-xl" />
         ) : (
           <p
             className={cn(
-              'text-[30px] font-black leading-none tracking-[-0.02em]',
+              'text-2xl font-black leading-tight tracking-[-0.01em]',
               plannedNet !== null && plannedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]'
             )}
           >
@@ -147,7 +147,7 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
         </div>
       ) : (
         <>
-          <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5 text-[11px]')}>
+          <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5 text-xs')}>
             <p className="text-[var(--text-secondary)]">
               Confirmado:{' '}
               <span className={cn('font-semibold', confirmedNet !== null && confirmedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]')}>
@@ -166,11 +166,11 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
           </div>
 
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5')}>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Fluxo do mês</p>
-            <p className="text-[11px] text-[var(--text-secondary)]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Fluxo do mês</p>
+            <p className="text-xs text-[var(--text-secondary)]">
               Entradas: <span className="font-semibold text-[var(--positive)]">{forecast ? formatCurrency(forecast.monthPlannedIncome) : '--'}</span>
             </p>
-            <p className="text-[11px] text-[var(--text-secondary)]">
+            <p className="text-xs text-[var(--text-secondary)]">
               Saídas: <span className="font-semibold text-[var(--danger)]">{forecast ? formatCurrency(forecast.monthPlannedExpense) : '--'}</span>
             </p>
           </div>
@@ -194,7 +194,7 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[286px] space-y-3.5 !p-4 sm:!p-5')}>
       <div className="flex flex-col gap-1">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
         <p className="text-sm text-[var(--text-secondary)]">Leitura diária do fechamento projetado com referência de hoje.</p>
       </div>
 
@@ -259,3 +259,4 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
     </section>
   );
 }
+

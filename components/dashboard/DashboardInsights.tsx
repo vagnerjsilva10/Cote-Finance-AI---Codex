@@ -78,38 +78,38 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
         ) : (
           compactInsights.map((card) => (
             <article key={card.id} className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5', getInsightToneClassName(card.tone))}>
-              <p className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+              <p className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-2 py-0.5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                 {card.badge}
               </p>
               <p className="text-base font-black leading-none tracking-[-0.01em] text-[var(--text-primary)]">{card.metric}</p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">{card.title}</p>
-              <p className="text-[11px] leading-snug text-[var(--text-secondary)]">{card.description}</p>
-              <p className="text-[10px] font-semibold text-[var(--primary)]">{card.action}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">{card.title}</p>
+              <p className="text-xs leading-snug text-[var(--text-secondary)]">{card.description}</p>
+              <p className="text-xs font-semibold text-[var(--primary)]">{card.action}</p>
             </article>
           ))
         )}
 
         {currentPlan === 'FREE' ? (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5 border-[color:color-mix(in_srgb,var(--primary)_38%,transparent)]')}>
-            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Oportunidade Pro</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Oportunidade Pro</p>
             <p className="text-sm font-semibold text-[var(--text-primary)]">Desbloqueie insights automáticos</p>
-            <button type="button" onClick={onUpgrade} className="app-button-primary rounded-lg px-2.5 py-1 text-[11px] font-semibold">
+            <button type="button" onClick={onUpgrade} className="app-button-primary rounded-lg px-2.5 py-1 text-xs font-semibold">
               Atualizar para Pro
             </button>
           </div>
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5')}>
-            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">IA ativa</p>
-            <p className="text-[11px] text-[var(--text-secondary)]">Leituras automáticas habilitadas para antecipar desvios do mês.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">IA ativa</p>
+            <p className="text-xs text-[var(--text-secondary)]">Leituras automáticas habilitadas para antecipar desvios do mês.</p>
           </div>
         )}
 
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5')}>
-          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Mini resumo</p>
-          <p className="text-[11px] text-[var(--text-secondary)]">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Mini resumo</p>
+          <p className="text-xs text-[var(--text-secondary)]">
             30 dias: <span className={cn('font-semibold', projected30d !== null && projected30d < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]')}>{projected30d === null ? '--' : formatCurrency(projected30d)}</span>
           </p>
-          <p className="text-[11px] text-[var(--text-secondary)]">
+          <p className="text-xs text-[var(--text-secondary)]">
             Resultado do mês: <span className={cn('font-semibold', monthNet !== null && monthNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]')}>{monthNet === null ? '--' : formatCurrency(monthNet)}</span>
           </p>
         </div>
@@ -117,4 +117,5 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
     </section>
   );
 }
+
 

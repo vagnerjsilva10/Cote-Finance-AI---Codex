@@ -17,11 +17,11 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[350px] space-y-3 !p-4 sm:!p-5')}>
       <div className="space-y-1">
-        <h3 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">Receitas vs Despesas</h3>
+        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Receitas vs Despesas</h3>
         <p className="text-xs text-[var(--text-secondary)]">Comparativo dos últimos 6 meses para leitura rápida de ritmo financeiro.</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+      <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
         <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[rgba(8,15,27,0.48)] px-2 py-0.5">
           <span className="size-1.5 rounded-full bg-[var(--positive)]" /> Entradas
         </span>
@@ -91,3 +91,4 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
     </section>
   );
 }
+

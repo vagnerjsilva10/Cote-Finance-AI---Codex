@@ -44,7 +44,7 @@ function SummaryMetricCard({
   return (
     <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[126px] space-y-2.5 !p-3.5 sm:!p-4')}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">{label}</p>
         <span className="inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.5)] text-[var(--text-secondary)]">
           {icon}
         </span>
@@ -58,8 +58,8 @@ function SummaryMetricCard({
         </div>
       ) : (
         <div className="space-y-1.5">
-          <p className={cn('text-[30px] font-black leading-[0.96] tracking-[-0.02em] text-[var(--text-primary)]', valueClassName)}>{value}</p>
-          <div className="space-y-0.5 text-[11px]">
+          <p className={cn('text-2xl font-black leading-tight tracking-[-0.01em] text-[var(--text-primary)]', valueClassName)}>{value}</p>
+          <div className="space-y-0.5 text-xs">
             <p className="font-semibold text-[var(--text-secondary)]">{sublineA}</p>
             <p className="text-[var(--text-muted)]">{sublineB}</p>
           </div>
@@ -148,4 +148,5 @@ export function DashboardSummary({ summary, forecast, upcomingEvents, loading }:
     </div>
   );
 }
+
 
