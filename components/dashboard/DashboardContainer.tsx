@@ -1,8 +1,8 @@
 ﻿import type { DashboardOverviewPayload } from '@/lib/dashboard/overview';
 import { DashboardAssistantMini } from '@/components/dashboard/DashboardAssistantMini';
 import { DashboardMainTrend } from '@/components/dashboard/DashboardMainTrend';
-import { DashboardPrimaryInsight } from '@/components/dashboard/DashboardPrimaryInsight';
 import { DashboardRecentTransactions } from '@/components/dashboard/DashboardRecentTransactions';
+import { DashboardRightRail } from '@/components/dashboard/DashboardRightRail';
 import { DashboardSummary } from '@/components/dashboard/DashboardSummary';
 
 type DashboardContainerProps = {
@@ -20,7 +20,7 @@ export function DashboardContainer({ overview, loading, onAddTransaction }: Dash
     <div className="animate-in space-y-5 fade-in duration-500 lg:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="page-title-premium text-[var(--text-primary)]">Visão geral</h3>
+          <h3 className="page-title-premium text-[var(--text-primary)]">Dashboard</h3>
           <p className="text-sm capitalize text-[var(--text-secondary)]">Resumo de {monthLabel}</p>
         </div>
         <button
@@ -31,17 +31,19 @@ export function DashboardContainer({ overview, loading, onAddTransaction }: Dash
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:gap-6">
-        <DashboardSummary summary={overview?.summary ?? null} loading={loading} />
+      <DashboardSummary summary={overview?.summary ?? null} monthlySeries={overview?.monthlySeries ?? []} loading={loading} />
 
-        <DashboardMainTrend forecast={overview?.forecast ?? null} loading={loading} />
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-start">
+        <div className="space-y-4 lg:col-span-8">
+          <DashboardMainTrend forecast={overview?.forecast ?? null} loading={loading} />
+          <DashboardRecentTransactions transactions={overview?.recentTransactions ?? []} loading={loading} />
+        </div>
 
-        <DashboardPrimaryInsight alerts={overview?.alerts ?? []} forecast={overview?.forecast ?? null} loading={loading} />
-
-        <DashboardRecentTransactions transactions={overview?.recentTransactions ?? []} loading={loading} />
-
-        <DashboardAssistantMini />
-      </div>
+        <div className="space-y-4 lg:col-span-4">
+          <DashboardRightRail summary={overview?.summary ?? null} forecast={overview?.forecast ?? null} loading={loading} />
+          <DashboardAssistantMini />
+        </div>
+      </section>
     </div>
   );
 }

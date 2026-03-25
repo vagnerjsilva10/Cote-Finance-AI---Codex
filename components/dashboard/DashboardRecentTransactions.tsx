@@ -28,7 +28,7 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Últimas transações</h3>
+        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Transações Recentes</h3>
         <button type="button" className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
           Ver todas
         </button>
@@ -105,3 +105,4 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
     </section>
   );
 }
+
