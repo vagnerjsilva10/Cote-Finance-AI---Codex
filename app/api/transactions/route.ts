@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { asPrismaServiceUnavailableError, DATABASE_SCHEMA_MISMATCH_MESSAGE, prisma } from '@/lib/prisma';
+import {
+  asPrismaServiceUnavailableError,
+  classifyPrismaRuntimeError,
+  DATABASE_SCHEMA_MISMATCH_MESSAGE,
+  getDatabaseRuntimeInfo,
+  prisma,
+} from '@/lib/prisma';
 import {
   TRANSACTION_PAYMENT_METHODS,
   TRANSACTION_STATUSES,
@@ -55,8 +61,60 @@ const VALID_ORIGIN_TYPES = new Set(['MANUAL', 'RECURRENCE', 'INSTALLMENT', 'DEBT
 const SCHEMA_SYNC_REQUIRED_ERROR =
   DATABASE_SCHEMA_MISMATCH_MESSAGE;
 
+const FRIENDLY_TRANSACTION_SAVE_ERROR =
+  'Nao foi possivel salvar a transacao agora. Tente novamente em instantes.';
+const FRIENDLY_TRANSACTION_UPDATE_ERROR =
+  'Nao foi possivel atualizar a transacao agora. Tente novamente em instantes.';
+const FRIENDLY_TRANSACTION_DELETE_ERROR =
+  'Nao foi possivel excluir a transacao agora. Tente novamente em instantes.';
+
 const hasOwn = <K extends string>(obj: object, key: K) =>
   Object.prototype.hasOwnProperty.call(obj, key);
+
+const nowMs = () => performance.now();
+
+const elapsedMs = (startedAt: number) => Number((performance.now() - startedAt).toFixed(1));
+
+async function measureStep<T>(
+  metrics: Record<string, number>,
+  label: string,
+  action: () => Promise<T>
+) {
+  const startedAt = nowMs();
+  try {
+    return await action();
+  } finally {
+    metrics[label] = elapsedMs(startedAt);
+  }
+}
+
+function apiErrorResponse(
+  status: number,
+  code: string,
+  message: string,
+  extra?: Record<string, unknown>
+) {
+  return NextResponse.json(
+    {
+      code,
+      message,
+      error: message,
+      ...extra,
+    },
+    { status }
+  );
+}
+
+function logTransactionRequest(
+  level: 'info' | 'warn' | 'error',
+  event: string,
+  payload: Record<string, unknown>
+) {
+  console[level](`[transactions] ${event}`, {
+    ...payload,
+    database: getDatabaseRuntimeInfo(),
+  });
+}
 
 const isSchemaMismatchError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -254,20 +312,15 @@ async function findTransactionsWithCompatibility(params: {
 
 async function getOrCreateWalletId(workspaceId: string, walletName?: string | null) {
   const normalizedWalletName = (walletName || '').trim() || 'Carteira Principal';
-  const existingWallet = await prisma.wallet.findFirst({
+  const wallet = await prisma.wallet.upsert({
     where: {
-      workspace_id: workspaceId,
-      name: normalizedWalletName,
+      workspace_id_name: {
+        workspace_id: workspaceId,
+        name: normalizedWalletName,
+      },
     },
-    select: {
-      id: true,
-    },
-  });
-
-  if (existingWallet) return existingWallet.id;
-
-  const createdWallet = await prisma.wallet.create({
-    data: {
+    update: {},
+    create: {
       workspace_id: workspaceId,
       name: normalizedWalletName,
       type: 'CASH',
@@ -278,7 +331,7 @@ async function getOrCreateWalletId(workspaceId: string, walletName?: string | nu
     },
   });
 
-  return createdWallet.id;
+  return wallet.id;
 }
 
 async function getOrCreateCategoryId(categoryName?: string | null) {
@@ -340,20 +393,52 @@ function mergeLedgerEffects(
     .map(([walletId, delta]) => ({ walletId, delta }));
 }
 
-async function applyLedgerEffects(
-  tx: Parameters<typeof prisma.$transaction>[0] extends (arg: infer T) => any ? T : never,
-  effects: Array<{ walletId: string; delta: number }>
-) {
-  for (const effect of effects) {
-    await tx.wallet.update({
-      where: { id: effect.walletId },
-      data: {
-        balance: {
-          increment: effect.delta,
-        },
-      },
+async function findTransactionByIdWithRelations(id: string, workspaceId: string) {
+  return prisma.transaction.findFirst({
+    where: {
+      id,
+      workspace_id: workspaceId,
+    },
+    include: {
+      category: true,
+      wallet: true,
+      destination_wallet: true,
+    },
+  });
+}
+
+function buildWriteFailureResponse(params: {
+  error: unknown;
+  routeLabel: 'create' | 'update' | 'delete';
+  routeStartedAt: number;
+  metrics: Record<string, number>;
+  workspaceId?: string;
+  userId?: string;
+}) {
+  const classified = classifyPrismaRuntimeError(params.error);
+  const friendlyMessage =
+    params.routeLabel === 'create'
+      ? FRIENDLY_TRANSACTION_SAVE_ERROR
+      : params.routeLabel === 'update'
+        ? FRIENDLY_TRANSACTION_UPDATE_ERROR
+        : FRIENDLY_TRANSACTION_DELETE_ERROR;
+
+  if (classified && classified.kind !== 'UNKNOWN') {
+    logTransactionRequest('error', `${params.routeLabel}.failed`, {
+      workspaceId: params.workspaceId,
+      userId: params.userId,
+      totalMs: elapsedMs(params.routeStartedAt),
+      metrics: params.metrics,
+      errorKind: classified.kind,
+      detail: classified.detail,
+    });
+
+    return apiErrorResponse(503, classified.kind, friendlyMessage, {
+      retryable: true,
     });
   }
+
+  return null;
 }
 
 export async function GET(req: Request) {
@@ -402,29 +487,40 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const routeStartedAt = nowMs();
+  const metrics: Record<string, number> = {};
+  let context!: Awaited<ReturnType<typeof resolveWorkspaceContext>>;
+
   try {
-    const context = await resolveWorkspaceContext(req);
-    const plan = await getWorkspacePlan(context.workspaceId, context.userId);
-    const planLimits = await getRuntimePlanLimits(plan);
+    context = await measureStep(metrics, 'resolve_workspace_ms', () => resolveWorkspaceContext(req));
+    if (!context) {
+      throw new Error('Workspace context could not be resolved');
+    }
+    const plan = await measureStep(metrics, 'resolve_plan_ms', () =>
+      getWorkspacePlan(context.workspaceId, context.userId)
+    );
+    const planLimits = await measureStep(metrics, 'resolve_plan_limits_ms', () =>
+      getRuntimePlanLimits(plan)
+    );
 
     const body = (await req.json().catch(() => null)) as CreateTransactionBody | null;
     if (!body) {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_REQUEST_BODY', 'Invalid request body');
     }
 
     const type = normalizeTransactionType(body.type, body.flowType);
     if (!type) {
-      return NextResponse.json({ error: 'Invalid transaction type' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_TRANSACTION_TYPE', 'Invalid transaction type');
     }
 
     const amount = parseAmount(body.amount);
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_AMOUNT', 'Invalid amount');
     }
 
     const date = parseDate(body.date);
     if (!date) {
-      return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_DATE', 'Invalid date');
     }
     const dueDateInBody = Object.prototype.hasOwnProperty.call(body, 'dueDate');
     const dueDate = dueDateInBody
@@ -433,25 +529,26 @@ export async function POST(req: Request) {
         : parseDate(body.dueDate)
       : null;
     if (dueDateInBody && body.dueDate !== null && body.dueDate !== '' && !dueDate) {
-      return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_DUE_DATE', 'Invalid due date');
     }
     const status = normalizeTransactionStatus(body.status, 'CONFIRMED');
     if (!VALID_STATUSES.has(status)) {
-      return NextResponse.json({ error: 'Invalid transaction status' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_TRANSACTION_STATUS', 'Invalid transaction status');
     }
     const originType = normalizeOriginType(body.originType);
     const originId = typeof body.originId === 'string' ? body.originId.trim() : null;
     if (originType !== 'MANUAL' && !originId) {
-      return NextResponse.json(
-        { error: 'originId is required when originType is not MANUAL' },
-        { status: 400 }
+      return apiErrorResponse(
+        400,
+        'INVALID_ORIGIN_ID',
+        'originId is required when originType is not MANUAL'
       );
     }
     const effectiveOriginId = originType === 'MANUAL' ? null : originId;
 
     const description = (body.description || '').trim();
     if (!description) {
-      return NextResponse.json({ error: 'Description is required' }, { status: 400 });
+      return apiErrorResponse(400, 'DESCRIPTION_REQUIRED', 'Description is required');
     }
     const receiptUrl = normalizeReceiptUrl(body.receiptUrl);
 
@@ -462,41 +559,60 @@ export async function POST(req: Request) {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-      const currentMonthCount = await prisma.transaction.count({
-        where: {
-          workspace_id: context.workspaceId,
-          date: {
-            gte: monthStart,
-            lt: nextMonthStart,
-          },
-        },
-      });
-      const transactionOffset = await getTransactionUsageEffectiveOffset(context.workspaceId);
+      const [currentMonthCount, transactionOffset] = await Promise.all([
+        measureStep(metrics, 'count_transactions_ms', () =>
+          prisma.transaction.count({
+            where: {
+              workspace_id: context.workspaceId,
+              date: {
+                gte: monthStart,
+                lt: nextMonthStart,
+              },
+            },
+          })
+        ),
+        measureStep(metrics, 'resolve_usage_offset_ms', () =>
+          getTransactionUsageEffectiveOffset(context.workspaceId)
+        ),
+      ]);
       const effectiveCurrentMonthCount = Math.max(0, currentMonthCount + transactionOffset);
 
       if (effectiveCurrentMonthCount >= transactionLimit) {
-        return NextResponse.json(
+        return apiErrorResponse(
+          403,
+          'PLAN_LIMIT_REACHED',
+          `Transaction limit reached for ${plan}. Upgrade to continue.`,
           {
-            error: `Transaction limit reached for ${plan}. Upgrade to continue.`,
-            code: 'PLAN_LIMIT_REACHED',
             limit: transactionLimit,
             plan,
-          },
-          { status: 403 }
+          }
         );
       }
     }
 
     const destinationWalletName = (body.destinationWallet || '').trim();
     if (type === 'TRANSFER' && !destinationWalletName) {
+      return apiErrorResponse(
+        400,
+        'DESTINATION_WALLET_REQUIRED',
+        'Conta destino e obrigatoria para transferencia.'
+      );
+    }
+    if (type === 'TRANSFER' && !destinationWalletName) {
       return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
     }
     const normalizedCategoryName = (body.category || '').trim() || 'Outros';
     const [walletId, categoryId, destinationWalletId] = await Promise.all([
-      getOrCreateWalletId(context.workspaceId, body.wallet),
-      getOrCreateCategoryId(normalizedCategoryName),
+      measureStep(metrics, 'resolve_wallet_ms', () =>
+        getOrCreateWalletId(context.workspaceId, body.wallet)
+      ),
+      measureStep(metrics, 'resolve_category_ms', () =>
+        getOrCreateCategoryId(normalizedCategoryName)
+      ),
       type === 'TRANSFER'
-        ? getOrCreateWalletId(context.workspaceId, destinationWalletName)
+        ? measureStep(metrics, 'resolve_destination_wallet_ms', () =>
+            getOrCreateWalletId(context.workspaceId, destinationWalletName)
+          )
         : Promise.resolve<string | null>(null),
     ]);
     const paymentMethod = normalizePaymentMethod(body.paymentMethod, type);
@@ -511,33 +627,48 @@ export async function POST(req: Request) {
           })
         : [];
 
-    const transaction = await prisma.$transaction(async (tx) => {
-      const createdTransaction = await tx.transaction.create({
-        data: {
-          workspace_id: context.workspaceId,
-          wallet_id: walletId,
-          destination_wallet_id: destinationWalletId,
-          category_id: categoryId,
-          type,
-          payment_method: paymentMethod,
-          receipt_url: receiptUrl,
-          amount,
-          date,
-          due_date: dueDate,
-          description,
-          status,
-          origin_type: originType,
-          origin_id: effectiveOriginId,
-        },
-        include: {
-          category: true,
-          wallet: true,
-          destination_wallet: true,
-        },
-      });
+    const [createdTransaction] = await measureStep(metrics, 'write_batch_tx_ms', () =>
+      prisma.$transaction([
+        prisma.transaction.create({
+          data: {
+            workspace_id: context.workspaceId,
+            wallet_id: walletId,
+            destination_wallet_id: destinationWalletId,
+            category_id: categoryId,
+            type,
+            payment_method: paymentMethod,
+            receipt_url: receiptUrl,
+            amount,
+            date,
+            due_date: dueDate,
+            description,
+            status,
+            origin_type: originType,
+            origin_id: effectiveOriginId,
+          },
+          select: {
+            id: true,
+          },
+        }),
+        ...ledgerEffects.map((effect) =>
+          prisma.wallet.update({
+            where: { id: effect.walletId },
+            data: {
+              balance: {
+                increment: effect.delta,
+              },
+            },
+          })
+        ),
+      ])
+    );
 
-      await applyLedgerEffects(tx, ledgerEffects);
-      return createdTransaction;
+    const transaction = await measureStep(metrics, 'fetch_created_transaction_ms', async () => {
+      const found = await findTransactionByIdWithRelations(createdTransaction.id, context.workspaceId);
+      if (!found) {
+        throw new Error('Created transaction could not be reloaded');
+      }
+      return found;
     });
 
     void logWorkspaceEventSafe({
@@ -562,10 +693,32 @@ export async function POST(req: Request) {
     });
     void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
+    logTransactionRequest('info', 'create.completed', {
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      transactionId: transaction.id,
+      totalMs: elapsedMs(routeStartedAt),
+      metrics,
+      type,
+      status,
+      paymentMethod,
+    });
+
     return NextResponse.json(transaction);
   } catch (error: any) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return apiErrorResponse(error.status, 'WORKSPACE_ERROR', error.message);
+    }
+    const writeFailureResponse = buildWriteFailureResponse({
+      error,
+      routeLabel: 'create',
+      routeStartedAt,
+      metrics,
+      workspaceId: context?.workspaceId,
+      userId: context?.userId,
+    });
+    if (writeFailureResponse) {
+      return writeFailureResponse;
     }
     if (error instanceof Error && error.message.includes('Destination wallet')) {
       return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
@@ -577,29 +730,49 @@ export async function POST(req: Request) {
       );
     }
     if (isSchemaMismatchError(error)) {
-      return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
+      return apiErrorResponse(503, 'SCHEMA_MISMATCH', SCHEMA_SYNC_REQUIRED_ERROR);
     }
     const prismaError = asPrismaServiceUnavailableError(error);
     if (prismaError) {
-      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+      logTransactionRequest('error', 'create.db_unavailable', {
+        workspaceId: context?.workspaceId,
+        userId: context?.userId,
+        totalMs: elapsedMs(routeStartedAt),
+        metrics,
+        detail: prismaError.detail || prismaError.message,
+      });
+      return apiErrorResponse(503, 'DB_UNAVAILABLE', FRIENDLY_TRANSACTION_SAVE_ERROR, {
+        retryable: true,
+      });
     }
-    console.error('Transactions POST Error:', error);
-    return NextResponse.json(
-      { error: error?.message || 'Failed to create transaction' },
-      { status: 500 }
-    );
+    logTransactionRequest('error', 'create.failed', {
+      workspaceId: context?.workspaceId,
+      userId: context?.userId,
+      totalMs: elapsedMs(routeStartedAt),
+      metrics,
+      detail: error instanceof Error ? error.message : String(error || 'Unknown error'),
+    });
+    return apiErrorResponse(500, 'TRANSACTION_CREATE_FAILED', FRIENDLY_TRANSACTION_SAVE_ERROR);
   }
 }
 
 export async function PATCH(req: Request) {
+  const routeStartedAt = nowMs();
+  const metrics: Record<string, number> = {};
+  let context!: Awaited<ReturnType<typeof resolveWorkspaceContext>>;
+
   try {
-    const context = await resolveWorkspaceContext(req);
+    context = await measureStep(metrics, 'resolve_workspace_ms', () => resolveWorkspaceContext(req));
+    if (!context) {
+      throw new Error('Workspace context could not be resolved');
+    }
     const body = (await req.json().catch(() => null)) as UpdateTransactionBody | null;
     if (!body?.id) {
-      return NextResponse.json({ error: 'Transaction id is required' }, { status: 400 });
+      return apiErrorResponse(400, 'TRANSACTION_ID_REQUIRED', 'Transaction id is required');
     }
 
-    const existingTransaction = await prisma.transaction.findFirst({
+    const existingTransaction = await measureStep(metrics, 'load_existing_transaction_ms', () =>
+      prisma.transaction.findFirst({
       where: {
         id: body.id,
         workspace_id: context.workspaceId,
@@ -615,27 +788,28 @@ export async function PATCH(req: Request) {
         category_id: true,
         description: true,
       },
-    });
+      })
+    );
 
     if (!existingTransaction) {
-      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+      return apiErrorResponse(404, 'TRANSACTION_NOT_FOUND', 'Transaction not found');
     }
 
     const nextType =
       normalizeTransactionType(body.type, body.flowType) || (existingTransaction.type as TransactionType);
     if (!VALID_TYPES.has(nextType)) {
-      return NextResponse.json({ error: 'Invalid transaction type' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_TRANSACTION_TYPE', 'Invalid transaction type');
     }
 
     const parsedAmount = parseAmount(body.amount);
     const nextAmount = parsedAmount && parsedAmount > 0 ? parsedAmount : Number(existingTransaction.amount);
     if (!nextAmount || nextAmount <= 0) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_AMOUNT', 'Invalid amount');
     }
 
     const nextDate = body.date ? parseDate(body.date) : null;
     if (body.date && !nextDate) {
-      return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_DATE', 'Invalid date');
     }
     const dueDateInBody = Object.prototype.hasOwnProperty.call(body, 'dueDate');
     const nextDueDate = dueDateInBody
@@ -644,11 +818,13 @@ export async function PATCH(req: Request) {
         : parseDate(body.dueDate)
       : undefined;
     if (dueDateInBody && body.dueDate !== null && body.dueDate !== '' && !nextDueDate) {
-      return NextResponse.json({ error: 'Invalid due date' }, { status: 400 });
+      return apiErrorResponse(400, 'INVALID_DUE_DATE', 'Invalid due date');
     }
 
     const walletId = body.wallet
-      ? await getOrCreateWalletId(context.workspaceId, body.wallet)
+      ? await measureStep(metrics, 'resolve_wallet_ms', () =>
+          getOrCreateWalletId(context.workspaceId, body.wallet)
+        )
       : existingTransaction.wallet_id;
 
     const destinationWalletInBody = Object.prototype.hasOwnProperty.call(body, 'destinationWallet');
@@ -657,21 +833,29 @@ export async function PATCH(req: Request) {
       if (destinationWalletInBody) {
         const destinationWalletName = (body.destinationWallet || '').trim();
         if (!destinationWalletName) {
+          return apiErrorResponse(
+            400,
+            'DESTINATION_WALLET_REQUIRED',
+            'Conta destino e obrigatoria para transferencia.'
+          );
+        }
+        if (!destinationWalletName) {
           return NextResponse.json(
             { error: 'Conta destino é obrigatória para transferência.' },
             { status: 400 }
           );
         }
-        nextDestinationWalletId = await getOrCreateWalletId(
-          context.workspaceId,
-          destinationWalletName
+        nextDestinationWalletId = await measureStep(metrics, 'resolve_destination_wallet_ms', () =>
+          getOrCreateWalletId(context.workspaceId, destinationWalletName)
         );
       } else {
         nextDestinationWalletId = existingTransaction.destination_wallet_id;
       }
     }
 
-    const categoryId = body.category ? await getOrCreateCategoryId(body.category) : undefined;
+    const categoryId = body.category
+      ? await measureStep(metrics, 'resolve_category_ms', () => getOrCreateCategoryId(body.category))
+      : undefined;
     const nextDescription = (body.description || '').trim();
     const receiptUrlInBody = hasOwn(body, 'receiptUrl');
     const nextReceiptUrl = receiptUrlInBody ? normalizeReceiptUrl(body.receiptUrl) : undefined;
@@ -700,29 +884,45 @@ export async function PATCH(req: Request) {
         : [];
     const mergedEffects = mergeLedgerEffects(previousEffects, nextEffects);
 
-    const transaction = await prisma.$transaction(async (tx) => {
-      await applyLedgerEffects(tx, mergedEffects);
+    await measureStep(metrics, 'write_batch_tx_ms', () =>
+      prisma.$transaction([
+        ...mergedEffects.map((effect) =>
+          prisma.wallet.update({
+            where: { id: effect.walletId },
+            data: {
+              balance: {
+                increment: effect.delta,
+              },
+            },
+          })
+        ),
+        prisma.transaction.update({
+          where: { id: existingTransaction.id },
+          data: {
+            wallet_id: walletId,
+            destination_wallet_id: nextType === 'TRANSFER' ? nextDestinationWalletId : null,
+            category_id: categoryId,
+            type: nextType,
+            payment_method: paymentMethod,
+            receipt_url: receiptUrlInBody ? nextReceiptUrl : undefined,
+            amount: nextAmount,
+            date: nextDate ?? undefined,
+            due_date: nextDueDate,
+            description: nextDescription || undefined,
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ])
+    );
 
-      return tx.transaction.update({
-        where: { id: existingTransaction.id },
-        data: {
-          wallet_id: walletId,
-          destination_wallet_id: nextType === 'TRANSFER' ? nextDestinationWalletId : null,
-          category_id: categoryId,
-          type: nextType,
-          payment_method: paymentMethod,
-          receipt_url: receiptUrlInBody ? nextReceiptUrl : undefined,
-          amount: nextAmount,
-          date: nextDate ?? undefined,
-          due_date: nextDueDate,
-          description: nextDescription || undefined,
-        },
-        include: {
-          category: true,
-          wallet: true,
-          destination_wallet: true,
-        },
-      });
+    const transaction = await measureStep(metrics, 'fetch_updated_transaction_ms', async () => {
+      const found = await findTransactionByIdWithRelations(existingTransaction.id, context.workspaceId);
+      if (!found) {
+        throw new Error('Updated transaction could not be reloaded');
+      }
+      return found;
     });
 
     void logWorkspaceEventSafe({
@@ -747,10 +947,18 @@ export async function PATCH(req: Request) {
     }
     void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
+    logTransactionRequest('info', 'update.completed', {
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      transactionId: transaction.id,
+      totalMs: elapsedMs(routeStartedAt),
+      metrics,
+    });
+
     return NextResponse.json(transaction);
   } catch (error: any) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return apiErrorResponse(error.status, 'WORKSPACE_ERROR', error.message);
     }
     if (error instanceof Error && error.message.includes('Destination wallet')) {
       return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
@@ -762,29 +970,49 @@ export async function PATCH(req: Request) {
       );
     }
     if (isSchemaMismatchError(error)) {
-      return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
+      return apiErrorResponse(503, 'SCHEMA_MISMATCH', SCHEMA_SYNC_REQUIRED_ERROR);
     }
     const prismaError = asPrismaServiceUnavailableError(error);
     if (prismaError) {
-      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+      logTransactionRequest('error', 'update.db_unavailable', {
+        workspaceId: context?.workspaceId,
+        userId: context?.userId,
+        totalMs: elapsedMs(routeStartedAt),
+        metrics,
+        detail: prismaError.detail || prismaError.message,
+      });
+      return apiErrorResponse(503, 'DB_UNAVAILABLE', FRIENDLY_TRANSACTION_UPDATE_ERROR, {
+        retryable: true,
+      });
     }
-    console.error('Transactions PATCH Error:', error);
-    return NextResponse.json(
-      { error: error?.message || 'Failed to update transaction' },
-      { status: 500 }
-    );
+    logTransactionRequest('error', 'update.failed', {
+      workspaceId: context?.workspaceId,
+      userId: context?.userId,
+      totalMs: elapsedMs(routeStartedAt),
+      metrics,
+      detail: error instanceof Error ? error.message : String(error || 'Unknown error'),
+    });
+    return apiErrorResponse(500, 'TRANSACTION_UPDATE_FAILED', FRIENDLY_TRANSACTION_UPDATE_ERROR);
   }
 }
 
 export async function DELETE(req: Request) {
+  const routeStartedAt = nowMs();
+  const metrics: Record<string, number> = {};
+  let context!: Awaited<ReturnType<typeof resolveWorkspaceContext>>;
+
   try {
-    const context = await resolveWorkspaceContext(req);
+    context = await measureStep(metrics, 'resolve_workspace_ms', () => resolveWorkspaceContext(req));
+    if (!context) {
+      throw new Error('Workspace context could not be resolved');
+    }
     const body = (await req.json().catch(() => null)) as DeleteTransactionBody | null;
     if (!body?.id) {
-      return NextResponse.json({ error: 'Transaction id is required' }, { status: 400 });
+      return apiErrorResponse(400, 'TRANSACTION_ID_REQUIRED', 'Transaction id is required');
     }
 
-    const existingTransaction = await prisma.transaction.findFirst({
+    const existingTransaction = await measureStep(metrics, 'load_existing_transaction_ms', () =>
+      prisma.transaction.findFirst({
       where: {
         id: body.id,
         workspace_id: context.workspaceId,
@@ -797,10 +1025,11 @@ export async function DELETE(req: Request) {
         type: true,
         status: true,
       },
-    });
+      })
+    );
 
     if (!existingTransaction) {
-      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+      return apiErrorResponse(404, 'TRANSACTION_NOT_FOUND', 'Transaction not found');
     }
 
     const previousEffects =
@@ -816,12 +1045,23 @@ export async function DELETE(req: Request) {
           }))
         : [];
 
-    await prisma.$transaction(async (tx) => {
-      await applyLedgerEffects(tx, previousEffects);
-      await tx.transaction.delete({
-        where: { id: existingTransaction.id },
-      });
-    });
+    await measureStep(metrics, 'write_batch_tx_ms', () =>
+      prisma.$transaction([
+        ...previousEffects.map((effect) =>
+          prisma.wallet.update({
+            where: { id: effect.walletId },
+            data: {
+              balance: {
+                increment: effect.delta,
+              },
+            },
+          })
+        ),
+        prisma.transaction.delete({
+          where: { id: existingTransaction.id },
+        }),
+      ])
+    );
 
     void logWorkspaceEventSafe({
       workspaceId: context.workspaceId,
@@ -833,23 +1073,54 @@ export async function DELETE(req: Request) {
     });
     void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
 
+    logTransactionRequest('info', 'delete.completed', {
+      workspaceId: context.workspaceId,
+      userId: context.userId,
+      transactionId: existingTransaction.id,
+      totalMs: elapsedMs(routeStartedAt),
+      metrics,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return apiErrorResponse(error.status, 'WORKSPACE_ERROR', error.message);
+    }
+    const writeFailureResponse = buildWriteFailureResponse({
+      error,
+      routeLabel: 'delete',
+      routeStartedAt,
+      metrics,
+      workspaceId: context?.workspaceId,
+      userId: context?.userId,
+    });
+    if (writeFailureResponse) {
+      return writeFailureResponse;
     }
     if (isSchemaMismatchError(error)) {
-      return NextResponse.json({ error: SCHEMA_SYNC_REQUIRED_ERROR }, { status: 503 });
+      return apiErrorResponse(503, 'SCHEMA_MISMATCH', SCHEMA_SYNC_REQUIRED_ERROR);
     }
     const prismaError = asPrismaServiceUnavailableError(error);
     if (prismaError) {
-      return NextResponse.json({ error: prismaError.message }, { status: 503 });
+      logTransactionRequest('error', 'delete.db_unavailable', {
+        workspaceId: context?.workspaceId,
+        userId: context?.userId,
+        totalMs: elapsedMs(routeStartedAt),
+        metrics,
+        detail: prismaError.detail || prismaError.message,
+      });
+      return apiErrorResponse(503, 'DB_UNAVAILABLE', FRIENDLY_TRANSACTION_DELETE_ERROR, {
+        retryable: true,
+      });
     }
-    console.error('Transactions DELETE Error:', error);
-    return NextResponse.json(
-      { error: error?.message || 'Failed to delete transaction' },
-      { status: 500 }
-    );
+    logTransactionRequest('error', 'delete.failed', {
+      workspaceId: context?.workspaceId,
+      userId: context?.userId,
+      totalMs: elapsedMs(routeStartedAt),
+      metrics,
+      detail: error instanceof Error ? error.message : String(error || 'Unknown error'),
+    });
+    return apiErrorResponse(500, 'TRANSACTION_DELETE_FAILED', FRIENDLY_TRANSACTION_DELETE_ERROR);
   }
 }
 

@@ -15,5 +15,6 @@ export async function fetchWorkspaceShellResource(params: {
     path: `/api/workspace-shell${query.toString() ? `?${query.toString()}` : ''}`,
     getAuthHeaders: params.getAuthHeaders,
     workspaceIdOverride: params.workspaceIdOverride,
+    timeoutMs: 12000,
   });
 }

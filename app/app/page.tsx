@@ -2316,6 +2316,7 @@ const SubscriptionView = ({
 type DashboardViewProps = {
   overview: DashboardOverviewPayload | null;
   loading: boolean;
+  error: string | null;
   currentPlan: SubscriptionPlan;
   onAddTransaction: () => void;
   onUpgrade: () => void;
@@ -2324,18 +2325,26 @@ type DashboardViewProps = {
 const DashboardView = ({
   overview,
   loading,
+  error,
   currentPlan,
   onAddTransaction,
   onUpgrade,
 }: DashboardViewProps) => {
   return (
-    <DashboardOverview
-      overview={overview}
-      loading={loading}
-      currentPlan={currentPlan}
-      onAddTransaction={onAddTransaction}
-      onUpgrade={onUpgrade}
-    />
+    <div className="space-y-4">
+      {!loading && error ? (
+        <div className="rounded-2xl border border-[color:color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--danger)_10%,transparent)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          {error}
+        </div>
+      ) : null}
+      <DashboardOverview
+        overview={overview}
+        loading={loading}
+        currentPlan={currentPlan}
+        onAddTransaction={onAddTransaction}
+        onUpgrade={onUpgrade}
+      />
+    </div>
   );
 };
 
@@ -8010,7 +8019,8 @@ export default function App() {
   };
 
   const [activeTab, setActiveTab] = React.useState<Tab>('dashboard');
-  const [dataLoading, setDataLoading] = React.useState(false);
+  const [dashboardOverviewLoading, setDashboardOverviewLoading] = React.useState(false);
+  const [dashboardOverviewError, setDashboardOverviewError] = React.useState<string | null>(null);
   const [dashboardOverview, setDashboardOverview] = React.useState<DashboardOverviewPayload | null>(null);
   const [reportsOverview, setReportsOverview] = React.useState<ReportsOverviewPayload | null>(null);
   const [totalBalance, setTotalBalance] = React.useState(0);
@@ -8553,6 +8563,7 @@ export default function App() {
   const lastWorkspaceIdRef = React.useRef<string | null>(null);
   const hasFetchedDashboardRef = React.useRef(false);
   const hasFetchedDashboardOverviewRef = React.useRef(false);
+  const hasFetchedReportsOverviewRef = React.useRef(false);
   const uiFeedbackTimeoutRef = React.useRef<number | null>(null);
   const headerSearchRef = React.useRef<HTMLDivElement | null>(null);
   const quickCreateMenuRef = React.useRef<HTMLDivElement | null>(null);
@@ -8680,7 +8691,10 @@ export default function App() {
 
     const silent = Boolean(options?.silent);
     if (!silent) {
-      setDataLoading(true);
+      setDashboardOverviewError(null);
+    }
+    if (!silent) {
+      setDashboardOverviewLoading(true);
     }
 
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
@@ -8711,6 +8725,7 @@ export default function App() {
       }
 
       setDashboardOverview(payload);
+      setDashboardOverviewError(null);
       const resolvedWorkspaceId = payload.workspaceId || workspaceIdForRequest || activeWorkspaceId;
       if (resolvedWorkspaceId) {
         upsertWorkspaceSnapshot(resolvedWorkspaceId, { dashboardOverview: payload });
@@ -8718,9 +8733,58 @@ export default function App() {
       hasFetchedDashboardOverviewRef.current = true;
     } catch (error) {
       console.error('Dashboard overview fetch error:', error);
+      const friendlyMessage =
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.';
+      setDashboardOverviewError(friendlyMessage);
+      setDashboardOverview((current) =>
+        current ?? {
+          workspaceId: workspaceIdForRequest || activeWorkspaceId || 'unknown',
+          generatedAt: new Date().toISOString(),
+          summary: {
+            currentBalance: 0,
+            projectedBalance30d: 0,
+            inflow: 0,
+            outflow: 0,
+            upcomingInflow: 0,
+            upcomingOutflow: 0,
+            upcomingInflowCount: 0,
+            upcomingOutflowCount: 0,
+          },
+          forecast: {
+            asOfDate: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            currentBalance: 0,
+            projectedBalance30d: 0,
+            projectedNegativeDate: null,
+            nextCriticalDate: null,
+            monthConfirmedIncome: 0,
+            monthConfirmedExpense: 0,
+            monthPlannedIncome: 0,
+            monthPlannedExpense: 0,
+            daily: [],
+          },
+          monthlySeries: [],
+          alerts: [
+            {
+              id: 'dashboard-overview-error',
+              tone: 'warning',
+              title: 'Visao geral indisponivel',
+              message: friendlyMessage,
+            },
+          ],
+          insights: {
+            primary: [],
+            automated: [],
+          },
+          upcomingEvents: [],
+          recentTransactions: [],
+        }
+      );
     } finally {
       if (!silent) {
-        setDataLoading(false);
+        setDashboardOverviewLoading(false);
       }
     }
   }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
@@ -8761,6 +8825,7 @@ export default function App() {
       }
 
       setReportsOverview(payload);
+      hasFetchedReportsOverviewRef.current = true;
       const resolvedWorkspaceId = workspaceIdForRequest || activeWorkspaceId;
       if (resolvedWorkspaceId) {
         upsertWorkspaceSnapshot(resolvedWorkspaceId, { reportsOverview: payload });
@@ -8771,10 +8836,10 @@ export default function App() {
   }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
 
   React.useEffect(() => {
-    if (user) {
-      void fetchReportsOverviewData();
+    if (user && activeTab === 'reports') {
+      void fetchReportsOverviewData({ silent: hasFetchedReportsOverviewRef.current });
     }
-  }, [user, fetchReportsOverviewData]);
+  }, [activeTab, fetchReportsOverviewData, user]);
 
   const refreshTransactionsResource = React.useCallback(
     async (options?: TransactionsResourceRefreshOptions) => {
@@ -9022,20 +9087,25 @@ export default function App() {
     });
   }, [refreshTransactionsResource]);
 
-  const triggerDeferredProjectionRefresh = React.useCallback(
-    (delayMs = 500) => {
-      if (typeof window === 'undefined') {
-        void refreshProjectionAndCalendarResource();
-        void fetchDashboardOverviewData({ silent: true });
-        return;
-      }
-      window.setTimeout(() => {
-        void fetchDashboardOverviewData({ silent: true });
-        void fetchReportsOverviewData({ silent: true });
-      }, Math.max(0, delayMs));
-    },
-    [fetchDashboardOverviewData, fetchReportsOverviewData, refreshProjectionAndCalendarResource]
-  );
+    const triggerDeferredProjectionRefresh = React.useCallback(
+      (delayMs = 500) => {
+        if (typeof window === 'undefined') {
+          void refreshProjectionAndCalendarResource();
+          void fetchDashboardOverviewData({ silent: true });
+          if (activeTab === 'reports' || hasFetchedReportsOverviewRef.current) {
+            void fetchReportsOverviewData({ silent: true });
+          }
+          return;
+        }
+        window.setTimeout(() => {
+          void fetchDashboardOverviewData({ silent: true });
+          if (activeTab === 'reports' || hasFetchedReportsOverviewRef.current) {
+            void fetchReportsOverviewData({ silent: true });
+          }
+        }, Math.max(0, delayMs));
+      },
+    [activeTab, fetchDashboardOverviewData, fetchReportsOverviewData, refreshProjectionAndCalendarResource]
+    );
 
   const refreshTransactionsAfterMutation = React.useCallback(() => {
     void refreshTransactionsResource({
@@ -9064,6 +9134,7 @@ export default function App() {
       setBills([]);
       setWorkspaceEvents([]);
       setDashboardOverview(null);
+      setDashboardOverviewError(null);
       setSubscriptionSummary(null);
       setSubscriptionError(null);
       setIsSubscriptionLoading(false);
@@ -9094,6 +9165,7 @@ export default function App() {
       }
       hasFetchedDashboardRef.current = false;
       hasFetchedDashboardOverviewRef.current = false;
+      hasFetchedReportsOverviewRef.current = false;
       lastWorkspaceIdRef.current = null;
       lastUserIdRef.current = nextUserId;
     }
@@ -10641,9 +10713,11 @@ React.useEffect(() => {
       const responseData = await response.json().catch(() => ({}));
       if (!response.ok) {
         const message =
-          typeof responseData?.error === 'string'
-            ? responseData.error
-            : 'Falha ao salvar transação.';
+          typeof responseData?.message === 'string'
+            ? responseData.message
+            : typeof responseData?.error === 'string'
+              ? responseData.error
+              : 'Falha ao salvar transação.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -10710,9 +10784,11 @@ React.useEffect(() => {
       const responseData = await response.json().catch(() => ({}));
       if (!response.ok) {
         const message =
-          typeof responseData?.error === 'string'
-            ? responseData.error
-            : 'Falha ao excluir transação.';
+          typeof responseData?.message === 'string'
+            ? responseData.message
+            : typeof responseData?.error === 'string'
+              ? responseData.error
+              : 'Falha ao excluir transação.';
         setTransactions(previousTransactionsSnapshot);
         setTotalBalance(previousTotalBalance);
         setCurrentMonthTransactionCount(previousMonthCount);
@@ -13204,13 +13280,14 @@ React.useEffect(() => {
             >
               {activeTab === 'dashboard' && (
                 <DashboardPageContainer>
-                  <DashboardView
-                    overview={dashboardOverview}
-                    loading={dataLoading}
-                    currentPlan={currentPlan}
-                    onAddTransaction={handleOpenCreateTransaction}
-                    onUpgrade={() => void handleUpgrade('Pro Mensal')}
-                  />
+                    <DashboardView
+                      overview={dashboardOverview}
+                      loading={dashboardOverviewLoading}
+                      error={dashboardOverviewError}
+                      currentPlan={currentPlan}
+                      onAddTransaction={handleOpenCreateTransaction}
+                      onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                    />
                 </DashboardPageContainer>
               )}
               {activeTab === 'transactions' && (

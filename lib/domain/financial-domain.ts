@@ -43,6 +43,7 @@ export type FinancialEventStatus = 'PENDING' | 'PAID' | 'RECEIVED' | 'OVERDUE' |
 
 const TRANSACTION_STATUS_ALIASES: Record<string, TransactionStatus> = {
   PENDING: 'PENDING',
+  PLANNED: 'PENDING',
   CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED',
   CANCELED: 'CANCELLED',

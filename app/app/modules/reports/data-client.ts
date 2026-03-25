@@ -9,5 +9,6 @@ export async function fetchReportsOverviewResource(params: {
     path: '/api/reports/overview',
     getAuthHeaders: params.getAuthHeaders,
     workspaceIdOverride: params.workspaceIdOverride,
+    timeoutMs: 12000,
   });
 }
