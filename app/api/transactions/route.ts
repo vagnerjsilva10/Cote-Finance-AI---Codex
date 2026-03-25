@@ -394,17 +394,301 @@ function mergeLedgerEffects(
 }
 
 async function findTransactionByIdWithRelations(id: string, workspaceId: string) {
-  return prisma.transaction.findFirst({
-    where: {
-      id,
-      workspace_id: workspaceId,
-    },
-    include: {
-      category: true,
-      wallet: true,
-      destination_wallet: true,
-    },
-  });
+  try {
+    return await prisma.transaction.findFirst({
+      where: {
+        id,
+        workspace_id: workspaceId,
+      },
+      include: {
+        category: true,
+        wallet: true,
+        destination_wallet: true,
+      },
+    });
+  } catch (error) {
+    if (!isSchemaMismatchError(error)) {
+      throw error;
+    }
+
+    return prisma.transaction.findFirst({
+      where: {
+        id,
+        workspace_id: workspaceId,
+      },
+      include: {
+        category: true,
+        wallet: true,
+      },
+    });
+  }
+}
+
+async function findTransactionForMutation(id: string, workspaceId: string) {
+  try {
+    return await prisma.transaction.findFirst({
+      where: {
+        id,
+        workspace_id: workspaceId,
+      },
+      select: {
+        id: true,
+        wallet_id: true,
+        destination_wallet_id: true,
+        amount: true,
+        type: true,
+        status: true,
+        payment_method: true,
+        category_id: true,
+        description: true,
+      },
+    });
+  } catch (error) {
+    if (!isSchemaMismatchError(error)) {
+      throw error;
+    }
+
+    const legacyTransaction = await prisma.transaction.findFirst({
+      where: {
+        id,
+        workspace_id: workspaceId,
+      },
+      select: {
+        id: true,
+        wallet_id: true,
+        amount: true,
+        type: true,
+        status: true,
+        category_id: true,
+        description: true,
+      },
+    });
+
+    if (!legacyTransaction) {
+      return null;
+    }
+
+    return {
+      ...legacyTransaction,
+      destination_wallet_id: null,
+      payment_method: 'OTHER',
+    };
+  }
+}
+
+async function findTransactionForDelete(id: string, workspaceId: string) {
+  try {
+    return await prisma.transaction.findFirst({
+      where: {
+        id,
+        workspace_id: workspaceId,
+      },
+      select: {
+        id: true,
+        wallet_id: true,
+        destination_wallet_id: true,
+        amount: true,
+        type: true,
+        status: true,
+      },
+    });
+  } catch (error) {
+    if (!isSchemaMismatchError(error)) {
+      throw error;
+    }
+
+    const legacyTransaction = await prisma.transaction.findFirst({
+      where: {
+        id,
+        workspace_id: workspaceId,
+      },
+      select: {
+        id: true,
+        wallet_id: true,
+        amount: true,
+        type: true,
+        status: true,
+      },
+    });
+
+    if (!legacyTransaction) {
+      return null;
+    }
+
+    return {
+      ...legacyTransaction,
+      destination_wallet_id: null,
+    };
+  }
+}
+
+async function runCreateTransactionWriteBatch(params: {
+  workspaceId: string;
+  walletId: string;
+  destinationWalletId: string | null;
+  categoryId: string;
+  type: TransactionType;
+  paymentMethod: TransactionPaymentMethod;
+  receiptUrl: string | null;
+  amount: number;
+  date: Date;
+  dueDate: Date | null;
+  description: string;
+  status: TransactionStatus;
+  originType: string;
+  originId: string | null;
+  ledgerEffects: Array<{ walletId: string; delta: number }>;
+}) {
+  try {
+    return await prisma.$transaction([
+      prisma.transaction.create({
+        data: {
+          workspace_id: params.workspaceId,
+          wallet_id: params.walletId,
+          destination_wallet_id: params.destinationWalletId,
+          category_id: params.categoryId,
+          type: params.type,
+          payment_method: params.paymentMethod,
+          receipt_url: params.receiptUrl,
+          amount: params.amount,
+          date: params.date,
+          due_date: params.dueDate,
+          description: params.description,
+          status: params.status,
+          origin_type: params.originType,
+          origin_id: params.originId,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      ...params.ledgerEffects.map((effect) =>
+        prisma.wallet.update({
+          where: { id: effect.walletId },
+          data: {
+            balance: {
+              increment: effect.delta,
+            },
+          },
+        })
+      ),
+    ]);
+  } catch (error) {
+    if (!isSchemaMismatchError(error)) {
+      throw error;
+    }
+    if (params.type === 'TRANSFER') {
+      throw error;
+    }
+
+    return prisma.$transaction([
+      prisma.transaction.create({
+        data: {
+          workspace_id: params.workspaceId,
+          wallet_id: params.walletId,
+          category_id: params.categoryId,
+          type: params.type,
+          amount: params.amount,
+          date: params.date,
+          due_date: params.dueDate,
+          description: params.description,
+          status: params.status,
+          origin_type: params.originType,
+          origin_id: params.originId,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      ...params.ledgerEffects.map((effect) =>
+        prisma.wallet.update({
+          where: { id: effect.walletId },
+          data: {
+            balance: {
+              increment: effect.delta,
+            },
+          },
+        })
+      ),
+    ]);
+  }
+}
+
+async function runUpdateTransactionWriteBatch(params: {
+  transactionId: string;
+  walletId: string;
+  destinationWalletId: string | null;
+  categoryId?: string;
+  type: TransactionType;
+  paymentMethod: TransactionPaymentMethod;
+  receiptUrlInBody: boolean;
+  nextReceiptUrl?: string | null;
+  nextAmount: number;
+  nextDate?: Date | null;
+  nextDueDate?: Date | null;
+  nextDescription: string;
+  mergedEffects: Array<{ walletId: string; delta: number }>;
+}) {
+  const baseWalletOps = params.mergedEffects.map((effect) =>
+    prisma.wallet.update({
+      where: { id: effect.walletId },
+      data: {
+        balance: {
+          increment: effect.delta,
+        },
+      },
+    })
+  );
+
+  try {
+    return await prisma.$transaction([
+      ...baseWalletOps,
+      prisma.transaction.update({
+        where: { id: params.transactionId },
+        data: {
+          wallet_id: params.walletId,
+          destination_wallet_id: params.type === 'TRANSFER' ? params.destinationWalletId : null,
+          category_id: params.categoryId,
+          type: params.type,
+          payment_method: params.paymentMethod,
+          receipt_url: params.receiptUrlInBody ? params.nextReceiptUrl : undefined,
+          amount: params.nextAmount,
+          date: params.nextDate ?? undefined,
+          due_date: params.nextDueDate,
+          description: params.nextDescription || undefined,
+        },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (!isSchemaMismatchError(error)) {
+      throw error;
+    }
+    if (params.type === 'TRANSFER') {
+      throw error;
+    }
+
+    return prisma.$transaction([
+      ...baseWalletOps,
+      prisma.transaction.update({
+        where: { id: params.transactionId },
+        data: {
+          wallet_id: params.walletId,
+          category_id: params.categoryId,
+          type: params.type,
+          amount: params.nextAmount,
+          date: params.nextDate ?? undefined,
+          due_date: params.nextDueDate,
+          description: params.nextDescription || undefined,
+        },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
+  }
 }
 
 function buildWriteFailureResponse(params: {
@@ -628,39 +912,23 @@ export async function POST(req: Request) {
         : [];
 
     const [createdTransaction] = await measureStep(metrics, 'write_batch_tx_ms', () =>
-      prisma.$transaction([
-        prisma.transaction.create({
-          data: {
-            workspace_id: context.workspaceId,
-            wallet_id: walletId,
-            destination_wallet_id: destinationWalletId,
-            category_id: categoryId,
-            type,
-            payment_method: paymentMethod,
-            receipt_url: receiptUrl,
-            amount,
-            date,
-            due_date: dueDate,
-            description,
-            status,
-            origin_type: originType,
-            origin_id: effectiveOriginId,
-          },
-          select: {
-            id: true,
-          },
-        }),
-        ...ledgerEffects.map((effect) =>
-          prisma.wallet.update({
-            where: { id: effect.walletId },
-            data: {
-              balance: {
-                increment: effect.delta,
-              },
-            },
-          })
-        ),
-      ])
+      runCreateTransactionWriteBatch({
+        workspaceId: context.workspaceId,
+        walletId,
+        destinationWalletId,
+        categoryId,
+        type,
+        paymentMethod,
+        receiptUrl,
+        amount,
+        date,
+        dueDate,
+        description,
+        status,
+        originType,
+        originId: effectiveOriginId,
+        ledgerEffects,
+      })
     );
 
     const transaction = await measureStep(metrics, 'fetch_created_transaction_ms', async () => {
@@ -772,23 +1040,7 @@ export async function PATCH(req: Request) {
     }
 
     const existingTransaction = await measureStep(metrics, 'load_existing_transaction_ms', () =>
-      prisma.transaction.findFirst({
-      where: {
-        id: body.id,
-        workspace_id: context.workspaceId,
-      },
-      select: {
-        id: true,
-        wallet_id: true,
-        destination_wallet_id: true,
-        amount: true,
-        type: true,
-        status: true,
-        payment_method: true,
-        category_id: true,
-        description: true,
-      },
-      })
+      findTransactionForMutation(body.id as string, context.workspaceId)
     );
 
     if (!existingTransaction) {
@@ -885,36 +1137,21 @@ export async function PATCH(req: Request) {
     const mergedEffects = mergeLedgerEffects(previousEffects, nextEffects);
 
     await measureStep(metrics, 'write_batch_tx_ms', () =>
-      prisma.$transaction([
-        ...mergedEffects.map((effect) =>
-          prisma.wallet.update({
-            where: { id: effect.walletId },
-            data: {
-              balance: {
-                increment: effect.delta,
-              },
-            },
-          })
-        ),
-        prisma.transaction.update({
-          where: { id: existingTransaction.id },
-          data: {
-            wallet_id: walletId,
-            destination_wallet_id: nextType === 'TRANSFER' ? nextDestinationWalletId : null,
-            category_id: categoryId,
-            type: nextType,
-            payment_method: paymentMethod,
-            receipt_url: receiptUrlInBody ? nextReceiptUrl : undefined,
-            amount: nextAmount,
-            date: nextDate ?? undefined,
-            due_date: nextDueDate,
-            description: nextDescription || undefined,
-          },
-          select: {
-            id: true,
-          },
-        }),
-      ])
+      runUpdateTransactionWriteBatch({
+        transactionId: existingTransaction.id,
+        walletId,
+        destinationWalletId: nextDestinationWalletId,
+        categoryId,
+        type: nextType,
+        paymentMethod,
+        receiptUrlInBody,
+        nextReceiptUrl,
+        nextAmount,
+        nextDate,
+        nextDueDate,
+        nextDescription,
+        mergedEffects,
+      })
     );
 
     const transaction = await measureStep(metrics, 'fetch_updated_transaction_ms', async () => {
@@ -1012,20 +1249,7 @@ export async function DELETE(req: Request) {
     }
 
     const existingTransaction = await measureStep(metrics, 'load_existing_transaction_ms', () =>
-      prisma.transaction.findFirst({
-      where: {
-        id: body.id,
-        workspace_id: context.workspaceId,
-      },
-      select: {
-        id: true,
-        wallet_id: true,
-        destination_wallet_id: true,
-        amount: true,
-        type: true,
-        status: true,
-      },
-      })
+      findTransactionForDelete(body.id as string, context.workspaceId)
     );
 
     if (!existingTransaction) {

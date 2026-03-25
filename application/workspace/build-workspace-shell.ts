@@ -10,6 +10,38 @@ import {
 import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
 import type { WorkspaceShellPayload } from '@/lib/workspace/shell';
 
+async function findWorkspaceTransactions(workspaceId: string, take: number) {
+  const query = {
+    where: { workspace_id: workspaceId },
+    orderBy: [{ date: 'desc' as const }, { id: 'desc' as const }],
+    take,
+  };
+
+  try {
+    return await prisma.transaction.findMany({
+      ...query,
+      include: {
+        category: true,
+        wallet: true,
+        destination_wallet: true,
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error || '');
+    if (!/destination_wallet_id|payment_method|receipt_url|does not exist|Unknown arg/i.test(message)) {
+      throw error;
+    }
+
+    return prisma.transaction.findMany({
+      ...query,
+      include: {
+        category: true,
+        wallet: true,
+      },
+    });
+  }
+}
+
 async function getCurrentMonthAiUsage(workspaceId: string) {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -73,18 +105,20 @@ export async function buildWorkspaceShell(
           balance: true,
         },
       }),
-      prisma.workspaceEvent.findMany({
-        where: { workspace_id: context.workspaceId },
-        orderBy: { created_at: 'desc' },
-        take: 20,
-        select: {
-          id: true,
-          type: true,
-          created_at: true,
-          user_id: true,
-          payload: true,
-        },
-      }),
+      scope === 'full'
+        ? prisma.workspaceEvent.findMany({
+            where: { workspace_id: context.workspaceId },
+            orderBy: { created_at: 'desc' },
+            take: 20,
+            select: {
+              id: true,
+              type: true,
+              created_at: true,
+              user_id: true,
+              payload: true,
+            },
+          })
+        : Promise.resolve([]),
       getCurrentMonthTransactionCount(context.workspaceId),
       getCurrentMonthAiUsage(context.workspaceId),
     ]);
@@ -141,16 +175,7 @@ export async function buildWorkspaceShell(
   };
 
   const [transactions, goals, investments, debts, recurringDebts] = await Promise.all([
-    prisma.transaction.findMany({
-      where: { workspace_id: context.workspaceId },
-      orderBy: [{ date: 'desc' }, { id: 'desc' }],
-      take: 200,
-      include: {
-        category: true,
-        wallet: true,
-        destination_wallet: true,
-      },
-    }),
+    findWorkspaceTransactions(context.workspaceId, scope === 'transactions' ? 80 : 200),
     scope === 'full'
       ? prisma.goal.findMany({
           where: { workspace_id: context.workspaceId },

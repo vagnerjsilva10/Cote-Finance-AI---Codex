@@ -8023,6 +8023,8 @@ export default function App() {
   const [dashboardOverviewError, setDashboardOverviewError] = React.useState<string | null>(null);
   const [dashboardOverview, setDashboardOverview] = React.useState<DashboardOverviewPayload | null>(null);
   const [reportsOverview, setReportsOverview] = React.useState<ReportsOverviewPayload | null>(null);
+  const dashboardOverviewRef = React.useRef<DashboardOverviewPayload | null>(null);
+  const reportsOverviewRef = React.useRef<ReportsOverviewPayload | null>(null);
   const [totalBalance, setTotalBalance] = React.useState(0);
   const [dashboardInsights, setDashboardInsights] = React.useState<string[]>([]);
   const [dashboardProjection, setDashboardProjection] = React.useState<DashboardProjection | null>(null);
@@ -8071,6 +8073,14 @@ export default function App() {
   } | null>(null);
   const tabHistoryInitializedRef = React.useRef(false);
   const suppressNextTabHistorySyncRef = React.useRef(false);
+
+  React.useEffect(() => {
+    dashboardOverviewRef.current = dashboardOverview;
+  }, [dashboardOverview]);
+
+  React.useEffect(() => {
+    reportsOverviewRef.current = reportsOverview;
+  }, [reportsOverview]);
 
   React.useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -8332,8 +8342,8 @@ export default function App() {
           debts: mappedDebts ?? baseSnapshot?.debts ?? [],
           recurringDebts: mappedRecurringDebts ?? baseSnapshot?.recurringDebts ?? [],
           workspaceEvents: mappedWorkspaceEvents ?? baseSnapshot?.workspaceEvents ?? [],
-          dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverview ?? null,
-          reportsOverview: baseSnapshot?.reportsOverview ?? reportsOverview ?? null,
+          dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverviewRef.current ?? null,
+          reportsOverview: baseSnapshot?.reportsOverview ?? reportsOverviewRef.current ?? null,
           dashboardInsights: baseSnapshot?.dashboardInsights ?? [],
           isWhatsAppConnected: Boolean(
             data.workspace && String(data.workspace.whatsapp_status || '').toUpperCase() === 'CONNECTED'
@@ -8355,13 +8365,7 @@ export default function App() {
     } catch (error) {
       console.error('Workspace shell fetch error:', error);
     }
-  }, [activeWorkspaceId, dashboardOverview, getAuthHeaders, reportsOverview, setupUserOnServer, user]);
-
-  React.useEffect(() => {
-    if (user) {
-      void fetchDashboardData({ silent: hasFetchedDashboardRef.current });
-    }
-  }, [user, fetchDashboardData]);
+  }, [activeWorkspaceId, getAuthHeaders, setupUserOnServer, user]);
 
   const [isAssistantOpen, setIsAssistantOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -8648,8 +8652,8 @@ export default function App() {
         debts: baseSnapshot?.debts ?? debts,
         recurringDebts: baseSnapshot?.recurringDebts ?? recurringDebts,
         workspaceEvents: baseSnapshot?.workspaceEvents ?? workspaceEvents,
-        dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverview ?? null,
-        reportsOverview: baseSnapshot?.reportsOverview ?? reportsOverview ?? null,
+        dashboardOverview: baseSnapshot?.dashboardOverview ?? dashboardOverviewRef.current ?? null,
+        reportsOverview: baseSnapshot?.reportsOverview ?? reportsOverviewRef.current ?? null,
         dashboardInsights: baseSnapshot?.dashboardInsights ?? dashboardInsights,
         isWhatsAppConnected: baseSnapshot?.isWhatsAppConnected ?? isWhatsAppConnected,
         workspaceWhatsAppPhoneNumber: baseSnapshot?.workspaceWhatsAppPhoneNumber ?? workspaceWhatsAppPhoneNumber,
@@ -8676,12 +8680,10 @@ export default function App() {
       isWhatsAppConnected,
       recurringDebts,
       reportAccessLevel,
-      reportsOverview,
       totalBalance,
       transactions,
       user?.id,
       workspaceEvents,
-      dashboardOverview,
       workspaceWhatsAppPhoneNumber,
     ]
   );
@@ -8789,12 +8791,6 @@ export default function App() {
     }
   }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
 
-  React.useEffect(() => {
-    if (user) {
-      void fetchDashboardOverviewData({ silent: hasFetchedDashboardOverviewRef.current });
-    }
-  }, [user, fetchDashboardOverviewData]);
-
   const fetchReportsOverviewData = React.useCallback(async (options?: { silent?: boolean }) => {
     if (!user) return;
 
@@ -8835,11 +8831,50 @@ export default function App() {
     }
   }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
 
+  const fetchDashboardDataRef = React.useRef(fetchDashboardData);
+  const fetchDashboardOverviewDataRef = React.useRef(fetchDashboardOverviewData);
+  const fetchReportsOverviewDataRef = React.useRef(fetchReportsOverviewData);
+
+  React.useEffect(() => {
+    fetchDashboardDataRef.current = fetchDashboardData;
+  }, [fetchDashboardData]);
+
+  React.useEffect(() => {
+    fetchDashboardOverviewDataRef.current = fetchDashboardOverviewData;
+  }, [fetchDashboardOverviewData]);
+
+  React.useEffect(() => {
+    fetchReportsOverviewDataRef.current = fetchReportsOverviewData;
+  }, [fetchReportsOverviewData]);
+
+  React.useEffect(() => {
+    if (!user) return;
+
+    const scope = activeTab === 'dashboard' ? 'transactions' : 'full';
+    const delayMs = scope === 'transactions' && !hasFetchedDashboardRef.current ? 900 : 0;
+    const timeoutId = window.setTimeout(() => {
+      void fetchDashboardDataRef.current({
+        silent: hasFetchedDashboardRef.current,
+        scope,
+      });
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [activeTab, activeWorkspaceId, user]);
+
+  React.useEffect(() => {
+    if (user) {
+      void fetchDashboardOverviewDataRef.current({ silent: hasFetchedDashboardOverviewRef.current });
+    }
+  }, [activeWorkspaceId, user]);
+
   React.useEffect(() => {
     if (user && activeTab === 'reports') {
-      void fetchReportsOverviewData({ silent: hasFetchedReportsOverviewRef.current });
+      void fetchReportsOverviewDataRef.current({ silent: hasFetchedReportsOverviewRef.current });
     }
-  }, [activeTab, fetchReportsOverviewData, user]);
+  }, [activeTab, activeWorkspaceId, user]);
 
   const refreshTransactionsResource = React.useCallback(
     async (options?: TransactionsResourceRefreshOptions) => {
