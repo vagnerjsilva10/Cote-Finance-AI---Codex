@@ -156,6 +156,11 @@ body {
     height: 6px;
   }
 
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--primary) 38%, transparent) transparent;
+  }
+
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }

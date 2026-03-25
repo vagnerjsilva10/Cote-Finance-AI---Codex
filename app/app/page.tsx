@@ -13044,7 +13044,7 @@ React.useEffect(() => {
                       Navegar no produto
                     </p>
                   </div>
-                  <div className="max-h-72 overflow-y-auto p-2">
+                  <div className="custom-scrollbar max-h-72 overflow-y-auto p-2 pr-1">
                     {headerSearchResults.length > 0 ? (
                       headerSearchResults.map((item) => (
                         <button
