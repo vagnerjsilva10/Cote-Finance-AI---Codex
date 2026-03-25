@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 type DashboardRecentTransactionsProps = {
   transactions: DashboardOverviewRecentTransaction[];
   loading: boolean;
+  onViewAll: () => void;
+  onOpenTransaction: (transaction: DashboardOverviewRecentTransaction) => void;
 };
 
 function getCategoryLabel(category: string | null) {
@@ -22,14 +24,14 @@ function getCategoryBadgeLetter(category: string | null) {
   return label.charAt(0).toUpperCase();
 }
 
-export function DashboardRecentTransactions({ transactions, loading }: DashboardRecentTransactionsProps) {
+export function DashboardRecentTransactions({ transactions, loading, onViewAll, onOpenTransaction }: DashboardRecentTransactionsProps) {
   const visibleTransactions = transactions.slice(0, 5);
 
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Transações Recentes</h3>
-        <button type="button" className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
+        <button type="button" onClick={onViewAll} className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
           Ver todas
         </button>
       </div>
@@ -66,12 +68,12 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
               ) : visibleTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center text-sm text-[var(--text-secondary)]">
-                    Nenhuma transação encontrada no período atual.
+                    Comece registrando sua primeira transação para acompanhar sua evolução.
                   </td>
                 </tr>
               ) : (
                 visibleTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="transition-colors hover:bg-[rgba(8,15,27,0.45)]">
+                  <tr key={transaction.id} className="cursor-pointer transition-colors hover:bg-[rgba(8,15,27,0.45)]" onClick={() => onOpenTransaction(transaction)}>
                     <td className="px-5 py-3.5 text-sm font-medium text-[var(--text-primary)]">{transaction.description}</td>
                     <td className="px-5 py-3.5 text-sm text-[var(--text-secondary)]">
                       <div className="inline-flex items-center gap-2">
@@ -105,4 +107,3 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
     </section>
   );
 }
-

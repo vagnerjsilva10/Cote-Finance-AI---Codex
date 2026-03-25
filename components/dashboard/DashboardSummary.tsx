@@ -7,10 +7,13 @@ import { DASHBOARD_CARD_SHELL_CLASSNAME, DashboardSkeletonLine } from '@/compone
 import { formatCurrency } from '@/components/dashboard/dashboard-utils';
 import { cn } from '@/lib/utils';
 
+type SummaryCardTarget = 'balance' | 'income' | 'expense';
+
 type DashboardSummaryProps = {
   summary: DashboardOverviewSummaryData | null;
   monthlySeries: DashboardOverviewMonthlySeriesPoint[];
   loading: boolean;
+  onOpenSummaryTarget: (target: SummaryCardTarget) => void;
 };
 
 type CardProps = {
@@ -19,6 +22,7 @@ type CardProps = {
   trend?: string | null;
   tone?: 'neutral' | 'positive' | 'negative';
   loading: boolean;
+  onClick: () => void;
 };
 
 function formatDeltaPercent(current: number, previous: number) {
@@ -28,13 +32,17 @@ function formatDeltaPercent(current: number, previous: number) {
   return `${sign}${delta.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 }
 
-function SummaryCard({ label, value, trend, tone = 'neutral', loading }: CardProps) {
+function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }: CardProps) {
   return (
-    <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[118px] space-y-2 !p-4')}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[118px] w-full space-y-2 !p-4 text-left hover:-translate-y-[1px]')}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold text-[var(--text-primary)]">{label}</p>
         {trend ? (
-          <p className={cn('text-lg font-bold', tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]')}>
+          <p className={cn('text-sm font-bold', tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]')}>
             {trend}
           </p>
         ) : (
@@ -51,18 +59,18 @@ function SummaryCard({ label, value, trend, tone = 'neutral', loading }: CardPro
       ) : (
         <p
           className={cn(
-            'text-4xl font-black leading-tight tracking-[-0.02em]',
+            'text-3xl font-black leading-tight tracking-[-0.02em]',
             tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'
           )}
         >
           {value}
         </p>
       )}
-    </article>
+    </button>
   );
 }
 
-export function DashboardSummary({ summary, monthlySeries, loading }: DashboardSummaryProps) {
+export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummaryTarget }: DashboardSummaryProps) {
   const inflow = summary ? summary.inflow : 0;
   const outflow = summary ? summary.outflow : 0;
 
@@ -75,13 +83,33 @@ export function DashboardSummary({ summary, monthlySeries, loading }: DashboardS
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:gap-4">
       <div className="lg:col-span-4">
-        <SummaryCard label="Receita" value={summary ? formatCurrency(inflow) : '--'} trend={incomeTrend} tone="positive" loading={loading} />
+        <SummaryCard
+          label="Receita"
+          value={summary ? formatCurrency(inflow) : '--'}
+          trend={incomeTrend}
+          tone="positive"
+          loading={loading}
+          onClick={() => onOpenSummaryTarget('income')}
+        />
       </div>
       <div className="lg:col-span-4">
-        <SummaryCard label="Despesa" value={summary ? formatCurrency(outflow) : '--'} trend={expenseTrend} tone="negative" loading={loading} />
+        <SummaryCard
+          label="Despesa"
+          value={summary ? formatCurrency(outflow) : '--'}
+          trend={expenseTrend}
+          tone="negative"
+          loading={loading}
+          onClick={() => onOpenSummaryTarget('expense')}
+        />
       </div>
       <div className="lg:col-span-4">
-        <SummaryCard label="Saldo Atual" value={summary ? formatCurrency(summary.currentBalance) : '--'} tone="neutral" loading={loading} />
+        <SummaryCard
+          label="Saldo Atual"
+          value={summary ? formatCurrency(summary.currentBalance) : '--'}
+          tone="neutral"
+          loading={loading}
+          onClick={() => onOpenSummaryTarget('balance')}
+        />
       </div>
     </div>
   );
