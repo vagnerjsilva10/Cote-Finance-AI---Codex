@@ -58,17 +58,20 @@ export function DashboardContainer({ overview, loading, currentPlan, onAddTransa
           <DashboardBalanceEvolutionCard forecast={overview?.forecast ?? null} loading={loading} />
         </div>
 
-        <div className="lg:col-span-9">
-          <DashboardChart monthlySeries={overview?.monthlySeries ?? []} loading={loading} />
-        </div>
-
-        <div className="lg:col-span-3">
-          <DashboardInsights
-            insights={overview?.insights ?? null}
-            currentPlan={currentPlan}
-            loading={loading}
-            onUpgrade={onUpgrade}
-          />
+        <div className="lg:col-span-12">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-start">
+            <div className="lg:col-span-8">
+              <DashboardChart monthlySeries={overview?.monthlySeries ?? []} loading={loading} />
+            </div>
+            <div className="lg:col-span-4">
+              <DashboardInsights
+                insights={overview?.insights ?? null}
+                currentPlan={currentPlan}
+                loading={loading}
+                onUpgrade={onUpgrade}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="lg:col-span-12">
@@ -82,3 +85,4 @@ export function DashboardContainer({ overview, loading, currentPlan, onAddTransa
     </div>
   );
 }
+

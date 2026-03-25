@@ -15,7 +15,7 @@ type DashboardChartProps = {
 
 export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) {
   return (
-    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[210px] space-y-3 !p-4 sm:!p-5')}>
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[240px] space-y-2.5 !p-3.5 sm:!p-4')}>
       <div className="space-y-0.5">
         <h3 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">Receitas vs Despesas</h3>
         <p className="text-xs text-[var(--text-secondary)]">
@@ -35,13 +35,13 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
       {loading ? (
         <div className="space-y-2">
           <DashboardSkeletonLine className="h-3.5 w-28" />
-          <DashboardSkeletonLine className="h-[170px] w-full rounded-xl sm:h-[190px]" />
+          <DashboardSkeletonLine className="h-[150px] w-full rounded-xl sm:h-[170px]" />
         </div>
       ) : monthlySeries.length > 0 ? (
-        <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-2.5 sm:p-3')}>
-          <div className="h-[170px] w-full sm:h-[190px]">
+        <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-2 sm:p-2.5')}>
+          <div className="h-[150px] w-full sm:h-[170px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlySeries} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
+              <LineChart data={monthlySeries} margin={{ top: 2, right: 8, left: -6, bottom: -10 }}>
                 <CartesianGrid strokeDasharray="3 8" stroke="rgba(148,163,184,0.20)" vertical={false} />
                 <XAxis dataKey="label" stroke="rgba(148,163,184,0.8)" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis

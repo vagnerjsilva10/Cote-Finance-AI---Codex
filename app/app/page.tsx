@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
@@ -2036,7 +2036,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
     onClick={onClick}
     title={collapsed ? label : undefined}
     className={cn(
-      'group flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-left transition-all duration-200',
+      'group flex w-full items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-2 text-left transition-all duration-200',
       collapsed && 'justify-center px-2',
       active
         ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
@@ -2044,10 +2044,10 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
     )}
   >
     <Icon
-      size={20}
+      size={16}
       className={cn(active ? 'text-[var(--primary-hover)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]')}
     />
-    {!collapsed && <span className="text-sm">{label}</span>}
+    {!collapsed && <span className="text-[13px] font-medium">{label}</span>}
   </button>
 );
 
@@ -12626,10 +12626,10 @@ React.useEffect(() => {
         className={cn(
           'sidebar-premium fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-[var(--border-default)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
-          isSidebarCollapsed ? 'w-[18.5rem] lg:w-[5.75rem]' : 'w-[18.5rem] lg:w-[18.75rem]'
+          isSidebarCollapsed ? 'w-56 lg:w-20' : 'w-56 lg:w-56'
         )}
       >
-        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-4' : 'px-5 py-6')} id="sidebar-logo">
+        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-3' : 'px-4 py-4')} id="sidebar-logo">
           <Image
             src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo}
             alt="Cote Finance AI - By Cote Juros"
@@ -12652,7 +12652,7 @@ React.useEffect(() => {
           </div>
         </div>
 
-                <nav className={cn('flex-1 space-y-1 overflow-y-auto custom-scrollbar py-4', isSidebarCollapsed ? 'px-2' : 'px-4')}>
+                <nav className={cn('flex-1 space-y-1 overflow-y-auto custom-scrollbar py-3', isSidebarCollapsed ? 'px-2' : 'px-3')}>
           {MAIN_NAV_ITEMS.map((item) => (
             <SidebarItem
               key={`main-nav-${item.tab}`}
@@ -12678,7 +12678,7 @@ React.useEffect(() => {
           ))}
         </nav>
 
-        <div className="p-4">
+        <div className="p-3">
           {isSidebarCollapsed ? (
             <div className="space-y-3">
               <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-2 py-3 text-center">
@@ -12709,16 +12709,10 @@ React.useEffect(() => {
             </div>
           ) : (
             <>
-              <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-4">
-                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
-                  Plano {planLabel}
-                </p>
-                <p className="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed">
-                  {isFreePlan
-                    ? `Free: até ${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês e IA limitada (${aiUsageCount}/${FREE_AI_LIMIT_PER_MONTH}).`
-                    : currentPlan === 'PREMIUM'
-                    ? 'Seu plano atual possui lançamentos ilimitados, IA sem limite mensal e automações avançadas.'
-                    : 'Seu plano Pro possui lançamentos ilimitados, relatórios completos, IA avançada e alertas no WhatsApp.'}
+              <div className="rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] p-3">
+                <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Plano {planLabel}</p>
+                <p className="mb-3 text-[11px] text-[var(--text-secondary)] leading-snug">
+                  {isFreePlan ? `${FREE_TRANSACTION_LIMIT_PER_MONTH} transações/mês` : 'Transações ilimitadas'}
                 </p>
                 <button
                   onClick={() => {
@@ -12728,7 +12722,7 @@ React.useEffect(() => {
                     }
                     handleManageSubscription();
                   }}
-                  className="w-full rounded-xl bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] py-2.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:brightness-105 shadow-lg shadow-[color:var(--primary-soft)]"
+                  className="w-full rounded-xl bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-hover)_100%)] py-2 text-[11px] font-bold text-[var(--text-primary)] transition-all hover:brightness-105 shadow-lg shadow-[color:var(--primary-soft)]"
                 >
                   {isFreePlan ? 'Atualizar para Pro' : 'Gerenciar assinatura'}
                 </button>
@@ -13858,30 +13852,3 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
