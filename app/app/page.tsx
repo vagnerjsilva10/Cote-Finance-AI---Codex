@@ -81,7 +81,7 @@ import { fetchDebtsContext, fetchRecurringDebtsContext } from '@/app/app/modules
 import { fetchWorkspaceShellResource } from '@/app/app/modules/workspace-shell/data-client';
 import { fetchReportsOverviewResource } from '@/app/app/modules/reports/data-client';
 import { ResourceClientError } from '@/app/app/modules/shared/resource-client';
-import type { DashboardOverviewPayload } from '@/lib/dashboard/overview';
+import type { DashboardOverviewPayload, DashboardOverviewRecentTransaction } from '@/lib/dashboard/overview';
 import type { ReportsOverviewPayload } from '@/domain/reports/report-overview';
 import {
   CONVENTIONAL_DEBT_CATEGORIES,
@@ -2318,8 +2318,20 @@ type DashboardViewProps = {
   loading: boolean;
   error: string | null;
   currentPlan: SubscriptionPlan;
+  goals: Goal[];
+  wallets: WalletAccount[];
+  investments: Investment[];
   onAddTransaction: () => void;
   onUpgrade: () => void;
+  onOpenSummaryTarget: (target: 'balance' | 'income' | 'expense') => void;
+  onOpenGoals: () => void;
+  onOpenPortfolio: () => void;
+  onOpenCreateGoal: () => void;
+  onOpenCreateWallet: () => void;
+  onOpenTransactions: () => void;
+  onOpenTransactionDetail: (transaction: DashboardOverviewRecentTransaction) => void;
+  onOpenAssistant: () => void;
+  onSendAssistantPrompt: (prompt: string) => void;
 };
 
 const DashboardView = ({
@@ -2327,8 +2339,20 @@ const DashboardView = ({
   loading,
   error,
   currentPlan,
+  goals,
+  wallets,
+  investments,
   onAddTransaction,
   onUpgrade,
+  onOpenSummaryTarget,
+  onOpenGoals,
+  onOpenPortfolio,
+  onOpenCreateGoal,
+  onOpenCreateWallet,
+  onOpenTransactions,
+  onOpenTransactionDetail,
+  onOpenAssistant,
+  onSendAssistantPrompt,
 }: DashboardViewProps) => {
   return (
     <div className="space-y-4">
@@ -2341,8 +2365,20 @@ const DashboardView = ({
         overview={overview}
         loading={loading}
         currentPlan={currentPlan}
+        goals={goals}
+        wallets={wallets}
+        investments={investments}
         onAddTransaction={onAddTransaction}
         onUpgrade={onUpgrade}
+        onOpenSummaryTarget={onOpenSummaryTarget}
+        onOpenGoals={onOpenGoals}
+        onOpenPortfolio={onOpenPortfolio}
+        onOpenCreateGoal={onOpenCreateGoal}
+        onOpenCreateWallet={onOpenCreateWallet}
+        onOpenTransactions={onOpenTransactions}
+        onOpenTransactionDetail={onOpenTransactionDetail}
+        onOpenAssistant={onOpenAssistant}
+        onSendAssistantPrompt={onSendAssistantPrompt}
       />
     </div>
   );
@@ -2353,6 +2389,7 @@ type TransactionsViewProps = {
   onAddTransaction: () => void;
   onEditTransaction: (id: string | number) => void;
   onDeleteTransaction: (id: string | number) => void;
+  initialFlowFilter?: TransactionFlowType | null;
 };
 
 const TransactionsView = ({
@@ -2360,9 +2397,15 @@ const TransactionsView = ({
   onAddTransaction,
   onEditTransaction,
   onDeleteTransaction,
+  initialFlowFilter = null,
 }: TransactionsViewProps) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState<'Todos' | TransactionFlowType>('Todos');
+
+  React.useEffect(() => {
+    if (!initialFlowFilter) return;
+    setTypeFilter(initialFlowFilter);
+  }, [initialFlowFilter]);
 
   const filteredTransactions = React.useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -8019,6 +8062,7 @@ export default function App() {
   };
 
   const [activeTab, setActiveTab] = React.useState<Tab>('dashboard');
+  const [transactionsInitialFlowFilter, setTransactionsInitialFlowFilter] = React.useState<TransactionFlowType | null>(null);
   const [dashboardOverviewLoading, setDashboardOverviewLoading] = React.useState(false);
   const [dashboardOverviewError, setDashboardOverviewError] = React.useState<string | null>(null);
   const [dashboardOverview, setDashboardOverview] = React.useState<DashboardOverviewPayload | null>(null);
@@ -8590,6 +8634,7 @@ export default function App() {
     (tab: Tab, options?: { openAssistant?: boolean }) => {
       if (!isTabValue(tab)) return;
       setActiveTab(tab);
+      if (tab !== 'transactions') setTransactionsInitialFlowFilter(null);
       if (options?.openAssistant || tab === 'assistant') {
         setIsAssistantOpen(true);
       }
@@ -8601,6 +8646,52 @@ export default function App() {
       setHeaderSearchTerm('');
     },
     []
+  );
+
+  const openAssistantWithPrompt = React.useCallback(
+    (prompt?: string) => {
+      if (prompt) {
+        setInput(prompt);
+      }
+      navigateToTab('assistant', { openAssistant: true });
+    },
+    [navigateToTab]
+  );
+
+  const handleDashboardOpenSummaryTarget = React.useCallback(
+    (target: 'balance' | 'income' | 'expense') => {
+      if (target === 'income') {
+        setTransactionsInitialFlowFilter('Receita');
+      } else if (target === 'expense') {
+        setTransactionsInitialFlowFilter('Despesa');
+      } else {
+        setTransactionsInitialFlowFilter(null);
+      }
+      navigateToTab('transactions');
+    },
+    [navigateToTab]
+  );
+
+  const handleDashboardOpenTransactions = React.useCallback(() => {
+    setTransactionsInitialFlowFilter(null);
+    navigateToTab('transactions');
+  }, [navigateToTab]);
+
+  const handleDashboardOpenTransactionDetail = React.useCallback(
+    (overviewTransaction: DashboardOverviewRecentTransaction) => {
+      const transactionToEdit =
+        transactions.find((transaction) => String(transaction.id) === String(overviewTransaction.id)) ?? null;
+
+      setTransactionsInitialFlowFilter(null);
+      navigateToTab('transactions');
+
+      if (transactionToEdit) {
+        setTransactionModalDraft(null);
+        setEditingTransactionId(transactionToEdit.id);
+        setIsTransactionModalOpen(true);
+      }
+    },
+    [navigateToTab, transactions]
   );
 
   const applyDashboardSnapshot = React.useCallback((snapshot: WorkspaceDashboardSnapshot) => {
@@ -13309,13 +13400,31 @@ React.useEffect(() => {
             >
               {activeTab === 'dashboard' && (
                 <DashboardPageContainer>
-                    <DashboardView
+                  <DashboardView
                       overview={dashboardOverview}
                       loading={dashboardOverviewLoading}
                       error={dashboardOverviewError}
                       currentPlan={currentPlan}
+                      goals={goals}
+                      wallets={wallets}
+                      investments={investments}
                       onAddTransaction={handleOpenCreateTransaction}
                       onUpgrade={() => void handleUpgrade('Pro Mensal')}
+                      onOpenSummaryTarget={handleDashboardOpenSummaryTarget}
+                      onOpenGoals={() => navigateToTab('goals')}
+                      onOpenPortfolio={() => navigateToTab('portfolio')}
+                      onOpenCreateGoal={() => {
+                        navigateToTab('goals');
+                        handleOpenCreateGoal();
+                      }}
+                      onOpenCreateWallet={() => {
+                        navigateToTab('portfolio');
+                        handleOpenCreateWalletModal();
+                      }}
+                      onOpenTransactions={handleDashboardOpenTransactions}
+                      onOpenTransactionDetail={handleDashboardOpenTransactionDetail}
+                      onOpenAssistant={() => openAssistantWithPrompt()}
+                      onSendAssistantPrompt={openAssistantWithPrompt}
                     />
                 </DashboardPageContainer>
               )}
@@ -13326,6 +13435,7 @@ React.useEffect(() => {
                     onAddTransaction={handleOpenCreateTransaction}
                     onEditTransaction={handleStartEditTransaction}
                     onDeleteTransaction={handleDeleteTransaction}
+                    initialFlowFilter={transactionsInitialFlowFilter}
                   />
                 </TransactionsContainer>
               )}
