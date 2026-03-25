@@ -60,7 +60,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
           COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('INCOME', 'PIX_IN') THEN "amount" ELSE 0 END), 0) AS income,
           COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('EXPENSE', 'PIX_OUT') THEN "amount" ELSE 0 END), 0) AS expense
         FROM "Transaction"
-        WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "workspace_id" = ${workspaceId}
           AND "date" >= ${series12Start}
           AND "date" < ${nextMonthStart}
         GROUP BY 1
@@ -72,7 +72,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
           COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('INCOME', 'PIX_IN') THEN "amount" ELSE 0 END), 0) AS income,
           COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('EXPENSE', 'PIX_OUT') THEN "amount" ELSE 0 END), 0) AS expense
         FROM "Transaction"
-        WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "workspace_id" = ${workspaceId}
           AND "date" >= ${series6Start}
           AND "date" < ${nextMonthStart}
         GROUP BY 1
@@ -84,7 +84,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
           COALESCE(SUM("Transaction"."amount"), 0) AS total
         FROM "Transaction"
         LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-        WHERE "Transaction"."workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "Transaction"."workspace_id" = ${workspaceId}
           AND UPPER(COALESCE("Transaction"."status", 'CONFIRMED')) = 'CONFIRMED'
           AND UPPER("Transaction"."type") IN ('EXPENSE', 'PIX_OUT')
         GROUP BY 1
@@ -101,7 +101,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
           "Transaction"."status"
         FROM "Transaction"
         LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-        WHERE "Transaction"."workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "Transaction"."workspace_id" = ${workspaceId}
           AND UPPER(COALESCE("Transaction"."status", 'CONFIRMED')) = 'CONFIRMED'
           AND "Transaction"."date" >= ${series12Start}
         ORDER BY "Transaction"."date" DESC
@@ -122,7 +122,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
           "type",
           "amount"
         FROM "Transaction"
-        WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "workspace_id" = ${workspaceId}
           AND UPPER(COALESCE("status", 'CONFIRMED')) = 'PENDING'
           AND COALESCE("due_date", "date") >= ${todayStart}
           AND COALESCE("due_date", "date") <= ${next30DaysEnd}

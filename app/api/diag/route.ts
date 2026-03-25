@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   asPrismaServiceUnavailableError,
   classifyPrismaRuntimeError,
+  getConfiguredDatabaseRuntimeInfo,
   getDatabaseConfigValidationIssue,
   getDatabaseRuntimeInfo,
   prisma,
@@ -12,13 +13,26 @@ export const runtime = 'nodejs';
 
 export async function GET() {
   const runtimeInfo = getDatabaseRuntimeInfo();
+  const configuredRuntimeInfo = getConfiguredDatabaseRuntimeInfo();
   const migrateInBuildEnabled = process.env.PRISMA_RUN_MIGRATIONS === '1';
   const dbIssue = getDatabaseConfigValidationIssue();
   const warnings: string[] = [];
 
-  if (runtimeInfo.usesPooler && runtimeInfo.connectionLimit !== null && runtimeInfo.connectionLimit <= 1) {
+  if (
+    configuredRuntimeInfo.usesPooler &&
+    configuredRuntimeInfo.connectionLimit !== null &&
+    configuredRuntimeInfo.connectionLimit <= 1
+  ) {
     warnings.push(
       'DATABASE_URL esta usando pooler com connection_limit=1. Isso aumenta muito o risco de timeout ao abrir transacoes e sob carga concorrente.'
+    );
+  }
+  if (
+    configuredRuntimeInfo.usesPooler &&
+    runtimeInfo.connectionLimit !== configuredRuntimeInfo.connectionLimit
+  ) {
+    warnings.push(
+      `Runtime elevou connection_limit para ${runtimeInfo.connectionLimit ?? 'desconhecido'} para reduzir timeout de conexao. Ajuste o DATABASE_URL no provedor para manter esse valor de forma explicita.`
     );
   }
 
@@ -31,6 +45,9 @@ export async function GET() {
         usesPooler: runtimeInfo.usesPooler,
         usesPgBouncer: runtimeInfo.usesPgBouncer,
         connectionLimit: runtimeInfo.connectionLimit,
+        configuredDbHost: configuredRuntimeInfo.host,
+        configuredDbPort: configuredRuntimeInfo.port,
+        configuredConnectionLimit: configuredRuntimeInfo.connectionLimit,
         migrateInBuildEnabled,
         warnings,
         status: 'error',
@@ -50,6 +67,9 @@ export async function GET() {
       usesPooler: runtimeInfo.usesPooler,
       usesPgBouncer: runtimeInfo.usesPgBouncer,
       connectionLimit: runtimeInfo.connectionLimit,
+      configuredDbHost: configuredRuntimeInfo.host,
+      configuredDbPort: configuredRuntimeInfo.port,
+      configuredConnectionLimit: configuredRuntimeInfo.connectionLimit,
       migrateInBuildEnabled,
       warnings,
       pingMs: Date.now() - startedAt,
@@ -65,6 +85,9 @@ export async function GET() {
       usesPooler: runtimeInfo.usesPooler,
       usesPgBouncer: runtimeInfo.usesPgBouncer,
       connectionLimit: runtimeInfo.connectionLimit,
+      configuredDbHost: configuredRuntimeInfo.host,
+      configuredDbPort: configuredRuntimeInfo.port,
+      configuredConnectionLimit: configuredRuntimeInfo.connectionLimit,
       migrateInBuildEnabled,
       warnings,
       status: 'error', 

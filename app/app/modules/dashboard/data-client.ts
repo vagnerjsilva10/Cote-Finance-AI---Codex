@@ -1,4 +1,8 @@
-import { fetchResourceJson, type AuthHeadersResolver } from '@/app/app/modules/shared/resource-client';
+import {
+  fetchResourceJson,
+  ResourceClientError,
+  type AuthHeadersResolver,
+} from '@/app/app/modules/shared/resource-client';
 import type { DashboardOverviewPayload } from '@/lib/dashboard/overview';
 
 export type DashboardScope = 'full' | 'transactions';
@@ -32,12 +36,22 @@ export async function fetchDashboardOverviewResource(params: {
   getAuthHeaders: AuthHeadersResolver;
   workspaceIdOverride?: string | null;
 }) {
-  return fetchResourceJson<DashboardOverviewPayload>({
-    path: '/api/dashboard/overview',
-    getAuthHeaders: params.getAuthHeaders,
-    workspaceIdOverride: params.workspaceIdOverride,
-    timeoutMs: 12000,
-  });
+  const request = () =>
+    fetchResourceJson<DashboardOverviewPayload>({
+      path: '/api/dashboard/overview',
+      getAuthHeaders: params.getAuthHeaders,
+      workspaceIdOverride: params.workspaceIdOverride,
+      timeoutMs: 14000,
+    });
+
+  try {
+    return await request();
+  } catch (error) {
+    if (error instanceof ResourceClientError && (error.status === 408 || error.status === 503)) {
+      return request();
+    }
+    throw error;
+  }
 }
 
 export async function fetchDashboardCalendarReadPayload(params: {

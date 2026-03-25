@@ -58,9 +58,10 @@ function isRecurrenceSchemaMismatchError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';
   }
-
-  const message = error instanceof Error ? error.message : String(error || '');
-  return /RecurrenceRule|origin_type|origin_id|does not exist|Unknown arg/i.test(message);
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return error.message.includes('Unknown argument');
+  }
+  return false;
 }
 
 function startOfDay(date: Date) {

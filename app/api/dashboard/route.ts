@@ -27,8 +27,10 @@ const isMissingTableError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';
   }
-  const message = error instanceof Error ? error.message : String(error || '');
-  return /does not exist|Unknown arg|destination_wallet_id|payment_method|receipt_url|DashboardReadModel|DailyCashProjection/i.test(message);
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return error.message.includes('Unknown argument');
+  }
+  return false;
 };
 
 async function findWorkspaceTransactions(workspaceId: string) {
@@ -84,7 +86,7 @@ async function findWorkspaceTransactions(workspaceId: string) {
         "status",
         "created_at"
       FROM "Transaction"
-      WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+      WHERE "workspace_id" = ${workspaceId}
       ORDER BY "date" DESC
       LIMIT ${DASHBOARD_TRANSACTION_LIMIT}
     `;

@@ -21,26 +21,40 @@ export async function fetchResourceJson<T>(params: {
   workspaceIdOverride?: string | null;
   timeoutMs?: number;
 }) {
-  const controller = new AbortController();
   const timeoutMs = Math.max(1000, Number(params.timeoutMs || 12000));
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutError = () =>
+    new ResourceClientError(`Tempo limite ao buscar recurso (${params.path}).`, {
+      status: 408,
+      path: params.path,
+    });
 
+  let headers: Record<string, string>;
+  let headersTimeout: ReturnType<typeof setTimeout> | null = null;
+  try {
+    headers = await Promise.race([
+      params.getAuthHeaders(false, params.workspaceIdOverride ?? null),
+      new Promise<Record<string, string>>((_, reject) => {
+        headersTimeout = setTimeout(() => reject(timeoutError()), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (headersTimeout) {
+      clearTimeout(headersTimeout);
+    }
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   let response: Response;
   try {
     response = await fetch(params.path, {
-      headers: await params.getAuthHeaders(false, params.workspaceIdOverride ?? null),
+      headers,
       signal: controller.signal,
     });
   } catch (error) {
     clearTimeout(timeout);
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new ResourceClientError(
-        `Tempo limite ao buscar recurso (${params.path}).`,
-        {
-          status: 408,
-          path: params.path,
-        }
-      );
+      throw timeoutError();
     }
     throw error;
   }

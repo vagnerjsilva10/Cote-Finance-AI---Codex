@@ -120,9 +120,51 @@ const isSchemaMismatchError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';
   }
-  const message = error instanceof Error ? error.message : String(error || '');
-  return /destination_wallet_id|payment_method|receipt_url|does not exist|Unknown arg/i.test(message);
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return error.message.includes('Unknown argument');
+  }
+  return false;
 };
+
+const LEGACY_OPTIONAL_WRITE_COLUMNS = new Set([
+  'destination_wallet_id',
+  'payment_method',
+  'receipt_url',
+  'origin_type',
+  'origin_id',
+]);
+
+function getMissingColumnFromKnownRequestError(error: Prisma.PrismaClientKnownRequestError) {
+  const candidates = [
+    error.meta?.column,
+    error.meta?.field_name,
+    error.meta?.target,
+    error.meta?.message,
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.length > 0)
+    .map((value) => value.toLowerCase());
+
+  for (const candidate of candidates) {
+    for (const column of LEGACY_OPTIONAL_WRITE_COLUMNS) {
+      if (candidate.includes(column)) {
+        return column;
+      }
+    }
+  }
+
+  return null;
+}
+
+function shouldUseCompatibilityCreateFallback(error: unknown) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+    return false;
+  }
+  if (error.code !== 'P2022') {
+    return false;
+  }
+  const missingColumn = getMissingColumnFromKnownRequestError(error);
+  return missingColumn ? LEGACY_OPTIONAL_WRITE_COLUMNS.has(missingColumn) : false;
+}
 
 const normalizeTransactionType = (rawType?: string | null, rawFlowType?: string | null) => {
   const normalizedType = String(rawType || '')
@@ -135,6 +177,8 @@ const normalizeTransactionType = (rawType?: string | null, rawFlowType?: string 
   }
 
   const normalizedFlowType = String(rawFlowType || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase();
   if (normalizedFlowType === 'receita' || normalizedFlowType === 'entrada' || normalizedFlowType === 'pix in') {
@@ -143,7 +187,7 @@ const normalizeTransactionType = (rawType?: string | null, rawFlowType?: string 
   if (normalizedFlowType === 'despesa' || normalizedFlowType === 'pix out') {
     return 'EXPENSE';
   }
-  if (normalizedFlowType === 'transferencia' || normalizedFlowType === 'transferência') {
+  if (normalizedFlowType === 'transferencia') {
     return 'TRANSFER';
   }
 
@@ -152,28 +196,22 @@ const normalizeTransactionType = (rawType?: string | null, rawFlowType?: string 
 
 const normalizePaymentMethod = (rawMethod: string | undefined, transactionType: TransactionType) => {
   const normalizedMethod = String(rawMethod || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toUpperCase()
     .replace(/\s+/g, '_');
 
-  if (
-    normalizedMethod === 'CARTAO' ||
-    normalizedMethod === 'CARTÃO' ||
-    normalizedMethod === 'CREDIT_CARD'
-  ) {
+  if (normalizedMethod === 'CARTAO' || normalizedMethod === 'CREDIT_CARD') {
     return 'CARD' as TransactionPaymentMethod;
   }
-  if (
-    normalizedMethod === 'TRANSFERENCIA_BANCARIA' ||
-    normalizedMethod === 'TRANSFERÊNCIA_BANCÁRIA' ||
-    normalizedMethod === 'TRANSFERENCIA'
-  ) {
+  if (normalizedMethod === 'TRANSFERENCIA_BANCARIA' || normalizedMethod === 'TRANSFERENCIA') {
     return 'BANK_TRANSFER' as TransactionPaymentMethod;
   }
   if (normalizedMethod === 'DINHEIRO') {
     return 'CASH' as TransactionPaymentMethod;
   }
-  if (normalizedMethod === 'DEBITO' || normalizedMethod === 'DÉBITO') {
+  if (normalizedMethod === 'DEBITO') {
     return 'DEBIT' as TransactionPaymentMethod;
   }
   if (VALID_PAYMENT_METHODS.has(normalizedMethod as TransactionPaymentMethod)) {
@@ -574,7 +612,7 @@ async function runCreateTransactionWriteBatch(params: {
       ),
     ]);
   } catch (error) {
-    if (!isSchemaMismatchError(error)) {
+    if (!shouldUseCompatibilityCreateFallback(error)) {
       throw error;
     }
     if (params.type === 'TRANSFER') {
@@ -593,8 +631,6 @@ async function runCreateTransactionWriteBatch(params: {
           due_date: params.dueDate,
           description: params.description,
           status: params.status,
-          origin_type: params.originType,
-          origin_id: params.originId,
         },
         select: {
           id: true,
@@ -882,9 +918,6 @@ export async function POST(req: Request) {
         'Conta destino e obrigatoria para transferencia.'
       );
     }
-    if (type === 'TRANSFER' && !destinationWalletName) {
-      return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
-    }
     const normalizedCategoryName = (body.category || '').trim() || 'Outros';
     const [walletId, categoryId, destinationWalletId] = await Promise.all([
       measureStep(metrics, 'resolve_wallet_ms', () =>
@@ -989,7 +1022,7 @@ export async function POST(req: Request) {
       return writeFailureResponse;
     }
     if (error instanceof Error && error.message.includes('Destination wallet')) {
-      return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
+      return NextResponse.json({ error: 'Conta destino e obrigatoria para transferencia.' }, { status: 400 });
     }
     if (error instanceof Error && error.message.includes('Source and destination wallets')) {
       return NextResponse.json(
@@ -1089,12 +1122,6 @@ export async function PATCH(req: Request) {
             400,
             'DESTINATION_WALLET_REQUIRED',
             'Conta destino e obrigatoria para transferencia.'
-          );
-        }
-        if (!destinationWalletName) {
-          return NextResponse.json(
-            { error: 'Conta destino é obrigatória para transferência.' },
-            { status: 400 }
           );
         }
         nextDestinationWalletId = await measureStep(metrics, 'resolve_destination_wallet_ms', () =>
@@ -1198,7 +1225,7 @@ export async function PATCH(req: Request) {
       return apiErrorResponse(error.status, 'WORKSPACE_ERROR', error.message);
     }
     if (error instanceof Error && error.message.includes('Destination wallet')) {
-      return NextResponse.json({ error: 'Conta destino é obrigatória para transferência.' }, { status: 400 });
+      return NextResponse.json({ error: 'Conta destino e obrigatoria para transferencia.' }, { status: 400 });
     }
     if (error instanceof Error && error.message.includes('Source and destination wallets')) {
       return NextResponse.json(
@@ -1347,6 +1374,7 @@ export async function DELETE(req: Request) {
     return apiErrorResponse(500, 'TRANSACTION_DELETE_FAILED', FRIENDLY_TRANSACTION_DELETE_ERROR);
   }
 }
+
 
 
 

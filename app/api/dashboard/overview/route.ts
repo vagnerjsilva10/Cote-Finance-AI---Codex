@@ -9,6 +9,30 @@ import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+const OVERVIEW_TIMEOUT_MS = 10_000;
+
+class DashboardOverviewTimeoutError extends Error {
+  constructor() {
+    super('Dashboard overview timed out');
+    this.name = 'DashboardOverviewTimeoutError';
+  }
+}
+
+async function withOverviewTimeout<T>(operation: Promise<T>) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      operation,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new DashboardOverviewTimeoutError()), OVERVIEW_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
 
 export async function GET(req: Request) {
   const startedAt = Date.now();
@@ -17,7 +41,7 @@ export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
     workspaceId = context.workspaceId;
-    const overview = await buildDashboardOverview(context.workspaceId);
+    const overview = await withOverviewTimeout(buildDashboardOverview(context.workspaceId));
     console.info('[dashboard-overview] completed', {
       workspaceId: context.workspaceId,
       totalMs: Date.now() - startedAt,
@@ -27,6 +51,23 @@ export async function GET(req: Request) {
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    if (error instanceof DashboardOverviewTimeoutError) {
+      console.error('[dashboard-overview] failed', {
+        workspaceId,
+        totalMs: Date.now() - startedAt,
+        errorKind: 'DASHBOARD_TIMEOUT',
+        detail: error.message,
+        database: getDatabaseRuntimeInfo(),
+      });
+      return NextResponse.json(
+        {
+          code: 'DASHBOARD_TIMEOUT',
+          message: 'Nao foi possivel carregar a dashboard no tempo esperado. Tente novamente.',
+          error: 'Nao foi possivel carregar a dashboard no tempo esperado. Tente novamente.',
+        },
+        { status: 503 }
+      );
     }
 
     const prismaError = asPrismaServiceUnavailableError(error);

@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const DATABASE_URL_PROTOCOL_REGEX = /^(postgresql|postgres):\/\//i;
 const DATABASE_ENV_KEYS = ['DATABASE_URL', 'DIRECT_DATABASE_URL', 'SHADOW_DATABASE_URL'] as const;
+const MIN_RUNTIME_POOL_CONNECTION_LIMIT = 5;
 
 export const DATABASE_URL_MISSING_ERROR =
   'DATABASE_URL ausente. Configure a conexao PostgreSQL no ambiente.';
@@ -105,6 +106,36 @@ function parseDatabaseRuntimeInfo(databaseUrl: string | undefined): DatabaseRunt
   }
 }
 
+function resolveRuntimeDatabaseUrl() {
+  const normalized = sanitizeDatabaseEnvValue(process.env.DATABASE_URL);
+  if (!normalized) {
+    return normalized;
+  }
+
+  try {
+    const url = new URL(normalized);
+    const usesPooler = /pooler/i.test(url.hostname) || url.searchParams.get('pgbouncer') === 'true';
+    if (!usesPooler) {
+      return normalized;
+    }
+
+    const connectionLimitRaw = url.searchParams.get('connection_limit');
+    const connectionLimit =
+      connectionLimitRaw && Number.isFinite(Number(connectionLimitRaw))
+        ? Math.max(0, Number(connectionLimitRaw))
+        : null;
+
+    if (connectionLimit !== null && connectionLimit > 1) {
+      return normalized;
+    }
+
+    url.searchParams.set('connection_limit', String(MIN_RUNTIME_POOL_CONNECTION_LIMIT));
+    return url.toString();
+  } catch {
+    return normalized;
+  }
+}
+
 function getDatabaseConfigIssue() {
   const rawDatabaseUrl = sanitizeDatabaseEnvValue(process.env.DATABASE_URL);
   if (!rawDatabaseUrl) {
@@ -120,6 +151,22 @@ function getDatabaseConfigIssue() {
 
 sanitizeDatabaseEnv();
 
+const configuredDatabaseUrl = sanitizeDatabaseEnvValue(process.env.DATABASE_URL);
+const runtimeDatabaseUrl = resolveRuntimeDatabaseUrl();
+const configuredDatabaseRuntimeInfo = parseDatabaseRuntimeInfo(configuredDatabaseUrl);
+const runtimeDatabaseRuntimeInfo = parseDatabaseRuntimeInfo(runtimeDatabaseUrl);
+
+if (
+  configuredDatabaseRuntimeInfo.usesPooler &&
+  (configuredDatabaseRuntimeInfo.connectionLimit === null ||
+    configuredDatabaseRuntimeInfo.connectionLimit <= 1) &&
+  runtimeDatabaseRuntimeInfo.connectionLimit !== configuredDatabaseRuntimeInfo.connectionLimit
+) {
+  console.warn(
+    `[Prisma] DATABASE_URL pooler com connection_limit baixo detectado. Runtime elevou para ${runtimeDatabaseRuntimeInfo.connectionLimit} para reduzir timeout de conexao.`
+  );
+}
+
 const databaseConfigIssue = getDatabaseConfigIssue();
 
 if (databaseConfigIssue) {
@@ -127,7 +174,15 @@ if (databaseConfigIssue) {
 }
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient({
+    datasources: runtimeDatabaseUrl
+      ? {
+          db: {
+            url: runtimeDatabaseUrl,
+          },
+        }
+      : undefined,
+  });
 };
 
 declare global {
@@ -149,7 +204,11 @@ export function getDatabaseConfigValidationIssue() {
 }
 
 export function getDatabaseRuntimeInfo() {
-  return parseDatabaseRuntimeInfo(process.env.DATABASE_URL);
+  return runtimeDatabaseRuntimeInfo;
+}
+
+export function getConfiguredDatabaseRuntimeInfo() {
+  return configuredDatabaseRuntimeInfo;
 }
 
 export function classifyPrismaRuntimeError(error: unknown): {

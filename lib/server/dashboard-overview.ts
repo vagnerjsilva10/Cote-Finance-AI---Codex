@@ -277,10 +277,10 @@ function isMissingTableError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return error.code === 'P2021' || error.code === 'P2022';
   }
-  const message = error instanceof Error ? error.message : String(error || '');
-  return /DashboardReadModel|DailyCashProjection|CalendarEventReadModel|does not exist|Unknown arg/i.test(
-    message
-  );
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return error.message.includes('Unknown argument');
+  }
+  return false;
 }
 
 async function safeSection<T>(
@@ -498,7 +498,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
             COALESCE(SUM(CASE WHEN "status" = 'PENDING' AND "type" IN ('INCOME', 'PIX_IN') AND COALESCE("due_date", "date") >= ${monthStart} AND COALESCE("due_date", "date") < ${nextMonthStart} THEN "amount" ELSE 0 END), 0) AS month_planned_income,
             COALESCE(SUM(CASE WHEN "status" = 'PENDING' AND "type" IN ('EXPENSE', 'PIX_OUT') AND COALESCE("due_date", "date") >= ${monthStart} AND COALESCE("due_date", "date") < ${nextMonthStart} THEN "amount" ELSE 0 END), 0) AS month_planned_expense
           FROM "Transaction"
-          WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+          WHERE "workspace_id" = ${workspaceId}
         `)
     );
 
@@ -519,7 +519,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
             "type",
             "amount"
           FROM "Transaction"
-          WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+          WHERE "workspace_id" = ${workspaceId}
             AND "status" = 'PENDING'
             AND COALESCE("due_date", "date") >= ${todayStart}
             AND COALESCE("due_date", "date") <= ${next30DaysEnd}
@@ -559,7 +559,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
             "Category"."name" AS category
           FROM "Transaction"
           LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-          WHERE "Transaction"."workspace_id" = CAST(${workspaceId} AS uuid)
+          WHERE "Transaction"."workspace_id" = ${workspaceId}
             AND "Transaction"."status" = 'PENDING'
             AND COALESCE("Transaction"."due_date", "Transaction"."date") >= ${todayStart}
             AND COALESCE("Transaction"."due_date", "Transaction"."date") <= ${next14DaysEnd}
@@ -621,7 +621,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
           COALESCE(SUM(CASE WHEN "status" = 'CONFIRMED' AND "type" IN ('INCOME', 'PIX_IN') THEN "amount" ELSE 0 END), 0) AS income,
           COALESCE(SUM(CASE WHEN "status" = 'CONFIRMED' AND "type" IN ('EXPENSE', 'PIX_OUT') THEN "amount" ELSE 0 END), 0) AS expense
         FROM "Transaction"
-        WHERE "workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "workspace_id" = ${workspaceId}
           AND "date" >= ${seriesStart}
           AND "date" < ${nextMonthStart}
         GROUP BY 1
@@ -642,7 +642,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
           "Category"."name" AS category_name
         FROM "Transaction"
         LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-        WHERE "Transaction"."workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "Transaction"."workspace_id" = ${workspaceId}
           AND "Transaction"."status" = 'CONFIRMED'
           AND "Transaction"."date" >= ${previousMonthStart}
         ORDER BY "Transaction"."date" DESC
@@ -660,7 +660,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
           COALESCE(SUM("Transaction"."amount"), 0) AS total
         FROM "Transaction"
         LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-        WHERE "Transaction"."workspace_id" = CAST(${workspaceId} AS uuid)
+        WHERE "Transaction"."workspace_id" = ${workspaceId}
           AND "Transaction"."status" = 'CONFIRMED'
           AND "Transaction"."type" IN ('EXPENSE', 'PIX_OUT')
           AND "Transaction"."date" >= ${monthStart}

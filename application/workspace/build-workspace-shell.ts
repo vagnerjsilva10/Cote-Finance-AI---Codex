@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getRuntimePlanLimits } from '@/lib/server/superadmin-governance';
 import {
@@ -9,6 +10,16 @@ import {
 } from '@/lib/server/multi-tenant';
 import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
 import type { WorkspaceShellPayload } from '@/lib/workspace/shell';
+
+function isSchemaCompatibilityError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === 'P2021' || error.code === 'P2022';
+  }
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return error.message.includes('Unknown argument');
+  }
+  return false;
+}
 
 async function findWorkspaceTransactions(workspaceId: string, take: number) {
   const query = {
@@ -27,8 +38,7 @@ async function findWorkspaceTransactions(workspaceId: string, take: number) {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error || '');
-    if (!/destination_wallet_id|payment_method|receipt_url|does not exist|Unknown arg/i.test(message)) {
+    if (!isSchemaCompatibilityError(error)) {
       throw error;
     }
 
