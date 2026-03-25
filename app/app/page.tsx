@@ -8738,7 +8738,7 @@ export default function App() {
       const friendlyMessage =
         error instanceof Error
           ? error.message
-          : 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.';
+          : 'Não foi possível carregar a dashboard agora. Tente novamente em instantes.';
       setDashboardOverviewError(friendlyMessage);
       setDashboardOverview((current) =>
         current ?? {
@@ -8772,7 +8772,7 @@ export default function App() {
             {
               id: 'dashboard-overview-error',
               tone: 'warning',
-              title: 'Visao geral indisponivel',
+              title: 'Visão geral indisponível',
               message: friendlyMessage,
             },
           ],

@@ -1,141 +1,298 @@
-﻿import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { DashboardOverviewAlert, DashboardOverviewForecast as DashboardOverviewForecastData } from '@/lib/dashboard/overview';
-import { DashboardSkeletonLine } from '@/components/dashboard/dashboard-primitives';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import type {
+  DashboardOverviewAlert,
+  DashboardOverviewForecast as DashboardOverviewForecastData,
+} from '@/lib/dashboard/overview';
+import {
+  DASHBOARD_CARD_PANEL_CLASSNAME,
+  DASHBOARD_CARD_SHELL_CLASSNAME,
+  DashboardSkeletonLine,
+} from '@/components/dashboard/dashboard-primitives';
 import { formatCurrency, formatDateShort } from '@/components/dashboard/dashboard-utils';
 import { cn } from '@/lib/utils';
 
-type DashboardForecastProps = {
+type DashboardDecisionPanelProps = {
   forecast: DashboardOverviewForecastData | null;
   alerts: DashboardOverviewAlert[];
   loading: boolean;
 };
 
-export function DashboardForecast({ forecast, alerts, loading }: DashboardForecastProps) {
-  const monthConfirmedNet = forecast ? forecast.monthConfirmedIncome - forecast.monthConfirmedExpense : 0;
-  const monthProjectedNet = forecast ? forecast.monthPlannedIncome - forecast.monthPlannedExpense : null;
-  const projectionCurveRows = forecast?.daily.map((row) => ({
-    dateLabel: formatDateShort(row.date),
-    closingBalance: row.closingBalance,
-  })) ?? [];
+type DashboardMonthSummaryCardProps = {
+  forecast: DashboardOverviewForecastData | null;
+  loading: boolean;
+};
+
+type DashboardBalanceEvolutionCardProps = {
+  forecast: DashboardOverviewForecastData | null;
+  loading: boolean;
+};
+
+const ALERT_TONE_TAG: Record<DashboardOverviewAlert['tone'], string> = {
+  danger: 'Alerta',
+  warning: 'Atenção',
+  info: 'Observação',
+  success: 'Estável',
+};
+
+function getAlertToneClassName(tone: DashboardOverviewAlert['tone']) {
+  if (tone === 'danger') {
+    return 'border-[color:color-mix(in_srgb,var(--danger)_42%,transparent)] bg-[color:color-mix(in_srgb,var(--danger)_12%,transparent)]';
+  }
+  if (tone === 'warning') {
+    return 'border-[color:color-mix(in_srgb,var(--warning)_42%,transparent)] bg-[color:color-mix(in_srgb,var(--warning)_12%,transparent)]';
+  }
+  if (tone === 'success') {
+    return 'border-[color:color-mix(in_srgb,var(--positive)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--positive)_12%,transparent)]';
+  }
+  return 'border-[color:color-mix(in_srgb,var(--primary)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]';
+}
+
+export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardDecisionPanelProps) {
+  const hasAlerts = alerts.length > 0;
 
   return (
-    <div className="app-surface-card rounded-2xl p-5 sm:p-6">
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="card-title-premium text-[var(--text-primary)]">Resumo para decisão</h3>
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[110px] space-y-4')}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">Resumo para decisão</h3>
           <p className="text-sm text-[var(--text-secondary)]">
             {loading
               ? 'Carregando visão consolidada da conta...'
               : forecast
                 ? `Atualizado em ${formatDateShort(forecast.updatedAt)}`
-                : 'Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.'}
+                : 'Sem dados suficientes para consolidar alertas no momento.'}
           </p>
         </div>
-        <span className="inline-flex w-fit items-center rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
-          {loading ? 'Analisando' : alerts.length > 0 ? `${alerts.length} alerta(s) relevante(s)` : 'Sem alertas críticos'}
+        <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+          {loading ? 'Analisando' : hasAlerts ? `${alerts.length} alerta(s) relevante(s)` : 'Sem alertas relevantes'}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 lg:col-span-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Alertas relevantes</p>
-          <div className="mt-3 space-y-2">
-            {loading ? (
-              <>
-                <DashboardSkeletonLine className="h-16 w-full rounded-2xl" />
-                <DashboardSkeletonLine className="h-16 w-full rounded-2xl" />
-              </>
-            ) : alerts.length > 0 ? (
-              alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className={cn(
-                    'rounded-lg border px-3 py-2',
-                    alert.tone === 'danger'
-                      ? 'border-[color:color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--danger)_14%,transparent)]'
-                      : alert.tone === 'warning'
-                        ? 'border-[color:color-mix(in_srgb,var(--warning)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--warning)_14%,transparent)]'
-                        : alert.tone === 'success'
-                          ? 'border-[color:color-mix(in_srgb,var(--positive)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--positive)_14%,transparent)]'
-                          : 'border-[color:color-mix(in_srgb,var(--primary)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_14%,transparent)]'
-                  )}
-                >
-                  <p className="text-sm font-bold text-[var(--text-primary)]">{alert.title}</p>
-                  <p className="mt-1 text-xs text-[var(--text-secondary)]">{alert.message}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-[var(--text-secondary)]">Nenhum alerta crítico no momento. Seu fluxo financeiro está estável.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="app-surface-subtle rounded-2xl p-4">
-          <p className="label-premium text-[var(--text-muted)]">Resumo do mês</p>
-          {loading ? (
-            <div className="mt-4 space-y-3">
-              <DashboardSkeletonLine className="h-10 w-32 rounded-xl" />
-              <DashboardSkeletonLine className="h-4 w-28" />
-              <DashboardSkeletonLine className="h-4 w-28" />
-              <DashboardSkeletonLine className="h-4 w-full" />
-            </div>
-          ) : (
-            <>
-              <p className={cn('mt-2 text-2xl font-black', (monthProjectedNet || 0) >= 0 ? 'text-[var(--positive)]' : 'text-[var(--danger)]')}>
-                {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}
-              </p>
-              <p className="mt-2 text-xs font-semibold text-[var(--text-secondary)]">Confirmado: {formatCurrency(monthConfirmedNet)}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">Previsto: {monthProjectedNet === null ? '--' : formatCurrency(monthProjectedNet)}</p>
-              <p className="mt-3 text-xs text-[var(--text-secondary)]">
-                {monthProjectedNet === null
-                  ? 'Adicione movimentações para visualizar a tendência do mês.'
-                  : monthProjectedNet >= 0
-                    ? 'Tendência positiva para o fechamento do mês.'
-                    : 'O mês tende a fechar negativo se nada mudar.'}
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
-        <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
+      <div className="space-y-3">
         {loading ? (
-          <div className="mt-4 space-y-3">
-            <DashboardSkeletonLine className="h-5 w-40" />
-            <DashboardSkeletonLine className="h-[180px] w-full rounded-2xl" />
-          </div>
-        ) : projectionCurveRows.length > 0 ? (
-          <div className="mt-3 h-[180px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={projectionCurveRows}>
-                <CartesianGrid strokeDasharray="2 6" stroke="var(--border-default)" vertical={false} />
-                <XAxis dataKey="dateLabel" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(Number(value || 0))} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-default)',
-                    borderRadius: '12px',
-                    boxShadow: 'var(--shadow-soft)',
-                  }}
-                  formatter={(value) => [formatCurrency(Number(value || 0)), 'Saldo previsto']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="closingBalance"
-                  stroke="var(--primary)"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <>
+            <DashboardSkeletonLine className="h-[78px] w-full rounded-xl" />
+            <DashboardSkeletonLine className="h-[78px] w-full rounded-xl" />
+          </>
+        ) : hasAlerts ? (
+          alerts.map((alert) => (
+            <article
+              key={alert.id}
+              className={cn(
+                DASHBOARD_CARD_PANEL_CLASSNAME,
+                'space-y-3 p-4',
+                getAlertToneClassName(alert.tone)
+              )}
+            >
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">{ALERT_TONE_TAG[alert.tone]}</p>
+                <p className="text-base font-semibold text-[var(--text-primary)]">{alert.title}</p>
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{alert.message}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="rounded-lg border border-white/10 bg-[rgba(8,15,27,0.6)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-white/20"
+                >
+                  Ver despesas futuras
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg border border-white/10 bg-[rgba(8,15,27,0.6)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-white/20"
+                >
+                  Ajustar orçamento
+                </button>
+              </div>
+            </article>
+          ))
         ) : (
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.</p>
+          <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-4')}>
+            <p className="text-base font-semibold text-[var(--text-primary)]">Fluxo financeiro sob controle</p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Nenhum alerta crítico no momento. Continue acompanhando para antecipar variações do caixa.
+            </p>
+          </div>
         )}
       </div>
-    </div>
+    </section>
+  );
+}
+
+export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthSummaryCardProps) {
+  const confirmedNet = forecast ? forecast.monthConfirmedIncome - forecast.monthConfirmedExpense : null;
+  const plannedNet = forecast ? forecast.monthPlannedIncome - forecast.monthPlannedExpense : null;
+
+  const trendLabel =
+    plannedNet === null ? 'Neutra' : plannedNet > 0 ? 'Positiva' : plannedNet < 0 ? 'Negativa' : 'Neutra';
+
+  const trendClassName =
+    trendLabel === 'Positiva'
+      ? 'text-[var(--positive)]'
+      : trendLabel === 'Negativa'
+        ? 'text-[var(--danger)]'
+        : 'text-[var(--text-secondary)]';
+
+  return (
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[110px] space-y-4')}>
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">Resumo do mês</p>
+        {loading ? (
+          <DashboardSkeletonLine className="h-10 w-36 rounded-xl" />
+        ) : (
+          <p
+            className={cn(
+              'text-[clamp(1.95rem,5vw,2.2rem)] font-black leading-none tracking-[-0.02em]',
+              plannedNet !== null && plannedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]'
+            )}
+          >
+            {plannedNet === null ? '--' : formatCurrency(plannedNet)}
+          </p>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="space-y-2.5">
+          <DashboardSkeletonLine className="h-4 w-40" />
+          <DashboardSkeletonLine className="h-4 w-40" />
+          <DashboardSkeletonLine className="h-4 w-28" />
+          <DashboardSkeletonLine className="h-4 w-full" />
+          <DashboardSkeletonLine className="h-4 w-full" />
+          <DashboardSkeletonLine className="h-4 w-full" />
+        </div>
+      ) : (
+        <>
+          <div className="space-y-1.5 text-xs text-[var(--text-secondary)]">
+            <p>
+              Confirmado:{' '}
+              <span className={cn('font-semibold', confirmedNet !== null && confirmedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]')}>
+                {confirmedNet === null ? '--' : formatCurrency(confirmedNet)}
+              </span>
+            </p>
+            <p>
+              Previsto:{' '}
+              <span className={cn('font-semibold', plannedNet !== null && plannedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]')}>
+                {plannedNet === null ? '--' : formatCurrency(plannedNet)}
+              </span>
+            </p>
+            <p>
+              Tendência: <span className={cn('font-semibold', trendClassName)}>{trendLabel}</span>
+            </p>
+          </div>
+
+          <div className="h-px w-full bg-white/10" />
+
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Fluxo do mês</p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Entradas:{' '}
+              <span className="font-semibold text-[var(--positive)]">
+                {forecast ? formatCurrency(forecast.monthPlannedIncome) : '--'}
+              </span>
+            </p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Saídas:{' '}
+              <span className="font-semibold text-[var(--danger)]">
+                {forecast ? formatCurrency(forecast.monthPlannedExpense) : '--'}
+              </span>
+            </p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Resultado:{' '}
+              <span className={cn('font-semibold', plannedNet !== null && plannedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]')}>
+                {plannedNet === null ? '--' : formatCurrency(plannedNet)}
+              </span>
+            </p>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBalanceEvolutionCardProps) {
+  const projectionCurveRows =
+    forecast?.daily.map((row) => ({
+      dateKey: new Date(row.date).toISOString().slice(0, 10),
+      dateLabel: formatDateShort(row.date),
+      closingBalance: row.closingBalance,
+    })) ?? [];
+
+  const todayDateKey = forecast ? new Date(forecast.asOfDate).toISOString().slice(0, 10) : null;
+  const todayPoint = projectionCurveRows.find((row) => row.dateKey === todayDateKey);
+
+  return (
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-4')}>
+      <div className="flex flex-col gap-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
+        <p className="text-sm text-[var(--text-secondary)]">Leitura diária do fechamento projetado com referência de hoje.</p>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          <DashboardSkeletonLine className="h-4 w-40" />
+          <DashboardSkeletonLine className="h-[220px] w-full rounded-xl sm:h-[260px]" />
+        </div>
+      ) : projectionCurveRows.length > 0 ? (
+        <div className="h-[220px] w-full sm:h-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={projectionCurveRows} margin={{ top: 12, right: 16, left: 2, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 7" stroke="rgba(148,163,184,0.22)" vertical={false} />
+              <XAxis dataKey="dateLabel" stroke="rgba(148,163,184,0.76)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis
+                stroke="rgba(148,163,184,0.76)"
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => formatCurrency(Number(value || 0))}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(10,20,35,0.95)',
+                  border: '1px solid rgba(148,163,184,0.2)',
+                  borderRadius: '12px',
+                  boxShadow: '0 14px 28px rgba(0, 0, 0, 0.35)',
+                }}
+                labelStyle={{ color: 'var(--text-secondary)' }}
+                formatter={(value) => [formatCurrency(Number(value || 0)), 'Saldo projetado']}
+              />
+              <ReferenceLine y={0} stroke="rgba(248,113,113,0.45)" strokeDasharray="4 4" />
+              {todayPoint ? (
+                <ReferenceLine
+                  x={todayPoint.dateLabel}
+                  stroke="rgba(96,165,250,0.55)"
+                  strokeDasharray="4 4"
+                  label={{
+                    value: 'Hoje',
+                    position: 'insideTopRight',
+                    fill: 'rgba(148,163,184,0.92)',
+                    fontSize: 10,
+                  }}
+                />
+              ) : null}
+              <Line
+                type="monotone"
+                dataKey="closingBalance"
+                stroke="var(--primary)"
+                strokeWidth={2.6}
+                dot={false}
+                activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <p className="text-sm text-[var(--text-secondary)]">
+          Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.
+        </p>
+      )}
+    </section>
   );
 }

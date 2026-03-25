@@ -704,7 +704,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
     .filter(Boolean);
 
   const topExpense = topExpenseRows[0];
-  const topExpenseLabel = topExpense?.category_name || 'Sem despesas registradas no mes atual.';
+  const topExpenseLabel = topExpense?.category_name || 'Sem despesas registradas no mês atual.';
   const topExpenseAmount = numberFrom(topExpense?.total || 0);
   const expenseTransactionCount = insightRows.filter((row) => {
     const normalizedType = normalizeTransactionType(row.type);
@@ -715,21 +715,21 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
     {
       id: 'top-expense',
       badge: 'Alerta',
-      title: 'Maior gasto do mes',
+      title: 'Maior gasto do mês',
       metric: currencyFormatter.format(topExpenseAmount),
       description: topExpense
-        ? `${topExpenseLabel} concentra a maior saida confirmada do mes.`
+        ? `${topExpenseLabel} concentra a maior saída confirmada do mês.`
         : topExpenseLabel,
-      action: 'Acao sugerida: revise essa categoria e defina limite para os proximos 7 dias.',
+      action: 'Ação sugerida: revise essa categoria e defina limite para os próximos 7 dias.',
       tone: 'warning',
     },
     {
       id: 'expense-volume',
-      badge: 'Tendencia',
-      title: 'Despesas no mes',
+      badge: 'Tendência',
+      title: 'Despesas no mês',
       metric: currencyFormatter.format(monthConfirmedExpense),
-      description: `Voce gastou ${currencyFormatter.format(monthConfirmedExpense)} em ${expenseTransactionCount} transacoes no periodo atual.`,
-      action: 'Acao sugerida: acompanhe o relatorio de categorias para conter desvios.',
+      description: `Você gastou ${currencyFormatter.format(monthConfirmedExpense)} em ${expenseTransactionCount} transações no período atual.`,
+      action: 'Ação sugerida: acompanhe o relatório de categorias para conter desvios.',
       tone: 'primary',
     },
   ];
@@ -740,31 +740,31 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
       id: 'negative-balance-forecast',
       tone: 'danger',
       title: 'Risco de saldo negativo',
-      message: `A projecao indica saldo abaixo de zero em ${new Date(projectedNegativeDate).toLocaleDateString('pt-BR')}.`,
+      message: `A projeção indica saldo abaixo de zero em ${new Date(projectedNegativeDate).toLocaleDateString('pt-BR')}.`,
     });
   }
   if (monthPlannedIncome - monthPlannedExpense < 0) {
     alerts.push({
       id: 'negative-planned-month',
       tone: 'warning',
-      title: 'Fluxo planejado do mes negativo',
-      message: `As movimentacoes pendentes do mes somam ${currencyFormatter.format(monthPlannedIncome - monthPlannedExpense)}.`,
+      title: 'Fluxo planejado do mês negativo',
+      message: `As movimentações pendentes do mês somam ${currencyFormatter.format(monthPlannedIncome - monthPlannedExpense)}.`,
     });
   }
   if (upcomingOutflow > currentBalance && upcomingOutflow > 0) {
     alerts.push({
       id: 'upcoming-outflow-pressure',
       tone: 'warning',
-      title: 'Saidas previstas pressionam o caixa',
-      message: `Os proximos compromissos previstos totalizam ${currencyFormatter.format(upcomingOutflow)} nos proximos 14 dias.`,
+      title: 'Saídas previstas pressionam o caixa',
+      message: `Os próximos compromissos previstos totalizam ${currencyFormatter.format(upcomingOutflow)} nos próximos 14 dias.`,
     });
   }
   if (alerts.length === 0) {
     alerts.push({
       id: 'stable-cashflow',
       tone: 'success',
-      title: 'Fluxo financeiro estavel',
-      message: 'Sem alertas criticos no momento. A visao geral segue consistente para o periodo atual.',
+      title: 'Fluxo financeiro estável',
+      message: 'Sem alertas críticos no momento. A visão geral segue consistente para o período atual.',
     });
   }
 

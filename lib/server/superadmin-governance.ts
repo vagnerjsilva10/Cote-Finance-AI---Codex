@@ -181,16 +181,16 @@ function getDefaultFeatureFlags(): FeatureFlagConfig[] {
   return [
     {
       key: 'advanced_ai_insights',
-      label: 'Insights avancados de IA',
-      description: 'Libera leituras mais profundas e explicacoes financeiras estendidas na experiencia do usuario.',
+      label: 'Insights avançados de IA',
+      description: 'Libera leituras mais profundas e explicações financeiras estendidas na experiência do usuário.',
       scope: 'Produto',
       enabled: true,
       allowedPlans: ['PRO', 'PREMIUM'],
     },
     {
       key: 'whatsapp_automation',
-      label: 'Automacoes no WhatsApp',
-      description: 'Controla recursos de resumo, alerta e automacao financeira enviados pelo WhatsApp.',
+      label: 'Automações no WhatsApp',
+      description: 'Controla recursos de resumo, alerta e automação financeira enviados pelo WhatsApp.',
       scope: 'Canal',
       enabled: true,
       allowedPlans: ['PRO', 'PREMIUM'],
@@ -206,15 +206,15 @@ function getDefaultFeatureFlags(): FeatureFlagConfig[] {
     {
       key: 'meta_tracking',
       label: 'Tracking e marketing',
-      description: 'Ativa a camada de tracking usada para Meta Ads, UTM e eventos de conversao.',
+      description: 'Ativa a camada de tracking usada para Meta Ads, UTM e eventos de conversão.',
       scope: 'Marketing',
       enabled: true,
       allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
     },
     {
       key: 'beta_superadmin_modules',
-      label: 'Modulos beta do Superadmin',
-      description: 'Usado para liberar novas areas administrativas antes da conclusao total do modulo.',
+      label: 'Módulos beta do Superadmin',
+      description: 'Usado para liberar novas áreas administrativas antes da conclusão total do módulo.',
       scope: 'Interno',
       enabled: false,
       allowedPlans: ['FREE', 'PRO', 'PREMIUM'],
@@ -230,7 +230,7 @@ function getDefaultFeatureFlags(): FeatureFlagConfig[] {
     {
       key: 'financial_projection_engine_v2',
       label: 'Projection engine v2',
-      description: 'Controla o uso de projecao diaria materializada no backend financeiro.',
+      description: 'Controla o uso de projeção diária materializada no backend financeiro.',
       scope: 'Finance Core',
       enabled: true,
       allowedPlans: ['FREE', 'PRO', 'PREMIUM'],

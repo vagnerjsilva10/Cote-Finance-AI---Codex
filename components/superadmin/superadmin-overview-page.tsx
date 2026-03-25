@@ -271,11 +271,11 @@ export function SuperadminOverviewPage() {
                   <div className="text-sm font-semibold text-[var(--text-primary)]">{plan}</div>
                   <div className="mt-1.5 text-xs leading-6 text-[var(--text-secondary)]">
                     {typeof limits.transactionsPerMonth === 'number'
-                      ? `${formatAdminNumber(limits.transactionsPerMonth)} transações/mes`
+                      ? `${formatAdminNumber(limits.transactionsPerMonth)} transações/mês`
                       : 'Transações ilimitadas'}
                     {' · '}
                     {typeof limits.aiInteractionsPerMonth === 'number'
-                      ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} IA/mes`
+                      ? `${formatAdminNumber(limits.aiInteractionsPerMonth)} IA/mês`
                       : 'IA ilimitada'}
                     {' · '}
                     Relatórios {limits.reports}

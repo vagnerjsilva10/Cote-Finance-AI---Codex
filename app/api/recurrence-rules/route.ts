@@ -92,7 +92,7 @@ async function resolveWalletId(params: {
       select: { id: true },
     });
     if (!existing) {
-      throw new Error('Carteira da recorrencia nao encontrada.');
+      throw new Error('Carteira da recorrência não encontrada.');
     }
     return existing.id;
   }
@@ -129,7 +129,7 @@ async function resolveCategoryId(params: {
       select: { id: true },
     });
     if (!existing) {
-      throw new Error('Categoria da recorrencia nao encontrada.');
+      throw new Error('Categoria da recorrência não encontrada.');
     }
     return existing.id;
   }
@@ -223,13 +223,13 @@ export async function POST(req: Request) {
     const horizonDays = parseProjectionHorizonDays(body.projectionHorizonDays);
 
     if (!startDate) {
-      return NextResponse.json({ error: 'Data de inicio da recorrencia invalida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Data de início da recorrência inválida.' }, { status: 400 });
     }
     if (hasDateToken(body.endDate) && !endDate) {
-      return NextResponse.json({ error: 'Data final da recorrencia invalida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Data final da recorrência inválida.' }, { status: 400 });
     }
     if (amount === null || amount <= 0) {
-      return NextResponse.json({ error: 'Valor da recorrencia invalido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Valor da recorrência inválido.' }, { status: 400 });
     }
 
     const rule = await upsertRecurrenceRule({
@@ -330,13 +330,13 @@ export async function PATCH(req: Request) {
     const horizonDays = parseProjectionHorizonDays(body.projectionHorizonDays);
 
     if (!startDate) {
-      return NextResponse.json({ error: 'Data de inicio da recorrencia invalida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Data de início da recorrência inválida.' }, { status: 400 });
     }
     if (body.endDate !== undefined && body.endDate !== null && hasDateToken(body.endDate) && !endDate) {
-      return NextResponse.json({ error: 'Data final da recorrencia invalida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Data final da recorrência inválida.' }, { status: 400 });
     }
     if (amount === null || amount <= 0) {
-      return NextResponse.json({ error: 'Valor da recorrencia invalido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Valor da recorrência inválido.' }, { status: 400 });
     }
 
     const updated = await upsertRecurrenceRule({

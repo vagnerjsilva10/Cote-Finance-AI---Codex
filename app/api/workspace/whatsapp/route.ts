@@ -378,7 +378,7 @@ export async function POST(req: Request) {
 
         return jsonResponse({
           success: true,
-          message: 'Solicitacao aceita. Aguardando confirmacao de entrega no WhatsApp.',
+          message: 'Solicitação aceita. Aguardando confirmação de entrega no WhatsApp.',
           status: 'CONNECTING',
           phoneNumber: normalizedPhone,
           config: updatedConfig,
@@ -578,7 +578,7 @@ export async function POST(req: Request) {
 
       return jsonResponse({
         success: true,
-        message: 'Teste aceito pela Meta. Aguardando confirmacao de entrega.',
+        message: 'Teste aceito pela Meta. Aguardando confirmação de entrega.',
         config: updatedConfig,
         preview: result.preview,
         deliveryMode: result.deliveryMode,

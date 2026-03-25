@@ -71,7 +71,7 @@ export function SuperadminAuditLogsPage() {
       <SuperadminPageHeader
         eyebrow="Auditoria"
         title="Logs / Auditoria"
-        description="Rastro operacional de billing, tracking, IA, WhatsApp e acoes criticas."
+        description="Rastro operacional de billing, tracking, IA, WhatsApp e ações críticas."
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <SuperadminMetricChip label="Eventos" value={formatAdminNumber(summary?.total || 0)} />
@@ -82,7 +82,7 @@ export function SuperadminAuditLogsPage() {
         </div>
       </SuperadminPageHeader>
 
-      <SuperadminSectionCard title="Filtro operacional" description="Busca rapida por workspace, usuario, categoria ou evento.">
+      <SuperadminSectionCard title="Filtro operacional" description="Busca rápida por workspace, usuário, categoria ou evento.">
         <div className="grid gap-3 lg:grid-cols-[1.2fr_0.5fr]">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Buscar</span>

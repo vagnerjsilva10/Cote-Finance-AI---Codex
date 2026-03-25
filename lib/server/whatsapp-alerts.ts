@@ -226,8 +226,8 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     if (delta >= 20) {
       alerts.push({
         kind: 'high_spending',
-        title: 'Gasto acima da media',
-        message: `Suas saidas subiram ${delta.toFixed(1)}% em relacao ao mes anterior.`,
+        title: 'Gasto acima da média',
+        message: `Suas saídas subiram ${delta.toFixed(1)}% em relação ao mês anterior.`,
       });
     }
   }
@@ -269,8 +269,8 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
           title: 'Categoria em destaque',
           message:
             categoryDelta !== null && categoryDelta >= 30
-              ? `${topCurrentCategory[0]} subiu ${categoryDelta.toFixed(1)}% e ja soma ${formatCurrency(topCurrentCategory[1])} no mes.`
-              : `${topCurrentCategory[0]} concentra ${categoryShare.toFixed(1)}% das saidas do mes, com ${formatCurrency(topCurrentCategory[1])}.`,
+              ? `${topCurrentCategory[0]} subiu ${categoryDelta.toFixed(1)}% e já soma ${formatCurrency(topCurrentCategory[1])} no mês.`
+              : `${topCurrentCategory[0]} concentra ${categoryShare.toFixed(1)}% das saídas do mês, com ${formatCurrency(topCurrentCategory[1])}.`,
         });
       }
     }
@@ -300,10 +300,10 @@ export async function sendWorkspaceWhatsAppAlerts(params: {
     if (recurringShare >= 30 || recurringTotal >= 500) {
       alerts.push({
         kind: 'recurring_heavy',
-        title: 'Recorrencia pesada',
-        message: `As contas recorrentes ja somam ${formatCurrency(recurringTotal)} e representam ${recurringShare.toFixed(
+        title: 'Recorrência pesada',
+        message: `As contas recorrentes já somam ${formatCurrency(recurringTotal)} e representam ${recurringShare.toFixed(
           1
-        )}% das saidas do mes.`,
+        )}% das saídas do mês.`,
       });
     }
   }

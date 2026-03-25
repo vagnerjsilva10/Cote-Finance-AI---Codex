@@ -6,13 +6,13 @@ const DATABASE_ENV_KEYS = ['DATABASE_URL', 'DIRECT_DATABASE_URL', 'SHADOW_DATABA
 const MIN_RUNTIME_POOL_CONNECTION_LIMIT = 5;
 
 export const DATABASE_URL_MISSING_ERROR =
-  'DATABASE_URL ausente. Configure a conexao PostgreSQL no ambiente.';
+  'DATABASE_URL ausente. Configure a conexão PostgreSQL no ambiente.';
 export const DATABASE_URL_INVALID_ERROR =
-  'DATABASE_URL invalida. Use postgresql:// ou postgres:// sem aspas extras.';
+  'DATABASE_URL inválida. Use postgresql:// ou postgres:// sem aspas extras.';
 export const PRISMA_UNAVAILABLE_MESSAGE =
-  'Banco de dados indisponivel no momento. Verifique a configuracao do ambiente e tente novamente.';
+  'Banco de dados indisponível no momento. Verifique a configuração do ambiente e tente novamente.';
 export const DATABASE_SCHEMA_MISMATCH_MESSAGE =
-  'A estrutura do banco de dados nao esta alinhada com a versao atual da aplicacao.';
+  'A estrutura do banco de dados não está alinhada com a versão atual da aplicação.';
 
 export type DatabaseRuntimeInfo = {
   host: string;
@@ -163,7 +163,7 @@ if (
   runtimeDatabaseRuntimeInfo.connectionLimit !== configuredDatabaseRuntimeInfo.connectionLimit
 ) {
   console.warn(
-    `[Prisma] DATABASE_URL pooler com connection_limit baixo detectado. Runtime elevou para ${runtimeDatabaseRuntimeInfo.connectionLimit} para reduzir timeout de conexao.`
+    `[Prisma] DATABASE_URL pooler com connection_limit baixo detectado. Runtime elevou para ${runtimeDatabaseRuntimeInfo.connectionLimit} para reduzir timeout de conexão.`
   );
 }
 

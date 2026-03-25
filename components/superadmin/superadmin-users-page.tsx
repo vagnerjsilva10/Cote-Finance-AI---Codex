@@ -74,7 +74,7 @@ export function SuperadminUsersPage() {
       const next = await loadUsers(query);
       setData(next);
     } catch (createError) {
-      setMessage(createError instanceof Error ? createError.message : 'Falha ao criar usuario.');
+      setMessage(createError instanceof Error ? createError.message : 'Falha ao criar usuário.');
     } finally {
       setIsCreating(false);
     }
@@ -141,7 +141,7 @@ export function SuperadminUsersPage() {
         <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-[var(--text-primary)]">Provisionar usuario</h2>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Provisionar usuário</h2>
               <p className="mt-1 text-sm text-[var(--text-secondary)]">Crie acesso real com suporte ao Auth Admin.</p>
             </div>
             <span
@@ -193,7 +193,7 @@ export function SuperadminUsersPage() {
               className={primaryActionClassName}
             >
               {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus2 className="h-4 w-4" />}
-              Criar usuario
+              Criar usuário
             </button>
           </div>
         </div>
@@ -204,7 +204,7 @@ export function SuperadminUsersPage() {
           <div>
             <h2 className="text-lg font-bold text-[var(--text-primary)]">Base de usuários</h2>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              {data ? `${formatAdminNumber(data.total)} usuario(s) encontrados.` : 'Carregando base de usuários.'}
+              {data ? `${formatAdminNumber(data.total)} usuário(s) encontrados.` : 'Carregando base de usuários.'}
             </p>
           </div>
         </div>
@@ -214,7 +214,7 @@ export function SuperadminUsersPage() {
         ) : !data ? (
           <ErrorState message={error || 'Falha ao carregar usuários.'} />
         ) : data.users.length === 0 ? (
-          <EmptyState text="Nenhum usuario encontrado para os filtros atuais." />
+          <EmptyState text="Nenhum usuário encontrado para os filtros atuais." />
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">

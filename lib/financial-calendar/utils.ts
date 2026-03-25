@@ -216,7 +216,7 @@ export function detectPressureDays(
 
     if (day.outflow > 0 && averageOutflow > 0 && day.outflow >= averageOutflow * 1.5) {
       score += 30;
-      reasons.push('saidas acima da media do periodo');
+      reasons.push('saídas acima da média do período');
     }
 
     if (day.outflow > 0 && averageOutflow > 0 && day.outflow >= averageOutflow * 2.25) {

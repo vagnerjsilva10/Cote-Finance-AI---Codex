@@ -56,42 +56,42 @@ const CAPABILITY_POLICY: Record<WhatsAppCapability, WhatsAppCapabilityPolicy> = 
   connect: {
     requiredPlan: 'PRO',
     code: 'WHATSAPP_REQUIRES_PRO',
-    message: 'O WhatsApp esta disponivel apenas nos planos Pro e Premium.',
+    message: 'O WhatsApp está disponível apenas nos planos Pro e Premium.',
   },
   manual_test_send: {
     requiredPlan: 'PRO',
     code: 'WHATSAPP_REQUIRES_PRO',
-    message: 'O WhatsApp esta disponivel apenas nos planos Pro e Premium.',
+    message: 'O WhatsApp está disponível apenas nos planos Pro e Premium.',
   },
   auto_daily_digest: {
     requiredPlan: 'PRO',
     code: 'WHATSAPP_REQUIRES_PRO',
-    message: 'A automacao de resumo no WhatsApp esta disponivel apenas nos planos Pro e Premium.',
+    message: 'A automação de resumo no WhatsApp está disponível apenas nos planos Pro e Premium.',
   },
   auto_basic_alerts: {
     requiredPlan: 'PRO',
     code: 'WHATSAPP_REQUIRES_PRO',
-    message: 'A automacao de alertas no WhatsApp esta disponivel apenas nos planos Pro e Premium.',
+    message: 'A automação de alertas no WhatsApp está disponível apenas nos planos Pro e Premium.',
   },
   auto_advanced_alerts: {
     requiredPlan: 'PREMIUM',
     code: 'WHATSAPP_REQUIRES_PREMIUM',
-    message: 'Os alertas avancados de WhatsApp estao disponiveis no plano Premium.',
+    message: 'Os alertas avançados de WhatsApp estão disponíveis no plano Premium.',
   },
   ai_assistant: {
     requiredPlan: 'PREMIUM',
     code: 'WHATSAPP_REQUIRES_PREMIUM',
-    message: 'As consultas com IA no WhatsApp estao disponiveis no plano Premium.',
+    message: 'As consultas com IA no WhatsApp estão disponíveis no plano Premium.',
   },
   admin_actions: {
     requiredPlan: 'PREMIUM',
     code: 'WHATSAPP_REQUIRES_PREMIUM',
-    message: 'As acoes administrativas pelo WhatsApp estao disponiveis no plano Premium.',
+    message: 'As ações administrativas pelo WhatsApp estão disponíveis no plano Premium.',
   },
   gemini_transaction_parser: {
     requiredPlan: 'PREMIUM',
     code: 'WHATSAPP_REQUIRES_PREMIUM',
-    message: 'O parser avancado de transacoes via WhatsApp esta disponivel no plano Premium.',
+    message: 'O parser avançado de transações via WhatsApp está disponível no plano Premium.',
   },
 };
 

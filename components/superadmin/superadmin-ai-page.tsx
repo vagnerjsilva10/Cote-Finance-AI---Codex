@@ -77,7 +77,7 @@ export function SuperadminAiPage() {
       <SuperadminPageHeader
         eyebrow="IA"
         title="Operação de IA"
-        description="Monitore uso, quota, tendencia e saude operacional da IA em um unico painel."
+        description="Monitore uso, quota, tendência e saúde operacional da IA em um único painel."
         actions={<SuperadminActionLink href="/superadmin/feature-flags">Ver feature flags</SuperadminActionLink>}
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -91,8 +91,8 @@ export function SuperadminAiPage() {
       {actionMessage ? <SuccessState message={actionMessage} /> : null}
 
       <SuperadminSectionCard
-        title="Saude operacional"
-        description="Status do provedor, quotas e media de uso."
+        title="Saúde operacional"
+        description="Status do provedor, quotas e média de uso."
       >
         <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -144,8 +144,8 @@ export function SuperadminAiPage() {
       </SuperadminSectionCard>
 
       <SuperadminSectionCard
-        title="Tendencia dos ultimos 14 dias"
-        description="Aceleracao e desaceleracao do uso de IA."
+        title="Tendência dos últimos 14 dias"
+        description="Aceleração e desaceleração do uso de IA."
       >
         {isLoading ? (
           <LoadingState message="Carregando tendência de IA..." />
@@ -185,7 +185,7 @@ export function SuperadminAiPage() {
 
       <SuperadminSectionCard
         title="Uso por workspace"
-        description="Busca rapida por plano, owner, quota e preferencia."
+        description="Busca rápida por plano, owner, quota e preferência."
       >
         <div className="grid gap-3 lg:grid-cols-[1.1fr_0.45fr]">
           <label className="block">

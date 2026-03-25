@@ -8,9 +8,9 @@ export const WHATSAPP_CONFIG_MISSING_ERROR =
 export const WHATSAPP_VERIFY_TOKEN_MISSING_ERROR =
   'WhatsApp não configurado. Defina WHATSAPP_VERIFY_TOKEN.';
 export const WHATSAPP_TEST_NUMBER_BLOCKED_ERROR =
-  'WhatsApp configurado com o Test Number da Meta. Substitua WHATSAPP_PHONE_NUMBER_ID pelo phone_number_id do numero comercial real.';
+  'WhatsApp configurado com o Test Number da Meta. Substitua WHATSAPP_PHONE_NUMBER_ID pelo phone_number_id do número comercial real.';
 export const WHATSAPP_EXPECTED_DISPLAY_PHONE_MISSING_ERROR =
-  'WhatsApp nao configurado para producao. Defina WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER com o numero comercial.';
+  'WhatsApp não configurado para produção. Defina WHATSAPP_EXPECTED_DISPLAY_PHONE_NUMBER com o número comercial.';
 
 export const WHATSAPP_TEMPLATES = {
   CONNECT: {
@@ -603,7 +603,7 @@ async function assertConfiguredWhatsAppSender(config: WhatsAppConfig) {
     const businessPhoneIds = await fetchConfiguredBusinessPhoneIds(config);
     if (!businessPhoneIds.includes(config.phoneNumberId)) {
       throw createWhatsAppConfigError({
-        message: 'WHATSAPP_PHONE_NUMBER_ID nao pertence a WHATSAPP_BUSINESS_ACCOUNT_ID.',
+        message: 'WHATSAPP_PHONE_NUMBER_ID não pertence a WHATSAPP_BUSINESS_ACCOUNT_ID.',
         phoneNumberId: config.phoneNumberId,
         endpoint: 'config://business-account-binding',
         rawBody: {
@@ -619,7 +619,7 @@ async function assertConfiguredWhatsAppSender(config: WhatsAppConfig) {
     const actualDisplayPhoneNumber = normalizeExpectedDisplayPhoneNumber(identity.displayPhoneNumber || '');
     if (actualDisplayPhoneNumber !== config.expectedDisplayPhoneNumber) {
       throw createWhatsAppConfigError({
-        message: 'WHATSAPP_PHONE_NUMBER_ID nao corresponde ao numero comercial esperado.',
+        message: 'WHATSAPP_PHONE_NUMBER_ID não corresponde ao número comercial esperado.',
         phoneNumberId: config.phoneNumberId,
         endpoint: 'config://display-phone-mismatch',
         rawBody: {
@@ -636,7 +636,7 @@ async function assertConfiguredWhatsAppSender(config: WhatsAppConfig) {
     const actualVerifiedName = cleanEnvValue(identity.verifiedName).toLowerCase();
     if (actualVerifiedName !== expectedVerifiedName) {
       throw createWhatsAppConfigError({
-        message: 'WHATSAPP_PHONE_NUMBER_ID nao corresponde ao verified_name esperado.',
+        message: 'WHATSAPP_PHONE_NUMBER_ID não corresponde ao verified_name esperado.',
         phoneNumberId: config.phoneNumberId,
         endpoint: 'config://verified-name-mismatch',
         rawBody: {

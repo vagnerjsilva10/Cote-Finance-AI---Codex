@@ -24,7 +24,7 @@ export async function GET() {
     configuredRuntimeInfo.connectionLimit <= 1
   ) {
     warnings.push(
-      'DATABASE_URL esta usando pooler com connection_limit=1. Isso aumenta muito o risco de timeout ao abrir transacoes e sob carga concorrente.'
+      'DATABASE_URL está usando pooler com connection_limit=1. Isso aumenta muito o risco de timeout ao abrir transações e sob carga concorrente.'
     );
   }
   if (
@@ -32,7 +32,7 @@ export async function GET() {
     runtimeInfo.connectionLimit !== configuredRuntimeInfo.connectionLimit
   ) {
     warnings.push(
-      `Runtime elevou connection_limit para ${runtimeInfo.connectionLimit ?? 'desconhecido'} para reduzir timeout de conexao. Ajuste o DATABASE_URL no provedor para manter esse valor de forma explicita.`
+      `Runtime elevou connection_limit para ${runtimeInfo.connectionLimit ?? 'desconhecido'} para reduzir timeout de conexão. Ajuste o DATABASE_URL no provedor para manter esse valor de forma explícita.`
     );
   }
 

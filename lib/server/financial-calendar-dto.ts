@@ -27,7 +27,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function ensureObject(value: unknown, fallbackMessage = 'Corpo da requisicao do calendario invalido.') {
+function ensureObject(value: unknown, fallbackMessage = 'Corpo da requisição do calendário inválido.') {
   if (!isPlainObject(value)) {
     throw new Error(fallbackMessage);
   }
@@ -53,7 +53,7 @@ function parseLocalDateToken(value: string) {
     ) {
       return trimmed;
     }
-    throw new Error('Data invalida.');
+    throw new Error('Data inválida.');
   }
 
   const monthMatch = /^(\d{4})-(\d{2})$/.exec(trimmed);
@@ -64,12 +64,12 @@ function parseLocalDateToken(value: string) {
     if (parsed.getFullYear() === year && parsed.getMonth() === month) {
       return trimmed;
     }
-    throw new Error('Data invalida.');
+    throw new Error('Data inválida.');
   }
 
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error('Data invalida.');
+    throw new Error('Data inválida.');
   }
 
   return trimmed;
@@ -77,7 +77,7 @@ function parseLocalDateToken(value: string) {
 
 function parseDateString(value: unknown, fieldName: string, { required = false }: { required?: boolean } = {}) {
   if (value === null || value === undefined || value === '') {
-    if (required) throw new Error(`${fieldName} e obrigatorio.`);
+    if (required) throw new Error(`${fieldName} é obrigatório.`);
     return null;
   }
 
@@ -88,7 +88,7 @@ function parseDateString(value: unknown, fieldName: string, { required = false }
   try {
     return parseLocalDateToken(value);
   } catch {
-    throw new Error(`${fieldName} invalido.`);
+    throw new Error(`${fieldName} inválido.`);
   }
 }
 

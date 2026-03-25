@@ -6,6 +6,12 @@ export const formatCurrency = (value: number) =>
     currency: 'BRL',
   });
 
+export const formatSignedCurrency = (value: number) => {
+  if (!Number.isFinite(value)) return '--';
+  const sign = value > 0 ? '+' : value < 0 ? '-' : '';
+  return `${sign}${formatCurrency(Math.abs(value))}`;
+};
+
 export const formatDateShort = (value?: string | null) => {
   if (!value) return '--';
   const parsed = new Date(value);

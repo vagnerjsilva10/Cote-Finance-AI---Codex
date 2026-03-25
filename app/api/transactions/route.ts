@@ -62,11 +62,11 @@ const SCHEMA_SYNC_REQUIRED_ERROR =
   DATABASE_SCHEMA_MISMATCH_MESSAGE;
 
 const FRIENDLY_TRANSACTION_SAVE_ERROR =
-  'Nao foi possivel salvar a transacao agora. Tente novamente em instantes.';
+  'Não foi possível salvar a transação agora. Tente novamente em instantes.';
 const FRIENDLY_TRANSACTION_UPDATE_ERROR =
-  'Nao foi possivel atualizar a transacao agora. Tente novamente em instantes.';
+  'Não foi possível atualizar a transação agora. Tente novamente em instantes.';
 const FRIENDLY_TRANSACTION_DELETE_ERROR =
-  'Nao foi possivel excluir a transacao agora. Tente novamente em instantes.';
+  'Não foi possível excluir a transação agora. Tente novamente em instantes.';
 
 const hasOwn = <K extends string>(obj: object, key: K) =>
   Object.prototype.hasOwnProperty.call(obj, key);

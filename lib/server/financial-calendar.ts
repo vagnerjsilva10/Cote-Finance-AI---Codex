@@ -230,12 +230,12 @@ function parseDateInput(value: string, label: string) {
     ) {
       return parsed;
     }
-    throw new Error(`${label} invalida.`);
+    throw new Error(`${label} inválida.`);
   }
 
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error(`${label} invalida.`);
+    throw new Error(`${label} inválida.`);
   }
   return parsed;
 }
@@ -263,7 +263,7 @@ function normalizeType(value: string): FinancialEventType {
   ) {
     return normalized;
   }
-  throw new Error('Tipo de evento financeiro invalido.');
+  throw new Error('Tipo de evento financeiro inválido.');
 }
 
 function normalizeRecurrence(value: string | null | undefined): FinancialEventRecurrence {
@@ -338,7 +338,7 @@ async function getWorkspaceFinancialEventOrThrow(workspaceId: string, eventId: s
   });
 
   if (!event) {
-    throw new Error('Evento financeiro nao encontrado.');
+    throw new Error('Evento financeiro não encontrado.');
   }
 
   return event;
@@ -588,7 +588,7 @@ async function buildSyncDrafts(workspaceId: string) {
       sourceType,
       sourceId: buildSourceId('transaction', transaction.id),
       title: transaction.description,
-      description: 'Evento sincronizado de transacao com vencimento ou previsao.',
+      description: 'Evento sincronizado de transação com vencimento ou previsão.',
       type: eventType,
       amount: Number(transaction.amount || 0),
       category: transaction.category?.name || null,
@@ -1135,11 +1135,11 @@ export async function createManualFinancialEvent(input: CreateManualFinancialEve
   const status = normalizeSettlementStatus(eventType, input.status || 'PENDING');
 
   if (amount !== null && amount < 0) {
-    throw new Error('Valor do evento financeiro nao pode ser negativo.');
+    throw new Error('Valor do evento financeiro não pode ser negativo.');
   }
 
   if (endDate && startOfDay(endDate) < startOfDay(eventDate)) {
-    throw new Error('Data final nao pode ser anterior a data inicial.');
+    throw new Error('Data final não pode ser anterior à data inicial.');
   }
 
   return prisma.financialEvent.create({
@@ -1183,12 +1183,12 @@ export async function updateManualFinancialEvent(input: UpdateManualFinancialEve
   const nextEndDate = input.endDate !== undefined ? parseOptionalDate(input.endDate) : existing.end_date;
 
   if (nextEndDate && startOfDay(nextEndDate) < startOfDay(nextDate)) {
-    throw new Error('Data final nao pode ser anterior a data inicial.');
+    throw new Error('Data final não pode ser anterior à data inicial.');
   }
 
   const parsedAmount = input.amount !== undefined ? parseAmount(input.amount) : undefined;
   if (parsedAmount !== undefined && parsedAmount !== null && parsedAmount < 0) {
-    throw new Error('Valor do evento financeiro nao pode ser negativo.');
+    throw new Error('Valor do evento financeiro não pode ser negativo.');
   }
 
   const nextRecurrence =
@@ -1241,7 +1241,7 @@ export async function deleteManualFinancialEvent(params: {
   const existing = await getWorkspaceFinancialEventOrThrow(params.workspaceId, params.eventId);
 
   if (existing.source_type !== 'MANUAL') {
-    throw new Error('Eventos sincronizados nao podem ser excluidos por esta rota.');
+    throw new Error('Eventos sincronizados não podem ser excluídos por esta rota.');
   }
 
   await prisma.financialEvent.delete({
@@ -1531,7 +1531,7 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
   });
 
   if (!event) {
-    throw new Error('Evento financeiro nao encontrado.');
+    throw new Error('Evento financeiro não encontrado.');
   }
 
   const eventType = normalizeType(event.type);
@@ -1543,7 +1543,7 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
     eventType === 'FINANCIAL_REMINDER' ||
     eventType === 'MANUAL_ALERT'
   ) {
-    throw new Error('Esse tipo de evento nao aceita marcacao de pago ou recebido.');
+    throw new Error('Esse tipo de evento não aceita marcação de pago ou recebido.');
   }
 
   if (event.source_type === 'MANUAL') {
@@ -1592,12 +1592,12 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
     });
 
     if (!transaction) {
-      throw new Error('Transacao de origem nao encontrada.');
+      throw new Error('Transação de origem não encontrada.');
     }
 
     const transactionType = normalizeTransactionType(transaction.type);
     if (!transactionType) {
-      throw new Error('Tipo da transacao de origem invalido.');
+      throw new Error('Tipo da transação de origem inválido.');
     }
 
     const currentTransactionStatus = normalizeTransactionStatus(transaction.status);
@@ -1609,7 +1609,7 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
         to: targetTransactionStatus,
       })
     ) {
-      throw new Error('Transicao de status da transacao de origem nao permitida nesta rota.');
+      throw new Error('Transição de status da transação de origem não permitida nesta rota.');
     }
 
     if (targetTransactionStatus === 'CONFIRMED') {
@@ -1683,7 +1683,7 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
     });
 
     if (!debt) {
-      throw new Error('Despesa de origem nao encontrada.');
+      throw new Error('Despesa de origem não encontrada.');
     }
 
     const persistedStatus = nextStatus === 'RECEIVED' ? 'PAID' : nextStatus;
@@ -1756,7 +1756,7 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
     };
   }
 
-  throw new Error('Origem do evento ainda nao suporta atualizacao de status por esta rota.');
+  throw new Error('Origem do evento ainda não suporta atualização de status por esta rota.');
 }
 
 export function isFinancialCalendarSchemaMismatchError(error: unknown) {

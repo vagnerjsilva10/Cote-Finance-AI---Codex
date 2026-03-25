@@ -28,7 +28,7 @@ export function SuperadminReportsPage() {
         if (active) setData(next);
       } catch (fetchError) {
         if (active) {
-          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar relatorios executivos.');
+          setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar relatórios executivos.');
         }
       } finally {
         if (active) setIsLoading(false);
@@ -52,11 +52,11 @@ export function SuperadminReportsPage() {
     data && data.funnel.totalUsers > 0 ? (data.funnel.totalWorkspaces / data.funnel.totalUsers) * 100 : 0;
 
   if (isLoading) {
-    return <LoadingState message="Carregando relatorios..." />;
+    return <LoadingState message="Carregando relatórios..." />;
   }
 
   if (error || !data) {
-    return <ErrorState message={error || 'Falha ao carregar relatorios.'} />;
+    return <ErrorState message={error || 'Falha ao carregar relatórios.'} />;
   }
 
   return (
@@ -67,7 +67,7 @@ export function SuperadminReportsPage() {
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Relatórios</p>
             <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)] md:text-3xl">Visão executiva</h1>
             <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
-              Crescimento, receita, ativacao e intensidade operacional em um unico painel.
+              Crescimento, receita, ativação e intensidade operacional em um único painel.
             </p>
           </div>
           <a
@@ -120,11 +120,11 @@ export function SuperadminReportsPage() {
 
         <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <h2 className="text-lg font-black text-[var(--text-primary)]">Indicadores compostos</h2>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">Conversao, ativacao e volume em leitura curta.</p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Conversão, ativação e volume em leitura curta.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <BreakdownTile label="Conversao pagantes" value={formatAdminPercent(payingRate)} description="Pro e Premium na base" />
+            <BreakdownTile label="Conversão pagantes" value={formatAdminPercent(payingRate)} description="Pro e Premium na base" />
             <BreakdownTile label="Ativação" value={formatAdminPercent(activationRate)} description="usuários que viraram workspace" />
-            <BreakdownTile label="Uso de IA 30d" value={formatAdminNumber(data.summary.aiUsageLast30Days)} description="interacoes recentes" />
+            <BreakdownTile label="Uso de IA 30d" value={formatAdminNumber(data.summary.aiUsageLast30Days)} description="interações recentes" />
             <BreakdownTile label="Transações totais" value={formatAdminNumber(data.summary.totalTransactions)} description="base consolidada" />
           </div>
         </section>
@@ -132,7 +132,7 @@ export function SuperadminReportsPage() {
 
       <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <h2 className="text-lg font-black text-[var(--text-primary)]">Crescimento recente</h2>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">6 meses de aquisicao, ativacao e uso.</p>
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">6 meses de aquisição, ativação e uso.</p>
         <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="grid gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 md:grid-cols-3 xl:grid-cols-6">
             {data.monthlyTrend.map((item) => (
@@ -143,12 +143,12 @@ export function SuperadminReportsPage() {
             <BreakdownTile
               label="Novos usuários"
               value={formatAdminNumber(data.monthlyTrend.reduce((total, item) => total + item.signups, 0))}
-              description="criados no periodo"
+              description="criados no período"
             />
             <BreakdownTile
               label="Novos workspaces"
               value={formatAdminNumber(data.monthlyTrend.reduce((total, item) => total + item.newWorkspaces, 0))}
-              description="ativacao inicial"
+              description="ativação inicial"
             />
             <BreakdownTile
               label="Transações recentes"
@@ -183,7 +183,7 @@ export function SuperadminReportsPage() {
 
         <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <h2 className="text-lg font-black text-[var(--text-primary)]">Funil e operação</h2>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">Base, ativacao e distribuicao operacional.</p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Base, ativação e distribuição operacional.</p>
           <div className="mt-4 space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <InfoPill label="Usuários totais" value={formatAdminNumber(data.funnel.totalUsers)} />

@@ -145,7 +145,7 @@ export async function DELETE(req: Request) {
     if (linkedTransactionsCount > 0 || linkedInvestmentsCount > 0) {
       throw new HttpError(
         409,
-        'Nao e possivel excluir uma carteira com transacoes ou investimentos vinculados.'
+        'Não é possível excluir uma carteira com transações ou investimentos vinculados.'
       );
     }
     await prisma.wallet.delete({

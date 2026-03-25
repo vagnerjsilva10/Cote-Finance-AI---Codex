@@ -239,7 +239,7 @@ async function getRecurrenceRuleOrThrow(workspaceId: string, ruleId: string) {
   });
 
   if (!rule) {
-    throw new Error('Regra de recorrencia nao encontrada.');
+    throw new Error('Regra de recorrência não encontrada.');
   }
 
   return rule as RecurrenceRuleRecord;
@@ -248,22 +248,22 @@ async function getRecurrenceRuleOrThrow(workspaceId: string, ruleId: string) {
 export async function upsertRecurrenceRule(input: UpsertRecurrenceRuleInput) {
   const kind = normalizeKind(input.kind);
   if (!kind) {
-    throw new Error('Tipo de recorrencia invalido. Use INCOME ou EXPENSE.');
+    throw new Error('Tipo de recorrência inválido. Use INCOME ou EXPENSE.');
   }
 
   const title = String(input.title || '').trim();
   if (!title) {
-    throw new Error('Titulo da recorrencia e obrigatorio.');
+    throw new Error('Título da recorrência é obrigatório.');
   }
 
   if (!Number.isFinite(input.amount) || input.amount <= 0) {
-    throw new Error('Valor da recorrencia deve ser maior que zero.');
+    throw new Error('Valor da recorrência deve ser maior que zero.');
   }
 
   const startDate = startOfDay(input.startDate);
   const endDate = input.endDate ? endOfDay(input.endDate) : null;
   if (endDate && endDate < startDate) {
-    throw new Error('Data final da recorrencia nao pode ser anterior a data inicial.');
+    throw new Error('Data final da recorrência não pode ser anterior à data inicial.');
   }
 
   const frequency = normalizeFrequency(input.frequency);
@@ -302,7 +302,7 @@ export async function upsertRecurrenceRule(input: UpsertRecurrenceRuleInput) {
   });
 
   if (!existing) {
-    throw new Error('Regra de recorrencia nao encontrada.');
+    throw new Error('Regra de recorrência não encontrada.');
   }
 
   return prisma.recurrenceRule.update({
@@ -581,5 +581,5 @@ export function isRecurringRulesSchemaMismatchError(error: unknown) {
 }
 
 export function getRecurringRulesSchemaErrorMessage() {
-  return 'A estrutura do banco de dados nao esta alinhada com a versao atual das regras de recorrencia.';
+  return 'A estrutura do banco de dados não está alinhada com a versão atual das regras de recorrência.';
 }

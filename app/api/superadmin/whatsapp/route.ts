@@ -702,7 +702,7 @@ export async function PATCH(req: Request) {
             403
           );
         }
-        return json({ error: 'Nao foi possivel enviar o teste do WhatsApp para este workspace.' }, 409);
+        return json({ error: 'Não foi possível enviar o teste do WhatsApp para este workspace.' }, 409);
       }
 
       const updatedConfig = await saveWorkspaceWhatsAppConfig({
@@ -750,7 +750,7 @@ export async function PATCH(req: Request) {
             403
           );
         }
-        return json({ error: 'Nao ha alertas elegiveis para enviar neste workspace agora.' }, 409);
+        return json({ error: 'Não há alertas elegíveis para enviar neste workspace agora.' }, 409);
       }
 
       await logWorkspaceEventSafe({

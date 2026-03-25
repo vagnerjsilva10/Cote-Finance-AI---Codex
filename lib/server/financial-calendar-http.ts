@@ -13,11 +13,11 @@ export function buildFinancialCalendarErrorResponse(error: unknown, fallbackMess
 
   if (
     error instanceof Error &&
-    /(required|invalid|obrigatorio|obrigatorios|invalida|invalido|must be|At least one field|nao pode|nao aceita|nao encontrado|devem ser alterados na origem|nao podem ser excluidos|seguro cancelar)/i.test(
+    /(required|invalid|obrigat[oó]rio|obrigat[oó]rios|inv[aá]lida|inv[aá]lido|must be|At least one field|n[aã]o pode|n[aã]o aceita|n[aã]o encontrado|devem ser alterados na origem|n[aã]o podem ser exclu[ií]dos|seguro cancelar)/i.test(
       error.message
     )
   ) {
-    const status = /nao encontrado/i.test(error.message) ? 404 : 400;
+    const status = /n[aã]o encontrado/i.test(error.message) ? 404 : 400;
     return NextResponse.json({ error: error.message }, { status });
   }
 

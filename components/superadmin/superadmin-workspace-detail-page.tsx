@@ -36,7 +36,7 @@ export function SuperadminWorkspaceDetailPage() {
     let active = true;
     const run = async () => {
       if (!workspaceId) {
-        setError('Workspace invalido.');
+        setError('Workspace inválido.');
         setIsLoading(false);
         return;
       }
@@ -59,7 +59,7 @@ export function SuperadminWorkspaceDetailPage() {
   }, [workspaceId]);
 
   if (isLoading) return <LoadingState label="Carregando detalhe do workspace..." />;
-  if (error || !data) return <ErrorState message={error || 'Workspace indisponivel.'} />;
+  if (error || !data) return <ErrorState message={error || 'Workspace indisponível.'} />;
 
   const { workspace } = data;
   const estimatedMrr = workspace.effectiveAppPlan === 'PREMIUM' ? 49 : workspace.effectiveAppPlan === 'PRO' ? 29 : 0;
@@ -109,10 +109,10 @@ export function SuperadminWorkspaceDetailPage() {
               <InfoPill label="Período atual" value={formatAdminDate(workspace.currentPeriodEnd)} />
               <InfoPill label="WhatsApp" value={workspace.whatsappPhoneNumber || 'Não configurado'} />
               <InfoPill label="Atualizado em" value={formatAdminDateTime(workspace.updatedAt)} />
-              <InfoPill label="Transações/mes" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
-              <InfoPill label="IA/mes" value={workspace.limits.aiInteractionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.aiInteractionsPerMonth)} />
-              <InfoPill label="Uso transações no mes" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
-              <InfoPill label="Uso IA no mes" value={formatAdminNumber(workspace.monthlyUsage.aiEffective)} />
+              <InfoPill label="Transações/mês" value={workspace.limits.transactionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.transactionsPerMonth)} />
+              <InfoPill label="IA/mês" value={workspace.limits.aiInteractionsPerMonth === null ? 'Ilimitado' : formatAdminNumber(workspace.limits.aiInteractionsPerMonth)} />
+              <InfoPill label="Uso transações no mês" value={formatAdminNumber(workspace.monthlyUsage.transactionsEffective)} />
+              <InfoPill label="Uso IA no mês" value={formatAdminNumber(workspace.monthlyUsage.aiEffective)} />
               <InfoPill label="Relatórios" value={workspace.limits.reports === 'full' ? 'Completos' : 'Básicos'} />
               <InfoPill label="Criado em" value={formatAdminDateTime(workspace.createdAt)} />
             </div>
@@ -348,7 +348,7 @@ function WorkspaceActionsCard({ workspace, isSaving, onResetTransactions, onRese
       <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 className="text-sm font-bold text-[var(--text-primary)]">Resets administrativos do mes</h3>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">Resets administrativos do mês</h3>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">Zere o consumo efetivo de transações ou IA sem mexer manualmente no banco.</p>
           </div>
           <div className="flex flex-wrap gap-2">

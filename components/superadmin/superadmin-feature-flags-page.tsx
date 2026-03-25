@@ -216,7 +216,7 @@ export function SuperadminFeatureFlagsPage() {
       <SuperadminPageHeader
         eyebrow="Feature Flags"
         title="Governança de rollout"
-        description="Controle rollout global, por plano, workspace e usuario com impacto real no app."
+        description="Controle rollout global, por plano, workspace e usuário com impacto real no app."
         actions={
           <>
             <SuperadminActionLink href="/superadmin/ai">Ver operação de IA</SuperadminActionLink>

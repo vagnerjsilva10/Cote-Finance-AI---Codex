@@ -63,8 +63,8 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           code: 'DASHBOARD_TIMEOUT',
-          message: 'Nao foi possivel carregar a dashboard no tempo esperado. Tente novamente.',
-          error: 'Nao foi possivel carregar a dashboard no tempo esperado. Tente novamente.',
+          message: 'Não foi possível carregar a dashboard no tempo esperado. Tente novamente.',
+          error: 'Não foi possível carregar a dashboard no tempo esperado. Tente novamente.',
         },
         { status: 503 }
       );
@@ -83,8 +83,8 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           code: classified?.kind || 'DB_UNAVAILABLE',
-          message: 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.',
-          error: 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.',
+          message: 'Não foi possível carregar a dashboard agora. Tente novamente em instantes.',
+          error: 'Não foi possível carregar a dashboard agora. Tente novamente em instantes.',
         },
         { status: 503 }
       );
@@ -99,8 +99,8 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         code: 'DASHBOARD_OVERVIEW_FAILED',
-        message: 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.',
-        error: 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.',
+        message: 'Não foi possível carregar a dashboard agora. Tente novamente em instantes.',
+        error: 'Não foi possível carregar a dashboard agora. Tente novamente em instantes.',
       },
       { status: 500 }
     );

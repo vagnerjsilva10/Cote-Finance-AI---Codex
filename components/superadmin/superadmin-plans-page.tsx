@@ -272,7 +272,7 @@ export function SuperadminPlansPage() {
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Transações/mes</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Transações/mês</span>
                     <input
                       value={plan.limits.transactionsPerMonth ?? ''}
                       onChange={(event) =>
@@ -289,7 +289,7 @@ export function SuperadminPlansPage() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">IA/mes</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">IA/mês</span>
                     <input
                       value={plan.limits.aiInteractionsPerMonth ?? ''}
                       onChange={(event) =>
@@ -380,17 +380,17 @@ export function SuperadminPlansPage() {
                 </div>
                 <p className="mt-3 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
                   {formatAdminCurrency(plan.monthlyPrice)}
-                  <span className="text-sm font-medium text-[var(--text-muted)]"> / mes</span>
+                  <span className="text-sm font-medium text-[var(--text-muted)]"> / mês</span>
                 </p>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   {plan.limits.transactionsPerMonth === null
                     ? 'Transações ilimitadas'
-                    : `${formatAdminNumber(plan.limits.transactionsPerMonth)} transações/mes`}
+                    : `${formatAdminNumber(plan.limits.transactionsPerMonth)} transações/mês`}
                 </p>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {plan.limits.aiInteractionsPerMonth === null
                     ? 'IA ilimitada'
-                    : `${formatAdminNumber(plan.limits.aiInteractionsPerMonth)} interacoes de IA/mes`}
+                    : `${formatAdminNumber(plan.limits.aiInteractionsPerMonth)} interações de IA/mês`}
                 </p>
               </div>
             ))}

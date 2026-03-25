@@ -59,7 +59,7 @@ export function SuperadminUserDetailPage() {
         const next = await fetchSuperadminJson<SuperadminUserDetailResponse>(`/api/superadmin/users/${userId}`);
         if (active) setData(next);
       } catch (fetchError) {
-        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuario.');
+        if (active) setError(fetchError instanceof Error ? fetchError.message : 'Falha ao carregar usuário.');
       } finally {
         if (active) setIsLoading(false);
       }
@@ -70,7 +70,7 @@ export function SuperadminUserDetailPage() {
     };
   }, [userId]);
 
-  if (isLoading) return <LoadingState label="Carregando usuario..." />;
+  if (isLoading) return <LoadingState label="Carregando usuário..." />;
   if (error || !data) return <ErrorState message={error || 'Usuário não encontrado.'} />;
 
   const { user } = data;
@@ -129,9 +129,9 @@ export function SuperadminUserDetailPage() {
             </div>
           </CompactSection>
 
-          <CompactSection title="Workspaces vinculados" subtitle="Ambientes associados ao usuario.">
+          <CompactSection title="Workspaces vinculados" subtitle="Ambientes associados ao usuário.">
             <div className="space-y-2.5">
-              {user.workspaces.length === 0 ? <EmptyState text="Este usuario ainda não participa de nenhum workspace." /> : user.workspaces.map((workspace) => (
+              {user.workspaces.length === 0 ? <EmptyState text="Este usuário ainda não participa de nenhum workspace." /> : user.workspaces.map((workspace) => (
                 <Link key={workspace.id} href={`/superadmin/workspaces/${workspace.id}`} className="block rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 transition hover:border-[var(--border-default)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -162,7 +162,7 @@ export function SuperadminUserDetailPage() {
                 setSupportLink(response.supportLink || null);
                 setMessage(getActionSuccessMessage(payload.authAction));
               } catch (submitError) {
-                setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar usuario.');
+                setError(submitError instanceof Error ? submitError.message : 'Falha ao atualizar usuário.');
               } finally {
                 setIsSaving(false);
               }
@@ -183,9 +183,9 @@ export function SuperadminUserDetailPage() {
             </CompactSection>
           ) : null}
 
-          <CompactSection title="Eventos recentes" subtitle="Ultima atividade associada a esta conta.">
+          <CompactSection title="Eventos recentes" subtitle="Última atividade associada a esta conta.">
             <div className="space-y-2.5">
-              {user.recentEvents.length === 0 ? <EmptyState text="Nenhum evento recente associado a este usuario." /> : user.recentEvents.map((event) => (
+              {user.recentEvents.length === 0 ? <EmptyState text="Nenhum evento recente associado a este usuário." /> : user.recentEvents.map((event) => (
                 <div key={event.id} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-semibold text-[var(--text-primary)]">{humanizeEventType(event.type)}</div>
