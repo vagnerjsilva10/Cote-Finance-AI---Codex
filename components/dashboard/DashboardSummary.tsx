@@ -1,152 +1,66 @@
-﻿import type { ReactNode } from 'react';
-import { ArrowDownRight, ArrowUpRight, Gauge, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
-import type {
-  DashboardOverviewForecast as DashboardOverviewForecastData,
-  DashboardOverviewSummary as DashboardOverviewSummaryData,
-  DashboardOverviewUpcomingEvent,
-} from '@/lib/dashboard/overview';
+﻿import { Wallet } from 'lucide-react';
+import type { DashboardOverviewSummary as DashboardOverviewSummaryData } from '@/lib/dashboard/overview';
 import { DASHBOARD_CARD_SHELL_CLASSNAME, DashboardSkeletonLine } from '@/components/dashboard/dashboard-primitives';
-import { formatCurrency, formatDateShort, formatSignedCurrency } from '@/components/dashboard/dashboard-utils';
+import { formatCurrency } from '@/components/dashboard/dashboard-utils';
 import { cn } from '@/lib/utils';
 
 type DashboardSummaryProps = {
   summary: DashboardOverviewSummaryData | null;
-  forecast: DashboardOverviewForecastData | null;
-  upcomingEvents: DashboardOverviewUpcomingEvent[];
   loading: boolean;
 };
 
-type SummaryMetricCardProps = {
+type CardProps = {
   label: string;
   value: string;
-  sublineA: ReactNode;
-  sublineB: ReactNode;
-  icon: ReactNode;
+  tone?: 'neutral' | 'positive' | 'negative';
   loading: boolean;
-  valueClassName?: string;
 };
 
-const findNextEventByFlow = (events: DashboardOverviewUpcomingEvent[], flow: DashboardOverviewUpcomingEvent['flow']) => {
-  return [...events]
-    .filter((event) => event.flow === flow)
-    .sort((left, right) => new Date(left.date).getTime() - new Date(right.date).getTime())[0];
-};
-
-function SummaryMetricCard({
-  label,
-  value,
-  sublineA,
-  sublineB,
-  icon,
-  loading,
-  valueClassName,
-}: SummaryMetricCardProps) {
+function SummaryCard({ label, value, tone = 'neutral', loading }: CardProps) {
   return (
-    <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[126px] space-y-2.5 !p-3.5 sm:!p-4')}>
+    <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[120px] space-y-2 !p-4')}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">{label}</p>
         <span className="inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.5)] text-[var(--text-secondary)]">
-          {icon}
+          <Wallet size={14} />
         </span>
       </div>
 
       {loading ? (
         <div className="space-y-2">
-          <DashboardSkeletonLine className="h-7 w-32 rounded-xl" />
-          <DashboardSkeletonLine className="h-3 w-20" />
+          <DashboardSkeletonLine className="h-8 w-32 rounded-xl" />
           <DashboardSkeletonLine className="h-3 w-28" />
         </div>
       ) : (
-        <div className="space-y-1.5">
-          <p className={cn('text-2xl font-black leading-tight tracking-[-0.01em] text-[var(--text-primary)]', valueClassName)}>{value}</p>
-          <div className="space-y-0.5 text-xs">
-            <p className="font-semibold text-[var(--text-secondary)]">{sublineA}</p>
-            <p className="text-[var(--text-muted)]">{sublineB}</p>
-          </div>
-        </div>
+        <p
+          className={cn(
+            'text-2xl font-black leading-tight tracking-[-0.01em]',
+            tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'
+          )}
+        >
+          {value}
+        </p>
       )}
     </article>
   );
 }
 
-export function DashboardSummary({ summary, forecast, upcomingEvents, loading }: DashboardSummaryProps) {
-  const confirmedMonthResult = summary ? summary.inflow - summary.outflow : 0;
-  const nextInflowEvent = findNextEventByFlow(upcomingEvents, 'in');
-  const nextOutflowEvent = findNextEventByFlow(upcomingEvents, 'out');
-
-  const plannedIncome = forecast?.monthPlannedIncome ?? summary?.upcomingInflow ?? 0;
-  const plannedExpense = forecast?.monthPlannedExpense ?? summary?.upcomingOutflow ?? 0;
+export function DashboardSummary({ summary, loading }: DashboardSummaryProps) {
+  const inflow = summary ? summary.inflow : 0;
+  const outflow = summary ? summary.outflow : 0;
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-4">
-      <div className="lg:col-span-3">
-        <SummaryMetricCard
-          label="Saldo atual"
-          icon={<Wallet size={14} />}
-          value={summary ? formatCurrency(summary.currentBalance) : '--'}
-          valueClassName={summary && summary.currentBalance < 0 ? 'text-[var(--danger)]' : undefined}
-          loading={loading}
-          sublineA={
-            <span className={cn('inline-flex items-center gap-1', summary && summary.currentBalance < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]')}>
-              {summary && summary.currentBalance < 0 ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />}
-              {summary && summary.currentBalance < 0 ? 'Atenção ao caixa' : 'Em dia'}
-            </span>
-          }
-          sublineB={summary ? `${formatSignedCurrency(confirmedMonthResult)} no mês` : '--'}
-        />
+      <div className="lg:col-span-4">
+        <SummaryCard label="Saldo atual" value={summary ? formatCurrency(summary.currentBalance) : '--'} tone="neutral" loading={loading} />
       </div>
-
-      <div className="lg:col-span-3">
-        <SummaryMetricCard
-          label="Saldo estimado em 30 dias"
-          icon={<Gauge size={14} />}
-          value={summary && summary.projectedBalance30d !== null ? formatCurrency(summary.projectedBalance30d) : '--'}
-          valueClassName={summary && summary.projectedBalance30d !== null && summary.projectedBalance30d < 0 ? 'text-[var(--danger)]' : undefined}
-          loading={loading}
-          sublineA={
-            <span>
-              Entradas: <span className="font-semibold text-[var(--positive)]">{formatCurrency(plannedIncome)}</span>
-            </span>
-          }
-          sublineB={
-            <span>
-              Saídas: <span className="font-semibold text-[var(--danger)]">{formatCurrency(plannedExpense)}</span>
-            </span>
-          }
-        />
+      <div className="lg:col-span-4">
+        <SummaryCard label="Entradas do mês" value={summary ? formatCurrency(inflow) : '--'} tone="positive" loading={loading} />
       </div>
-
-      <div className="lg:col-span-3">
-        <SummaryMetricCard
-          label="Próximas entradas"
-          icon={<TrendingUp size={14} />}
-          value={summary ? formatCurrency(summary.upcomingInflow) : '--'}
-          loading={loading}
-          sublineA={
-            <span>
-              <span className="font-semibold text-[var(--positive)]">{summary?.upcomingInflowCount ?? 0}</span> evento(s)
-            </span>
-          }
-          sublineB={nextInflowEvent ? `Próxima data: ${formatDateShort(nextInflowEvent.date)}` : 'Próxima data: --'}
-        />
-      </div>
-
-      <div className="lg:col-span-3">
-        <SummaryMetricCard
-          label="Próximas saídas"
-          icon={<TrendingDown size={14} />}
-          value={summary ? formatCurrency(summary.upcomingOutflow) : '--'}
-          loading={loading}
-          sublineA={
-            <span>
-              <span className="font-semibold text-[var(--danger)]">{summary?.upcomingOutflowCount ?? 0}</span> compromisso(s)
-            </span>
-          }
-          sublineB={nextOutflowEvent ? `Próxima data: ${formatDateShort(nextOutflowEvent.date)}` : 'Próxima data: --'}
-        />
+      <div className="lg:col-span-4">
+        <SummaryCard label="Saídas do mês" value={summary ? formatCurrency(outflow) : '--'} tone="negative" loading={loading} />
       </div>
     </div>
   );
 }
-
 

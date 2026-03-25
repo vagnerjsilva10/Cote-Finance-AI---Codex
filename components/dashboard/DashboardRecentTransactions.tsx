@@ -23,13 +23,15 @@ function getCategoryBadgeLetter(category: string | null) {
 }
 
 export function DashboardRecentTransactions({ transactions, loading }: DashboardRecentTransactionsProps) {
+  const visibleTransactions = transactions.slice(0, 5);
+
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">Últimas transações</h3>
-        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          {loading ? '--' : `${transactions.length} registro(s)`}
-        </span>
+        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Últimas transações</h3>
+        <button type="button" className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
+          Ver todas
+        </button>
       </div>
 
       <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'overflow-hidden')}>
@@ -37,21 +39,21 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
           <table className="w-full min-w-[680px] text-left">
             <thead>
               <tr className="border-b border-white/10 bg-[rgba(8,15,27,0.55)]">
-                <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Categoria</th>
-                <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Descrição</th>
-                <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Data</th>
-                <th className="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Valor</th>
+                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Descrição</th>
+                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Categoria</th>
+                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Data</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Valor</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.06]">
               {loading ? (
-                Array.from({ length: 4 }, (_, index) => (
+                Array.from({ length: 5 }, (_, index) => (
                   <tr key={`dashboard-transaction-skeleton-${index}`}>
                     <td className="px-5 py-3.5">
-                      <DashboardSkeletonLine className="h-4 w-24" />
+                      <DashboardSkeletonLine className="h-4 w-40" />
                     </td>
                     <td className="px-5 py-3.5">
-                      <DashboardSkeletonLine className="h-4 w-40" />
+                      <DashboardSkeletonLine className="h-4 w-24" />
                     </td>
                     <td className="px-5 py-3.5">
                       <DashboardSkeletonLine className="h-4 w-20" />
@@ -61,15 +63,16 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
                     </td>
                   </tr>
                 ))
-              ) : transactions.length === 0 ? (
+              ) : visibleTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center text-sm text-[var(--text-secondary)]">
                     Nenhuma transação encontrada no período atual.
                   </td>
                 </tr>
               ) : (
-                transactions.map((transaction) => (
+                visibleTransactions.map((transaction) => (
                   <tr key={transaction.id} className="transition-colors hover:bg-[rgba(8,15,27,0.45)]">
+                    <td className="px-5 py-3.5 text-sm font-medium text-[var(--text-primary)]">{transaction.description}</td>
                     <td className="px-5 py-3.5 text-sm text-[var(--text-secondary)]">
                       <div className="inline-flex items-center gap-2">
                         <span className="inline-flex size-6 items-center justify-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.6)] text-[10px] font-bold text-[var(--text-primary)]">
@@ -78,7 +81,6 @@ export function DashboardRecentTransactions({ transactions, loading }: Dashboard
                         <span>{getCategoryLabel(transaction.category)}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm font-medium text-[var(--text-primary)]">{transaction.description}</td>
                     <td className="px-5 py-3.5 text-sm text-[var(--text-secondary)]">{formatDateShort(transaction.date)}</td>
                     <td
                       className={cn(
