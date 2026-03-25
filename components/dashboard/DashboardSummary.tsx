@@ -39,7 +39,7 @@ export function DashboardSummary({ summary, forecast, upcomingEvents, loading }:
   const plannedIncome = forecast?.monthPlannedIncome ?? summary?.upcomingInflow ?? 0;
   const plannedExpense = forecast?.monthPlannedExpense ?? summary?.upcomingOutflow ?? 0;
 
-  const cardClassName = cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[120px] space-y-3');
+  const cardClassName = cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[112px] space-y-2.5');
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-12">
@@ -59,7 +59,7 @@ export function DashboardSummary({ summary, forecast, upcomingEvents, loading }:
           </div>
         ) : (
           <>
-            <p className="text-[clamp(1.9rem,5vw,2.2rem)] font-black leading-none tracking-[-0.02em] text-[var(--text-primary)]">
+            <p className="text-2xl font-black leading-none tracking-[-0.02em] text-[var(--text-primary)] sm:text-3xl">
               {summary ? formatCurrency(summary.currentBalance) : '--'}
             </p>
             <div className="space-y-1.5 text-xs">
@@ -94,7 +94,7 @@ export function DashboardSummary({ summary, forecast, upcomingEvents, loading }:
           <>
             <p
               className={cn(
-                'text-[clamp(1.9rem,5vw,2.2rem)] font-black leading-none tracking-[-0.02em]',
+                'text-2xl font-black leading-none tracking-[-0.02em] sm:text-3xl',
                 forecast && forecast.projectedBalance30d !== null && forecast.projectedBalance30d < 0
                   ? 'text-[var(--danger)]'
                   : 'text-[var(--text-primary)]'
@@ -130,7 +130,7 @@ export function DashboardSummary({ summary, forecast, upcomingEvents, loading }:
           </div>
         ) : (
           <>
-            <p className="text-[clamp(1.9rem,5vw,2.2rem)] font-black leading-none tracking-[-0.02em] text-[var(--text-primary)]">
+            <p className="text-2xl font-black leading-none tracking-[-0.02em] text-[var(--text-primary)] sm:text-3xl">
               {summary ? formatCurrency(summary.upcomingInflow) : '--'}
             </p>
             <div className="space-y-1.5 text-xs text-[var(--text-secondary)]">
@@ -164,7 +164,7 @@ export function DashboardSummary({ summary, forecast, upcomingEvents, loading }:
           </div>
         ) : (
           <>
-            <p className="text-[clamp(1.9rem,5vw,2.2rem)] font-black leading-none tracking-[-0.02em] text-[var(--text-primary)]">
+            <p className="text-2xl font-black leading-none tracking-[-0.02em] text-[var(--text-primary)] sm:text-3xl">
               {summary ? formatCurrency(summary.upcomingOutflow) : '--'}
             </p>
             <div className="space-y-1.5 text-xs text-[var(--text-secondary)]">

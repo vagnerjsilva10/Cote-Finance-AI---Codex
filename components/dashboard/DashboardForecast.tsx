@@ -38,9 +38,9 @@ type DashboardBalanceEvolutionCardProps = {
 
 const ALERT_TONE_TAG: Record<DashboardOverviewAlert['tone'], string> = {
   danger: 'Alerta',
-  warning: 'Atenção',
-  info: 'Observação',
-  success: 'Estável',
+  warning: 'Aten\u00e7\u00e3o',
+  info: 'Observa\u00e7\u00e3o',
+  success: 'Est\u00e1vel',
 };
 
 function getAlertToneClassName(tone: DashboardOverviewAlert['tone']) {
@@ -60,28 +60,28 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
   const hasAlerts = alerts.length > 0;
 
   return (
-    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[110px] space-y-4')}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">Resumo para decisão</h3>
-          <p className="text-sm text-[var(--text-secondary)]">
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[96px] space-y-2.5 !p-4 sm:!p-5')}>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-0.5">
+          <h3 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">{'Resumo para decis\u00e3o'}</h3>
+          <p className="text-xs text-[var(--text-secondary)]">
             {loading
-              ? 'Carregando visão consolidada da conta...'
+              ? 'Carregando vis\u00e3o consolidada da conta...'
               : forecast
                 ? `Atualizado em ${formatDateShort(forecast.updatedAt)}`
                 : 'Sem dados suficientes para consolidar alertas no momento.'}
           </p>
         </div>
-        <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.55)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           {loading ? 'Analisando' : hasAlerts ? `${alerts.length} alerta(s) relevante(s)` : 'Sem alertas relevantes'}
         </span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {loading ? (
           <>
-            <DashboardSkeletonLine className="h-[78px] w-full rounded-xl" />
-            <DashboardSkeletonLine className="h-[78px] w-full rounded-xl" />
+            <DashboardSkeletonLine className="h-[56px] w-full rounded-xl" />
+            <DashboardSkeletonLine className="h-[56px] w-full rounded-xl" />
           </>
         ) : hasAlerts ? (
           alerts.map((alert) => (
@@ -89,36 +89,20 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
               key={alert.id}
               className={cn(
                 DASHBOARD_CARD_PANEL_CLASSNAME,
-                'space-y-3 p-4',
+                'min-h-[84px] space-y-1.5 p-3',
                 getAlertToneClassName(alert.tone)
               )}
             >
-              <div className="flex flex-col gap-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">{ALERT_TONE_TAG[alert.tone]}</p>
-                <p className="text-base font-semibold text-[var(--text-primary)]">{alert.title}</p>
-                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{alert.message}</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  className="rounded-lg border border-white/10 bg-[rgba(8,15,27,0.6)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-white/20"
-                >
-                  Ver despesas futuras
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg border border-white/10 bg-[rgba(8,15,27,0.6)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-white/20"
-                >
-                  Ajustar orçamento
-                </button>
-              </div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">{ALERT_TONE_TAG[alert.tone]}</p>
+              <p className="text-sm font-semibold leading-tight text-[var(--text-primary)]">{alert.title}</p>
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{alert.message}</p>
             </article>
           ))
         ) : (
-          <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-4')}>
-            <p className="text-base font-semibold text-[var(--text-primary)]">Fluxo financeiro sob controle</p>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              Nenhum alerta crítico no momento. Continue acompanhando para antecipar variações do caixa.
+          <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Fluxo financeiro sob controle</p>
+            <p className="mt-1 text-xs text-[var(--text-secondary)]">
+              {'Nenhum alerta cr\u00edtico no momento. Continue acompanhando para antecipar varia\u00e7\u00f5es do caixa.'}
             </p>
           </div>
         )}
@@ -142,15 +126,15 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
         : 'text-[var(--text-secondary)]';
 
   return (
-    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[110px] space-y-4')}>
-      <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">Resumo do mês</p>
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[110px] space-y-3')}>
+      <div className="space-y-0.5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{'Resumo do m\u00eas'}</p>
         {loading ? (
-          <DashboardSkeletonLine className="h-10 w-36 rounded-xl" />
+          <DashboardSkeletonLine className="h-9 w-32 rounded-xl" />
         ) : (
           <p
             className={cn(
-              'text-[clamp(1.95rem,5vw,2.2rem)] font-black leading-none tracking-[-0.02em]',
+              'text-3xl font-black leading-none tracking-[-0.02em]',
               plannedNet !== null && plannedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--positive)]'
             )}
           >
@@ -160,17 +144,17 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
       </div>
 
       {loading ? (
-        <div className="space-y-2.5">
-          <DashboardSkeletonLine className="h-4 w-40" />
-          <DashboardSkeletonLine className="h-4 w-40" />
-          <DashboardSkeletonLine className="h-4 w-28" />
-          <DashboardSkeletonLine className="h-4 w-full" />
-          <DashboardSkeletonLine className="h-4 w-full" />
-          <DashboardSkeletonLine className="h-4 w-full" />
+        <div className="space-y-2">
+          <DashboardSkeletonLine className="h-3.5 w-36" />
+          <DashboardSkeletonLine className="h-3.5 w-36" />
+          <DashboardSkeletonLine className="h-3.5 w-28" />
+          <DashboardSkeletonLine className="h-3.5 w-full" />
+          <DashboardSkeletonLine className="h-3.5 w-full" />
+          <DashboardSkeletonLine className="h-3.5 w-full" />
         </div>
       ) : (
         <>
-          <div className="space-y-1.5 text-xs text-[var(--text-secondary)]">
+          <div className="space-y-1 text-xs text-[var(--text-secondary)]">
             <p>
               Confirmado:{' '}
               <span className={cn('font-semibold', confirmedNet !== null && confirmedNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]')}>
@@ -184,14 +168,14 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
               </span>
             </p>
             <p>
-              Tendência: <span className={cn('font-semibold', trendClassName)}>{trendLabel}</span>
+              {'Tend\u00eancia:'} <span className={cn('font-semibold', trendClassName)}>{trendLabel}</span>
             </p>
           </div>
 
           <div className="h-px w-full bg-white/10" />
 
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Fluxo do mês</p>
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{'Fluxo do m\u00eas'}</p>
             <p className="text-xs text-[var(--text-secondary)]">
               Entradas:{' '}
               <span className="font-semibold text-[var(--positive)]">
@@ -199,7 +183,7 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
               </span>
             </p>
             <p className="text-xs text-[var(--text-secondary)]">
-              Saídas:{' '}
+              {'Sa\u00eddas:'}{' '}
               <span className="font-semibold text-[var(--danger)]">
                 {forecast ? formatCurrency(forecast.monthPlannedExpense) : '--'}
               </span>
@@ -231,8 +215,8 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-4')}>
       <div className="flex flex-col gap-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
-        <p className="text-sm text-[var(--text-secondary)]">Leitura diária do fechamento projetado com referência de hoje.</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{'Evolu\u00e7\u00e3o do saldo (30 dias)'}</p>
+        <p className="text-sm text-[var(--text-secondary)]">{'Leitura di\u00e1ria do fechamento projetado com refer\u00eancia de hoje.'}</p>
       </div>
 
       {loading ? (
@@ -290,7 +274,7 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
         </div>
       ) : (
         <p className="text-sm text-[var(--text-secondary)]">
-          Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.
+          {'Ainda n\u00e3o h\u00e1 dados suficientes para proje\u00e7\u00e3o. Adicione movimenta\u00e7\u00f5es para visualizar previs\u00f5es.'}
         </p>
       )}
     </section>

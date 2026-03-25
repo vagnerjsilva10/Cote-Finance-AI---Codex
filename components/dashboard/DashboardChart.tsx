@@ -15,7 +15,7 @@ type DashboardChartProps = {
 
 export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) {
   return (
-    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[320px] space-y-4')}>
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[240px] space-y-4')}>
       <div className="space-y-1">
         <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">{'Receitas vs Despesas'}</h3>
         <p className="text-sm text-[var(--text-secondary)]">
@@ -35,11 +35,11 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
       {loading ? (
         <div className="space-y-3">
           <DashboardSkeletonLine className="h-4 w-32" />
-          <DashboardSkeletonLine className="h-[250px] w-full rounded-xl sm:h-[280px]" />
+          <DashboardSkeletonLine className="h-[220px] w-full rounded-xl sm:h-[240px]" />
         </div>
       ) : monthlySeries.length > 0 ? (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3 sm:p-4')}>
-          <div className="h-[250px] w-full sm:h-[280px]">
+          <div className="h-[220px] w-full sm:h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlySeries} margin={{ top: 8, right: 14, left: 2, bottom: 4 }}>
                 <CartesianGrid strokeDasharray="3 8" stroke="rgba(148,163,184,0.20)" vertical={false} />
