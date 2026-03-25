@@ -226,7 +226,22 @@ export async function DELETE(req: Request) {
       await tx.workspaceEvent.deleteMany({
         where: { workspace_id: workspace.id },
       });
+      await tx.dashboardReadModel.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.calendarEventReadModel.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.dailyCashProjection.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
       await tx.categorySuggestion.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.recurrenceRule.deleteMany({
+        where: { workspace_id: workspace.id },
+      });
+      await tx.financialEvent.deleteMany({
         where: { workspace_id: workspace.id },
       });
       await tx.transaction.deleteMany({
