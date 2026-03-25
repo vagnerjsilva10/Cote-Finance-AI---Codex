@@ -2036,7 +2036,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
     onClick={onClick}
     title={collapsed ? label : undefined}
     className={cn(
-      'group flex w-full items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-2 text-left transition-all duration-200',
+      'group flex w-full items-center gap-2 rounded-xl border border-transparent px-2.5 py-1.5 text-left transition-all duration-200',
       collapsed && 'justify-center px-2',
       active
         ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
@@ -12626,33 +12626,33 @@ React.useEffect(() => {
         className={cn(
           'sidebar-premium fixed inset-y-0 left-0 z-[100] flex h-full max-w-[88vw] flex-shrink-0 flex-col border-r border-[var(--border-default)] backdrop-blur-xl transition-all duration-300 lg:relative lg:max-w-none lg:translate-x-0',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
-          isSidebarCollapsed ? 'w-56 lg:w-20' : 'w-56 lg:w-56'
+          isSidebarCollapsed ? 'w-[13.75rem] lg:w-[4.75rem]' : 'w-[13.75rem] lg:w-[13.75rem]'
         )}
       >
-        <div className={cn('flex items-center justify-between gap-3', isSidebarCollapsed ? 'p-3' : 'px-4 py-4')} id="sidebar-logo">
+        <button
+          type="button"
+          onClick={() => setIsSidebarCollapsed((current) => !current)}
+          className="absolute -right-3 top-5 z-20 hidden h-7 w-7 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] shadow-[0_8px_20px_rgba(0,0,0,0.28)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] lg:inline-flex"
+          title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+        >
+          {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+        <div className={cn('flex items-center justify-between gap-2', isSidebarCollapsed ? 'p-2.5' : 'px-3.5 py-3')} id="sidebar-logo">
           <Image
             src={isSidebarCollapsed ? sidebarCollapsedLogo : brandLogo}
             alt="Cote Finance AI - By Cote Juros"
             width={isSidebarCollapsed ? 64 : 700}
             height={isSidebarCollapsed ? 64 : 192}
-            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-14' : 'w-full max-w-[400px]')}
+            className={cn('h-auto transition-all duration-300', isSidebarCollapsed ? 'w-11' : 'w-full max-w-[280px]')}
           />
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsSidebarCollapsed((current) => !current)}
-              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] lg:inline-flex"
-              title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
-            >
-              {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-            </button>
             <button onClick={() => setIsSidebarOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] lg:hidden">
               <X size={20} />
             </button>
           </div>
         </div>
 
-                <nav className={cn('flex-1 space-y-1 overflow-y-auto custom-scrollbar py-3', isSidebarCollapsed ? 'px-2' : 'px-3')}>
+                <nav className={cn('flex-1 space-y-0.5 overflow-y-auto custom-scrollbar py-2.5', isSidebarCollapsed ? 'px-1.5' : 'px-2.5')}>
           {MAIN_NAV_ITEMS.map((item) => (
             <SidebarItem
               key={`main-nav-${item.tab}`}
