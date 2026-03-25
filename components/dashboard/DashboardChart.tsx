@@ -15,38 +15,38 @@ type DashboardChartProps = {
 
 export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) {
   return (
-    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[240px] space-y-4')}>
-      <div className="space-y-1">
-        <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">{'Receitas vs Despesas'}</h3>
-        <p className="text-sm text-[var(--text-secondary)]">
-          {'Comparativo dos \u00faltimos 6 meses para leitura r\u00e1pida de ritmo financeiro.'}
+    <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[210px] space-y-3 !p-4 sm:!p-5')}>
+      <div className="space-y-0.5">
+        <h3 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">Receitas vs Despesas</h3>
+        <p className="text-xs text-[var(--text-secondary)]">
+          Comparativo dos últimos 6 meses para leitura rápida de ritmo financeiro.
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[rgba(8,15,27,0.45)] px-2.5 py-1">
-          <span className="size-2 rounded-full bg-[var(--positive)]" /> {'Entradas'}
+      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[rgba(8,15,27,0.45)] px-2 py-0.5">
+          <span className="size-1.5 rounded-full bg-[var(--positive)]" /> Entradas
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[rgba(8,15,27,0.45)] px-2.5 py-1">
-          <span className="size-2 rounded-full bg-[var(--danger)]" /> {'Sa\u00eddas'}
+        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[rgba(8,15,27,0.45)] px-2 py-0.5">
+          <span className="size-1.5 rounded-full bg-[var(--danger)]" /> Saídas
         </span>
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          <DashboardSkeletonLine className="h-4 w-32" />
-          <DashboardSkeletonLine className="h-[220px] w-full rounded-xl sm:h-[240px]" />
+        <div className="space-y-2">
+          <DashboardSkeletonLine className="h-3.5 w-28" />
+          <DashboardSkeletonLine className="h-[170px] w-full rounded-xl sm:h-[190px]" />
         </div>
       ) : monthlySeries.length > 0 ? (
-        <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3 sm:p-4')}>
-          <div className="h-[220px] w-full sm:h-[240px]">
+        <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-2.5 sm:p-3')}>
+          <div className="h-[170px] w-full sm:h-[190px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlySeries} margin={{ top: 8, right: 14, left: 2, bottom: 4 }}>
+              <LineChart data={monthlySeries} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 8" stroke="rgba(148,163,184,0.20)" vertical={false} />
-                <XAxis dataKey="label" stroke="rgba(148,163,184,0.8)" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis dataKey="label" stroke="rgba(148,163,184,0.8)" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis
                   stroke="rgba(148,163,184,0.8)"
-                  fontSize={11}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => formatCurrency(Number(value || 0))}
@@ -59,34 +59,34 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
                     boxShadow: '0 14px 28px rgba(0, 0, 0, 0.35)',
                   }}
                   labelStyle={{ color: 'var(--text-secondary)' }}
-                  formatter={(value, name) => [formatCurrency(Number(value || 0)), name === 'income' ? 'Entradas' : 'Sa\u00eddas']}
+                  formatter={(value, name) => [formatCurrency(Number(value || 0)), name === 'income' ? 'Entradas' : 'Saídas']}
                 />
                 <Line
                   type="monotone"
                   dataKey="income"
                   name="income"
                   stroke="var(--positive)"
-                  strokeWidth={2.6}
+                  strokeWidth={2.4}
                   dot={false}
-                  activeDot={{ r: 4, fill: 'var(--positive)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                  activeDot={{ r: 3.5, fill: 'var(--positive)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="expense"
                   name="expense"
                   stroke="var(--danger)"
-                  strokeWidth={2.6}
+                  strokeWidth={2.4}
                   dot={false}
-                  activeDot={{ r: 4, fill: 'var(--danger)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                  activeDot={{ r: 3.5, fill: 'var(--danger)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
       ) : (
-        <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-4')}>
-          <p className="text-sm text-[var(--text-secondary)]">
-            {'Ainda n\u00e3o h\u00e1 dados suficientes para este comparativo. Adicione movimenta\u00e7\u00f5es para visualizar o ritmo de entradas e sa\u00eddas.'}
+        <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
+          <p className="text-xs text-[var(--text-secondary)]">
+            Ainda não há dados suficientes para este comparativo. Adicione movimentações para visualizar o ritmo de entradas e saídas.
           </p>
         </div>
       )}
