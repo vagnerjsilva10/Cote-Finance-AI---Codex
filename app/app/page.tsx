@@ -3346,9 +3346,16 @@ const DebtsView = ({
   feedbackMessage = null,
   onDismissFeedback,
 }: DebtsViewProps) => {
+  type DebtGroupKey = 'overdue' | 'today' | 'next7' | 'thisMonth' | 'future' | 'settled';
+  type DebtFilterKey = 'all' | DebtGroupKey;
+  type DebtViewMode = 'list' | 'timeline' | 'calendar';
+  type RecurringFilterKey = 'all' | 'active' | 'paused' | 'next7' | 'next30';
   const [activeDebtTab, setActiveDebtTab] = React.useState<'single' | 'recurring'>(() =>
     debts.length === 0 && recurringDebts.length > 0 ? 'recurring' : 'single'
   );
+  const [debtFilter, setDebtFilter] = React.useState<DebtFilterKey>('all');
+  const [debtViewMode, setDebtViewMode] = React.useState<DebtViewMode>('timeline');
+  const [recurringFilter, setRecurringFilter] = React.useState<RecurringFilterKey>('all');
   const [isCreateChooserOpen, setIsCreateChooserOpen] = React.useState(false);
   const [paymentTargetDebtId, setPaymentTargetDebtId] = React.useState<string | number | null>(null);
   const [paymentAmount, setPaymentAmount] = React.useState('');
@@ -3363,16 +3370,17 @@ const DebtsView = ({
   const totalRemaining = debts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
   const totalPaid = Math.max(0, totalOriginal - totalRemaining);
   const progress = totalOriginal > 0 ? (totalPaid / totalOriginal) * 100 : 0;
-  const overdueDebts = debts.filter((debt) => debt.status === 'Atrasada');
   const openDebts = debts.filter((debt) => debt.remainingAmount > 0);
+  const overdueDebts = openDebts.filter((debt) => getAgendaDayDiff(getDebtDueDateValue(debt, now), now) < 0);
   const activeRecurringDebts = recurringDebts.filter((debt) => debt.status === 'Ativa');
-  const recurringMonthlyTotal = activeRecurringDebts.reduce((acc, debt) => {
+  const getRecurringMonthlyEquivalent = (debt: RecurringDebt) => {
     const interval = Math.max(1, debt.interval || 1);
-    if (debt.frequency === 'WEEKLY') return acc + (debt.amount * 52) / 12 / interval;
-    if (debt.frequency === 'YEARLY') return acc + debt.amount / (12 * interval);
-    if (debt.frequency === 'QUARTERLY') return acc + debt.amount / (3 * interval);
-    return acc + debt.amount / interval;
-  }, 0);
+    if (debt.frequency === 'WEEKLY') return (debt.amount * 52) / 12 / interval;
+    if (debt.frequency === 'YEARLY') return debt.amount / (12 * interval);
+    if (debt.frequency === 'QUARTERLY') return debt.amount / (3 * interval);
+    return debt.amount / interval;
+  };
+  const recurringMonthlyTotal = activeRecurringDebts.reduce((acc, debt) => acc + getRecurringMonthlyEquivalent(debt), 0);
   const nextRecurringCharge = [...activeRecurringDebts].sort(
     (left, right) => new Date(left.nextDueDate).getTime() - new Date(right.nextDueDate).getTime()
   )[0] ?? null;
@@ -3424,21 +3432,34 @@ const DebtsView = ({
   const paymentAmountInvalid =
     parsedPaymentAmount <= 0 ||
     (paymentTargetDebt ? parsedPaymentAmount > Math.max(0, paymentTargetDebt.remainingAmount) : false);
+  const debtPaymentTransactionsByDebt = React.useMemo(() => {
+    const map = new Map<string, Transaction[]>();
+    for (const tx of debtPaymentTransactions) {
+      const match = /^debt-payment:([^:]+):/.exec(String(tx.originId || ''));
+      if (!match) continue;
+      const key = String(match[1]);
+      const current = map.get(key);
+      if (current) current.push(tx);
+      else map.set(key, [tx]);
+    }
+    return map;
+  }, [debtPaymentTransactions]);
+  const getDebtPayments = (debtId: string | number) => debtPaymentTransactionsByDebt.get(String(debtId)) ?? [];
   const getDebtPriority = (debt: Debt) => {
     const dueDate = parseInputDateValue(debt.dueDate ?? null) ?? getDebtDueDateValue(debt, now);
     const daysUntil = getAgendaDayDiff(dueDate, now);
     const isOverdue = debt.remainingAmount > 0 && daysUntil < 0;
     const weight = (Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100;
-    const hasNoPaymentHistory = debtPaymentTransactions.every(
-      (tx) => !String(tx.originId || '').startsWith(`debt-payment:${debt.id}:`)
-    );
+    const hasNoPaymentHistory = getDebtPayments(debt.id).length === 0;
+    const overduePenalty = isOverdue ? Math.min(45, Math.abs(daysUntil) * 4) : 0;
     const score =
-      (isOverdue ? 100 : 0) +
+      (isOverdue ? 90 : 0) +
+      overduePenalty +
       (daysUntil <= 3 && debt.remainingAmount > 0 ? 60 : 0) +
       (weight >= 25 ? 45 : weight >= 15 ? 25 : 0) +
       ((debt.interestRateMonthly || 0) >= 4 ? 20 : 0) +
       (hasNoPaymentHistory && debt.remainingAmount > 0 ? 15 : 0);
-    if (score >= 120) return 'Crítica' as const;
+    if (score >= 130) return 'Crítica' as const;
     if (score >= 80) return 'Alta' as const;
     if (score >= 45) return 'Média' as const;
     return 'Controlada' as const;
@@ -3494,7 +3515,7 @@ const DebtsView = ({
     };
   };
   const getDebtMiniSummary = (debt: Debt) => {
-    const debtPayments = debtPaymentTransactions.filter((tx) => String(tx.originId || '').startsWith(`debt-payment:${debt.id}:`));
+    const debtPayments = getDebtPayments(debt.id);
     if (debtPayments.length === 0 && debt.remainingAmount > 0) return 'Você ainda não registrou nenhum pagamento.';
     const lastPayment = debtPayments
       .map((tx) => (tx.rawDate ? new Date(tx.rawDate) : null))
@@ -3502,6 +3523,11 @@ const DebtsView = ({
       .sort((left, right) => right.getTime() - left.getTime())[0];
     if (lastPayment) {
       return `Último pagamento há ${Math.max(0, getAgendaDayDiff(now, startOfDay(lastPayment)))} dias.`;
+    }
+    if (debt.status === 'Parcelada' && debtPayments.length > 0) {
+      const averagePayment = Math.max(1, debtPayments.reduce((acc, tx) => acc + Number(tx.rawAmount || 0), 0) / debtPayments.length);
+      const estimatedInstallments = Math.max(1, Math.ceil(Math.max(0, debt.remainingAmount) / averagePayment));
+      return `Estimativa: faltam ${estimatedInstallments} parcelas no ritmo atual.`;
     }
     const share = (Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100;
     return `Essa dívida representa ${share.toFixed(0)}% das despesas previstas do mês.`;
@@ -3517,6 +3543,157 @@ const DebtsView = ({
     if (status === 'Pausada') return 'badge-warning';
     return 'badge-neutral';
   };
+  const getDebtGroupKey = (debt: Debt): DebtGroupKey => {
+    if (debt.remainingAmount <= 0) return 'settled';
+    const dueDate = getDebtDueDateValue(debt, now);
+    const daysUntil = getAgendaDayDiff(dueDate, now);
+    if (daysUntil < 0) return 'overdue';
+    if (daysUntil === 0) return 'today';
+    if (daysUntil <= 7) return 'next7';
+    if (dueDate.getMonth() === now.getMonth() && dueDate.getFullYear() === now.getFullYear()) return 'thisMonth';
+    return 'future';
+  };
+  const debtGroupOrder: DebtGroupKey[] = ['overdue', 'today', 'next7', 'thisMonth', 'future', 'settled'];
+  const debtGroupLabels: Record<DebtGroupKey, string> = {
+    overdue: 'Atrasadas',
+    today: 'Vencem hoje',
+    next7: 'Prximos 7 dias',
+    thisMonth: 'Este ms',
+    future: 'Futuras',
+    settled: 'Quitadas',
+  };
+  const debtGroupTones: Record<DebtGroupKey, string> = {
+    overdue: 'badge-danger',
+    today: 'badge-warning',
+    next7: 'badge-warning',
+    thisMonth: 'badge-info',
+    future: 'badge-neutral',
+    settled: 'badge-success',
+  };
+  const sortedDebtsByPriority = [...debts].sort((left, right) => {
+    const leftPriority = getDebtPriority(left);
+    const rightPriority = getDebtPriority(right);
+    const priorityWeight: Record<string, number> = { Crtica: 4, Alta: 3, Mdia: 2, Controlada: 1 };
+    const diff = (priorityWeight[rightPriority] || 0) - (priorityWeight[leftPriority] || 0);
+    if (diff !== 0) return diff;
+    return getDebtDueDateValue(left, now).getTime() - getDebtDueDateValue(right, now).getTime();
+  });
+  const debtsByGroup = sortedDebtsByPriority.reduce<Record<DebtGroupKey, Debt[]>>(
+    (acc, debt) => {
+      const key = getDebtGroupKey(debt);
+      acc[key].push(debt);
+      return acc;
+    },
+    {
+      overdue: [],
+      today: [],
+      next7: [],
+      thisMonth: [],
+      future: [],
+      settled: [],
+    }
+  );
+  const debtFilterOptions: Array<{ key: DebtFilterKey; label: string; count: number }> = [
+    { key: 'all', label: 'Todas', count: sortedDebtsByPriority.length },
+    ...debtGroupOrder.map((key) => ({ key, label: debtGroupLabels[key], count: debtsByGroup[key].length })),
+  ];
+  const visibleDebtGroups =
+    debtFilter === 'all'
+      ? debtGroupOrder.filter((key) => debtsByGroup[key].length > 0)
+      : debtsByGroup[debtFilter].length > 0
+        ? [debtFilter]
+        : [];
+  const parseRecurringDueDate = (value: string) => parseInputDateValue(String(value || '').slice(0, 10)) ?? new Date(value);
+  const shiftRecurringDate = (baseDate: Date, debt: RecurringDebt, direction: 1 | -1) => {
+    const interval = Math.max(1, debt.interval || 1) * direction;
+    if (debt.frequency === 'WEEKLY') return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + interval * 7);
+    if (debt.frequency === 'MONTHLY') return new Date(baseDate.getFullYear(), baseDate.getMonth() + interval, baseDate.getDate());
+    if (debt.frequency === 'QUARTERLY') return new Date(baseDate.getFullYear(), baseDate.getMonth() + interval * 3, baseDate.getDate());
+    return new Date(baseDate.getFullYear() + interval, baseDate.getMonth(), baseDate.getDate());
+  };
+  const recurringTransactions = transactions
+    .filter((tx) => String(tx.originType || '').toUpperCase() === 'RECURRING_DEBT')
+    .sort((left, right) => new Date(String(right.rawDate || '')).getTime() - new Date(String(left.rawDate || '')).getTime());
+  const sortedRecurringDebts = [...recurringDebts].sort(
+    (left, right) => parseRecurringDueDate(left.nextDueDate).getTime() - parseRecurringDueDate(right.nextDueDate).getTime()
+  );
+  const recurringFilterOptions: Array<{ key: RecurringFilterKey; label: string; count: number }> = [
+    { key: 'all', label: 'Todas', count: sortedRecurringDebts.length },
+    { key: 'active', label: 'Ativas', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa').length },
+    { key: 'next7', label: 'Prximos 7 dias', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa' && getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now) <= 7).length },
+    { key: 'next30', label: 'Prximos 30 dias', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa' && getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now) <= 30).length },
+    { key: 'paused', label: 'Pausadas', count: sortedRecurringDebts.filter((debt) => debt.status === 'Pausada').length },
+  ];
+  const filteredRecurringDebts = sortedRecurringDebts.filter((debt) => {
+    const daysUntil = getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now);
+    if (recurringFilter === 'active') return debt.status === 'Ativa';
+    if (recurringFilter === 'paused') return debt.status === 'Pausada';
+    if (recurringFilter === 'next7') return debt.status === 'Ativa' && daysUntil <= 7;
+    if (recurringFilter === 'next30') return debt.status === 'Ativa' && daysUntil <= 30;
+    return true;
+  });
+  const summaryCards =
+    activeDebtTab === 'single'
+      ? [
+          {
+            label: 'Total em aberto',
+            value: formatCurrency(totalRemaining),
+            helper: `${openDebts.length} dvida(s) ativa(s)`,
+            valueTone: 'text-[var(--text-primary)]',
+            dotTone: 'bg-[var(--accent)]',
+          },
+          {
+            label: 'Total vencido',
+            value: formatCurrency(totalOverdueAmount),
+            helper: overdueDebts.length > 0 ? `${overdueDebts.length} em atraso` : 'Sem atraso no momento',
+            valueTone: 'text-[var(--danger)]',
+            dotTone: 'bg-[var(--danger)]',
+          },
+          {
+            label: 'Prximo vencimento',
+            value: nextDebtDue ? formatDebtDueDateLabel(nextDebtDue) : 'Sem vencimento',
+            helper: nextDebtDue ? `${nextDebtDue.creditor} " ${formatCurrency(nextDebtDue.remainingAmount)}` : 'Nenhuma dvida em aberto',
+            valueTone: 'text-[var(--warning)]',
+            dotTone: 'bg-[var(--warning)]',
+          },
+          {
+            label: 'Quitado no ms',
+            value: formatCurrency(paidThisMonth),
+            helper: 'Pagamentos confirmados no ledger',
+            valueTone: 'text-[var(--success)]',
+            dotTone: 'bg-[var(--success)]',
+          },
+        ]
+      : [
+          {
+            label: 'Compromisso mensal',
+            value: formatCurrency(recurringMonthlyTotal),
+            helper: `${activeRecurringDebts.length} recorrência(s) ativa(s)`,
+            valueTone: 'text-[var(--text-primary)]',
+            dotTone: 'bg-[var(--accent)]',
+          },
+          {
+            label: 'Prxima cobrana',
+            value: nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem cobrana',
+            helper: nextRecurringCharge ? `${nextRecurringCharge.creditor} • ${formatCurrency(nextRecurringCharge.amount)}` : 'Nenhuma recorrência ativa',
+            valueTone: 'text-[var(--warning)]',
+            dotTone: 'bg-[var(--warning)]',
+          },
+          {
+            label: 'Recorrncias ativas',
+            value: String(activeRecurringDebts.length),
+            helper: `${sortedRecurringDebts.filter((debt) => debt.status === 'Pausada').length} pausada(s)`,
+            valueTone: 'text-[var(--info)]',
+            dotTone: 'bg-[var(--info)]',
+          },
+          {
+            label: 'Impacto 30 dias',
+            value: formatCurrency(recurringImpact30d),
+            helper: 'Cobranças previstas no próximo ciclo',
+            valueTone: 'text-[var(--goal)]',
+            dotTone: 'bg-[var(--goal)]',
+          },
+        ];
   const openSingleDebtFlow = () => {
     setIsCreateChooserOpen(false);
     onAddDebt();
@@ -3557,44 +3734,13 @@ const DebtsView = ({
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">Dívidas</p>
-              <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">Dívidas</h3>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">Centro de obrigações</p>
+              <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">
+                {activeDebtTab === 'single' ? 'Controle de dvidas' : 'Controle de contas fixas'}
+              </h3>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Separe dívidas pontuais de contas recorrentes para ter mais clareza financeira.
-
+                Leitura rpida do que est vencido, do que vence primeiro e do impacto real no seu oramento.
               </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Dívida total</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining)}</p>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {openDebts.length > 0 ? `${openDebts.length} dívida(s) ativa(s)` : 'Sem dívidas ativas no momento'}
-                </p>
-              </div>
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Compromisso mensal</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(recurringMonthlyTotal)}</p>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                  {activeRecurringDebts.length > 0
-                    ? `${activeRecurringDebts.length} conta(s) fixa(s) ativa(s)`
-                    : 'Sem contas fixas ativas'}
-                </p>
-              </div>
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Progresso geral</p>
-                  {overdueDebts.length > 0 ? (
-                    <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--danger)]">
-                      {overdueDebts.length} vencida(s)
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{overallProgress.toFixed(1)}%</p>
-                <div className="mt-3 h-2 rounded-full bg-[var(--bg-surface-elevated)]">
-                  <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(overallProgress, 100)}%` }} />
-                </div>
-              </div>
             </div>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row xl:flex-col">
@@ -3602,10 +3748,25 @@ const DebtsView = ({
               onClick={() => setIsCreateChooserOpen(true)}
               className="app-button-primary inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black sm:w-auto"
             >
-              <Plus size={16} /> Nova dívida
+              <Plus size={16} /> Nova obrigação
             </button>
           </div>
         </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryCards.map((card) => (
+            <div key={card.label} className="app-surface-subtle rounded-2xl p-4">
+              <div className="flex items-center gap-2">
+                <span className={cn('inline-flex size-2 rounded-full', card.dotTone)} />
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">{card.label}</p>
+              </div>
+              <p className={cn('mt-2 text-2xl font-black tracking-tight', card.valueTone)}>{card.value}</p>
+              <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)]">{card.helper}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-xs text-[var(--text-muted)]">
+          Pagamentos e recorrências desta tela alimentam transações, dashboard, gráfico e saldo projetado.
+        </p>
       </section>
       {feedbackMessage ? (
         <div className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--primary-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
@@ -3650,36 +3811,53 @@ const DebtsView = ({
         <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dívidas</p>
-              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Obrigações com começo, meio e fim</h4>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dvidas</p>
+              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Obrigaes com comeo, meio e fim</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Use para empréstimos, acordos, cartão atrasado e qualquer compromisso com valor total definido.
+                Ordenadas por prioridade automtica para voc agir primeiro no que mais ameaa seu oramento.
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Total em aberto</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(totalRemaining)}</p>
-              </div>
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor quitado</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-secondary)]">{formatCurrency(totalPaid)}</p>
-              </div>
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Progresso</p>
-                  {overdueDebts.length > 0 ? (
-                    <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--danger)]">
-                      {overdueDebts.length} vencida(s)
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{progress.toFixed(1)}%</p>
-                <div className="mt-3 h-2 rounded-full bg-[var(--bg-surface-elevated)]">
-                  <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
-                </div>
-              </div>
+            <div className="inline-flex rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-1">
+              {([
+                { key: 'timeline', label: 'Timeline' },
+                { key: 'list', label: 'Lista' },
+                { key: 'calendar', label: 'Calendrio' },
+              ] as Array<{ key: DebtViewMode; label: string }>).map((view) => (
+                <button
+                  key={view.key}
+                  type="button"
+                  onClick={() => setDebtViewMode(view.key)}
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-xs font-bold transition-colors',
+                    debtViewMode === view.key
+                      ? 'bg-[var(--primary)] text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  )}
+                >
+                  {view.label}
+                </button>
+              ))}
             </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {debtFilterOptions.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setDebtFilter(item.key)}
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] transition-colors',
+                  debtFilter === item.key
+                    ? 'border-[color:var(--accent)] bg-[color:var(--accent-soft)] text-[var(--accent)]'
+                    : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                )}
+              >
+                {item.label}
+                <span className="rounded-full bg-[var(--bg-surface)] px-1.5 py-0.5 text-[10px] font-black text-[var(--text-secondary)]">
+                  {item.count}
+                </span>
+              </button>
+            ))}
           </div>
           {debts.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-10 text-center">
@@ -3697,91 +3875,118 @@ const DebtsView = ({
                 <Plus size={16} /> Adicionar primeira dívida
               </button>
             </div>
+          ) : debtViewMode === 'calendar' ? (
+            <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-8 text-center">
+              <p className="text-lg font-black text-[var(--text-primary)]">Viso calendrio em evoluo</p>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                Enquanto isso, use Lista ou Timeline para priorizar pagamentos por vencimento.
+              </p>
+            </div>
+          ) : visibleDebtGroups.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-8 text-center">
+              <p className="text-lg font-black text-[var(--text-primary)]">Nenhuma dvida neste filtro</p>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">Ajuste o agrupamento para continuar a leitura.</p>
+            </div>
           ) : (
-            <div className="grid gap-4 xl:grid-cols-2">
-              {debts.map((debt) => {
-                const paidAmount = Math.max(0, debt.originalAmount - debt.remainingAmount);
-                const debtProgress =
-                  debt.originalAmount > 0 ? Math.max(0, Math.min(100, (paidAmount / debt.originalAmount) * 100)) : 0;
-                const isDebtSettled = debt.remainingAmount <= 0;
-                return (
-                  <article
-                    key={debt.id}
-                    className={cn(
-                      'rounded-2xl border bg-[var(--bg-app)] p-5 transition-colors hover:border-[var(--border-default)]',
-                      debt.status === 'Atrasada' ? 'border-[var(--border-default)]' : 'border-[var(--border-default)]'
-                    )}
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="card-title-premium text-[var(--text-primary)]">{debt.creditor}</h5>
-                          <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtStatusMeta(debt).badgeTone)}>
-                            {getDebtStatusMeta(debt).label}
-                          </span>
-                          <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtPriorityTone(getDebtPriority(debt)))}>
-                            Prioridade {getDebtPriority(debt)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-[var(--text-secondary)]">{debt.category}</p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Próximo vencimento: {formatDebtDueDateLabel(debt)}</p>
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor total</p>
-                            <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.originalAmount)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Quitado</p>
-                            <p className="mt-1 text-base font-bold text-[var(--text-secondary)]">{formatCurrency(paidAmount)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Restante</p>
-                            <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.remainingAmount)}</p>
-                          </div>
-                        </div>
-                        {debt.originalAmount > 0 ? (
-                          <div>
-                            <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-secondary)]">
-                              <span>{debtProgress.toFixed(1)}% quitado</span>
-                              <span>{formatCurrency(paidAmount)} / {formatCurrency(debt.originalAmount)}</span>
+            <div className="space-y-6">
+              {visibleDebtGroups.map((group) => (
+                <div key={group} className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', debtGroupTones[group])}>
+                      {debtGroupLabels[group]}
+                    </span>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {debtsByGroup[group].length} item(ns) " {formatCurrency(debtsByGroup[group].reduce((acc, debt) => acc + Math.max(0, debt.remainingAmount), 0))}
+                    </p>
+                  </div>
+                  <div className={cn('grid gap-4', debtViewMode === 'list' ? 'xl:grid-cols-2' : 'grid-cols-1')}>
+                    {debtsByGroup[group].map((debt) => {
+                      const paidAmount = Math.max(0, debt.originalAmount - debt.remainingAmount);
+                      const debtProgress =
+                        debt.originalAmount > 0 ? Math.max(0, Math.min(100, (paidAmount / debt.originalAmount) * 100)) : 0;
+                      const isDebtSettled = debt.remainingAmount <= 0;
+                      const statusMeta = getDebtStatusMeta(debt);
+                      const monthlyImpactPercent = ((Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100).toFixed(0);
+                      return (
+                        <article
+                          key={debt.id}
+                          className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 transition-colors hover:border-[var(--border-strong)]"
+                        >
+                          <div className="space-y-4">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h5 className="card-title-premium text-[var(--text-primary)]">{debt.creditor}</h5>
+                              <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', statusMeta.badgeTone)}>
+                                {statusMeta.label}
+                              </span>
+                              <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtPriorityTone(getDebtPriority(debt)))}>
+                                Prioridade {getDebtPriority(debt)}
+                              </span>
                             </div>
-                            <div className="h-2 rounded-full bg-[var(--bg-surface-elevated)]">
-                              <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(debtProgress, 100)}%` }} />
+                            <p className="text-sm text-[var(--text-secondary)]">{debt.category}</p>
+                            <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Prximo vencimento: {formatDebtDueDateLabel(debt)}</p>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                              <div>
+                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor total</p>
+                                <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.originalAmount)}</p>
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Quitado</p>
+                                <p className="mt-1 text-base font-bold text-[var(--text-secondary)]">{formatCurrency(paidAmount)}</p>
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Restante</p>
+                                <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.remainingAmount)}</p>
+                              </div>
+                            </div>
+                            {debt.originalAmount > 0 ? (
+                              <div>
+                                <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-secondary)]">
+                                  <span>{debtProgress.toFixed(1)}% quitado</span>
+                                  <span>{formatCurrency(paidAmount)} / {formatCurrency(debt.originalAmount)}</span>
+                                </div>
+                                <div className="h-2 rounded-full bg-[var(--bg-surface-elevated)]">
+                                  <div className={cn('h-2 rounded-full transition-all', statusMeta.progressTone)} style={{ width: `${Math.min(debtProgress, 100)}%` }} />
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-[var(--text-muted)]">Aguardando definio do valor total.</p>
+                            )}
+                            <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/70 p-3">
+                              <p className="text-xs font-semibold text-[var(--text-primary)]">{getDebtMiniSummary(debt)}</p>
+                              <p className="mt-2 text-xs text-[var(--text-secondary)]">Esta obrigação representa {monthlyImpactPercent}% das obrigações do mês.</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {!isDebtSettled ? (
+                                <button onClick={() => openPaymentFlow(debt.id, debt.remainingAmount)} className="app-button-primary inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold">
+                                  Registrar pagamento
+                                </button>
+                              ) : null}
+                              <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                                <Pencil size={12} /> Editar
+                              </button>
+                              {!isDebtSettled ? (
+                                <button onClick={() => void onSettleDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)]">
+                                  Quitar
+                                </button>
+                              ) : (
+                                <button onClick={() => void onReopenDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
+                                  Reabrir
+                                </button>
+                              )}
+                              <button onClick={() => setDebtDetailId(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
+                                Ver histrico
+                              </button>
+                              <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
+                                <Trash2 size={12} /> Excluir
+                              </button>
                             </div>
                           </div>
-                        ) : (
-                          <p className="text-xs text-[var(--text-muted)]">Aguardando definição do valor total.</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                        <button onClick={() => onEditDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                          <Pencil size={12} /> Editar
-                        </button>
-                        {!isDebtSettled ? (
-                          <button onClick={() => openPaymentFlow(debt.id, debt.remainingAmount)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                            Registrar pagamento
-                          </button>
-                        ) : null}
-                        {!isDebtSettled ? (
-                          <button onClick={() => void onSettleDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)]">
-                            Quitar
-                          </button>
-                        ) : (
-                          <button onClick={() => void onReopenDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
-                            Reabrir
-                          </button>
-                        )}
-                        <button onClick={() => setDebtDetailId(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
-                          Ver histórico
-                        </button>
-                        <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
-                          <Trash2 size={12} /> Excluir
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -3795,21 +4000,25 @@ const DebtsView = ({
                 Use para mensalidades, aluguel, assinaturas e qualquer compromisso fixo com frequência definida.
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Compromisso mensal</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{formatCurrency(recurringMonthlyTotal)}</p>
-              </div>
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Recorrências ativas</p>
-                <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{activeRecurringDebts.length}</p>
-              </div>
-              <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Impacto nos proximos 30 dias</p>
-                <p className="mt-2 text-base font-black text-[var(--text-secondary)]">
-                  {formatCurrency(recurringImpact30d)}
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {recurringFilterOptions.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setRecurringFilter(item.key)}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] transition-colors',
+                    recurringFilter === item.key
+                      ? 'border-[color:var(--accent)] bg-[color:var(--accent-soft)] text-[var(--accent)]'
+                      : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  )}
+                >
+                  {item.label}
+                  <span className="rounded-full bg-[var(--bg-surface)] px-1.5 py-0.5 text-[10px] font-black text-[var(--text-secondary)]">
+                    {item.count}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
           <div className="space-y-3">
@@ -3862,12 +4071,28 @@ const DebtsView = ({
                 <Plus size={16} /> Adicionar primeira conta fixa
               </button>
             </div>
+          ) : filteredRecurringDebts.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-8 text-center">
+              <p className="text-lg font-black text-[var(--text-primary)]">Nenhuma recorrência nesse filtro</p>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">Ajuste os filtros para continuar a leitura operacional.</p>
+            </div>
           ) : (
             <div className="grid gap-4 xl:grid-cols-2">
-              {recurringDebts.map((debt) => (
-                <article key={debt.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 transition-colors hover:border-[var(--border-default)]">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="space-y-3">
+              {filteredRecurringDebts.map((debt) => {
+                const nextDue = parseRecurringDueDate(debt.nextDueDate);
+                const previousCycle = shiftRecurringDate(nextDue, debt, -1);
+                const nextCycle = shiftRecurringDate(nextDue, debt, 1);
+                const monthlyImpact = getRecurringMonthlyEquivalent(debt);
+                const monthlyImpactShare = ((monthlyImpact / Math.max(1, monthlyExpenseBase)) * 100).toFixed(0);
+                const relatedLedger = recurringTransactions.filter(
+                  (tx) =>
+                    String(tx.originId || '').includes(String(debt.id)) ||
+                    String(tx.desc || '').toLowerCase().includes(debt.creditor.toLowerCase())
+                );
+                const lastGeneratedAt = relatedLedger[0]?.rawDate ? new Date(relatedLedger[0].rawDate) : null;
+                return (
+                  <article key={debt.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 transition-colors hover:border-[var(--border-default)]">
+                    <div className="space-y-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <h5 className="card-title-premium text-[var(--text-primary)]">{debt.creditor}</h5>
                         <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-primary)]">
@@ -3880,19 +4105,27 @@ const DebtsView = ({
                           {debt.status}
                         </span>
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="grid gap-3 sm:grid-cols-4">
                         <div>
                           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor</p>
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.amount)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Frequência</p>
-                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{getRecurringDebtFrequencyLabel(debt.frequency)}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Prxima cobrana</p>
+                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{nextDue.toLocaleDateString('pt-BR')}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Próximo vencimento</p>
-                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{new Date(debt.nextDueDate).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Impacto mensal</p>
+                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(monthlyImpact)}</p>
                         </div>
+                        <div>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">% nas despesas</p>
+                          <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{monthlyImpactShare}%</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/70 p-3 text-xs text-[var(--text-secondary)]">
+                        <p>ltima gerao: {lastGeneratedAt ? lastGeneratedAt.toLocaleDateString('pt-BR') : `${previousCycle.toLocaleDateString('pt-BR')} (estimada)`}</p>
+                        <p className="mt-1">Próxima geração prevista: {nextCycle.toLocaleDateString('pt-BR')}</p>
                       </div>
                       {debt.notes ? <p className="text-sm leading-7 text-[var(--text-secondary)]">{debt.notes}</p> : null}
                       {debt.source === 'legacy_debt' ? (
@@ -3900,26 +4133,26 @@ const DebtsView = ({
                           Registro anterior mantido para preservar seu histórico. Você pode editar normalmente.
                         </p>
                       ) : null}
-                    </div>
-                    <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                      <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                        <Pencil size={12} /> Editar
-                      </button>
-                      {debt.source === 'recurring_debt' ? (
-                        <button onClick={() => void onToggleRecurringDebtStatus(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                          {debt.status === 'Ativa' ? 'Pausar' : 'Ativar'}
+                      <div className="flex items-center gap-2 sm:flex-wrap">
+                        <button onClick={() => onEditRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                          <Pencil size={12} /> Editar
                         </button>
-                      ) : null}
-                      <button onClick={() => onDuplicateRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                        Duplicar
-                      </button>
-                      <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
-                        <Trash2 size={12} /> Excluir
-                      </button>
+                        {debt.source === 'recurring_debt' ? (
+                          <button onClick={() => void onToggleRecurringDebtStatus(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                            {debt.status === 'Ativa' ? 'Pausar' : 'Ativar'}
+                          </button>
+                        ) : null}
+                        <button onClick={() => onDuplicateRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                          Duplicar
+                        </button>
+                        <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
+                          <Trash2 size={12} /> Excluir
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
@@ -3954,7 +4187,7 @@ const DebtsView = ({
                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Detalhe da dívida</p>
                       <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">{debt.creditor}</h4>
                       <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                        {debt.category} • Juros {debt.interestRateMonthly.toFixed(2)}% a.m.
+                        {debt.category} ⬢ Juros {debt.interestRateMonthly.toFixed(2)}% a.m.
                       </p>
                     </div>
                     <button
