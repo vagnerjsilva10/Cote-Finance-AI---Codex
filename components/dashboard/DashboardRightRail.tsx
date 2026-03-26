@@ -63,16 +63,9 @@ export function DashboardRightRail({
 
   return (
     <div className="space-y-4">
-      <article
-        className={cn(
-          DASHBOARD_CARD_SHELL_CLASSNAME,
-          'space-y-3 border-l-4 border-l-[color:rgba(168,85,247,0.72)] bg-[linear-gradient(120deg,rgba(168,85,247,0.12),rgba(12,18,30,0.08)_24%)] !p-4 sm:!p-5'
-        )}
-      >
+      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
         <div className="flex items-center justify-between">
-          <h3 className="inline-flex items-center gap-2 text-base font-semibold text-[var(--text-primary)]">
-            <span className="h-2 w-2 rounded-full bg-[#a855f7]" /> Metas
-          </h3>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Metas</h3>
           <button type="button" onClick={onOpenGoals} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <ChevronRight size={16} />
           </button>
@@ -95,10 +88,10 @@ export function DashboardRightRail({
                     {formatCurrency(goal.current)} / {formatCurrency(goal.target)}
                   </p>
                   <div className="h-2 overflow-hidden rounded-full bg-[rgba(148,163,184,0.18)]">
-                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#a855f7,#c084fc)]" style={{ width: `${progress}%` }} />
+                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#4c8dff,#6eb5ff)]" style={{ width: `${progress}%` }} />
                   </div>
                   <div className="flex justify-end">
-                    <span className="rounded-md bg-[rgba(168,85,247,0.2)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)]">{progress}%</span>
+                    <span className="rounded-md bg-[rgba(76,141,255,0.2)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)]">{progress}%</span>
                   </div>
                 </div>
               );
@@ -118,16 +111,9 @@ export function DashboardRightRail({
         )}
       </article>
 
-      <article
-        className={cn(
-          DASHBOARD_CARD_SHELL_CLASSNAME,
-          'space-y-3 border-l-4 border-l-[color:rgba(34,211,238,0.72)] bg-[linear-gradient(120deg,rgba(34,211,238,0.12),rgba(12,18,30,0.08)_24%)] !p-4 sm:!p-5'
-        )}
-      >
+      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
         <div className="flex items-center justify-between">
-          <h3 className="inline-flex items-center gap-2 text-base font-semibold text-[var(--text-primary)]">
-            <span className="h-2 w-2 rounded-full bg-[#22d3ee]" /> Carteira
-          </h3>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Carteira</h3>
           <button type="button" onClick={onOpenPortfolio} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <ChevronRight size={16} />
           </button>
