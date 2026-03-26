@@ -73,7 +73,7 @@ export function FormContainer({
         {error ? (
           <div
             role="alert"
-            className="rounded-xl border border-[color:color-mix(in_srgb,var(--danger)_55%,transparent)] bg-[color:var(--danger-soft)] px-3 py-2 text-xs text-[var(--danger)]"
+            className="ds-alert ds-alert-danger px-3 py-2 text-xs text-[var(--text-primary)]"
           >
             {error}
           </div>

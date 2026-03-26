@@ -83,35 +83,35 @@ function getEventTypeLabel(event: FinancialCalendarOccurrence) {
 function getEventTone(event: FinancialCalendarOccurrence) {
   if (event.type === 'EXPECTED_INCOME') {
     return {
-      iconWrap: 'bg-[rgba(79,191,138,0.16)] text-[var(--positive)] border-[rgba(79,191,138,0.22)]',
-      badge: 'border-[rgba(79,191,138,0.26)] bg-[rgba(79,191,138,0.12)] text-[color:color-mix(in_srgb,var(--positive)_82%,white)]',
+      iconWrap: 'bg-[color-mix(in_srgb,var(--success)_16%,transparent)] text-[var(--success)] border-[color-mix(in_srgb,var(--success)_22%,transparent)]',
+      badge: 'border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-[color:color-mix(in_srgb,var(--success)_82%,white)]',
     };
   }
 
   if (event.type === 'CARD_BILL' || event.type === 'INSTALLMENT') {
     return {
-      iconWrap: 'bg-[rgba(217,164,65,0.14)] text-[var(--warning)] border-[rgba(217,164,65,0.22)]',
-      badge: 'border-[rgba(217,164,65,0.24)] bg-[rgba(217,164,65,0.12)] text-[color:color-mix(in_srgb,var(--warning)_82%,white)]',
+      iconWrap: 'bg-[color-mix(in_srgb,var(--warning)_14%,transparent)] text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_22%,transparent)]',
+      badge: 'border-[color-mix(in_srgb,var(--warning)_24%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] text-[color:color-mix(in_srgb,var(--warning)_82%,white)]',
     };
   }
 
   if (event.type === 'GOAL_DEADLINE') {
     return {
-      iconWrap: 'bg-[rgba(79,140,255,0.16)] text-[var(--primary)] border-[rgba(79,140,255,0.22)]',
-      badge: 'border-[rgba(79,140,255,0.24)] bg-[rgba(79,140,255,0.12)] text-[color:color-mix(in_srgb,var(--primary)_82%,white)]',
+      iconWrap: 'bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--primary)] border-[color-mix(in_srgb,var(--accent)_22%,transparent)]',
+      badge: 'border-[color-mix(in_srgb,var(--accent)_24%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[color:color-mix(in_srgb,var(--primary)_82%,white)]',
     };
   }
 
   if (event.type === 'FINANCIAL_REMINDER' || event.type === 'MANUAL_ALERT') {
     return {
-      iconWrap: 'bg-[rgba(255,90,90,0.13)] text-[var(--danger)] border-[rgba(255,90,90,0.18)]',
-      badge: 'border-[rgba(255,90,90,0.22)] bg-[rgba(255,90,90,0.10)] text-[color:color-mix(in_srgb,var(--danger)_84%,white)]',
+      iconWrap: 'bg-[color-mix(in_srgb,var(--danger)_13%,transparent)] text-[var(--danger)] border-[color-mix(in_srgb,var(--danger)_18%,transparent)]',
+      badge: 'border-[color-mix(in_srgb,var(--danger)_22%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] text-[color:color-mix(in_srgb,var(--danger)_84%,white)]',
     };
   }
 
   return {
-    iconWrap: 'bg-[rgba(160,174,192,0.12)] text-[var(--text-secondary)] border-[rgba(255,255,255,0.08)]',
-    badge: 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]',
+    iconWrap: 'bg-[color-mix(in_srgb,var(--neutral)_12%,transparent)] text-[var(--text-secondary)] border-[color-mix(in_srgb,var(--neutral)_8%,transparent)]',
+    badge: 'border-[color-mix(in_srgb,var(--neutral)_9%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)] text-[var(--text-secondary)]',
   };
 }
 
@@ -125,15 +125,15 @@ function getStatusLabel(event: FinancialCalendarOccurrence) {
 
 function getStatusTone(event: FinancialCalendarOccurrence) {
   if (event.status === 'PAID' || event.status === 'RECEIVED') {
-    return 'border-[rgba(79,191,138,0.26)] bg-[rgba(79,191,138,0.10)] text-[color:color-mix(in_srgb,var(--positive)_84%,white)]';
+    return 'border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-[color:color-mix(in_srgb,var(--success)_84%,white)]';
   }
   if (event.status === 'OVERDUE') {
-    return 'border-[rgba(255,90,90,0.24)] bg-[rgba(255,90,90,0.10)] text-[color:color-mix(in_srgb,var(--danger)_84%,white)]';
+    return 'border-[color-mix(in_srgb,var(--danger)_24%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] text-[color:color-mix(in_srgb,var(--danger)_84%,white)]';
   }
   if (event.status === 'CANCELED') {
-    return 'border-[rgba(160,174,192,0.18)] bg-[rgba(160,174,192,0.08)] text-[var(--text-muted)]';
+    return 'border-[color-mix(in_srgb,var(--neutral)_18%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_8%,transparent)] text-[var(--text-muted)]';
   }
-  return 'border-[rgba(217,164,65,0.22)] bg-[rgba(217,164,65,0.10)] text-[color:color-mix(in_srgb,var(--warning)_78%,white)]';
+  return 'border-[color-mix(in_srgb,var(--warning)_22%,transparent)] bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] text-[color:color-mix(in_srgb,var(--warning)_78%,white)]';
 }
 
 function resolveOriginMeta(event: FinancialCalendarOccurrence) {
@@ -242,7 +242,7 @@ export function FinancialCalendarDaySheet({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            data-testid="financial-calendar-day-sheet" className="theme-modal-surface relative z-10 flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[1.85rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)] shadow-2xl sm:rounded-[2rem]"
+            data-testid="financial-calendar-day-sheet" className="theme-modal-surface relative z-10 flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[1.85rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),var(--bg-surface)] shadow-2xl sm:rounded-[2rem]"
           >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] px-5 py-4 sm:px-6">
               <div className="space-y-2">
@@ -253,17 +253,17 @@ export function FinancialCalendarDaySheet({
                   {formatDayTitle(day.date)}
                 </h3>
                 <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-[var(--text-secondary)]">
-                  <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-1">
+                  <span className="rounded-full border border-[color-mix(in_srgb,var(--neutral)_8%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] px-3 py-1">
                     {day.events.length} evento{day.events.length === 1 ? '' : 's'}
                   </span>
                   <span
                     className={cn(
                       'rounded-full border px-3 py-1',
                       day.pressureLevel === 'high'
-                        ? 'border-[rgba(255,90,90,0.2)] bg-[rgba(255,90,90,0.10)] text-[var(--danger)]'
+                        ? 'border-[color-mix(in_srgb,var(--danger)_20%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] text-[var(--danger)]'
                         : day.pressureLevel === 'medium'
-                          ? 'border-[rgba(217,164,65,0.24)] bg-[rgba(217,164,65,0.10)] text-[var(--warning)]'
-                          : 'border-[rgba(79,191,138,0.2)] bg-[rgba(79,191,138,0.10)] text-[var(--positive)]'
+                          ? 'border-[color-mix(in_srgb,var(--warning)_24%,transparent)] bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] text-[var(--warning)]'
+                          : 'border-[color-mix(in_srgb,var(--success)_20%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-[var(--success)]'
                     )}
                   >
                     Press\u00e3o {day.pressureLevel === 'high' ? 'alta' : day.pressureLevel === 'medium' ? 'moderada' : 'baixa'}
@@ -274,7 +274,7 @@ export function FinancialCalendarDaySheet({
                 type="button"
                 onClick={onClose}
                 aria-label="Fechar painel do dia"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] text-[var(--text-secondary)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
               >
                 <X size={18} />
               </button>
@@ -282,22 +282,22 @@ export function FinancialCalendarDaySheet({
 
             <div className="custom-scrollbar flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] sm:px-6">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(79,191,138,0.06)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--success)_6%,transparent)] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Entradas</p>
-                  <p className="mt-3 text-2xl font-black text-[var(--positive)]">{formatCurrency(day.inflow)}</p>
+                  <p className="mt-3 text-2xl font-black text-[var(--success)]">{formatCurrency(day.inflow)}</p>
                 </div>
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,90,90,0.05)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--danger)_5%,transparent)] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">{'Sa\u00eddas'}</p>
                   <p className="mt-3 text-2xl font-black text-[var(--danger)]">{formatCurrency(day.outflow)}</p>
                 </div>
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(79,140,255,0.06)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--accent)_6%,transparent)] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Impacto no saldo</p>
                   <p className={cn('mt-3 text-2xl font-black', day.net >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
                     {day.net >= 0 ? '+' : ''}
                     {formatCurrency(day.net)}
                   </p>
                 </div>
-                <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.035)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="rounded-3xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)]">
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Saldo projetado</p>
                   <p className={cn('mt-3 text-2xl font-black', (day.projectedBalance || 0) >= 0 ? 'text-[var(--text-primary)]' : 'text-[var(--danger)]')}>
                     {formatCurrency(day.projectedBalance)}
@@ -306,7 +306,7 @@ export function FinancialCalendarDaySheet({
               </div>
 
               {(insights.length > 0 || day.reasons.length > 0) && (
-                <div className="rounded-3xl border border-[rgba(217,164,65,0.16)] bg-[rgba(217,164,65,0.07)] p-4 text-sm text-[var(--text-secondary)]">
+                <div className="rounded-3xl border border-[color-mix(in_srgb,var(--warning)_16%,transparent)] bg-[color-mix(in_srgb,var(--warning)_7%,transparent)] p-4 text-sm text-[var(--text-secondary)]">
                   <div className="flex items-center gap-2 text-[var(--warning)]">
                     <TriangleAlert size={16} />
                     <span className="text-xs font-black uppercase tracking-[0.22em]">Insights do dia</span>
@@ -316,7 +316,7 @@ export function FinancialCalendarDaySheet({
                       {insights.map((insight) => (
                         <div
                           key={insight}
-                          className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(8,13,24,0.46)] px-3 py-3 leading-relaxed text-[var(--text-primary)]"
+                          className="rounded-2xl border border-[color-mix(in_srgb,var(--neutral)_8%,transparent)] bg-[color-mix(in_srgb,var(--bg-tertiary)_82%,transparent)] px-3 py-3 leading-relaxed text-[var(--text-primary)]"
                         >
                           {insight}
                         </div>
@@ -330,7 +330,7 @@ export function FinancialCalendarDaySheet({
               )}
 
               {day.events.length === 0 ? (
-                <div className="rounded-[1.7rem] border border-dashed border-[rgba(79,140,255,0.16)] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.08),transparent_42%),rgba(255,255,255,0.03)] px-5 py-10 text-center">
+                <div className="rounded-[1.7rem] border border-dashed border-[color-mix(in_srgb,var(--accent)_16%,transparent)] bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--accent)_8%,transparent),transparent_42%),color-mix(in_srgb,var(--neutral)_3%,transparent)] px-5 py-10 text-center">
                   <p className="text-base font-bold text-[var(--text-primary)]">Nenhum evento financeiro neste dia</p>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
                     {'Use este espa\u00e7o para avaliar folga de caixa, reservar saldo ou criar um novo evento financeiro manual.'}
@@ -350,7 +350,7 @@ export function FinancialCalendarDaySheet({
                       <article
                         key={event.id}
                         aria-busy={isBusy}
-                        className="rounded-[1.6rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.88)] p-4 shadow-[0_18px_40px_-28px_rgba(2,6,23,0.8)]"
+                        className="rounded-[1.6rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),color-mix(in_srgb,var(--bg-tertiary)_88%,transparent)] p-4 shadow-[0_18px_40px_-28px_color-mix(in_srgb,var(--bg-deep)_80%,transparent)]"
                       >
                         <div className="flex items-start gap-3">
                           <div className={cn('mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border', tone.iconWrap)}>
@@ -365,7 +365,7 @@ export function FinancialCalendarDaySheet({
                                 ) : null}
                               </div>
                               {typeof event.amount === 'number' ? (
-                                <p className={cn('shrink-0 text-right text-base font-black', event.flow === 'in' ? 'text-[var(--positive)]' : event.flow === 'out' ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]')}>
+                                <p className={cn('shrink-0 text-right text-base font-black', event.flow === 'in' ? 'text-[var(--success)]' : event.flow === 'out' ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]')}>
                                   {event.flow === 'in' ? '+' : event.flow === 'out' ? '-' : ''}
                                   {formatCurrency(event.amount)}
                                 </p>
@@ -376,27 +376,27 @@ export function FinancialCalendarDaySheet({
                               <span className={cn('rounded-full border px-2.5 py-1', tone.badge)}>{getEventTypeLabel(event)}</span>
                               <span className={cn('rounded-full border px-2.5 py-1', getStatusTone(event))}>{getStatusLabel(event)}</span>
                               {event.category ? (
-                                <span className="rounded-full border border-[var(--border-default)] bg-[rgba(255,255,255,0.04)] px-2.5 py-1 text-[var(--text-secondary)]">
+                                <span className="rounded-full border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)] px-2.5 py-1 text-[var(--text-secondary)]">
                                   {event.category}
                                 </span>
                               ) : null}
                             </div>
 
                             {originMeta ? (
-                              <div className="mt-3 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[var(--text-secondary)]">
+                              <div className="mt-3 rounded-2xl border border-[color-mix(in_srgb,var(--neutral)_8%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] px-3 py-3 text-sm text-[var(--text-secondary)]">
                                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Origem</p>
                                 <p className="mt-2 leading-relaxed text-[var(--text-primary)]">{originMeta.label}</p>
                               </div>
                             ) : null}
 
                             {observations.length > 0 ? (
-                              <div className="mt-3 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[var(--text-secondary)]">
+                              <div className="mt-3 rounded-2xl border border-[color-mix(in_srgb,var(--neutral)_8%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] px-3 py-3 text-sm text-[var(--text-secondary)]">
                                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">{'Observa\u00e7\u00f5es relevantes'}</p>
                                 <div className="mt-2 flex flex-wrap gap-2">
                                   {observations.map((note) => (
                                     <span
                                       key={note}
-                                      className="rounded-full border border-[rgba(255,255,255,0.09)] bg-[rgba(8,13,24,0.52)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]"
+                                      className="rounded-full border border-[color-mix(in_srgb,var(--neutral)_9%,transparent)] bg-[color-mix(in_srgb,var(--bg-tertiary)_86%,transparent)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]"
                                     >
                                       {note}
                                     </span>

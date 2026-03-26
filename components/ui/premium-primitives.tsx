@@ -35,7 +35,7 @@ export function Card({
   children: React.ReactNode;
   as?: keyof React.JSX.IntrinsicElements;
 }) {
-  return <Tag className={cn('ds-card', className)}>{children}</Tag>;
+  return <Tag className={cn('ds-card-base', className)}>{children}</Tag>;
 }
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -55,6 +55,25 @@ export const ButtonSecondary = React.forwardRef<HTMLButtonElement, ButtonProps>(
 ) {
   return <button ref={ref} type={type} className={cn('ds-button-base ds-button-secondary', className)} {...props} />;
 });
+
+export const ButtonGhost = React.forwardRef<HTMLButtonElement, ButtonProps>(function ButtonGhost(
+  { className, type = 'button', ...props },
+  ref
+) {
+  return <button ref={ref} type={type} className={cn('ds-button-base ds-button-ghost', className)} {...props} />;
+});
+
+export const ButtonDanger = React.forwardRef<HTMLButtonElement, ButtonProps>(function ButtonDanger(
+  { className, type = 'button', ...props },
+  ref
+) {
+  return <button ref={ref} type={type} className={cn('ds-button-base ds-button-danger', className)} {...props} />;
+});
+
+export const PrimaryButton = ButtonPrimary;
+export const SecondaryButton = ButtonSecondary;
+export const GhostButton = ButtonGhost;
+export const DangerButton = ButtonDanger;
 
 export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...props }, ref) {

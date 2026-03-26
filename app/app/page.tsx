@@ -306,11 +306,17 @@ type InvestmentFormData = {
 type Transaction = {
   id: string | number;
   date: string;
+  rawDate?: string | null;
+  rawDueDate?: string | null;
   desc: string;
   cat: string;
   amount: string; // "-R$ 2.500,00" / "+R$ 8.500,00"
+  rawAmount?: number;
   type: 'income' | 'expense' | 'transfer';
   flowType: TransactionFlowType;
+  status?: string;
+  originType?: string | null;
+  originId?: string | null;
   paymentMethod: PaymentMethodLabel;
   wallet: string;
   destinationWallet?: string | null;
@@ -1745,10 +1751,16 @@ const mapApiTransactionToClientTransaction = (tx: any): Transaction => {
     flowType,
     id: tx.id,
     date: formatTransactionDisplayDate(tx.date),
+    rawDate: typeof tx?.date === 'string' ? tx.date : null,
+    rawDueDate: typeof tx?.due_date === 'string' ? tx.due_date : null,
     desc: String(tx.description || ''),
     cat: tx.category?.name || 'Geral',
     amount: formatTransactionDisplayAmount(flowType, Number(tx.amount || 0)),
+    rawAmount: Number(tx.amount || 0),
     type: mapFlowTypeToBaseType(flowType),
+    status: String(tx?.status || 'CONFIRMED').toUpperCase(),
+    originType: typeof tx?.origin_type === 'string' ? String(tx.origin_type).toUpperCase() : null,
+    originId: typeof tx?.origin_id === 'string' ? tx.origin_id : null,
     paymentMethod: normalizePaymentMethodLabel(
       tx.payment_method || (tx.type === 'PIX_IN' || tx.type === 'PIX_OUT' ? 'PIX' : undefined)
     ),
@@ -2124,7 +2136,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
       'group flex w-full items-center gap-2 rounded-xl border border-transparent px-2.5 py-1.5 text-left transition-all duration-200',
       collapsed && 'justify-center px-2',
       active
-        ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_24px_rgba(76,141,255,0.10)]'
+        ? 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-primary)] shadow-[0_10px_24px_color-mix(in_srgb,var(--accent)_20%,transparent)]'
         : 'text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)]'
     )}
   >
@@ -2157,7 +2169,7 @@ const StatCard = ({
     <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 sm:p-8 shadow-[var(--shadow-soft)]">
     <div className="mb-6 flex items-center justify-between">
       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</span>
-      <div className="rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] p-2.5 text-[var(--primary)] shadow-[0_8px_20px_rgba(2,6,23,.2)]">
+      <div className="rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[var(--primary-soft)] p-2.5 text-[var(--primary)] shadow-[var(--shadow-soft)]">
         <Icon size={17} />
       </div>
     </div>
@@ -3299,8 +3311,11 @@ const AgendaView = ({ bills }: AgendaViewProps) => {
 type DebtsViewProps = {
   debts: Debt[];
   recurringDebts: RecurringDebt[];
+  transactions: Transaction[];
+  dashboardProjection: DashboardProjection | null;
   onAddDebt: () => void;
   onAddRecurringDebt: (category?: string) => void;
+  onDuplicateRecurringDebt: (id: string | number) => void;
   onEditDebt: (id: string | number) => void;
   onRegisterDebtPayment: (id: string | number, amount: number, paymentDate: string) => Promise<void> | void;
   onSettleDebt: (id: string | number) => Promise<void> | void;
@@ -3315,8 +3330,11 @@ type DebtsViewProps = {
 const DebtsView = ({
   debts,
   recurringDebts,
+  transactions,
+  dashboardProjection,
   onAddDebt,
   onAddRecurringDebt,
+  onDuplicateRecurringDebt,
   onEditDebt,
   onRegisterDebtPayment,
   onSettleDebt,
@@ -3337,6 +3355,10 @@ const DebtsView = ({
   const [paymentDate, setPaymentDate] = React.useState(toInputDateValue(new Date()));
   const [isSubmittingPayment, setIsSubmittingPayment] = React.useState(false);
   const [paymentError, setPaymentError] = React.useState<string | null>(null);
+  const [debtDetailId, setDebtDetailId] = React.useState<string | number | null>(null);
+  const now = startOfDay(new Date());
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const totalOriginal = debts.reduce((acc, debt) => acc + debt.originalAmount, 0);
   const totalRemaining = debts.reduce((acc, debt) => acc + debt.remainingAmount, 0);
   const totalPaid = Math.max(0, totalOriginal - totalRemaining);
@@ -3354,6 +3376,45 @@ const DebtsView = ({
   const nextRecurringCharge = [...activeRecurringDebts].sort(
     (left, right) => new Date(left.nextDueDate).getTime() - new Date(right.nextDueDate).getTime()
   )[0] ?? null;
+  const recurringImpact30d = activeRecurringDebts.reduce((acc, debt) => {
+    const nextDue = parseInputDateValue(String(debt.nextDueDate || '').slice(0, 10));
+    if (!nextDue) return acc;
+    const daysUntil = getAgendaDayDiff(nextDue, now);
+    if (debt.frequency === 'WEEKLY') {
+      if (daysUntil > 30) return acc;
+      const everyDays = Math.max(1, debt.interval || 1) * 7;
+      const occurrences = 1 + Math.floor(Math.max(0, 30 - Math.max(0, daysUntil)) / everyDays);
+      return acc + debt.amount * Math.max(1, occurrences);
+    }
+    if (nextDue <= new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30)) {
+      return acc + debt.amount;
+    }
+    return acc;
+  }, 0);
+  const debtPaymentTransactions = transactions.filter(
+    (tx) =>
+      tx.originType === 'DEBT' &&
+      tx.originId?.startsWith('debt-payment:') &&
+      (tx.status || 'CONFIRMED') === 'CONFIRMED'
+  );
+  const paidThisMonth = debtPaymentTransactions.reduce((acc, tx) => {
+    const paymentDateValue = tx.rawDate ? new Date(tx.rawDate) : null;
+    if (!paymentDateValue || Number.isNaN(paymentDateValue.getTime())) return acc;
+    if (paymentDateValue >= monthStart && paymentDateValue < nextMonthStart) {
+      return acc + Math.max(0, Number(tx.rawAmount || 0));
+    }
+    return acc;
+  }, 0);
+  const nextDebtDue = [...openDebts].sort((left, right) => {
+    const leftDue = parseInputDateValue(left.dueDate ?? null) ?? getDebtDueDateValue(left, now);
+    const rightDue = parseInputDateValue(right.dueDate ?? null) ?? getDebtDueDateValue(right, now);
+    return leftDue.getTime() - rightDue.getTime();
+  })[0] ?? null;
+  const totalOverdueAmount = overdueDebts.reduce((acc, debt) => acc + Math.max(0, debt.remainingAmount), 0);
+  const monthlyExpenseBase = Math.max(
+    1,
+    Number(dashboardProjection?.monthConfirmedExpense || 0) + Number(dashboardProjection?.monthPlannedExpense || 0)
+  );
   const overallProgress =
     openDebts.length > 0
       ? openDebts.reduce((acc, debt) => acc + Math.max(0, Math.min(100, ((debt.originalAmount - debt.remainingAmount) / Math.max(1, debt.originalAmount)) * 100)), 0) / openDebts.length
@@ -3363,16 +3424,98 @@ const DebtsView = ({
   const paymentAmountInvalid =
     parsedPaymentAmount <= 0 ||
     (paymentTargetDebt ? parsedPaymentAmount > Math.max(0, paymentTargetDebt.remainingAmount) : false);
+  const getDebtPriority = (debt: Debt) => {
+    const dueDate = parseInputDateValue(debt.dueDate ?? null) ?? getDebtDueDateValue(debt, now);
+    const daysUntil = getAgendaDayDiff(dueDate, now);
+    const isOverdue = debt.remainingAmount > 0 && daysUntil < 0;
+    const weight = (Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100;
+    const hasNoPaymentHistory = debtPaymentTransactions.every(
+      (tx) => !String(tx.originId || '').startsWith(`debt-payment:${debt.id}:`)
+    );
+    const score =
+      (isOverdue ? 100 : 0) +
+      (daysUntil <= 3 && debt.remainingAmount > 0 ? 60 : 0) +
+      (weight >= 25 ? 45 : weight >= 15 ? 25 : 0) +
+      ((debt.interestRateMonthly || 0) >= 4 ? 20 : 0) +
+      (hasNoPaymentHistory && debt.remainingAmount > 0 ? 15 : 0);
+    if (score >= 120) return 'Crítica' as const;
+    if (score >= 80) return 'Alta' as const;
+    if (score >= 45) return 'Média' as const;
+    return 'Controlada' as const;
+  };
+  const getDebtPriorityTone = (priority: 'Crítica' | 'Alta' | 'Média' | 'Controlada') => {
+    if (priority === 'Crítica') return 'badge-danger';
+    if (priority === 'Alta') return 'badge-warning';
+    if (priority === 'Média') return 'badge-info';
+    return 'badge-neutral';
+  };
+  const getDebtStatusMeta = (debt: Debt) => {
+    const dueDate = parseInputDateValue(debt.dueDate ?? null) ?? getDebtDueDateValue(debt, now);
+    const daysUntil = getAgendaDayDiff(dueDate, now);
+    const paidAmount = Math.max(0, debt.originalAmount - debt.remainingAmount);
+    const progressPercent = debt.originalAmount > 0 ? (paidAmount / Math.max(1, debt.originalAmount)) * 100 : 0;
+    if (debt.remainingAmount <= 0) {
+      return {
+        label: 'Quitada',
+        badgeTone: 'badge-success',
+        accentTone: 'bg-[var(--positive)]',
+        progressTone: 'bg-[var(--positive)]',
+      };
+    }
+    if (daysUntil < 0) {
+      return {
+        label: 'Vencida',
+        badgeTone: 'badge-danger',
+        accentTone: 'bg-[var(--danger)]',
+        progressTone: 'bg-[var(--danger)]',
+      };
+    }
+    if (daysUntil <= 3) {
+      return {
+        label: 'Vence em breve',
+        badgeTone: 'badge-warning',
+        accentTone: 'bg-[var(--warning)]',
+        progressTone: 'bg-[var(--warning)]',
+      };
+    }
+    if (progressPercent > 0) {
+      return {
+        label: 'Parcialmente controlada',
+        badgeTone: 'badge-goal',
+        accentTone: 'bg-[var(--goal)]',
+        progressTone: 'bg-[var(--goal)]',
+      };
+    }
+    return {
+      label: 'Ativa em dia',
+      badgeTone: 'badge-info',
+      accentTone: 'bg-[var(--info)]',
+      progressTone: 'bg-[var(--info)]',
+    };
+  };
+  const getDebtMiniSummary = (debt: Debt) => {
+    const debtPayments = debtPaymentTransactions.filter((tx) => String(tx.originId || '').startsWith(`debt-payment:${debt.id}:`));
+    if (debtPayments.length === 0 && debt.remainingAmount > 0) return 'Você ainda não registrou nenhum pagamento.';
+    const lastPayment = debtPayments
+      .map((tx) => (tx.rawDate ? new Date(tx.rawDate) : null))
+      .filter((date): date is Date => Boolean(date) && !Number.isNaN(date!.getTime()))
+      .sort((left, right) => right.getTime() - left.getTime())[0];
+    if (lastPayment) {
+      return `Último pagamento há ${Math.max(0, getAgendaDayDiff(now, startOfDay(lastPayment)))} dias.`;
+    }
+    const share = (Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100;
+    return `Essa dívida representa ${share.toFixed(0)}% das despesas previstas do mês.`;
+  };
   const getDebtStatusTone = (status: Debt['status']) => {
-    if (status === 'Quitada') return 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
-    if (status === 'Atrasada') return 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--danger)]';
-    if (status === 'Parcelada') return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]';
-    return 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/70 text-[var(--text-primary)]';
+    if (status === 'Quitada') return 'badge-success';
+    if (status === 'Atrasada') return 'badge-danger';
+    if (status === 'Parcelada') return 'badge-goal';
+    return 'badge-info';
   };
   const getRecurringStatusTone = (status: RecurringDebt['status']) => {
-    if (status === 'Ativa') return 'border-[color:var(--border-default)] bg-[color:var(--primary-soft)] text-[var(--text-secondary)]';
-    if (status === 'Pausada') return 'border-[var(--border-default)] bg-[color:var(--danger-soft)] text-[var(--text-secondary)]';
-    return 'border-[var(--border-default)] bg-[var(--bg-surface-elevated)]/70 text-[var(--text-secondary)]';
+    if (status === 'Ativa') return 'badge-info';
+    if (status === 'Pausada') return 'badge-warning';
+    return 'badge-neutral';
   };
   const openSingleDebtFlow = () => {
     setIsCreateChooserOpen(false);
@@ -3410,7 +3553,7 @@ const DebtsView = ({
   };
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)] lg:p-7">
+      <section className="rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[var(--shadow-card)] lg:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             <div>
@@ -3484,7 +3627,7 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'single'
-              ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
+              ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[0_10px_24px_color-mix(in_srgb,var(--accent)_24%,transparent)]'
               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
@@ -3496,7 +3639,7 @@ const DebtsView = ({
           className={cn(
             'flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-all sm:flex-none',
             activeDebtTab === 'recurring'
-              ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(76,141,255,0.18)]'
+              ? 'bg-[var(--primary)] text-[var(--text-primary)] shadow-[0_10px_24px_color-mix(in_srgb,var(--accent)_24%,transparent)]'
               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
@@ -3504,7 +3647,7 @@ const DebtsView = ({
         </button>
       </div>
       {activeDebtTab === 'single' ? (
-        <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
+        <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dívidas</p>
@@ -3573,8 +3716,11 @@ const DebtsView = ({
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <h5 className="card-title-premium text-[var(--text-primary)]">{debt.creditor}</h5>
-                          <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtStatusTone(debt.status))}>
-                            {debt.status}
+                          <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtStatusMeta(debt).badgeTone)}>
+                            {getDebtStatusMeta(debt).label}
+                          </span>
+                          <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]', getDebtPriorityTone(getDebtPriority(debt)))}>
+                            Prioridade {getDebtPriority(debt)}
                           </span>
                         </div>
                         <p className="text-sm text-[var(--text-secondary)]">{debt.category}</p>
@@ -3625,6 +3771,9 @@ const DebtsView = ({
                             Reabrir
                           </button>
                         )}
+                        <button onClick={() => setDebtDetailId(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
+                          Ver histórico
+                        </button>
                         <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                           <Trash2 size={12} /> Excluir
                         </button>
@@ -3637,7 +3786,7 @@ const DebtsView = ({
           )}
         </section>
       ) : (
-        <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[0_18px_60px_rgba(2,6,23,0.28)]">
+        <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Contas fixas</p>
@@ -3656,9 +3805,9 @@ const DebtsView = ({
                 <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{activeRecurringDebts.length}</p>
               </div>
               <div className="app-surface-subtle rounded-2xl p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Próxima cobrança</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Impacto nos proximos 30 dias</p>
                 <p className="mt-2 text-base font-black text-[var(--text-secondary)]">
-                  {nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem previsão'}
+                  {formatCurrency(recurringImpact30d)}
                 </p>
               </div>
             </div>
@@ -3761,6 +3910,9 @@ const DebtsView = ({
                           {debt.status === 'Ativa' ? 'Pausar' : 'Ativar'}
                         </button>
                       ) : null}
+                      <button onClick={() => onDuplicateRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
+                        Duplicar
+                      </button>
                       <button onClick={() => onDeleteRecurringDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                         <Trash2 size={12} /> Excluir
                       </button>
@@ -3772,6 +3924,97 @@ const DebtsView = ({
           )}
         </section>
       )}
+      {debtDetailId !== null ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Fechar detalhe da dívida"
+            onClick={() => setDebtDetailId(null)}
+            className="absolute inset-0 bg-[var(--bg-app)]/85 backdrop-blur-sm"
+          />
+          <div className="relative z-10 w-full max-w-3xl rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-2xl">
+            {(() => {
+              const debt = debts.find((item) => item.id === debtDetailId);
+              if (!debt) {
+                return (
+                  <div className="text-sm text-[var(--text-secondary)]">
+                    Dívida não encontrada.
+                  </div>
+                );
+              }
+              const history = debtPaymentTransactions
+                .filter((tx) => String(tx.originId || '').startsWith(`debt-payment:${debt.id}:`))
+                .sort((left, right) => new Date(String(right.rawDate || '')).getTime() - new Date(String(left.rawDate || '')).getTime());
+              const paidAmount = Math.max(0, debt.originalAmount - debt.remainingAmount);
+              const progressPercent = debt.originalAmount > 0 ? Math.max(0, Math.min(100, (paidAmount / debt.originalAmount) * 100)) : 0;
+              return (
+                <>
+                  <div className="mb-5 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Detalhe da dívida</p>
+                      <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">{debt.creditor}</h4>
+                      <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                        {debt.category} • Juros {debt.interestRateMonthly.toFixed(2)}% a.m.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDebtDetailId(null)}
+                      className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface-elevated)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div className="app-surface-subtle rounded-2xl p-3">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Valor total</p>
+                      <p className="mt-1 text-sm font-black text-[var(--text-primary)]">{formatCurrency(debt.originalAmount)}</p>
+                    </div>
+                    <div className="app-surface-subtle rounded-2xl p-3">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Quitado</p>
+                      <p className="mt-1 text-sm font-black text-[var(--text-primary)]">{formatCurrency(paidAmount)}</p>
+                    </div>
+                    <div className="app-surface-subtle rounded-2xl p-3">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Restante</p>
+                      <p className="mt-1 text-sm font-black text-[var(--text-primary)]">{formatCurrency(debt.remainingAmount)}</p>
+                    </div>
+                    <div className="app-surface-subtle rounded-2xl p-3">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Impacto mensal</p>
+                      <p className="mt-1 text-sm font-black text-[var(--text-primary)]">
+                        {((Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100).toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Evolução do saldo</p>
+                    <div className="mt-3 h-2 rounded-full bg-[var(--bg-surface-elevated)]">
+                      <div className="h-2 rounded-full bg-[var(--primary)] transition-all" style={{ width: `${Math.min(progressPercent, 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className="mt-5 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Histórico de pagamentos</p>
+                    {history.length === 0 ? (
+                      <p className="mt-3 text-sm text-[var(--text-secondary)]">Nenhum pagamento registrado.</p>
+                    ) : (
+                      <div className="mt-3 space-y-2">
+                        {history.map((tx) => (
+                          <div key={String(tx.id)} className="flex items-center justify-between rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2">
+                            <p className="text-sm font-semibold text-[var(--text-primary)]">{tx.desc}</p>
+                            <div className="text-right">
+                              <p className="text-sm font-black text-[var(--text-primary)]">{formatCurrency(Number(tx.rawAmount || 0))}</p>
+                              <p className="text-[11px] text-[var(--text-muted)]">{tx.rawDate ? formatIsoDateShort(tx.rawDate) : tx.date}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      ) : null}
       {paymentTargetDebt ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
           <button
@@ -7740,7 +7983,7 @@ const LoginView = ({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="theme-modal-surface w-full max-w-[420px] rounded-[2rem] p-7 shadow-[0_32px_120px_-60px_rgba(2,6,23,0.45)]"
+        className="theme-modal-surface w-full max-w-[420px] rounded-[2rem] p-7 shadow-[var(--shadow-elevated)]"
       >
         <div className="mb-8">
           <div className="flex flex-col items-center">
@@ -11553,6 +11796,31 @@ React.useEffect(() => {
     setIsRecurringDebtModalOpen(true);
   };
 
+  const handleDuplicateRecurringDebt = (id: string | number) => {
+    const targetDebt = recurringDebts.find((debt) => debt.id === id);
+    if (!targetDebt) {
+      showUiFeedback('Recorrência não encontrada para duplicar.');
+      return;
+    }
+
+    setDebtFeedbackMessage(null);
+    setEditingRecurringDebtId(null);
+    setRecurringDebtDraft({
+      creditor: targetDebt.creditor,
+      amount: formatMoneyInput(targetDebt.amount),
+      category: targetDebt.category,
+      frequency: targetDebt.frequency,
+      interval: String(Math.max(1, targetDebt.interval || 1)),
+      startDate: new Date().toISOString().slice(0, 10),
+      weekday: String(new Date().getDay()),
+      endDate: '',
+      notes: targetDebt.notes || '',
+      source: 'recurring_debt',
+      legacyDebtId: null,
+    });
+    setIsRecurringDebtModalOpen(true);
+  };
+
   const handleDeleteRecurringDebt = (id: string | number) => {
     (async () => {
       try {
@@ -12957,7 +13225,7 @@ React.useEffect(() => {
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed((current) => !current)}
-          className="absolute -right-3 top-5 z-20 hidden h-7 w-7 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] shadow-[0_8px_20px_rgba(0,0,0,0.28)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] lg:inline-flex"
+          className="absolute -right-3 top-5 z-20 hidden h-7 w-7 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] shadow-[var(--shadow-soft)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] lg:inline-flex"
           title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
         >
           {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -13065,7 +13333,7 @@ React.useEffect(() => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="sticky top-0 z-30 border-b border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
+        <header className="sticky top-0 z-30 border-b border-[var(--border-default)] bg-[color:color-mix(in_srgb,var(--bg-primary)_92%,var(--bg-secondary))] px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-8">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
             <button
@@ -13587,7 +13855,7 @@ React.useEffect(() => {
         </div>
         </header>
 
-          <div className="border-b border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(10,15,23,0.96)_0%,rgba(14,20,29,0.94)_100%)] px-3 py-3 md:hidden">
+          <div className="border-b border-[var(--border-default)] bg-[color:color-mix(in_srgb,var(--bg-primary)_92%,var(--bg-secondary))] px-3 py-3 md:hidden">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Conta ativa</span>
@@ -13620,7 +13888,7 @@ React.useEffect(() => {
 
         <div
           className={cn(
-            'flex-1 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.10)_0%,rgba(59,130,246,0)_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-5 lg:p-8 xl:p-10',
+            'flex-1 bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--accent)_16%,transparent)_0%,transparent_36%),linear-gradient(180deg,var(--bg-app)_0%,var(--bg-app-secondary)_100%)] p-3 sm:p-5 lg:p-8 xl:p-10',
             isTransactionModalOpen ? 'overflow-y-hidden' : 'overflow-y-auto custom-scrollbar'
           )}
         >
@@ -13689,8 +13957,11 @@ React.useEffect(() => {
                   <DebtsView
                     debts={debts}
                     recurringDebts={recurringDebts}
+                    transactions={transactions}
+                    dashboardProjection={dashboardProjection}
                     onAddDebt={handleOpenCreateDebt}
                     onAddRecurringDebt={handleOpenCreateRecurringDebt}
+                    onDuplicateRecurringDebt={handleDuplicateRecurringDebt}
                     onEditDebt={handleStartEditDebt}
                     onRegisterDebtPayment={handleRegisterDebtPayment}
                     onSettleDebt={handleSettleDebt}
@@ -14196,3 +14467,7 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
+
+
+

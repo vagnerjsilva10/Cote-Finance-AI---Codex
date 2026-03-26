@@ -1,4 +1,4 @@
-ï»¿import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
   DASHBOARD_CARD_PANEL_CLASSNAME,
   DASHBOARD_CARD_SHELL_CLASSNAME,
@@ -63,7 +63,7 @@ export function DashboardRightRail({
 
   return (
     <div className="space-y-4">
-      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
+      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'card-goal space-y-3 !p-4 sm:!p-5')}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-[var(--text-primary)]">Metas</h3>
           <button type="button" onClick={onOpenGoals} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
@@ -87,31 +87,31 @@ export function DashboardRightRail({
                   <p className="text-sm text-[var(--text-secondary)]">
                     {formatCurrency(goal.current)} / {formatCurrency(goal.target)}
                   </p>
-                  <div className="h-2 overflow-hidden rounded-full bg-[rgba(148,163,184,0.18)]">
-                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#4c8dff,#6eb5ff)]" style={{ width: `${progress}%` }} />
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--neutral-bg)]">
+                    <div className="h-full rounded-full bg-[var(--chart-goal)]" style={{ width: `${progress}%` }} />
                   </div>
                   <div className="flex justify-end">
-                    <span className="rounded-md bg-[rgba(76,141,255,0.2)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)]">{progress}%</span>
+                    <span className="badge-premium badge-goal">{progress}%</span>
                   </div>
                 </div>
               );
             })}
-            <button type="button" onClick={onOpenGoals} className="text-sm font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
+            <button type="button" onClick={onOpenGoals} className="text-sm font-semibold text-[var(--goal)] hover:text-[var(--text-primary)]">
               Ver todas metas
             </button>
           </div>
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-2.5 p-3')}>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">VocÃª ainda nÃ£o criou metas</p>
-            <p className="text-xs text-[var(--text-secondary)]">Defina um objetivo para acompanhar sua evoluÃ§Ã£o financeira.</p>
-            <button type="button" onClick={onOpenCreateGoal} className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Você ainda não criou metas</p>
+            <p className="text-xs text-[var(--text-secondary)]">Defina um objetivo para acompanhar sua evolução financeira.</p>
+            <button type="button" onClick={onOpenCreateGoal} className="text-xs font-semibold text-[var(--goal)] hover:text-[var(--text-primary)]">
               Criar meta
             </button>
           </div>
         )}
       </article>
 
-      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
+      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'card-info space-y-3 !p-4 sm:!p-5')}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-[var(--text-primary)]">Carteira</h3>
           <button type="button" onClick={onOpenPortfolio} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
@@ -141,7 +141,7 @@ export function DashboardRightRail({
             ))}
 
             <div className="flex justify-end">
-              <button type="button" onClick={onOpenPortfolio} className="text-sm font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
+              <button type="button" onClick={onOpenPortfolio} className="text-sm font-semibold text-[var(--info)] hover:text-[var(--text-primary)]">
                 Ver detalhes
               </button>
             </div>
@@ -149,8 +149,8 @@ export function DashboardRightRail({
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-2.5 p-3')}>
             <p className="text-sm font-semibold text-[var(--text-primary)]">Adicione uma conta ou investimento</p>
-            <p className="text-xs text-[var(--text-secondary)]">Configure sua carteira para acompanhar saldos e patrimÃ´nio.</p>
-            <button type="button" onClick={onOpenCreateWallet} className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]">
+            <p className="text-xs text-[var(--text-secondary)]">Configure sua carteira para acompanhar saldos e patrimônio.</p>
+            <button type="button" onClick={onOpenCreateWallet} className="text-xs font-semibold text-[var(--info)] hover:text-[var(--text-primary)]">
               Adicionar conta
             </button>
           </div>

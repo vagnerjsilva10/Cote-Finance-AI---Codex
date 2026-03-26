@@ -61,31 +61,31 @@ const LEGEND_ITEMS = [
   {
     label: 'Entradas',
     className:
-      'border-[rgba(79,191,138,0.18)] bg-[rgba(79,191,138,0.07)] text-[color:color-mix(in_srgb,var(--positive)_74%,white)]',
+      'border-[color-mix(in_srgb,var(--success)_18%,transparent)] bg-[color-mix(in_srgb,var(--success)_7%,transparent)] text-[color:color-mix(in_srgb,var(--success)_74%,white)]',
   },
   {
     label: 'Sa\u00eddas fixas',
-    className: 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)]',
+    className: 'border-[color-mix(in_srgb,var(--neutral)_7%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] text-[var(--text-secondary)]',
   },
   {
     label: 'Faturas e parcelas',
     className:
-      'border-[rgba(217,164,65,0.18)] bg-[rgba(217,164,65,0.07)] text-[color:color-mix(in_srgb,var(--warning)_78%,white)]',
+      'border-[color-mix(in_srgb,var(--warning)_18%,transparent)] bg-[color-mix(in_srgb,var(--warning)_7%,transparent)] text-[color:color-mix(in_srgb,var(--warning)_78%,white)]',
   },
   {
     label: 'Vence logo',
     className:
-      'border-[rgba(217,164,65,0.14)] bg-[rgba(217,164,65,0.05)] text-[color:color-mix(in_srgb,var(--warning)_74%,white)]',
+      'border-[color-mix(in_srgb,var(--warning)_14%,transparent)] bg-[color-mix(in_srgb,var(--warning)_5%,transparent)] text-[color:color-mix(in_srgb,var(--warning)_74%,white)]',
   },
   {
     label: 'Vencidos',
     className:
-      'border-[rgba(255,90,90,0.14)] bg-[rgba(255,90,90,0.05)] text-[color:color-mix(in_srgb,var(--danger)_78%,white)]',
+      'border-[color-mix(in_srgb,var(--danger)_14%,transparent)] bg-[color-mix(in_srgb,var(--danger)_5%,transparent)] text-[color:color-mix(in_srgb,var(--danger)_78%,white)]',
   },
   {
     label: 'Datas cr\u00edticas',
     className:
-      'border-[rgba(255,90,90,0.16)] bg-[rgba(255,90,90,0.06)] text-[color:color-mix(in_srgb,var(--danger)_76%,white)]',
+      'border-[color-mix(in_srgb,var(--danger)_16%,transparent)] bg-[color-mix(in_srgb,var(--danger)_6%,transparent)] text-[color:color-mix(in_srgb,var(--danger)_76%,white)]',
   },
 ] as const;
 
@@ -180,8 +180,8 @@ function getEmptyDayGroup(date: Date): FinancialCalendarDayGroup {
 function getEventTone(event: FinancialCalendarOccurrence) {
   if (event.type === 'EXPECTED_INCOME') {
     return {
-      dot: 'bg-[var(--positive)]',
-      chip: 'border-[rgba(79,191,138,0.24)] bg-[rgba(79,191,138,0.12)] text-[color:color-mix(in_srgb,var(--positive)_82%,white)]',
+      dot: 'bg-[var(--success)]',
+      chip: 'border-[color-mix(in_srgb,var(--success)_24%,transparent)] bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-[color:color-mix(in_srgb,var(--success)_82%,white)]',
       icon: ArrowDownRight,
       label: 'Entrada',
     };
@@ -189,23 +189,23 @@ function getEventTone(event: FinancialCalendarOccurrence) {
   if (event.type === 'CARD_BILL') {
     return {
       dot: 'bg-[var(--warning)]',
-      chip: 'border-[rgba(217,164,65,0.24)] bg-[rgba(217,164,65,0.12)] text-[color:color-mix(in_srgb,var(--warning)_82%,white)]',
+      chip: 'border-[color-mix(in_srgb,var(--warning)_24%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] text-[color:color-mix(in_srgb,var(--warning)_82%,white)]',
       icon: CreditCard,
       label: 'Fatura',
     };
   }
   if (event.type === 'INSTALLMENT') {
     return {
-      dot: 'bg-[rgba(214,169,109,1)]',
-      chip: 'border-[rgba(214,169,109,0.24)] bg-[rgba(214,169,109,0.10)] text-[rgb(232,208,172)]',
+      dot: 'bg-[var(--warning)]',
+      chip: 'border-[color-mix(in_srgb,var(--warning)_24%,transparent)] bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] text-[var(--warning)]',
       icon: ReceiptText,
       label: 'Parcela',
     };
   }
   if (event.type === 'SUBSCRIPTION' || event.type === 'FIXED_BILL') {
     return {
-      dot: 'bg-[rgba(160,174,192,0.88)]',
-      chip: 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]',
+      dot: 'bg-[color-mix(in_srgb,var(--neutral)_88%,transparent)]',
+      chip: 'border-[color-mix(in_srgb,var(--neutral)_9%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)] text-[var(--text-secondary)]',
       icon: ReceiptText,
       label: event.type === 'SUBSCRIPTION' ? 'Assinatura' : 'Fixa',
     };
@@ -213,14 +213,14 @@ function getEventTone(event: FinancialCalendarOccurrence) {
   if (event.type === 'GOAL_DEADLINE') {
     return {
       dot: 'bg-[var(--primary)]',
-      chip: 'border-[rgba(79,140,255,0.24)] bg-[rgba(79,140,255,0.12)] text-[color:color-mix(in_srgb,var(--primary)_82%,white)]',
+      chip: 'border-[color-mix(in_srgb,var(--accent)_24%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[color:color-mix(in_srgb,var(--primary)_82%,white)]',
       icon: Target,
       label: 'Meta',
     };
   }
   return {
     dot: 'bg-[var(--danger)]',
-    chip: 'border-[rgba(255,90,90,0.22)] bg-[rgba(255,90,90,0.10)] text-[color:color-mix(in_srgb,var(--danger)_82%,white)]',
+    chip: 'border-[color-mix(in_srgb,var(--danger)_22%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] text-[color:color-mix(in_srgb,var(--danger)_82%,white)]',
     icon: Bell,
     label: 'Alerta',
   };
@@ -272,12 +272,12 @@ function derivePrimaryAlert(snapshot: FinancialCalendarSnapshot | null) {
 
 function getAlertCardTone(alert: FinancialCalendarAlert) {
   if (alert.severity === 'critical') {
-    return 'border-[rgba(255,90,90,0.18)] bg-[rgba(255,90,90,0.08)] text-[var(--danger)]';
+    return 'border-[color-mix(in_srgb,var(--danger)_18%,transparent)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] text-[var(--danger)]';
   }
   if (alert.severity === 'warning') {
-    return 'border-[rgba(217,164,65,0.20)] bg-[rgba(217,164,65,0.08)] text-[var(--warning)]';
+    return 'border-[color-mix(in_srgb,var(--warning)_20%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] text-[var(--warning)]';
   }
-  return 'border-[rgba(79,140,255,0.18)] bg-[rgba(79,140,255,0.08)] text-[var(--primary)]';
+  return 'border-[color-mix(in_srgb,var(--accent)_18%,transparent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] text-[var(--primary)]';
 }
 
 function formatAlertWindow(alert: FinancialCalendarAlert) {
@@ -666,7 +666,7 @@ export function FinancialCalendarView({
   if (currentPlan === 'FREE') {
     return (
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top_right,rgba(79,140,255,0.16),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)] p-6 sm:p-8">
+        <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[color-mix(in_srgb,var(--accent)_14%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--accent)_16%,transparent),transparent_28%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),var(--bg-surface)] p-6 sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div className="space-y-4">
               <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--text-muted)]">Feature Pro</p>
@@ -676,7 +676,7 @@ export function FinancialCalendarView({
               </p>
               <div className="flex flex-wrap gap-2">
                 {['Entradas previstas', 'Contas fixas', 'Datas\u0020cr\u00edticas', 'Saldo projetado'].map((item) => (
-                  <span key={item} className="badge-premium bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]">
+                  <span key={item} className="badge-premium bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)] text-[var(--text-secondary)]">
                     {item}
                   </span>
                 ))}
@@ -685,7 +685,7 @@ export function FinancialCalendarView({
                 Desbloquear no Pro
               </ButtonPrimary>
             </div>
-            <div className="rounded-[1.8rem] border border-[var(--border-default)] bg-[rgba(7,12,21,0.86)] p-4 shadow-[0_28px_70px_-40px_rgba(2,6,23,0.9)]">
+            <div className="rounded-[1.8rem] border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--bg-card)_86%,transparent)] p-4 shadow-[0_28px_70px_-40px_color-mix(in_srgb,var(--bg-deep)_90%,transparent)]">
               <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                 {WEEKDAY_LABELS.map((label) => (
                   <span key={label}>{label}</span>
@@ -700,8 +700,8 @@ export function FinancialCalendarView({
                       className={cn(
                         'min-h-[74px] rounded-2xl border p-2 text-left',
                         isCritical
-                          ? 'border-[rgba(255,90,90,0.18)] bg-[rgba(255,90,90,0.07)]'
-                          : 'border-[var(--border-default)] bg-[rgba(255,255,255,0.03)]'
+                          ? 'border-[color-mix(in_srgb,var(--danger)_18%,transparent)] bg-[color-mix(in_srgb,var(--danger)_7%,transparent)]'
+                          : 'border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)]'
                       )}
                     >
                       <div className="flex items-center justify-between">
@@ -709,8 +709,8 @@ export function FinancialCalendarView({
                         {isCritical ? <TriangleAlert size={12} className="text-[var(--danger)]" /> : null}
                       </div>
                       <div className="mt-6 flex gap-1">
-                        <span className="h-1.5 flex-1 rounded-full bg-[rgba(79,191,138,0.55)]" />
-                        <span className="h-1.5 w-6 rounded-full bg-[rgba(255,90,90,0.42)]" />
+                        <span className="h-1.5 flex-1 rounded-full bg-[color-mix(in_srgb,var(--success)_55%,transparent)]" />
+                        <span className="h-1.5 w-6 rounded-full bg-[color-mix(in_srgb,var(--danger)_42%,transparent)]" />
                       </div>
                     </div>
                   );
@@ -761,7 +761,7 @@ export function FinancialCalendarView({
               </ButtonSecondary>
               <div
                 data-testid="financial-calendar-month-label"
-                className="min-h-10 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm font-semibold capitalize text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                className="min-h-10 rounded-2xl border border-[color-mix(in_srgb,var(--neutral)_8%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] px-4 py-2.5 text-sm font-semibold capitalize text-[var(--text-primary)] shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_4%,transparent)]"
               >
                 {formatMonthLabel(monthCursor)}
               </div>
@@ -788,8 +788,8 @@ export function FinancialCalendarView({
             className={cn(
               'rounded-3xl border px-4 py-3 text-sm',
               notice.tone === 'success'
-                ? 'border-[rgba(79,191,138,0.18)] bg-[rgba(79,191,138,0.10)] text-[color:color-mix(in_srgb,var(--positive)_84%,white)]'
-                : 'border-[rgba(79,140,255,0.18)] bg-[rgba(79,140,255,0.10)] text-[color:color-mix(in_srgb,var(--primary)_84%,white)]'
+                ? 'border-[color-mix(in_srgb,var(--success)_18%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-[color:color-mix(in_srgb,var(--success)_84%,white)]'
+                : 'border-[color-mix(in_srgb,var(--accent)_18%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[color:color-mix(in_srgb,var(--primary)_84%,white)]'
             )}
           >
             <div className="flex items-start gap-3">
@@ -800,7 +800,7 @@ export function FinancialCalendarView({
         ) : null}
 
         {error ? (
-          <div role="alert" className="rounded-3xl border border-[rgba(255,90,90,0.2)] bg-[rgba(255,90,90,0.08)] px-4 py-3 text-sm text-[var(--danger)]">
+          <div role="alert" className="rounded-3xl border border-[color-mix(in_srgb,var(--danger)_20%,transparent)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-4 py-3 text-sm text-[var(--danger)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p>{error}</p>
               <ButtonSecondary className="rounded-2xl px-4" onClick={handleRetry}>
@@ -824,12 +824,12 @@ export function FinancialCalendarView({
           className={cn(
             'app-surface-card group relative overflow-hidden rounded-[1.8rem] px-5 py-4 text-left min-h-[152px] disabled:cursor-default disabled:opacity-100',
             primaryAlert.tone === 'danger'
-              ? 'border-[rgba(255,90,90,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+              ? 'border-[color-mix(in_srgb,var(--danger)_16%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--danger)_10%,transparent),transparent_34%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),var(--bg-surface)]'
               : primaryAlert.tone === 'warning'
-                ? 'border-[rgba(217,164,65,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(217,164,65,0.11),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+                ? 'border-[color-mix(in_srgb,var(--warning)_16%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--warning)_11%,transparent),transparent_34%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),var(--bg-surface)]'
                 : primaryAlert.tone === 'positive'
-                  ? 'border-[rgba(79,191,138,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(79,191,138,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
-                  : 'border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top_right,rgba(79,140,255,0.12),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]'
+                  ? 'border-[color-mix(in_srgb,var(--success)_16%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--success)_10%,transparent),transparent_34%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),var(--bg-surface)]'
+                  : 'border-[color-mix(in_srgb,var(--accent)_14%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--accent)_12%,transparent),transparent_35%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),var(--bg-surface)]'
           )}
         >
           <div className="flex h-full items-start justify-between gap-4">
@@ -847,7 +847,7 @@ export function FinancialCalendarView({
                 ) : null}
               </div>
             </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--neutral)_7%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] text-[var(--text-primary)] shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_4%,transparent)]">
               <Sparkles size={16} />
             </div>
           </div>
@@ -856,12 +856,12 @@ export function FinancialCalendarView({
         <div className="app-surface-card flex min-h-[152px] flex-col justify-between rounded-[1.8rem] px-5 py-4">
           <div className="space-y-1.5">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)] sm:text-[11px]">Entradas previstas</p>
-            <p className="text-[1.95rem] font-black tracking-[-0.04em] text-[var(--positive)] sm:text-[2.2rem]">
+            <p className="text-[1.95rem] font-black tracking-[-0.04em] text-[var(--success)] sm:text-[2.2rem]">
               {isLoading ? '--' : formatCurrency(snapshot?.summary.totalExpectedInflow)}
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-medium leading-relaxed text-[var(--text-secondary)]">
-            <ArrowDownRight size={14} className="text-[var(--positive)]" />
+            <ArrowDownRight size={14} className="text-[var(--success)]" />
             Caixa esperado para entrar
           </div>
         </div>
@@ -896,7 +896,7 @@ export function FinancialCalendarView({
         </div>
       </div>
 
-      <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.018)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)]">
+      <section className="app-surface-card overflow-hidden rounded-[2rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),var(--bg-surface)]">
         <div className="flex flex-col gap-4 border-b border-[var(--border-default)] px-4 py-4 sm:px-5 sm:py-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -940,7 +940,7 @@ export function FinancialCalendarView({
 
         <div className="px-3 pb-3 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
           <div data-testid="financial-calendar-grid-scroll" className="overflow-x-auto overscroll-x-contain pb-1">
-            <div className="min-w-[720px] rounded-[1.7rem] border border-[rgba(255,255,255,0.05)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%),rgba(7,12,21,0.74)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-4">
+            <div className="min-w-[720px] rounded-[1.7rem] border border-[color-mix(in_srgb,var(--neutral)_5%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_2%,transparent)_0%,transparent_100%),color-mix(in_srgb,var(--bg-card)_74%,transparent)] p-3 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)] sm:p-4">
               <div className="mb-3 grid grid-cols-7 gap-2.5 text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)] sm:mb-4 sm:gap-3">
                 {WEEKDAY_LABELS.map((label) => (
                   <div key={label}>{label}</div>
@@ -950,12 +950,12 @@ export function FinancialCalendarView({
               {isLoading ? (
                 <div className="grid grid-cols-7 gap-2.5 sm:gap-3" aria-hidden="true">
                   {Array.from({ length: 35 }).map((_, index) => (
-                    <div key={index} className="min-h-[110px] animate-pulse rounded-[1.55rem] border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] p-3 sm:min-h-[136px]" />
+                    <div key={index} className="min-h-[110px] animate-pulse rounded-[1.55rem] border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] p-3 sm:min-h-[136px]" />
                   ))}
                 </div>
               ) : !hasMonthEvents ? (
-                <div className="rounded-[1.7rem] border border-dashed border-[rgba(79,140,255,0.14)] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.06),transparent_40%),rgba(255,255,255,0.025)] px-6 py-10 text-center sm:px-10 sm:py-12">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(79,140,255,0.12)] bg-[rgba(79,140,255,0.07)] text-[var(--primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="rounded-[1.7rem] border border-dashed border-[color-mix(in_srgb,var(--accent)_14%,transparent)] bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--accent)_6%,transparent),transparent_40%),color-mix(in_srgb,var(--neutral)_3%,transparent)] px-6 py-10 text-center sm:px-10 sm:py-12">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] bg-[color-mix(in_srgb,var(--accent)_7%,transparent)] text-[var(--primary)] shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)]">
                     <Sparkles size={18} />
                   </div>
                   <p className="mt-4 text-[1.08rem] font-black tracking-[-0.03em] text-[var(--text-primary)]">{'Nenhum evento neste mês'}</p>
@@ -990,13 +990,13 @@ export function FinancialCalendarView({
                         className={cn(
                           'group relative min-h-[110px] overflow-hidden rounded-[1.55rem] border p-3 text-left transition-all duration-200 sm:min-h-[136px] sm:p-3.5',
                           cell.isCurrentMonth
-                            ? 'border-[rgba(255,255,255,0.07)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:-translate-y-0.5 hover:border-[rgba(79,140,255,0.18)] hover:bg-[rgba(14,22,36,0.98)]'
-                            : 'border-[rgba(255,255,255,0.04)] bg-[rgba(255,255,255,0.018)] text-[var(--text-muted)]',
-                          cell.isCritical && cell.isCurrentMonth && 'border-[rgba(255,90,90,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.96)]',
-                          cell.hasOverdue && !cell.isCritical && cell.isCurrentMonth && 'border-[rgba(255,90,90,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(255,90,90,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.94)]',
-                          cell.hasDueSoon && !cell.hasOverdue && !cell.isCritical && cell.isCurrentMonth && 'border-[rgba(217,164,65,0.16)] bg-[radial-gradient(circle_at_top_right,rgba(217,164,65,0.08),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0)_100%),rgba(10,16,28,0.94)]',
-                          cell.isToday && 'ring-1 ring-[rgba(79,140,255,0.34)]',
-                          isSelected && 'ring-2 ring-[rgba(79,140,255,0.24)]'
+                            ? 'border-[color-mix(in_srgb,var(--neutral)_7%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),color-mix(in_srgb,var(--bg-tertiary)_92%,transparent)] shadow-[inset_0_1px_0_color-mix(in_srgb,var(--neutral)_3%,transparent)] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_18%,transparent)] hover:bg-[color-mix(in_srgb,var(--bg-tertiary)_98%,transparent)]'
+                            : 'border-[color-mix(in_srgb,var(--neutral)_4%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_2%,transparent)] text-[var(--text-muted)]',
+                          cell.isCritical && cell.isCurrentMonth && 'border-[color-mix(in_srgb,var(--danger)_18%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--danger)_10%,transparent),transparent_34%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),color-mix(in_srgb,var(--bg-tertiary)_96%,transparent)]',
+                          cell.hasOverdue && !cell.isCritical && cell.isCurrentMonth && 'border-[color-mix(in_srgb,var(--danger)_16%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--danger)_8%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),color-mix(in_srgb,var(--bg-tertiary)_94%,transparent)]',
+                          cell.hasDueSoon && !cell.hasOverdue && !cell.isCritical && cell.isCurrentMonth && 'border-[color-mix(in_srgb,var(--warning)_16%,transparent)] bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--warning)_8%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),color-mix(in_srgb,var(--bg-tertiary)_94%,transparent)]',
+                          cell.isToday && 'ring-1 ring-[color-mix(in_srgb,var(--accent)_34%,transparent)]',
+                          isSelected && 'ring-2 ring-[color-mix(in_srgb,var(--accent)_24%,transparent)]'
                         )}
                       >
                         <div className="flex items-start justify-between gap-2.5">
@@ -1005,13 +1005,13 @@ export function FinancialCalendarView({
                               {cell.label}
                             </span>
                             {cell.isToday && cell.isCurrentMonth ? (
-                              <span className="inline-flex rounded-full border border-[rgba(79,140,255,0.18)] bg-[rgba(79,140,255,0.08)] px-2 py-0.5 text-[9px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--primary)_80%,white)]">
+                              <span className="inline-flex rounded-full border border-[color-mix(in_srgb,var(--accent)_18%,transparent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] px-2 py-0.5 text-[9px] font-semibold tracking-[0.08em] text-[color:color-mix(in_srgb,var(--primary)_80%,white)]">
                                 Hoje
                               </span>
                             ) : null}
                           </div>
                           {cell.group.events.length > 0 ? (
-                            <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
+                            <span className="rounded-full border border-[color-mix(in_srgb,var(--neutral)_8%,transparent)] bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
                               {cell.group.events.length}
                             </span>
                           ) : null}

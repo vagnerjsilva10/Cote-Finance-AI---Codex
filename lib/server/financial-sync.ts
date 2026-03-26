@@ -104,6 +104,7 @@ export async function triggerWorkspaceFinancialSync(params: {
   }
 
   if (mode === 'blocking') {
+    await syncWorkspaceDebtLedgerSourcesSafe({ workspaceId: params.workspaceId });
     await syncWorkspaceFinancialCalendarSourcesSafe(params.workspaceId);
     return {
       mode,

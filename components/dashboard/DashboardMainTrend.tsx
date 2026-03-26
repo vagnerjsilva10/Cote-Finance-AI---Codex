@@ -1,4 +1,4 @@
-Ôªøimport * as React from 'react';
+import * as React from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { DashboardOverviewForecast as DashboardOverviewForecastData } from '@/lib/dashboard/overview';
 import {
@@ -41,8 +41,8 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
   return (
     <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Vis√£o Geral</h3>
-        <div className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-[rgba(8,15,27,0.45)] p-1">
+        <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Vis„o Geral</h3>
+        <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-1">
           {PERIOD_OPTIONS.map((item) => (
             <button
               key={item}
@@ -51,7 +51,7 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
               className={cn(
                 'rounded-lg px-3 py-1 text-sm font-semibold transition-colors',
                 period === item
-                  ? 'bg-[rgba(76,141,255,0.24)] text-[var(--text-primary)]'
+                  ? 'bg-[var(--accent-soft)] text-[var(--text-primary)]'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               )}
             >
@@ -70,10 +70,10 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={visibleRows} margin={{ top: 8, right: 14, left: 0, bottom: 6 }}>
-                <CartesianGrid strokeDasharray="4 10" stroke="rgba(148,163,184,0.18)" vertical={false} />
-                <XAxis dataKey="dateLabel" stroke="rgba(148,163,184,0.74)" fontSize={11} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="2 10" stroke="color-mix(in srgb, var(--neutral) 24%, transparent)" vertical={false} />
+                <XAxis dataKey="dateLabel" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis
-                  stroke="rgba(148,163,184,0.74)"
+                  stroke="var(--text-muted)"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
@@ -81,10 +81,10 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'rgba(10,20,35,0.95)',
-                    border: '1px solid rgba(148,163,184,0.2)',
-                    borderRadius: '12px',
-                    boxShadow: '0 14px 28px rgba(0, 0, 0, 0.35)',
+                    backgroundColor: 'color-mix(in srgb, var(--bg-primary) 95%, transparent)',
+                    border: '1px solid var(--border-default)',
+                    borderRadius: '14px',
+                    boxShadow: 'var(--shadow-card)',
                   }}
                   labelStyle={{ color: 'var(--text-secondary)' }}
                   formatter={(value, name) => {
@@ -97,28 +97,28 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
                   type="monotone"
                   dataKey="balance"
                   name="balance"
-                  stroke="var(--primary)"
+                  stroke="var(--chart-balance)"
                   strokeWidth={2.8}
                   dot={false}
-                  activeDot={{ r: 4, fill: 'var(--primary)', stroke: 'var(--bg-surface)', strokeWidth: 1 }}
+                  activeDot={{ r: 4, fill: 'var(--chart-balance)', stroke: 'var(--bg-card)', strokeWidth: 1 }}
                 />
-                <Line type="monotone" dataKey="income" name="income" stroke="#6EB5FF" strokeWidth={1.6} dot={false} />
-                <Line type="monotone" dataKey="expense" name="expense" stroke="#F87171" strokeWidth={1.6} dot={false} />
+                <Line type="monotone" dataKey="income" name="income" stroke="var(--chart-income)" strokeWidth={1.6} dot={false} />
+                <Line type="monotone" dataKey="expense" name="expense" stroke="var(--chart-expense)" strokeWidth={1.6} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-2 flex items-center gap-6 px-2 text-sm text-[var(--text-secondary)]">
             <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-[#6EB5FF]" /> Receitas
+              <span className="size-2 rounded-full bg-[var(--chart-income)]" /> Receitas
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-[#F87171]" /> Despesas
+              <span className="size-2 rounded-full bg-[var(--chart-expense)]" /> Despesas
             </span>
           </div>
         </div>
       ) : (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
-          <p className="text-sm text-[var(--text-secondary)]">Ainda n√£o h√° dados suficientes para exibir tend√™ncia de saldo.</p>
+          <p className="text-sm text-[var(--text-secondary)]">Ainda n„o h· dados suficientes para exibir tendÍncia de saldo.</p>
         </div>
       )}
     </article>

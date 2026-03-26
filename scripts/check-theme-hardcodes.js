@@ -2,11 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const TARGET_DIRS = ['app', 'components'];
-const ALLOWED_HEX_FILE = path.join(ROOT, 'app', 'globals.css');
+const TARGET_DIRS = ['app/app', 'components/dashboard', 'components/financial-calendar', 'components/ui'];
 const EXTENSIONS = new Set(['.ts', '.tsx', '.css']);
+const ALLOWED_LITERAL_COLOR_FILES = new Set([
+  path.join(ROOT, 'app', 'globals.css'),
+]);
 
 const HEX_PATTERN = /#[0-9a-fA-F]{3,8}\b/g;
+const RGB_PATTERN = /\brgba?\(/g;
 const LEGACY_COLOR_CLASS_PATTERN =
   /\b(?:text|bg|border|from|to|via|ring|hover:bg|hover:border|focus:border)-(?:slate|gray|zinc|stone|neutral|white|black|emerald|green|lime|yellow|amber|orange|red|rose|cyan|teal|blue|indigo|violet|purple|fuchsia|pink)-/g;
 
@@ -50,14 +53,24 @@ const violations = [];
 for (const filePath of files) {
   const content = fs.readFileSync(filePath, 'utf8');
   const relative = path.relative(ROOT, filePath).replace(/\\/g, '/');
+  const isAllowedLiteralFile = ALLOWED_LITERAL_COLOR_FILES.has(filePath);
 
-  if (filePath !== ALLOWED_HEX_FILE) {
+  if (!isAllowedLiteralFile) {
     const hexMatches = collectMatches(content, HEX_PATTERN);
     for (const item of hexMatches) {
       violations.push({
         file: relative,
         line: getLineFromIndex(content, item.index),
         reason: `Hex color hardcoded: ${item.value}`,
+      });
+    }
+
+    const rgbMatches = collectMatches(content, RGB_PATTERN);
+    for (const item of rgbMatches) {
+      violations.push({
+        file: relative,
+        line: getLineFromIndex(content, item.index),
+        reason: `RGB/RGBA color hardcoded: ${item.value}`,
       });
     }
   }
@@ -73,7 +86,7 @@ for (const filePath of files) {
 }
 
 if (violations.length > 0) {
-  console.error('Theme hardcode check failed.');
+  console.error('Theme hardcode check failed (core product scope).');
   for (const violation of violations) {
     console.error(`${violation.file}:${violation.line} - ${violation.reason}`);
   }

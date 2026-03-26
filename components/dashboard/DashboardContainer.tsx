@@ -1,4 +1,4 @@
-Ôªøimport type {
+import type {
   DashboardOverviewPayload,
   DashboardOverviewRecentTransaction,
 } from '@/lib/dashboard/overview';
@@ -34,15 +34,15 @@ function buildAssistantContext(overview: DashboardOverviewPayload | null) {
 
   if (!hasTransactions) {
     return {
-      headline: 'Pergunte sobre organiza√ß√£o financeira e pr√≥ximos passos para come√ßar.',
-      primary: 'Como organizar minhas finan√ßas?',
+      headline: 'Pergunte sobre organizaÁ„o financeira e prÛximos passos para comeÁar.',
+      primary: 'Como organizar minhas finanÁas?',
       secondary: 'Criar um plano mensal',
     };
   }
 
   if ((summary?.outflow ?? 0) > (summary?.inflow ?? 0)) {
     return {
-      headline: 'Receba an√°lises e sugest√µes com base na sua movimenta√ß√£o mais recente.',
+      headline: 'Receba an·lises e sugestıes com base na sua movimentaÁ„o mais recente.',
       primary: 'Onde posso economizar?',
       secondary: 'Analisar meus gastos',
     };
@@ -84,9 +84,9 @@ export function DashboardContainer({
         </div>
         <button
           onClick={onAddTransaction}
-          className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-[0_8px_22px_rgba(76,141,255,0.26)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_12px_30px_rgba(76,141,255,0.34)]"
+          className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold"
         >
-          + Nova transa√ß√£o
+          + Nova transaÁ„o
         </button>
       </div>
 

@@ -1,4 +1,4 @@
-﻿import { Wallet } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 import type {
   DashboardOverviewMonthlySeriesPoint,
   DashboardOverviewSummary as DashboardOverviewSummaryData,
@@ -16,11 +16,13 @@ type DashboardSummaryProps = {
   onOpenSummaryTarget: (target: SummaryCardTarget) => void;
 };
 
+type CardTone = 'accent' | 'success' | 'danger';
+
 type CardProps = {
   label: string;
   value: string;
   trend?: string | null;
-  tone?: 'neutral' | 'positive' | 'negative';
+  tone: CardTone;
   loading: boolean;
   onClick: () => void;
 };
@@ -32,21 +34,25 @@ function formatDeltaPercent(current: number, previous: number) {
   return `${sign}${delta.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 }
 
-function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }: CardProps) {
+const valueClassByTone: Record<CardTone, string> = {
+  accent: 'text-[var(--accent)]',
+  success: 'text-[var(--success)]',
+  danger: 'text-[var(--danger)]',
+};
+
+function SummaryCard({ label, value, trend, tone, loading, onClick }: CardProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[118px] w-full space-y-2 !p-4 text-left hover:-translate-y-[1px]')}
+      className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'card-neutral min-h-[118px] w-full space-y-2 !p-4 text-left hover:-translate-y-[1px]')}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold text-[var(--text-primary)]">{label}</p>
         {trend ? (
-          <p className={cn('text-sm font-bold', tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]')}>
-            {trend}
-          </p>
+          <p className={cn('text-sm font-bold', valueClassByTone[tone])}>{trend}</p>
         ) : (
-          <span className="inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.5)] text-[var(--text-secondary)]">
+          <span className="inline-flex size-7 items-center justify-center rounded-full border border-[var(--border-soft)] bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
             <Wallet size={14} />
           </span>
         )}
@@ -57,14 +63,7 @@ function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }
           <DashboardSkeletonLine className="h-8 w-32 rounded-xl" />
         </div>
       ) : (
-        <p
-          className={cn(
-            'text-3xl font-black leading-tight tracking-[-0.02em]',
-            tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'
-          )}
-        >
-          {value}
-        </p>
+        <p className={cn('text-3xl font-black leading-tight tracking-[-0.03em]', valueClassByTone[tone])}>{value}</p>
       )}
     </button>
   );
@@ -87,7 +86,7 @@ export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummar
           label="Receita"
           value={summary ? formatCurrency(inflow) : '--'}
           trend={incomeTrend}
-          tone="positive"
+          tone="success"
           loading={loading}
           onClick={() => onOpenSummaryTarget('income')}
         />
@@ -97,7 +96,7 @@ export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummar
           label="Despesa"
           value={summary ? formatCurrency(outflow) : '--'}
           trend={expenseTrend}
-          tone="negative"
+          tone="danger"
           loading={loading}
           onClick={() => onOpenSummaryTarget('expense')}
         />
@@ -106,7 +105,7 @@ export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummar
         <SummaryCard
           label="Saldo Atual"
           value={summary ? formatCurrency(summary.currentBalance) : '--'}
-          tone="neutral"
+          tone="accent"
           loading={loading}
           onClick={() => onOpenSummaryTarget('balance')}
         />

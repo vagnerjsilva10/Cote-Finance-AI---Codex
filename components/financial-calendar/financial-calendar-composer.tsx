@@ -264,7 +264,7 @@ export function FinancialCalendarComposer({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.22 }}
-            className="theme-modal-surface relative z-10 flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[1.8rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0)_100%),var(--bg-surface)] shadow-2xl sm:rounded-[2rem]"
+            className="theme-modal-surface relative z-10 flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[1.8rem] border border-[var(--border-default)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--neutral)_3%,transparent)_0%,transparent_100%),var(--bg-surface)] shadow-2xl sm:rounded-[2rem]"
           >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] px-5 py-5 sm:px-6">
               <div className="space-y-2">
@@ -284,7 +284,7 @@ export function FinancialCalendarComposer({
                 type="button"
                 onClick={onClose}
                 aria-label="Fechar formulario"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] text-[var(--text-secondary)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
               >
                 <X size={18} />
               </button>
@@ -315,7 +315,7 @@ export function FinancialCalendarComposer({
                 });
               }}
             >
-              <div className="rounded-3xl border border-[var(--border-default)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm text-[var(--text-secondary)]">
+              <div className="rounded-3xl border border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_3%,transparent)] px-4 py-4 text-sm text-[var(--text-secondary)]">
                 {'Preencha apenas o necess\u00e1rio. Campos opcionais ajudam a enriquecer a leitura do dia sem poluir o calend\u00e1rio.'}
               </div>
 
@@ -481,8 +481,8 @@ export function FinancialCalendarComposer({
                   }}
                   className={`relative inline-flex h-8 w-14 items-center rounded-full border transition ${
                     form.reminderEnabled
-                      ? 'border-[rgba(79,140,255,0.34)] bg-[var(--primary-soft)]'
-                      : 'border-[var(--border-default)] bg-[rgba(255,255,255,0.04)]'
+                      ? 'border-[color-mix(in_srgb,var(--accent)_34%,transparent)] bg-[var(--primary-soft)]'
+                      : 'border-[var(--border-default)] bg-[color-mix(in_srgb,var(--neutral)_4%,transparent)]'
                   }`}
                 >
                   <span
@@ -513,7 +513,7 @@ export function FinancialCalendarComposer({
               </div>
 
               {error ? (
-                <div role="alert" className="rounded-2xl border border-[rgba(255,90,90,0.2)] bg-[rgba(255,90,90,0.1)] px-4 py-3 text-sm text-[var(--danger)]">
+                <div role="alert" className="rounded-2xl border border-[color-mix(in_srgb,var(--danger)_20%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-4 py-3 text-sm text-[var(--danger)]">
                   {error}
                 </div>
               ) : null}

@@ -5,8 +5,8 @@
     "scripts": {
         "predev": "npm run clean",
         "dev": "next dev --hostname 0.0.0.0 --port 3000",
-        "prebuild": "npm run clean && npm run check:encoding",
-        "prelint": "npm run check:encoding",
+        "prebuild": "npm run clean && npm run check:encoding && npm run check:theme",
+        "prelint": "npm run check:encoding && npm run check:theme",
         "prisma:generate": "prisma generate",
         "prisma:migrate:deploy": "prisma migrate deploy",
         "build": "node scripts/build-with-prisma.js",

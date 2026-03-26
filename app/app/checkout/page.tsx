@@ -579,7 +579,7 @@ function CheckoutPageContent() {
       rules: {
         '.Input, .Block, .Tab': {
           backgroundColor: 'var(--bg-surface)',
-          border: '1px solid rgba(148, 163, 184, 0.16)',
+          border: '1px solid color-mix(in srgb, var(--neutral) 16%, transparent)',
           boxShadow: 'none',
         },
         '.Label': {
@@ -1074,7 +1074,7 @@ function CheckoutPageContent() {
 
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="relative overflow-hidden rounded-[2rem] marketing-panel p-7">
-            <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(76,141,255,.18),transparent_58%)]" />
+            <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--accent)_18%,transparent),transparent_58%)]" />
             <div className="relative space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-[color:var(--primary-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--primary)]">
                 <Sparkles className="size-3.5" />
