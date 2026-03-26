@@ -18,7 +18,7 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[350px] space-y-3 !p-4 sm:!p-5')}>
       <div className="space-y-1">
         <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Receitas vs Despesas</h3>
-        <p className="text-xs text-[var(--text-secondary)]">Comparativo dos últimos 6 meses para leitura rápida de ritmo financeiro.</p>
+        <p className="text-xs text-[var(--text-secondary)]">Comparativo dos Ãºltimos 6 meses para leitura rÃ¡pida de ritmo financeiro.</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
@@ -26,7 +26,7 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
           <span className="size-1.5 rounded-full bg-[var(--chart-income)]" /> Entradas
         </span>
         <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-[var(--bg-tertiary)] px-2 py-0.5">
-          <span className="size-1.5 rounded-full bg-[var(--chart-expense)]" /> Saídas
+          <span className="size-1.5 rounded-full bg-[var(--chart-expense)]" /> SaÃ­das
         </span>
       </div>
 
@@ -57,7 +57,7 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
                     boxShadow: 'var(--shadow-card)',
                   }}
                   labelStyle={{ color: 'var(--text-secondary)' }}
-                  formatter={(value, name) => [formatCurrency(Number(value || 0)), name === 'income' ? 'Entradas' : 'Saídas']}
+                  formatter={(value, name) => [formatCurrency(Number(value || 0)), name === 'income' ? 'Entradas' : 'SaÃ­das']}
                 />
                 <Line
                   type="monotone"
@@ -84,7 +84,7 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
       ) : (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
           <p className="text-xs text-[var(--text-secondary)]">
-            Ainda não há dados suficientes para este comparativo. Adicione movimentações para visualizar o ritmo de entradas e saídas.
+            Ainda nÃ£o hÃ¡ dados suficientes para este comparativo. Adicione movimentaÃ§Ãµes para visualizar o ritmo de entradas e saÃ­das.
           </p>
         </div>
       )}

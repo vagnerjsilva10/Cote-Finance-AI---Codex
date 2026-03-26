@@ -26,7 +26,7 @@ function getInsightToneClassName(tone: 'warning' | 'primary') {
 function getInsightBadgeLabel(rawBadge: string) {
   const badge = String(rawBadge || '').toLowerCase();
   if (badge.includes('alert')) return 'ALERTA';
-  if (badge.includes('tend')) return 'TENDÊNCIA';
+  if (badge.includes('tend')) return 'TENDÃŠNCIA';
   return 'OPORTUNIDADE';
 }
 
@@ -47,9 +47,9 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
     ...automatedInsights.slice(0, 1).map((insight, index) => ({
       id: `automated-${index}`,
       tone: 'primary' as const,
-      badge: 'TENDÊNCIA',
+      badge: 'TENDÃŠNCIA',
       title: 'Leitura principal',
-      metric: extractInsightMetric(insight) ?? 'Sem métrica',
+      metric: extractInsightMetric(insight) ?? 'Sem mÃ©trica',
       description: insight,
       action: getInsightActionHint(insight),
     })),
@@ -64,8 +64,8 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'card-info min-h-[350px] space-y-3 !p-3.5 sm:!p-4')}>
       <div className="space-y-1">
-        <h3 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Insights do mês</h3>
-        <p className="text-xs text-[var(--text-secondary)]">Leituras acionáveis para priorizar ajustes com maior impacto financeiro.</p>
+        <h3 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Insights do mÃªs</h3>
+        <p className="text-xs text-[var(--text-secondary)]">Leituras acionÃ¡veis para priorizar ajustes com maior impacto financeiro.</p>
       </div>
 
       <div className="space-y-2.5">
@@ -90,7 +90,7 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
         {currentPlan === 'FREE' ? (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5 border-[color:color-mix(in_srgb,var(--accent)_38%,transparent)]')}>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Oportunidade Pro</p>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">Desbloqueie insights automáticos</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Desbloqueie insights automÃ¡ticos</p>
             <button type="button" onClick={onUpgrade} className="app-button-primary rounded-lg px-2.5 py-1 text-xs font-semibold">
               Atualizar para Pro
             </button>
@@ -98,7 +98,7 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5')}>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">IA ativa</p>
-            <p className="text-xs text-[var(--text-secondary)]">Leituras automáticas habilitadas para antecipar desvios do mês.</p>
+            <p className="text-xs text-[var(--text-secondary)]">Leituras automÃ¡ticas habilitadas para antecipar desvios do mÃªs.</p>
           </div>
         )}
 
@@ -111,7 +111,7 @@ export function DashboardInsights({ insights, forecast, currentPlan, loading, on
             </span>
           </p>
           <p className="text-xs text-[var(--text-secondary)]">
-            Resultado do mês:{' '}
+            Resultado do mÃªs:{' '}
             <span className={cn('font-semibold', monthNet !== null && monthNet < 0 ? 'text-[var(--danger)]' : 'text-[var(--success)]')}>
               {monthNet === null ? '--' : formatCurrency(monthNet)}
             </span>

@@ -68,7 +68,7 @@ export const InvestmentsView = ({
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Rendimento</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Rentab. %</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Ret. esp. % a.a.</th>
-                <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Ações</th>
+                <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-soft)]">
@@ -77,7 +77,7 @@ export const InvestmentsView = ({
                   <td colSpan={9} className="px-6 py-8">
                     <EmptyState
                       title="Nenhum investimento cadastrado"
-                      description="Adicione ativos para acompanhar rentabilidade, alocação e evolução patrimonial."
+                      description="Adicione ativos para acompanhar rentabilidade, alocaÃ§Ã£o e evoluÃ§Ã£o patrimonial."
                       ctaLabel="Criar investimento"
                       onCtaClick={onAddInvestment}
                       className="p-6"

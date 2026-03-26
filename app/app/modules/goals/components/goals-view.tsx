@@ -48,7 +48,7 @@ export const GoalsView = ({
         {goals.length === 0 && (
           <EmptyState
             title="Nenhuma meta cadastrada"
-            description="Crie sua primeira meta para acompanhar evolução de forma visual e objetiva."
+            description="Crie sua primeira meta para acompanhar evoluÃ§Ã£o de forma visual e objetiva."
             ctaLabel="Criar meta"
             onCtaClick={onAddGoal}
           />

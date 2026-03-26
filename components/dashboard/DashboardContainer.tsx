@@ -34,15 +34,15 @@ function buildAssistantContext(overview: DashboardOverviewPayload | null) {
 
   if (!hasTransactions) {
     return {
-      headline: 'Pergunte sobre organização financeira e próximos passos para começar.',
-      primary: 'Como organizar minhas finanças?',
+      headline: 'Pergunte sobre organizaÃ§Ã£o financeira e prÃ³ximos passos para comeÃ§ar.',
+      primary: 'Como organizar minhas finanÃ§as?',
       secondary: 'Criar um plano mensal',
     };
   }
 
   if ((summary?.outflow ?? 0) > (summary?.inflow ?? 0)) {
     return {
-      headline: 'Receba análises e sugestões com base na sua movimentação mais recente.',
+      headline: 'Receba anÃ¡lises e sugestÃµes com base na sua movimentaÃ§Ã£o mais recente.',
       primary: 'Onde posso economizar?',
       secondary: 'Analisar meus gastos',
     };
@@ -86,7 +86,7 @@ export function DashboardContainer({
           onClick={onAddTransaction}
           className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold"
         >
-          + Nova transação
+          + Nova transaÃ§Ã£o
         </button>
       </div>
 

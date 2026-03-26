@@ -41,7 +41,7 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
   return (
     <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Visão Geral</h3>
+        <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">VisÃ£o Geral</h3>
         <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-1">
           {PERIOD_OPTIONS.map((item) => (
             <button
@@ -118,7 +118,7 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
         </div>
       ) : (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
-          <p className="text-sm text-[var(--text-secondary)]">Ainda não há dados suficientes para exibir tendência de saldo.</p>
+          <p className="text-sm text-[var(--text-secondary)]">Ainda nÃ£o hÃ¡ dados suficientes para exibir tendÃªncia de saldo.</p>
         </div>
       )}
     </article>

@@ -26,9 +26,9 @@ type DashboardBalanceEvolutionCardProps = {
 
 const ALERT_TONE_TAG: Record<DashboardOverviewAlert['tone'], string> = {
   danger: 'Alerta',
-  warning: 'Atenção',
-  info: 'Observação',
-  success: 'Estável',
+  warning: 'AtenÃ§Ã£o',
+  info: 'ObservaÃ§Ã£o',
+  success: 'EstÃ¡vel',
 };
 
 function getAlertToneClassName(tone: DashboardOverviewAlert['tone']) {
@@ -52,7 +52,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[186px] space-y-2.5 !p-3.5 sm:!p-4')}>
       <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-0.5">
-          <h3 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Resumo para decisão</h3>
+          <h3 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Resumo para decisÃ£o</h3>
           <p className="text-xs text-[var(--text-secondary)]">
             {loading
               ? 'Consolidando sinais da sua conta...'
@@ -89,7 +89,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
                   type="button"
                   className="rounded-md border border-[var(--border-soft)] bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--border-default)]"
                 >
-                  Ajustar orçamento
+                  Ajustar orÃ§amento
                 </button>
               </div>
             </article>
@@ -98,7 +98,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-2.5')}>
             <p className="text-sm font-semibold text-[var(--text-primary)]">Fluxo financeiro sob controle</p>
             <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
-              Nenhum alerta crítico no momento. Continue acompanhando para antecipar variações de caixa.
+              Nenhum alerta crÃ­tico no momento. Continue acompanhando para antecipar variaÃ§Ãµes de caixa.
             </p>
           </div>
         )}
@@ -123,7 +123,7 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[186px] space-y-2.5 !p-3.5 sm:!p-4')}>
       <div className="space-y-0.5">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Resumo do mês</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Resumo do mÃªs</p>
         {loading ? (
           <DashboardSkeletonLine className="h-8 w-32 rounded-xl" />
         ) : (
@@ -161,17 +161,17 @@ export function DashboardMonthSummaryCard({ forecast, loading }: DashboardMonthS
               </span>
             </p>
             <p className="text-[var(--text-secondary)]">
-              Tendência: <span className={cn('font-semibold', trendClassName)}>{trendLabel}</span>
+              TendÃªncia: <span className={cn('font-semibold', trendClassName)}>{trendLabel}</span>
             </p>
           </div>
 
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-1.5 p-2.5')}>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Fluxo do mês</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Fluxo do mÃªs</p>
             <p className="text-xs text-[var(--text-secondary)]">
               Entradas: <span className="font-semibold text-[var(--success)]">{forecast ? formatCurrency(forecast.monthPlannedIncome) : '--'}</span>
             </p>
             <p className="text-xs text-[var(--text-secondary)]">
-              Saídas: <span className="font-semibold text-[var(--danger)]">{forecast ? formatCurrency(forecast.monthPlannedExpense) : '--'}</span>
+              SaÃ­das: <span className="font-semibold text-[var(--danger)]">{forecast ? formatCurrency(forecast.monthPlannedExpense) : '--'}</span>
             </p>
           </div>
         </>
@@ -194,8 +194,8 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[286px] space-y-3.5 !p-4 sm:!p-5')}>
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Evolução do saldo (30 dias)</p>
-        <p className="text-sm text-[var(--text-secondary)]">Leitura diária do fechamento projetado com referência de hoje.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">EvoluÃ§Ã£o do saldo (30 dias)</p>
+        <p className="text-sm text-[var(--text-secondary)]">Leitura diÃ¡ria do fechamento projetado com referÃªncia de hoje.</p>
       </div>
 
       {loading ? (
@@ -253,7 +253,7 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
         </div>
       ) : (
         <p className="text-sm text-[var(--text-secondary)]">
-          Ainda não há dados suficientes para projeção. Adicione movimentações para visualizar previsões.
+          Ainda nÃ£o hÃ¡ dados suficientes para projeÃ§Ã£o. Adicione movimentaÃ§Ãµes para visualizar previsÃµes.
         </p>
       )}
     </section>

@@ -102,8 +102,8 @@ export function DashboardRightRail({
           </div>
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-2.5 p-3')}>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">Você ainda não criou metas</p>
-            <p className="text-xs text-[var(--text-secondary)]">Defina um objetivo para acompanhar sua evolução financeira.</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">VocÃª ainda nÃ£o criou metas</p>
+            <p className="text-xs text-[var(--text-secondary)]">Defina um objetivo para acompanhar sua evoluÃ§Ã£o financeira.</p>
             <button type="button" onClick={onOpenCreateGoal} className="text-xs font-semibold text-[var(--goal)] hover:text-[var(--text-primary)]">
               Criar meta
             </button>
@@ -149,7 +149,7 @@ export function DashboardRightRail({
         ) : (
           <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'space-y-2.5 p-3')}>
             <p className="text-sm font-semibold text-[var(--text-primary)]">Adicione uma conta ou investimento</p>
-            <p className="text-xs text-[var(--text-secondary)]">Configure sua carteira para acompanhar saldos e patrimônio.</p>
+            <p className="text-xs text-[var(--text-secondary)]">Configure sua carteira para acompanhar saldos e patrimÃ´nio.</p>
             <button type="button" onClick={onOpenCreateWallet} className="text-xs font-semibold text-[var(--info)] hover:text-[var(--text-primary)]">
               Adicionar conta
             </button>

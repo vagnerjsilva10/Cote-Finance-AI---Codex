@@ -30,7 +30,7 @@ export function DashboardRecentTransactions({ transactions, loading, onViewAll, 
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Transações Recentes</h3>
+        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">TransaÃ§Ãµes Recentes</h3>
         <button type="button" onClick={onViewAll} className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)]">
           Ver todas
         </button>
@@ -41,7 +41,7 @@ export function DashboardRecentTransactions({ transactions, loading, onViewAll, 
           <table className="w-full min-w-[680px] text-left">
             <thead>
               <tr className="border-b border-[var(--border-default)] bg-[var(--bg-tertiary)]">
-                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Descrição</th>
+                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">DescriÃ§Ã£o</th>
                 <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Categoria</th>
                 <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Data</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Valor</th>
@@ -68,7 +68,7 @@ export function DashboardRecentTransactions({ transactions, loading, onViewAll, 
               ) : visibleTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center text-sm text-[var(--text-secondary)]">
-                    Comece registrando sua primeira transação para acompanhar sua evolução.
+                    Comece registrando sua primeira transaÃ§Ã£o para acompanhar sua evoluÃ§Ã£o.
                   </td>
                 </tr>
               ) : (

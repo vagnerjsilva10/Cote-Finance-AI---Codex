@@ -20,7 +20,7 @@ type DashboardEventsProps = {
 
 function normalizeEventTypeLabel(type: string) {
   const normalized = String(type || '').trim();
-  if (!normalized) return 'Movimentação';
+  if (!normalized) return 'MovimentaÃ§Ã£o';
   return normalized.replace(/_/g, ' ').toLowerCase();
 }
 
@@ -28,8 +28,8 @@ export function DashboardEvents({ upcomingEvents, loading }: DashboardEventsProp
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[140px] space-y-3 !p-4 sm:!p-5')}>
       <div className="space-y-0.5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">Próximas movimentações</p>
-        <p className="text-sm text-[var(--text-secondary)]">Entradas e saídas previstas para antecipar decisões no curto prazo.</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">PrÃ³ximas movimentaÃ§Ãµes</p>
+        <p className="text-sm text-[var(--text-secondary)]">Entradas e saÃ­das previstas para antecipar decisÃµes no curto prazo.</p>
       </div>
 
       <div className="space-y-2.5">
@@ -53,7 +53,7 @@ export function DashboardEvents({ upcomingEvents, loading }: DashboardEventsProp
                 </p>
                 <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{event.title}</p>
                 <p className="text-[11px] text-[var(--text-secondary)]">
-                  {formatDateShort(event.date)} • {mapUpcomingStatusLabel(event.status)}
+                  {formatDateShort(event.date)} Â• {mapUpcomingStatusLabel(event.status)}
                 </p>
               </div>
 
@@ -80,8 +80,8 @@ export function DashboardEvents({ upcomingEvents, loading }: DashboardEventsProp
               <CalendarClock size={15} />
             </span>
             <div className="space-y-0.5">
-              <p className="text-sm font-semibold text-[var(--text-primary)]">Nenhuma movimentação futura</p>
-              <p className="text-[11px] text-[var(--text-secondary)]">Adicione movimentações futuras para ver entradas e saídas previstas.</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Nenhuma movimentaÃ§Ã£o futura</p>
+              <p className="text-[11px] text-[var(--text-secondary)]">Adicione movimentaÃ§Ãµes futuras para ver entradas e saÃ­das previstas.</p>
             </div>
           </div>
         )}
