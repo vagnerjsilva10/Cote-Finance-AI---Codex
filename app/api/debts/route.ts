@@ -170,7 +170,7 @@ export async function POST(req: Request) {
         debtId: debt.id,
       },
     });
-    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId, forceBlocking: true });
 
     return NextResponse.json(debt, { status: 201 });
   } catch (error: any) {
@@ -258,7 +258,7 @@ export async function PATCH(req: Request) {
         debtId: debt.id,
       },
     });
-    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId, forceBlocking: true });
 
     return NextResponse.json(debt);
   } catch (error: any) {
@@ -309,7 +309,7 @@ export async function DELETE(req: Request) {
         debtId: existing.id,
       },
     });
-    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId, forceBlocking: true });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -33,11 +33,22 @@ function formatDeltaPercent(current: number, previous: number) {
 }
 
 function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }: CardProps) {
+  const accentClass =
+    tone === 'positive'
+      ? 'border-l-[color:rgba(34,197,94,0.55)]'
+      : tone === 'negative'
+        ? 'border-l-[color:rgba(248,113,113,0.55)]'
+        : 'border-l-[color:rgba(76,141,255,0.6)]';
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[118px] w-full space-y-2 !p-4 text-left hover:-translate-y-[1px]')}
+      className={cn(
+        DASHBOARD_CARD_SHELL_CLASSNAME,
+        'min-h-[118px] w-full space-y-2 border-l-2 !p-4 text-left hover:-translate-y-[1px]',
+        accentClass
+      )}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold text-[var(--text-primary)]">{label}</p>
@@ -46,7 +57,16 @@ function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }
             {trend}
           </p>
         ) : (
-          <span className="inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.5)] text-[var(--text-secondary)]">
+          <span
+            className={cn(
+              'inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-[rgba(8,15,27,0.5)]',
+              tone === 'positive'
+                ? 'text-[var(--positive)]'
+                : tone === 'negative'
+                  ? 'text-[var(--danger)]'
+                  : 'text-[var(--primary)]'
+            )}
+          >
             <Wallet size={14} />
           </span>
         )}

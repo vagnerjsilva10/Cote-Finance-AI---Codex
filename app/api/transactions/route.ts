@@ -992,7 +992,7 @@ export async function POST(req: Request) {
       categoryName: normalizedCategoryName,
       description,
     });
-    void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId, forceBlocking: true });
 
     logTransactionRequest('info', 'create.completed', {
       workspaceId: context.workspaceId,
@@ -1209,7 +1209,7 @@ export async function PATCH(req: Request) {
         description: effectiveDescription,
       });
     }
-    void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId, forceBlocking: true });
 
     logTransactionRequest('info', 'update.completed', {
       workspaceId: context.workspaceId,
@@ -1322,7 +1322,7 @@ export async function DELETE(req: Request) {
         transactionId: existingTransaction.id,
       },
     });
-    void triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId });
+    await triggerWorkspaceFinancialSync({ workspaceId: context.workspaceId, forceBlocking: true });
 
     logTransactionRequest('info', 'delete.completed', {
       workspaceId: context.workspaceId,
