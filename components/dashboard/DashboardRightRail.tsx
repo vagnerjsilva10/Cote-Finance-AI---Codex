@@ -63,9 +63,16 @@ export function DashboardRightRail({
 
   return (
     <div className="space-y-4">
-      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 border-l-2 border-l-[color:rgba(168,85,247,0.5)] !p-4 sm:!p-5')}>
+      <article
+        className={cn(
+          DASHBOARD_CARD_SHELL_CLASSNAME,
+          'space-y-3 border-l-4 border-l-[color:rgba(168,85,247,0.72)] bg-[linear-gradient(120deg,rgba(168,85,247,0.12),rgba(12,18,30,0.08)_24%)] !p-4 sm:!p-5'
+        )}
+      >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Metas</h3>
+          <h3 className="inline-flex items-center gap-2 text-base font-semibold text-[var(--text-primary)]">
+            <span className="h-2 w-2 rounded-full bg-[#a855f7]" /> Metas
+          </h3>
           <button type="button" onClick={onOpenGoals} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <ChevronRight size={16} />
           </button>
@@ -111,9 +118,16 @@ export function DashboardRightRail({
         )}
       </article>
 
-      <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 border-l-2 border-l-[color:rgba(34,211,238,0.5)] !p-4 sm:!p-5')}>
+      <article
+        className={cn(
+          DASHBOARD_CARD_SHELL_CLASSNAME,
+          'space-y-3 border-l-4 border-l-[color:rgba(34,211,238,0.72)] bg-[linear-gradient(120deg,rgba(34,211,238,0.12),rgba(12,18,30,0.08)_24%)] !p-4 sm:!p-5'
+        )}
+      >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Carteira</h3>
+          <h3 className="inline-flex items-center gap-2 text-base font-semibold text-[var(--text-primary)]">
+            <span className="h-2 w-2 rounded-full bg-[#22d3ee]" /> Carteira
+          </h3>
           <button type="button" onClick={onOpenPortfolio} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <ChevronRight size={16} />
           </button>

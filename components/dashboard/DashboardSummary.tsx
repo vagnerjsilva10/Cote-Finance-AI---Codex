@@ -35,10 +35,10 @@ function formatDeltaPercent(current: number, previous: number) {
 function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }: CardProps) {
   const accentClass =
     tone === 'positive'
-      ? 'border-l-[color:rgba(34,197,94,0.55)]'
+      ? 'border-l-[color:rgba(34,197,94,0.75)] bg-[linear-gradient(120deg,rgba(34,197,94,0.12),rgba(12,18,30,0.08)_28%)]'
       : tone === 'negative'
-        ? 'border-l-[color:rgba(248,113,113,0.55)]'
-        : 'border-l-[color:rgba(76,141,255,0.6)]';
+        ? 'border-l-[color:rgba(248,113,113,0.78)] bg-[linear-gradient(120deg,rgba(248,113,113,0.12),rgba(12,18,30,0.08)_28%)]'
+        : 'border-l-[color:rgba(76,141,255,0.85)] bg-[linear-gradient(120deg,rgba(76,141,255,0.14),rgba(12,18,30,0.08)_28%)]';
 
   return (
     <button
@@ -46,12 +46,23 @@ function SummaryCard({ label, value, trend, tone = 'neutral', loading, onClick }
       onClick={onClick}
       className={cn(
         DASHBOARD_CARD_SHELL_CLASSNAME,
-        'min-h-[118px] w-full space-y-2 border-l-2 !p-4 text-left hover:-translate-y-[1px]',
+        'min-h-[118px] w-full space-y-2 border-l-4 !p-4 text-left hover:-translate-y-[1px]',
         accentClass
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-semibold text-[var(--text-primary)]">{label}</p>
+        <p
+          className={cn(
+            'inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold',
+            tone === 'positive'
+              ? 'bg-[rgba(34,197,94,0.16)] text-[var(--positive)]'
+              : tone === 'negative'
+                ? 'bg-[rgba(248,113,113,0.16)] text-[var(--danger)]'
+                : 'bg-[rgba(76,141,255,0.18)] text-[var(--primary)]'
+          )}
+        >
+          {label}
+        </p>
         {trend ? (
           <p className={cn('text-sm font-bold', tone === 'positive' ? 'text-[var(--positive)]' : tone === 'negative' ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]')}>
             {trend}
