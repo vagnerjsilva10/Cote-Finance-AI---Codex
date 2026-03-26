@@ -3557,8 +3557,8 @@ const DebtsView = ({
   const debtGroupLabels: Record<DebtGroupKey, string> = {
     overdue: 'Atrasadas',
     today: 'Vencem hoje',
-    next7: 'Prximos 7 dias',
-    thisMonth: 'Este ms',
+    next7: 'Proximos 7 dias',
+    thisMonth: 'Este mes',
     future: 'Futuras',
     settled: 'Quitadas',
   };
@@ -3620,8 +3620,8 @@ const DebtsView = ({
   const recurringFilterOptions: Array<{ key: RecurringFilterKey; label: string; count: number }> = [
     { key: 'all', label: 'Todas', count: sortedRecurringDebts.length },
     { key: 'active', label: 'Ativas', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa').length },
-    { key: 'next7', label: 'Prximos 7 dias', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa' && getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now) <= 7).length },
-    { key: 'next30', label: 'Prximos 30 dias', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa' && getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now) <= 30).length },
+    { key: 'next7', label: 'Proximos 7 dias', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa' && getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now) <= 7).length },
+    { key: 'next30', label: 'Proximos 30 dias', count: sortedRecurringDebts.filter((debt) => debt.status === 'Ativa' && getAgendaDayDiff(parseRecurringDueDate(debt.nextDueDate), now) <= 30).length },
     { key: 'paused', label: 'Pausadas', count: sortedRecurringDebts.filter((debt) => debt.status === 'Pausada').length },
   ];
   const filteredRecurringDebts = sortedRecurringDebts.filter((debt) => {
@@ -3638,7 +3638,7 @@ const DebtsView = ({
           {
             label: 'Total em aberto',
             value: formatCurrency(totalRemaining),
-            helper: `${openDebts.length} dvida(s) ativa(s)`,
+            helper: `${openDebts.length} divida(s) ativa(s)`,
             valueTone: 'text-[var(--text-primary)]',
             dotTone: 'bg-[var(--accent)]',
           },
@@ -3650,14 +3650,14 @@ const DebtsView = ({
             dotTone: 'bg-[var(--danger)]',
           },
           {
-            label: 'Prximo vencimento',
+            label: 'Proximo vencimento',
             value: nextDebtDue ? formatDebtDueDateLabel(nextDebtDue) : 'Sem vencimento',
-            helper: nextDebtDue ? `${nextDebtDue.creditor} " ${formatCurrency(nextDebtDue.remainingAmount)}` : 'Nenhuma dvida em aberto',
+            helper: nextDebtDue ? `${nextDebtDue.creditor} - ${formatCurrency(nextDebtDue.remainingAmount)}` : 'Nenhuma divida em aberto',
             valueTone: 'text-[var(--warning)]',
             dotTone: 'bg-[var(--warning)]',
           },
           {
-            label: 'Quitado no ms',
+            label: 'Quitado no mes',
             value: formatCurrency(paidThisMonth),
             helper: 'Pagamentos confirmados no ledger',
             valueTone: 'text-[var(--success)]',
@@ -3673,14 +3673,14 @@ const DebtsView = ({
             dotTone: 'bg-[var(--accent)]',
           },
           {
-            label: 'Prxima cobrana',
-            value: nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem cobrana',
+            label: 'Proxima cobranca',
+            value: nextRecurringCharge ? new Date(nextRecurringCharge.nextDueDate).toLocaleDateString('pt-BR') : 'Sem cobranca',
             helper: nextRecurringCharge ? `${nextRecurringCharge.creditor} • ${formatCurrency(nextRecurringCharge.amount)}` : 'Nenhuma recorrência ativa',
             valueTone: 'text-[var(--warning)]',
             dotTone: 'bg-[var(--warning)]',
           },
           {
-            label: 'Recorrncias ativas',
+            label: 'Recorrencias ativas',
             value: String(activeRecurringDebts.length),
             helper: `${sortedRecurringDebts.filter((debt) => debt.status === 'Pausada').length} pausada(s)`,
             valueTone: 'text-[var(--info)]',
@@ -3736,10 +3736,10 @@ const DebtsView = ({
             <div>
               <p className="text-xs font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]/80">Centro de obrigações</p>
               <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">
-                {activeDebtTab === 'single' ? 'Controle de dvidas' : 'Controle de contas fixas'}
+                {activeDebtTab === 'single' ? 'Controle de dividas' : 'Controle de contas fixas'}
               </h3>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Leitura rpida do que est vencido, do que vence primeiro e do impacto real no seu oramento.
+                Leitura rapida do que esta vencido, do que vence primeiro e do impacto real no seu orcamento.
               </p>
             </div>
           </div>
@@ -3811,17 +3811,17 @@ const DebtsView = ({
         <section className="space-y-5 rounded-3xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dvidas</p>
-              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Obrigaes com comeo, meio e fim</h4>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--text-muted)]">Dividas</p>
+              <h4 className="mt-2 text-2xl font-black text-[var(--text-primary)]">Obrigacoes com comeco, meio e fim</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-                Ordenadas por prioridade automtica para voc agir primeiro no que mais ameaa seu oramento.
+                Ordenadas por prioridade automatica para voce agir primeiro no que mais ameaca seu orcamento.
               </p>
             </div>
             <div className="inline-flex rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-1">
               {([
                 { key: 'timeline', label: 'Timeline' },
                 { key: 'list', label: 'Lista' },
-                { key: 'calendar', label: 'Calendrio' },
+                { key: 'calendar', label: 'Calendario' },
               ] as Array<{ key: DebtViewMode; label: string }>).map((view) => (
                 <button
                   key={view.key}
@@ -3877,14 +3877,14 @@ const DebtsView = ({
             </div>
           ) : debtViewMode === 'calendar' ? (
             <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-8 text-center">
-              <p className="text-lg font-black text-[var(--text-primary)]">Viso calendrio em evoluo</p>
+              <p className="text-lg font-black text-[var(--text-primary)]">Visao calendario em evolucao</p>
               <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 Enquanto isso, use Lista ou Timeline para priorizar pagamentos por vencimento.
               </p>
             </div>
           ) : visibleDebtGroups.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] p-8 text-center">
-              <p className="text-lg font-black text-[var(--text-primary)]">Nenhuma dvida neste filtro</p>
+              <p className="text-lg font-black text-[var(--text-primary)]">Nenhuma divida neste filtro</p>
               <p className="mt-2 text-sm text-[var(--text-secondary)]">Ajuste o agrupamento para continuar a leitura.</p>
             </div>
           ) : (
@@ -3923,7 +3923,7 @@ const DebtsView = ({
                               </span>
                             </div>
                             <p className="text-sm text-[var(--text-secondary)]">{debt.category}</p>
-                            <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Prximo vencimento: {formatDebtDueDateLabel(debt)}</p>
+                            <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">Proximo vencimento: {formatDebtDueDateLabel(debt)}</p>
                             <div className="grid gap-3 sm:grid-cols-3">
                               <div>
                                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Valor total</p>
@@ -3949,7 +3949,7 @@ const DebtsView = ({
                                 </div>
                               </div>
                             ) : (
-                              <p className="text-xs text-[var(--text-muted)]">Aguardando definio do valor total.</p>
+                              <p className="text-xs text-[var(--text-muted)]">Aguardando definicao do valor total.</p>
                             )}
                             <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/70 p-3">
                               <p className="text-xs font-semibold text-[var(--text-primary)]">{getDebtMiniSummary(debt)}</p>
@@ -3974,7 +3974,7 @@ const DebtsView = ({
                                 </button>
                               )}
                               <button onClick={() => setDebtDetailId(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]">
-                                Ver histrico
+                                Ver historico
                               </button>
                               <button onClick={() => onDeleteDebt(debt.id)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-xs font-bold text-[var(--danger)] transition-colors hover:bg-[var(--bg-surface)]">
                                 <Trash2 size={12} /> Excluir
@@ -4111,7 +4111,7 @@ const DebtsView = ({
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(debt.amount)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Prxima cobrana</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Proxima cobranca</p>
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{nextDue.toLocaleDateString('pt-BR')}</p>
                         </div>
                         <div>
@@ -4124,7 +4124,7 @@ const DebtsView = ({
                         </div>
                       </div>
                       <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]/70 p-3 text-xs text-[var(--text-secondary)]">
-                        <p>ltima gerao: {lastGeneratedAt ? lastGeneratedAt.toLocaleDateString('pt-BR') : `${previousCycle.toLocaleDateString('pt-BR')} (estimada)`}</p>
+                        <p>Ultima geracao: {lastGeneratedAt ? lastGeneratedAt.toLocaleDateString('pt-BR') : `${previousCycle.toLocaleDateString('pt-BR')} (estimada)`}</p>
                         <p className="mt-1">Próxima geração prevista: {nextCycle.toLocaleDateString('pt-BR')}</p>
                       </div>
                       {debt.notes ? <p className="text-sm leading-7 text-[var(--text-secondary)]">{debt.notes}</p> : null}
@@ -14700,7 +14700,6 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
 
 
 

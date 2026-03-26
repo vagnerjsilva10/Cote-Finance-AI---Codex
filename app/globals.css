@@ -135,6 +135,14 @@
   --chart-goal: var(--goal);
   --chart-info: var(--info);
   --chart-projection: var(--warning);
+
+  --dashboard-card-shell-border: rgba(148, 163, 184, 0.16);
+  --dashboard-card-shell-border-hover: rgba(148, 163, 184, 0.24);
+  --dashboard-card-shell-bg: linear-gradient(165deg, rgba(19, 33, 54, 0.88) 0%, rgba(10, 20, 36, 0.92) 100%);
+  --dashboard-card-shell-shadow: 0 12px 30px rgba(3, 8, 18, 0.36);
+  --dashboard-card-panel-border: rgba(148, 163, 184, 0.14);
+  --dashboard-card-panel-bg: rgba(7, 14, 25, 0.52);
+  --dashboard-skeleton-bg: rgba(255, 255, 255, 0.08);
 }
 
 @theme {
