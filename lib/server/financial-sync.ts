@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { syncWorkspaceFinancialCalendarSourcesSafe } from '@/lib/server/financial-calendar';
+import { syncWorkspaceDebtLedgerSourcesSafe } from '@/lib/server/debt-ledger';
 
 type FinancialSyncMode = 'off' | 'async' | 'blocking';
 
@@ -53,6 +54,7 @@ async function runWorkspaceSync(workspaceId: string) {
 
   state.running = true;
   try {
+    await syncWorkspaceDebtLedgerSourcesSafe({ workspaceId });
     await syncWorkspaceFinancialCalendarSourcesSafe(workspaceId);
   } finally {
     state.running = false;
@@ -115,4 +117,3 @@ export async function triggerWorkspaceFinancialSync(params: {
     scheduled: true,
   };
 }
-

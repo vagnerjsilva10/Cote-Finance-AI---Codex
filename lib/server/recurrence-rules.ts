@@ -302,7 +302,12 @@ export async function upsertRecurrenceRule(input: UpsertRecurrenceRuleInput) {
   });
 
   if (!existing) {
-    throw new Error('Regra de recorrência não encontrada.');
+    return prisma.recurrenceRule.create({
+      data: {
+        id: input.ruleId,
+        ...payload,
+      },
+    });
   }
 
   return prisma.recurrenceRule.update({

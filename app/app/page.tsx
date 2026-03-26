@@ -11413,7 +11413,35 @@ React.useEffect(() => {
       throw new Error(typeof responseData?.error === 'string' ? responseData.error : 'Falha ao registrar pagamento.');
     }
 
+    const paymentTransactionResponse = await fetch('/api/transactions', {
+      method: 'POST',
+      headers: await getAuthHeaders(true),
+      body: JSON.stringify({
+        description: `Pagamento de dívida: ${targetDebt.creditor}`,
+        amount,
+        date: paymentDate,
+        dueDate: paymentDate,
+        wallet: wallets[0]?.name || DEFAULT_TRANSACTION_WALLET,
+        category: 'Pagamento de dívida',
+        type: 'EXPENSE',
+        flowType: 'Despesa',
+        paymentMethod: 'Outro',
+        status: 'CONFIRMED',
+        originType: 'DEBT',
+        originId: `debt-payment:${id}:${Date.now()}`,
+      }),
+    });
+    const paymentTransactionPayload = await paymentTransactionResponse.json().catch(() => ({}));
+    if (!paymentTransactionResponse.ok) {
+      throw new Error(
+        typeof paymentTransactionPayload?.error === 'string'
+          ? paymentTransactionPayload.error
+          : 'Pagamento lançado, mas falhou ao registrar transação no ledger.'
+      );
+    }
+
     setDebtFeedbackMessage('Pagamento registrado com sucesso.');
+    refreshTransactionsAfterMutation();
     await refreshDebtsResource();
     triggerDeferredProjectionRefresh();
   };

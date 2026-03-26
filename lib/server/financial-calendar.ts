@@ -12,13 +12,12 @@ import {
   mapConventionalDebtStatusToLegacyDebtStatus,
   mapTransactionStatusToCalendarStatus,
   normalizeFinancialEventStatus,
-  normalizeRecurringDebtStatus as normalizeRecurringDebtStatusDomain,
   normalizeTransactionType,
   normalizeTransactionStatus,
   parseFinancialSourceRef,
   type TransactionType,
 } from '@/lib/domain/financial-domain';
-import { computeConventionalDebtNextDueDate, computeNextRecurringDebtDueDate } from '@/lib/debts';
+import { computeNextRecurringDebtDueDate } from '@/lib/debts';
 import { buildFinancialCalendarAlerts } from '@/lib/financial-calendar/alerts';
 import { expandRecurringOccurrences } from '@/lib/financial-calendar/recurrence';
 import type {
@@ -40,7 +39,6 @@ import {
   startOfDay,
   toDateKey,
 } from '@/lib/financial-calendar/utils';
-import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
 import { syncWorkspaceRecurringRulesProjectionSafe } from '@/lib/server/recurrence-rules';
 
 const READ_MODEL_PAST_DAYS = 15;
@@ -454,7 +452,7 @@ async function upsertOccurrenceOverride(params: {
 }
 
 async function buildSyncDrafts(workspaceId: string) {
-  const [goals, conventionalDebts, recurringDebts, scheduledTransactions] = await Promise.all([
+  const [goals, scheduledTransactions] = await Promise.all([
     prisma.goal.findMany({
       where: { workspace_id: workspaceId },
       select: {
@@ -465,8 +463,6 @@ async function buildSyncDrafts(workspaceId: string) {
         deadline: true,
       },
     }),
-    findWorkspaceConventionalDebts(workspaceId),
-    findWorkspaceRecurringDebts(workspaceId),
     prisma.transaction.findMany({
       where: {
         workspace_id: workspaceId,
@@ -518,56 +514,6 @@ async function buildSyncDrafts(workspaceId: string) {
       reminderEnabled: true,
       reminderDaysBefore: 7,
       colorToken: 'calendar-goal',
-    });
-  }
-
-  for (const debt of conventionalDebts) {
-    const normalizedStatus = String(debt.status || '').trim().toUpperCase();
-    const isInstallment = normalizedStatus === 'INSTALLMENT' || normalizedStatus === 'PARCELADA';
-    const amount = Number(debt.remaining_amount || debt.original_amount || 0);
-
-    drafts.push({
-      sourceType: isInstallment ? 'INSTALLMENT' : 'EXPENSE',
-      sourceId: buildSourceId('debt', debt.id),
-      title: debt.creditor,
-      description: isInstallment
-        ? 'Parcela sincronizada automaticamente a partir da despesa de origem.'
-        : 'Despesa convencional sincronizada automaticamente com a origem.',
-      type: isInstallment ? 'INSTALLMENT' : 'FIXED_BILL',
-      amount,
-      category: debt.category || null,
-      date: computeConventionalDebtNextDueDate({ dueDay: debt.due_day, dueDate: debt.due_date }),
-      endDate: null,
-      recurrence: 'NONE',
-      recurrenceInterval: 1,
-      isRecurring: false,
-      status: mapConventionalDebtStatusToFinancialStatus(debt.status),
-      reminderEnabled: true,
-      reminderDaysBefore: 3,
-      colorToken: isInstallment ? 'calendar-installment' : 'calendar-expense',
-    });
-  }
-
-  for (const debt of recurringDebts) {
-    const recurrence = mapRecurringDebtFrequencyToRecurrence(debt.frequency, debt.interval);
-    const isSubscription = isSubscriptionLabel(debt.category) || isSubscriptionLabel(debt.creditor);
-    drafts.push({
-      sourceType: isSubscription ? 'SUBSCRIPTION' : 'EXPENSE',
-      sourceId: buildSourceId(debt.source === 'legacy_debt' ? 'legacy-recurring-debt' : 'recurring-debt', debt.id),
-      title: debt.creditor,
-      description: debt.notes || 'Despesa recorrente sincronizada com a origem.',
-      type: isSubscription ? 'SUBSCRIPTION' : 'FIXED_BILL',
-      amount: Number(debt.amount || 0),
-      category: debt.category,
-      date: debt.source === 'recurring_debt' ? debt.start_date : debt.next_due_date,
-      endDate: debt.end_date,
-      recurrence: recurrence.recurrence,
-      recurrenceInterval: recurrence.recurrenceInterval,
-      isRecurring: true,
-      status: normalizeRecurringDebtStatusDomain(debt.status) === 'ACTIVE' ? 'PENDING' : 'CANCELED',
-      reminderEnabled: true,
-      reminderDaysBefore: 3,
-      colorToken: isSubscription ? 'calendar-subscription' : 'calendar-bill',
     });
   }
 
