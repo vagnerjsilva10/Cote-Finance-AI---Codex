@@ -136,13 +136,22 @@
   --chart-info: var(--info);
   --chart-projection: var(--warning);
 
-  --dashboard-card-shell-border: rgba(148, 163, 184, 0.16);
-  --dashboard-card-shell-border-hover: rgba(148, 163, 184, 0.24);
-  --dashboard-card-shell-bg: linear-gradient(165deg, rgba(19, 33, 54, 0.88) 0%, rgba(10, 20, 36, 0.92) 100%);
-  --dashboard-card-shell-shadow: 0 12px 30px rgba(3, 8, 18, 0.36);
-  --dashboard-card-panel-border: rgba(148, 163, 184, 0.14);
-  --dashboard-card-panel-bg: rgba(7, 14, 25, 0.52);
-  --dashboard-skeleton-bg: rgba(255, 255, 255, 0.08);
+  --surface-card-border: rgba(148, 163, 184, 0.16);
+  --surface-card-border-hover: rgba(148, 163, 184, 0.24);
+  --surface-card-bg: linear-gradient(165deg, rgba(19, 33, 54, 0.88) 0%, rgba(10, 20, 36, 0.92) 100%);
+  --surface-card-bg-hover: linear-gradient(165deg, rgba(22, 37, 61, 0.9) 0%, rgba(12, 23, 41, 0.94) 100%);
+  --surface-card-shadow: 0 12px 30px rgba(3, 8, 18, 0.36);
+  --surface-card-panel-border: rgba(148, 163, 184, 0.14);
+  --surface-card-panel-bg: rgba(7, 14, 25, 0.52);
+  --surface-card-skeleton-bg: rgba(255, 255, 255, 0.08);
+
+  --dashboard-card-shell-border: var(--surface-card-border);
+  --dashboard-card-shell-border-hover: var(--surface-card-border-hover);
+  --dashboard-card-shell-bg: var(--surface-card-bg);
+  --dashboard-card-shell-shadow: var(--surface-card-shadow);
+  --dashboard-card-panel-border: var(--surface-card-panel-border);
+  --dashboard-card-panel-bg: var(--surface-card-panel-bg);
+  --dashboard-skeleton-bg: var(--surface-card-skeleton-bg);
 }
 
 @theme {
@@ -614,10 +623,10 @@ body {
   .public-light-panel {
     position: relative;
     overflow: hidden;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-default);
+    background: var(--surface-card-bg);
+    border: 1px solid var(--surface-card-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--surface-card-shadow);
     transition:
       background var(--transition-normal),
       border-color var(--transition-normal),
@@ -630,15 +639,15 @@ body {
   .app-surface-card:hover,
   .marketing-card:hover,
   .public-light-card:hover {
-    border-color: var(--border-strong);
-    background: var(--bg-surface-elevated);
-    box-shadow: var(--shadow-soft);
+    border-color: var(--surface-card-border-hover);
+    background: var(--surface-card-bg-hover);
+    box-shadow: var(--surface-card-shadow);
     transform: translateY(-2px);
   }
 
   .app-surface-subtle {
-    background: color-mix(in srgb, var(--bg-surface-elevated) 72%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
+    background: var(--surface-card-panel-bg);
+    border: 1px solid var(--surface-card-panel-border);
     border-radius: var(--radius-md);
     transition:
       border-color var(--transition-fast),
@@ -647,8 +656,8 @@ body {
   }
 
   .app-surface-subtle:hover {
-    border-color: var(--border-strong);
-    background: color-mix(in srgb, var(--bg-hover) 65%, transparent);
+    border-color: var(--surface-card-border-hover);
+    background: color-mix(in srgb, var(--surface-card-panel-bg) 82%, var(--bg-hover));
     transform: translateY(-1px);
   }
 
@@ -1137,9 +1146,9 @@ body {
 
   .stat-card-premium {
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-default);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.001) 100%), var(--bg-surface);
-    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--surface-card-border);
+    background: var(--surface-card-bg);
+    box-shadow: var(--surface-card-shadow);
   }
 
   .sidebar-premium,
@@ -1190,10 +1199,10 @@ body {
   .public-light-panel {
     position: relative;
     overflow: hidden;
-    background: var(--bg-card);
-    border: 1px solid var(--border-default);
+    background: var(--surface-card-bg);
+    border: 1px solid var(--surface-card-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--surface-card-shadow);
     transition:
       background var(--transition-normal),
       border-color var(--transition-normal),
@@ -1212,24 +1221,24 @@ body {
   .theme-report-card:hover,
   .marketing-card:hover,
   .public-light-card:hover {
-    border-color: var(--border-soft);
-    background: color-mix(in srgb, var(--bg-card) 86%, var(--bg-tertiary));
-    box-shadow: var(--shadow-card);
+    border-color: var(--surface-card-border-hover);
+    background: var(--surface-card-bg-hover);
+    box-shadow: var(--surface-card-shadow);
     transform: translateY(-1px);
   }
 
   .app-table-shell,
   .table-premium {
-    background: var(--bg-card);
-    border: 1px solid var(--border-default);
+    background: var(--surface-card-bg);
+    border: 1px solid var(--surface-card-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--surface-card-shadow);
     overflow: hidden;
   }
 
   .table-premium thead,
   .app-table-shell thead {
-    background: color-mix(in srgb, var(--bg-tertiary) 80%, var(--bg-card));
+    background: color-mix(in srgb, var(--surface-card-panel-bg) 86%, var(--bg-deep));
   }
 
   .table-premium tbody tr,
@@ -1519,9 +1528,9 @@ body {
 
   .stat-card-premium {
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-default);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0%, rgba(255, 255, 255, 0.003) 100%), var(--bg-card);
-    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--surface-card-border);
+    background: var(--surface-card-bg);
+    box-shadow: var(--surface-card-shadow);
   }
 
   .ds-stat-icon {
