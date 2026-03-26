@@ -1210,62 +1210,6 @@ body {
     transform: translateY(-1px);
   }
 
-  .card-accent,
-  .card-success,
-  .card-danger,
-  .card-warning,
-  .card-info,
-  .card-goal,
-  .card-neutral {
-    position: relative;
-  }
-
-  .card-accent {
-    --card-accent-color: var(--accent);
-  }
-
-  .card-success {
-    --card-accent-color: var(--success);
-  }
-
-  .card-danger {
-    --card-accent-color: var(--danger);
-  }
-
-  .card-warning {
-    --card-accent-color: var(--warning);
-  }
-
-  .card-info {
-    --card-accent-color: var(--info);
-  }
-
-  .card-goal {
-    --card-accent-color: var(--goal);
-  }
-
-  .card-neutral {
-    --card-accent-color: var(--neutral);
-  }
-
-  .card-accent::before,
-  .card-success::before,
-  .card-danger::before,
-  .card-warning::before,
-  .card-info::before,
-  .card-goal::before,
-  .card-neutral::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: var(--space-4);
-    bottom: var(--space-4);
-    width: 2px;
-    border-radius: 999px;
-    background: var(--card-accent-color);
-    pointer-events: none;
-  }
-
   .app-table-shell,
   .table-premium {
     background: var(--bg-card);
@@ -1407,17 +1351,18 @@ body {
   .button-danger,
   .app-button-danger,
   .ds-button-danger {
-    border-color: color-mix(in srgb, var(--danger) 44%, var(--border-default));
-    color: var(--danger);
-    background: var(--danger-bg);
+    border-color: color-mix(in srgb, var(--danger) 32%, var(--border-default));
+    color: color-mix(in srgb, var(--danger) 78%, var(--text-primary));
+    background: color-mix(in srgb, var(--danger-bg) 58%, var(--bg-card));
     box-shadow: none;
   }
 
   .button-danger:hover,
   .app-button-danger:hover,
   .ds-button-danger:hover {
-    border-color: color-mix(in srgb, var(--danger) 56%, var(--border-default));
-    background: color-mix(in srgb, var(--danger-bg) 78%, var(--danger-soft));
+    border-color: color-mix(in srgb, var(--danger) 40%, var(--border-default));
+    background: color-mix(in srgb, var(--danger-bg) 64%, var(--bg-tertiary));
+    color: color-mix(in srgb, var(--danger) 84%, var(--text-primary));
     transform: translateY(-1px);
   }
 
@@ -1535,9 +1480,9 @@ body {
   }
 
   .badge-danger {
-    border-color: color-mix(in srgb, var(--danger) 42%, transparent);
-    background: var(--danger-bg);
-    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 34%, transparent);
+    background: color-mix(in srgb, var(--danger-bg) 72%, var(--bg-card));
+    color: color-mix(in srgb, var(--danger) 80%, var(--text-primary));
   }
 
   .badge-warning {
@@ -1596,9 +1541,9 @@ body {
   }
 
   .ds-stat-icon-danger {
-    border-color: color-mix(in srgb, var(--danger) 38%, transparent);
-    background: var(--danger-bg);
-    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+    background: color-mix(in srgb, var(--danger-bg) 62%, var(--bg-card));
+    color: color-mix(in srgb, var(--danger) 78%, var(--text-primary));
   }
 
   .ds-stat-icon-warning {
@@ -1644,8 +1589,8 @@ body {
   }
 
   .ds-alert-danger {
-    border-color: color-mix(in srgb, var(--danger) 46%, transparent);
-    background: var(--danger-bg);
+    border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+    background: color-mix(in srgb, var(--danger-bg) 64%, var(--bg-card));
   }
 
   .ds-alert-success {
