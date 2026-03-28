@@ -30,6 +30,11 @@ type TotalsRow = {
   month_planned_expense: DecimalLike;
 };
 
+type MonthConfirmedTotalsRow = {
+  month_confirmed_income: DecimalLike;
+  month_confirmed_expense: DecimalLike;
+};
+
 type PendingForecastRow = {
   effective_date: Date;
   type: string;
@@ -579,6 +584,29 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
       sourceType: row.source_type ? String(row.source_type) : null,
       category: row.category ?? null,
     }));
+  }
+
+  // Keep monthly confirmed totals consistent with recorded transactions even when the
+  // financial read-model has not been refreshed yet.
+  const monthConfirmedTotals = await safeSection<MonthConfirmedTotalsRow[]>(
+    workspaceId,
+    'month_confirmed_totals',
+    [],
+    () =>
+      prisma.$queryRaw<MonthConfirmedTotalsRow[]>(Prisma.sql`
+        SELECT
+          COALESCE(SUM(CASE WHEN COALESCE("status", 'CONFIRMED') = 'CONFIRMED' AND "type" IN ('INCOME', 'PIX_IN') THEN "amount" ELSE 0 END), 0) AS month_confirmed_income,
+          COALESCE(SUM(CASE WHEN COALESCE("status", 'CONFIRMED') = 'CONFIRMED' AND "type" IN ('EXPENSE', 'PIX_OUT') THEN "amount" ELSE 0 END), 0) AS month_confirmed_expense
+        FROM "Transaction"
+        WHERE "workspace_id" = ${workspaceId}
+          AND "date" >= ${monthStart}
+          AND "date" < ${nextMonthStart}
+      `)
+  );
+  const monthConfirmedTotalRow = monthConfirmedTotals[0];
+  if (monthConfirmedTotalRow) {
+    monthConfirmedIncome = numberFrom(monthConfirmedTotalRow.month_confirmed_income);
+    monthConfirmedExpense = numberFrom(monthConfirmedTotalRow.month_confirmed_expense);
   }
 
   const recentTransactionsRows = await safeSection<RecentTransactionRow[]>(
