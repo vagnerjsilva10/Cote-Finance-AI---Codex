@@ -41,6 +41,12 @@ type PendingForecastRow = {
   amount: DecimalLike;
 };
 
+type HistoricalConfirmedFlowRow = {
+  effective_date: Date;
+  type: string;
+  amount: DecimalLike;
+};
+
 type TopExpenseRow = {
   category_name: string | null;
   total: DecimalLike;
@@ -265,6 +271,60 @@ function buildForecastFromReadModelRows(rows: DailyProjectionRow[]) {
   };
 }
 
+function buildHistoricalForecastFromConfirmedRows(params: {
+  currentBalance: number;
+  historyStart: Date;
+  rows: HistoricalConfirmedFlowRow[];
+}) {
+  const flowByDate = new Map<string, { inflow: number; outflow: number }>();
+
+  for (const row of params.rows) {
+    const normalizedType = normalizeTransactionType(row.type);
+    const amount = numberFrom(row.amount);
+    const key = startOfDay(new Date(row.effective_date)).toISOString().slice(0, 10);
+    const bucket = flowByDate.get(key) ?? { inflow: 0, outflow: 0 };
+
+    if (normalizedType === 'INCOME') {
+      bucket.inflow += amount;
+    } else if (normalizedType === 'EXPENSE') {
+      bucket.outflow += amount;
+    }
+
+    flowByDate.set(key, bucket);
+  }
+
+  let totalNet = 0;
+  for (let dayOffset = 0; dayOffset < PROJECTION_DAYS; dayOffset += 1) {
+    const day = addDays(params.historyStart, dayOffset);
+    const key = day.toISOString().slice(0, 10);
+    const bucket = flowByDate.get(key) ?? { inflow: 0, outflow: 0 };
+    totalNet += bucket.inflow - bucket.outflow;
+  }
+
+  let runningBalance = params.currentBalance - totalNet;
+  const daily: DashboardOverviewForecastPoint[] = [];
+
+  for (let dayOffset = 0; dayOffset < PROJECTION_DAYS; dayOffset += 1) {
+    const day = addDays(params.historyStart, dayOffset);
+    const key = day.toISOString().slice(0, 10);
+    const bucket = flowByDate.get(key) ?? { inflow: 0, outflow: 0 };
+    const openingBalance = runningBalance;
+    const closingBalance = openingBalance + bucket.inflow - bucket.outflow;
+
+    daily.push({
+      date: key,
+      openingBalance,
+      inflow: bucket.inflow,
+      outflow: bucket.outflow,
+      closingBalance,
+    });
+
+    runningBalance = closingBalance;
+  }
+
+  return daily;
+}
+
 function logOverviewSectionWarning(
   workspaceId: string,
   section: string,
@@ -309,6 +369,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
   const now = new Date();
   const todayStart = startOfDay(now);
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  const historyStart = addDays(todayStart, -(PROJECTION_DAYS - 1));
   const next30DaysEnd = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -607,6 +668,41 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
   if (monthConfirmedTotalRow) {
     monthConfirmedIncome = numberFrom(monthConfirmedTotalRow.month_confirmed_income);
     monthConfirmedExpense = numberFrom(monthConfirmedTotalRow.month_confirmed_expense);
+  }
+
+  const historicalConfirmedFlowRows = await safeSection<HistoricalConfirmedFlowRow[]>(
+    workspaceId,
+    'historical_confirmed_flows',
+    [],
+    () =>
+      prisma.$queryRaw<HistoricalConfirmedFlowRow[]>(Prisma.sql`
+        SELECT
+          DATE_TRUNC('day', "date") AS effective_date,
+          "type",
+          COALESCE(SUM("amount"), 0) AS amount
+        FROM "Transaction"
+        WHERE "workspace_id" = ${workspaceId}
+          AND COALESCE("status", 'CONFIRMED') = 'CONFIRMED'
+          AND "type" IN ('INCOME', 'PIX_IN', 'EXPENSE', 'PIX_OUT')
+          AND "date" >= ${historyStart}
+          AND "date" <= ${todayEnd}
+        GROUP BY 1, 2
+        ORDER BY 1 ASC
+      `)
+  );
+
+  const hasProjectedMovement = forecastDaily.some(
+    (point) =>
+      point.inflow > 0 ||
+      point.outflow > 0 ||
+      Math.abs(point.closingBalance - point.openingBalance) > 0.0001
+  );
+  if (!hasProjectedMovement && historicalConfirmedFlowRows.length > 0) {
+    forecastDaily = buildHistoricalForecastFromConfirmedRows({
+      currentBalance,
+      historyStart,
+      rows: historicalConfirmedFlowRows,
+    });
   }
 
   const recentTransactionsRows = await safeSection<RecentTransactionRow[]>(
