@@ -37,7 +37,7 @@ export const mapUpcomingStatusLabel = (status: string) => {
 
 export const getUpcomingFlowLabel = (flow: DashboardOverviewUpcomingEvent['flow']) => {
   if (flow === 'in') return 'Entrada';
-  if (flow === 'out') return 'Saída';
+  if (flow === 'out') return 'Saida';
   return 'Neutro';
 };
 
@@ -57,14 +57,13 @@ export const extractInsightMetric = (text: string): string | null => {
 export const getInsightActionHint = (insight: string) => {
   const normalized = insight.toLowerCase();
   if (normalized.includes('gasto') || normalized.includes('despesa')) {
-    return 'Ação sugerida: acompanhe esta categoria de perto nos próximos dias.';
+    return 'Acao sugerida: acompanhe esta categoria de perto nos proximos dias.';
   }
   if (normalized.includes('receita')) {
-    return 'Ação sugerida: use esse ganho para reforçar reserva ou metas prioritárias.';
+    return 'Acao sugerida: use esse ganho para reforcar reserva ou metas prioritarias.';
   }
   if (normalized.includes('saldo negativo')) {
-    return 'Ação sugerida: antecipe ajustes de caixa antes da data crítica.';
+    return 'Acao sugerida: antecipe ajustes de caixa antes da data critica.';
   }
-  return 'Ação sugerida: mantenha o acompanhamento semanal para validar a tendência.';
+  return 'Acao sugerida: mantenha o acompanhamento semanal para validar a tendencia.';
 };
-

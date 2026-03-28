@@ -102,7 +102,7 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
     <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Visão Geral</h3>
+          <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Visao Geral</h3>
           {!loading && rangeLabel ? (
             <p className="mt-1 text-xs text-[var(--text-secondary)]">{rangeLabel}</p>
           ) : null}
@@ -211,11 +211,10 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
       ) : (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
           <p className="text-sm text-[var(--text-secondary)]">
-            Ainda não há dados suficientes para exibir tendência de saldo.
+            Ainda nao ha dados suficientes para exibir tendencia de saldo.
           </p>
         </div>
       )}
     </article>
   );
 }
-
