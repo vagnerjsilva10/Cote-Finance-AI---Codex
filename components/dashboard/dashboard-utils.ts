@@ -14,7 +14,10 @@ export const formatSignedCurrency = (value: number) => {
 
 export const formatDateShort = (value?: string | null) => {
   if (!value) return '--';
-  const parsed = new Date(value);
+  const dateOnlyMatch = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const parsed = dateOnlyMatch
+    ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
+    : new Date(value);
   if (Number.isNaN(parsed.getTime())) return '--';
   return parsed.toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -34,7 +37,7 @@ export const mapUpcomingStatusLabel = (status: string) => {
 
 export const getUpcomingFlowLabel = (flow: DashboardOverviewUpcomingEvent['flow']) => {
   if (flow === 'in') return 'Entrada';
-  if (flow === 'out') return 'SaÃ­da';
+  if (flow === 'out') return 'Saída';
   return 'Neutro';
 };
 
@@ -54,13 +57,14 @@ export const extractInsightMetric = (text: string): string | null => {
 export const getInsightActionHint = (insight: string) => {
   const normalized = insight.toLowerCase();
   if (normalized.includes('gasto') || normalized.includes('despesa')) {
-    return 'AÃ§Ã£o sugerida: acompanhe esta categoria de perto nos prÃ³ximos dias.';
+    return 'Ação sugerida: acompanhe esta categoria de perto nos próximos dias.';
   }
   if (normalized.includes('receita')) {
-    return 'AÃ§Ã£o sugerida: use esse ganho para reforÃ§ar reserva ou metas prioritÃ¡rias.';
+    return 'Ação sugerida: use esse ganho para reforçar reserva ou metas prioritárias.';
   }
   if (normalized.includes('saldo negativo')) {
-    return 'AÃ§Ã£o sugerida: antecipe ajustes de caixa antes da data crÃ­tica.';
+    return 'Ação sugerida: antecipe ajustes de caixa antes da data crítica.';
   }
-  return 'AÃ§Ã£o sugerida: mantenha o acompanhamento semanal para validar a tendÃªncia.';
+  return 'Ação sugerida: mantenha o acompanhamento semanal para validar a tendência.';
 };
+

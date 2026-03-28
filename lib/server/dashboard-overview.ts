@@ -107,6 +107,7 @@ type RecentTransactionRow = {
 
 const CANCELLED_STATUSES = ['CANCELLED', 'CANCELED'];
 const PROJECTION_DAYS = 30;
+const TREND_CHART_DAYS = 365;
 const UPCOMING_DAYS = 14;
 const MONTHLY_SERIES_MONTHS = 6;
 const RECENT_TRANSACTIONS_LIMIT = 8;
@@ -200,7 +201,9 @@ function buildForecastFromPendingRows(params: {
   currentBalance: number;
   todayStart: Date;
   pendingRows: PendingForecastRow[];
+  days?: number;
 }) {
+  const days = Math.max(1, Math.floor(params.days || PROJECTION_DAYS));
   const forecastByDate = new Map<string, { inflow: number; outflow: number }>();
 
   for (const row of params.pendingRows) {
@@ -223,7 +226,7 @@ function buildForecastFromPendingRows(params: {
   let projectedNegativeDate: string | null = null;
   let nextCriticalDate: string | null = null;
 
-  for (let dayOffset = 0; dayOffset < PROJECTION_DAYS; dayOffset += 1) {
+  for (let dayOffset = 0; dayOffset < days; dayOffset += 1) {
     const currentDate = addDays(params.todayStart, dayOffset);
     const key = currentDate.toISOString().slice(0, 10);
     const bucket = forecastByDate.get(key) ?? { inflow: 0, outflow: 0 };
@@ -248,27 +251,78 @@ function buildForecastFromPendingRows(params: {
     runningBalance = closingBalance;
   }
 
+  const projectionIndex = Math.min(PROJECTION_DAYS, daily.length) - 1;
   return {
     daily,
-    projectedBalance30d: daily.at(-1)?.closingBalance ?? params.currentBalance,
+    projectedBalance30d:
+      projectionIndex >= 0 ? daily[projectionIndex].closingBalance : params.currentBalance,
     projectedNegativeDate,
     nextCriticalDate,
   };
 }
 
-function buildForecastFromReadModelRows(rows: DailyProjectionRow[]) {
-  const daily = rows.slice(0, PROJECTION_DAYS).map((row) => ({
+function buildDailyForecastFromReadModelRows(rows: DailyProjectionRow[], days: number) {
+  const normalizedDays = Math.max(1, Math.floor(days));
+  return rows.slice(0, normalizedDays).map((row) => ({
     date: row.date.toISOString().slice(0, 10),
     openingBalance: numberFrom(row.opening_balance),
     inflow: numberFrom(row.inflow_confirmed) + numberFrom(row.inflow_planned),
     outflow: numberFrom(row.outflow_confirmed) + numberFrom(row.outflow_planned),
     closingBalance: numberFrom(row.closing_balance),
   }));
+}
+
+function buildForecastFromReadModelRows(rows: DailyProjectionRow[]) {
+  const daily = buildDailyForecastFromReadModelRows(rows, PROJECTION_DAYS);
 
   return {
     daily,
     projectedBalance30d: daily.at(-1)?.closingBalance ?? null,
   };
+}
+
+function extendForecastSeriesToDays(params: {
+  daily: DashboardOverviewForecastPoint[];
+  startDate: Date;
+  targetDays: number;
+  baseBalance: number;
+}) {
+  const targetDays = Math.max(1, Math.floor(params.targetDays));
+  if (params.daily.length >= targetDays) {
+    return params.daily.slice(0, targetDays);
+  }
+
+  const seed = [...params.daily];
+  if (seed.length === 0) {
+    let runningBalance = params.baseBalance;
+    for (let dayOffset = 0; dayOffset < targetDays; dayOffset += 1) {
+      const currentDate = addDays(params.startDate, dayOffset);
+      const key = currentDate.toISOString().slice(0, 10);
+      seed.push({
+        date: key,
+        openingBalance: runningBalance,
+        inflow: 0,
+        outflow: 0,
+        closingBalance: runningBalance,
+      });
+    }
+    return seed;
+  }
+
+  let runningBalance = seed.at(-1)?.closingBalance ?? params.baseBalance;
+  for (let dayOffset = seed.length; dayOffset < targetDays; dayOffset += 1) {
+    const currentDate = addDays(params.startDate, dayOffset);
+    const key = currentDate.toISOString().slice(0, 10);
+    seed.push({
+      date: key,
+      openingBalance: runningBalance,
+      inflow: 0,
+      outflow: 0,
+      closingBalance: runningBalance,
+    });
+  }
+
+  return seed;
 }
 
 function buildHistoricalForecastFromConfirmedRows(params: {
@@ -294,7 +348,7 @@ function buildHistoricalForecastFromConfirmedRows(params: {
   }
 
   let totalNet = 0;
-  for (let dayOffset = 0; dayOffset < PROJECTION_DAYS; dayOffset += 1) {
+  for (let dayOffset = 0; dayOffset < TREND_CHART_DAYS; dayOffset += 1) {
     const day = addDays(params.historyStart, dayOffset);
     const key = day.toISOString().slice(0, 10);
     const bucket = flowByDate.get(key) ?? { inflow: 0, outflow: 0 };
@@ -304,7 +358,7 @@ function buildHistoricalForecastFromConfirmedRows(params: {
   let runningBalance = params.currentBalance - totalNet;
   const daily: DashboardOverviewForecastPoint[] = [];
 
-  for (let dayOffset = 0; dayOffset < PROJECTION_DAYS; dayOffset += 1) {
+  for (let dayOffset = 0; dayOffset < TREND_CHART_DAYS; dayOffset += 1) {
     const day = addDays(params.historyStart, dayOffset);
     const key = day.toISOString().slice(0, 10);
     const bucket = flowByDate.get(key) ?? { inflow: 0, outflow: 0 };
@@ -369,11 +423,11 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
   const now = new Date();
   const todayStart = startOfDay(now);
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  const historyStart = addDays(todayStart, -(PROJECTION_DAYS - 1));
-  const next30DaysEnd = new Date(
+  const historyStart = addDays(todayStart, -(TREND_CHART_DAYS - 1));
+  const nextTrendDaysEnd = new Date(
     now.getFullYear(),
     now.getMonth(),
-    now.getDate() + PROJECTION_DAYS,
+    now.getDate() + (TREND_CHART_DAYS - 1),
     23,
     59,
     59,
@@ -459,7 +513,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
               workspace_id: workspaceId,
               date: {
                 gte: todayStart,
-                lte: next30DaysEnd,
+                lte: nextTrendDaysEnd,
               },
             },
             orderBy: { date: 'asc' },
@@ -484,9 +538,16 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
 
     if (projectionRows.length > 0) {
       const projection = buildForecastFromReadModelRows(projectionRows);
-      forecastDaily = projection.daily;
+      forecastDaily = buildDailyForecastFromReadModelRows(projectionRows, TREND_CHART_DAYS);
       projectedBalance30d = projection.projectedBalance30d;
     }
+
+    forecastDaily = extendForecastSeriesToDays({
+      daily: forecastDaily,
+      startDate: todayStart,
+      targetDays: TREND_CHART_DAYS,
+      baseBalance: currentBalance,
+    });
 
     const upcomingRows = await safeSection<CalendarUpcomingRow[]>(
       workspaceId,
@@ -588,7 +649,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
           WHERE "workspace_id" = ${workspaceId}
             AND "status" = 'PENDING'
             AND COALESCE("due_date", "date") >= ${todayStart}
-            AND COALESCE("due_date", "date") <= ${next30DaysEnd}
+            AND COALESCE("due_date", "date") <= ${nextTrendDaysEnd}
           ORDER BY effective_date ASC, "created_at" ASC
         `)
     );
@@ -597,8 +658,14 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
       currentBalance,
       todayStart,
       pendingRows: pendingForecastRows,
+      days: PROJECTION_DAYS,
     });
-    forecastDaily = fallbackForecast.daily;
+    forecastDaily = buildForecastFromPendingRows({
+      currentBalance,
+      todayStart,
+      pendingRows: pendingForecastRows,
+      days: TREND_CHART_DAYS,
+    }).daily;
     projectedBalance30d = fallbackForecast.projectedBalance30d;
     projectedNegativeDate = fallbackForecast.projectedNegativeDate;
     nextCriticalDate = fallbackForecast.nextCriticalDate;
