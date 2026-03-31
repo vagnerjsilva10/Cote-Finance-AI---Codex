@@ -7,6 +7,7 @@ export type WhatsAppWorkspaceResolution = {
   workspaceId: string;
   workspaceName: string;
   phone: string;
+  userName: string | null;
 };
 
 export async function resolveWorkspaceFromWhatsAppSender(rawSender: string): Promise<WhatsAppWorkspaceResolution | null> {
@@ -30,10 +31,40 @@ export async function resolveWorkspaceFromWhatsAppSender(rawSender: string): Pro
 
   if (!workspace) return null;
 
+  const ownerMembership = await prisma.workspaceMember.findFirst({
+    where: {
+      workspace_id: workspace.id,
+      role: 'OWNER',
+    },
+    select: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const adminMembership = ownerMembership
+    ? null
+    : await prisma.workspaceMember.findFirst({
+        where: {
+          workspace_id: workspace.id,
+          role: 'ADMIN',
+        },
+        select: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
   return {
     workspaceId: workspace.id,
     workspaceName: workspace.name,
     phone: workspace.whatsapp_phone_number || sender,
+    userName: ownerMembership?.user?.name || adminMembership?.user?.name || null,
   };
 }
-

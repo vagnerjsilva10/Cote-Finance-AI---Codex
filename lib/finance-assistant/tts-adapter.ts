@@ -9,8 +9,26 @@ type SynthesizedAssistantAudio = {
 };
 
 const DEFAULT_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
-const TTS_FALLBACK_MODELS = ['gemini-2.5-pro-preview-tts'];
+const TTS_FALLBACK_MODELS = [
+  'gemini-2.5-pro-preview-tts',
+  'gemini-2.5-flash-native-audio-preview-12-2025',
+];
 const MAX_TTS_CHARACTERS = 900;
+
+function normalizeMimeType(value: string) {
+  return value.split(';')[0]?.trim().toLowerCase() || '';
+}
+
+function isSupportedOutgoingAudioMime(mimeType: string) {
+  const normalized = normalizeMimeType(mimeType);
+  return (
+    normalized === 'audio/ogg' ||
+    normalized === 'audio/aac' ||
+    normalized === 'audio/mpeg' ||
+    normalized === 'audio/mp4' ||
+    normalized === 'audio/amr'
+  );
+}
 
 function normalizeForSpeech(text: string) {
   const compact = text.replace(/\s+/g, ' ').trim();
@@ -19,10 +37,11 @@ function normalizeForSpeech(text: string) {
 }
 
 function pickAudioFilename(mimeType: string) {
-  if (mimeType.includes('ogg')) return 'assistant-reply.ogg';
-  if (mimeType.includes('mpeg') || mimeType.includes('mp3')) return 'assistant-reply.mp3';
-  if (mimeType.includes('aac')) return 'assistant-reply.aac';
-  if (mimeType.includes('wav')) return 'assistant-reply.wav';
+  const normalized = normalizeMimeType(mimeType);
+  if (normalized.includes('ogg')) return 'assistant-reply.ogg';
+  if (normalized.includes('mpeg') || normalized.includes('mp3')) return 'assistant-reply.mp3';
+  if (normalized.includes('aac')) return 'assistant-reply.aac';
+  if (normalized.includes('wav')) return 'assistant-reply.wav';
   return 'assistant-reply.ogg';
 }
 
@@ -49,6 +68,7 @@ function extractInlineAudioFromResponse(response: unknown): SynthesizedAssistant
       const mimeType = String((inlineData as Record<string, unknown>).mimeType || 'audio/ogg').trim() || 'audio/ogg';
       const audioBuffer = Buffer.from(data, 'base64');
       if (!audioBuffer.length) continue;
+      if (!isSupportedOutgoingAudioMime(mimeType)) continue;
 
       return {
         audioBuffer,
@@ -74,6 +94,7 @@ async function trySynthesizeWithModel(params: {
   text: string;
 }): Promise<SynthesizedAssistantAudio | null> {
   const ai = getGeminiClient();
+  const configuredVoice = String(process.env.GEMINI_TTS_VOICE || '').trim();
   const response = await ai.models.generateContent({
     model: params.model,
     contents: [
@@ -83,6 +104,7 @@ async function trySynthesizeWithModel(params: {
           {
             text: [
               'Converta o texto a seguir em audio natural em portugues do Brasil.',
+              'Prefira audio compativel com WhatsApp (OGG Opus ou MP3).',
               'Retorne somente o audio sintetizado.',
               '',
               params.text,
@@ -95,6 +117,15 @@ async function trySynthesizeWithModel(params: {
       responseModalities: ['audio'],
       speechConfig: {
         languageCode: 'pt-BR',
+        ...(configuredVoice
+          ? {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: configuredVoice,
+                },
+              },
+            }
+          : {}),
       },
       temperature: 0.3,
     },
@@ -124,7 +155,12 @@ export async function synthesizeAssistantAudio(text: string) {
       if (audio) {
         return audio;
       }
-    } catch {
+      console.warn('WHATSAPP_TTS_EMPTY_AUDIO', { model });
+    } catch (error) {
+      console.warn('WHATSAPP_TTS_MODEL_ERROR', {
+        model,
+        error: error instanceof Error ? error.message : String(error || 'unknown_error'),
+      });
       continue;
     }
   }

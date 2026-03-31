@@ -27,6 +27,7 @@ import { resolveWorkspaceFromWhatsAppSender } from '@/lib/finance-assistant/reso
 import { logWhatsAppAssistantEvent } from '@/lib/finance-assistant/audit-log.service';
 import type { NormalizedIncomingWhatsAppMessage } from '@/lib/whatsapp/normalize-incoming-message';
 import { synthesizeAssistantAudio } from '@/lib/finance-assistant/tts-adapter';
+import { resolveDailyGreeting } from '@/lib/finance-assistant/daily-greeting.service';
 
 const PREMIUM_BLOCK_MESSAGE =
   'Essa automação inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lançar despesas, metas, dívidas e investimentos por mensagem.';
@@ -41,6 +42,11 @@ function resolveSummaryForReplyMode(mode: 'text' | 'audio' | 'both') {
   if (mode === 'audio') return 'Perfeito. A partir de agora vou priorizar respostas em áudio quando disponível.';
   if (mode === 'both') return 'Combinado. Vou responder com texto e também áudio quando disponível.';
   return 'Combinado. A partir de agora respondo apenas por texto.';
+}
+
+function withGreeting(text: string, greeting: string | null) {
+  if (!greeting) return text;
+  return `${greeting}\n\n${text}`;
 }
 
 export async function orchestrateWhatsAppFinancialMessage(params: {
@@ -95,6 +101,12 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
     },
   });
 
+  const dailyGreeting = await resolveDailyGreeting({
+    workspaceId: workspace.workspaceId,
+    sender,
+    userName: workspace.userName,
+  });
+
   if (params.message.kind === 'text' && params.allowUnknownPassthrough) {
     const previewIntent = parseIntentHeuristically(params.message.text);
     if (previewIntent.intent === 'unknown') {
@@ -132,7 +144,7 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
     await sendWhatsAppTextMessage({
       to: sender,
-      text: PREMIUM_BLOCK_MESSAGE,
+      text: withGreeting(PREMIUM_BLOCK_MESSAGE, dailyGreeting),
     });
     return { handled: true };
   }
@@ -154,7 +166,7 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
     if (!isSupportedIncomingAudioMime(params.message.mimeType)) {
       await sendWhatsAppTextMessage({
         to: sender,
-        text: AUDIO_NOT_SUPPORTED_MESSAGE,
+        text: withGreeting(AUDIO_NOT_SUPPORTED_MESSAGE, dailyGreeting),
       });
       return { handled: true };
     }
@@ -250,7 +262,7 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
     await sendWhatsAppTextMessage({
       to: sender,
-      text: resolveSummaryForReplyMode(nextMode),
+      text: withGreeting(resolveSummaryForReplyMode(nextMode), dailyGreeting),
     });
 
     await logWhatsAppAssistantEvent({
@@ -267,7 +279,10 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
   if (shouldRequireConfirmation(parsedIntent)) {
     await sendWhatsAppTextMessage({
       to: sender,
-      text: 'Quero evitar erro no seu lançamento. Pode confirmar com mais detalhe de valor, categoria ou data?',
+      text: withGreeting(
+        'Quero evitar erro no seu lançamento. Pode confirmar com mais detalhe de valor, categoria ou data?',
+        dailyGreeting
+      ),
     });
     await logWhatsAppAssistantEvent({
       workspaceId: workspace.workspaceId,
@@ -426,7 +441,7 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
   await sendWhatsAppTextMessage({
     to: sender,
-    text: resultText,
+    text: withGreeting(resultText, dailyGreeting),
   });
   await logWhatsAppAssistantEvent({
     workspaceId: workspace.workspaceId,
@@ -443,24 +458,39 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
   });
 
   if (resolvedReplyMode === 'audio' || resolvedReplyMode === 'both') {
-    const audio = await synthesizeAssistantAudio(resultText);
-    if (audio) {
-      await sendWhatsAppAudioMessage({
-        to: sender,
-        audioBuffer: audio.audioBuffer,
-        mimeType: audio.mimeType,
-        filename: audio.filename,
-      });
-      await logWhatsAppAssistantEvent({
-        workspaceId: workspace.workspaceId,
-        event: 'WHATSAPP_REPLY_AUDIO_SENT',
-        payload: {
-          messageId,
-          intent: parsedIntent.intent,
-          mode: resolvedReplyMode,
-        },
-      });
-    } else {
+    try {
+      const audio = await synthesizeAssistantAudio(withGreeting(resultText, dailyGreeting));
+      if (audio) {
+        await sendWhatsAppAudioMessage({
+          to: sender,
+          audioBuffer: audio.audioBuffer,
+          mimeType: audio.mimeType,
+          filename: audio.filename,
+        });
+        await logWhatsAppAssistantEvent({
+          workspaceId: workspace.workspaceId,
+          event: 'WHATSAPP_REPLY_AUDIO_SENT',
+          payload: {
+            messageId,
+            intent: parsedIntent.intent,
+            mode: resolvedReplyMode,
+            mimeType: audio.mimeType,
+            sizeBytes: audio.audioBuffer.length,
+          },
+        });
+      } else {
+        await logWhatsAppAssistantEvent({
+          workspaceId: workspace.workspaceId,
+          event: 'WHATSAPP_REPLY_AUDIO_SKIPPED',
+          payload: {
+            messageId,
+            intent: parsedIntent.intent,
+            mode: resolvedReplyMode,
+            reason: 'tts_unavailable_or_failed',
+          },
+        });
+      }
+    } catch (error) {
       await logWhatsAppAssistantEvent({
         workspaceId: workspace.workspaceId,
         event: 'WHATSAPP_REPLY_AUDIO_SKIPPED',
@@ -468,7 +498,8 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
           messageId,
           intent: parsedIntent.intent,
           mode: resolvedReplyMode,
-          reason: 'tts_unavailable_or_failed',
+          reason: 'audio_send_failed',
+          error: error instanceof Error ? error.message : String(error || 'unknown_error'),
         },
       });
     }
@@ -476,3 +507,4 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
   return { handled: true };
 }
+
