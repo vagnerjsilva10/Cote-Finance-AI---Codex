@@ -136,7 +136,7 @@ const TAB_LABELS: Record<Tab, string> = {
   portfolio: 'Carteira',
   reports: 'Relatórios',
   assistant: 'Assistente IA',
-  integrations: 'Integrações',
+  integrations: 'WhatsApp',
   subscription: 'Minha assinatura',
   settings: 'Configurações',
   agenda: 'Calendário financeiro',
@@ -164,6 +164,7 @@ const MAIN_NAV_ITEMS: Array<{ tab: Tab; label: string; icon: LucideIcon }> = [
 
 const SECONDARY_NAV_ITEMS: Array<{ tab: Tab; label: string; icon: LucideIcon }> = [
   { tab: 'assistant', label: 'Assistente IA', icon: MessageSquare },
+  { tab: 'integrations', label: 'WhatsApp', icon: Smartphone },
   { tab: 'settings', label: 'Configurações', icon: Settings },
 ];
 
@@ -221,6 +222,12 @@ const NAVIGATION_SEARCH_ITEMS: NavigationSearchItem[] = [
     label: 'Assistente IA',
     description: 'Perguntas e orientacoes financeiras.',
     keywords: ['chat', 'ia', 'assistente'],
+  },
+  {
+    tab: 'integrations',
+    label: 'WhatsApp',
+    description: 'Conecte o WhatsApp e configure o assistente conversacional.',
+    keywords: ['whatsapp', 'integracao', 'resumos', 'alertas', 'mensagens'],
   },
   {
     tab: 'settings',
@@ -2126,9 +2133,19 @@ type SidebarItemProps = {
   active?: boolean;
   onClick?: () => void;
   collapsed?: boolean;
+  badgeText?: string | null;
+  locked?: boolean;
 };
 
-const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = false }: SidebarItemProps) => (
+const SidebarItem = ({
+  icon: Icon,
+  label,
+  active = false,
+  onClick,
+  collapsed = false,
+  badgeText = null,
+  locked = false,
+}: SidebarItemProps) => (
   <button
     onClick={onClick}
     title={collapsed ? label : undefined}
@@ -2144,7 +2161,19 @@ const SidebarItem = ({ icon: Icon, label, active = false, onClick, collapsed = f
       size={16}
       className={cn(active ? 'text-[var(--primary-hover)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]')}
     />
-    {!collapsed && <span className="text-[13px] font-medium">{label}</span>}
+    {!collapsed && (
+      <>
+        <span className="text-[13px] font-medium">{label}</span>
+        <span className="ml-auto flex items-center gap-1">
+          {badgeText ? (
+            <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {badgeText}
+            </span>
+          ) : null}
+          {locked ? <Lock size={12} className="text-[var(--text-muted)]" /> : null}
+        </span>
+      </>
+    )}
   </button>
 );
 
@@ -13492,16 +13521,21 @@ React.useEffect(() => {
 
           <div className={cn('my-3 border-t border-[var(--border-default)]', isSidebarCollapsed ? 'mx-1' : 'mx-2')} />
 
-          {SECONDARY_NAV_ITEMS.map((item) => (
-            <SidebarItem
-              key={`secondary-nav-${item.tab}`}
-              icon={item.icon}
-              label={item.label}
-              active={activeTab === item.tab}
-              collapsed={isSidebarCollapsed}
-              onClick={() => navigateToTab(item.tab, { openAssistant: item.tab === 'assistant' })}
-            />
-          ))}
+          {SECONDARY_NAV_ITEMS.map((item) => {
+            const isWhatsAppFeatureLocked = item.tab === 'integrations' && isFreePlan;
+            return (
+              <SidebarItem
+                key={`secondary-nav-${item.tab}`}
+                icon={item.icon}
+                label={item.label}
+                active={activeTab === item.tab}
+                collapsed={isSidebarCollapsed}
+                badgeText={isWhatsAppFeatureLocked ? 'Pro' : null}
+                locked={isWhatsAppFeatureLocked}
+                onClick={() => navigateToTab(item.tab, { openAssistant: item.tab === 'assistant' })}
+              />
+            );
+          })}
         </nav>
 
         <div className="p-3">
@@ -14343,7 +14377,7 @@ React.useEffect(() => {
                       onClick={() => navigateToTab('integrations')}
                       className="app-button-secondary px-3 py-2 rounded-xl text-xs font-bold transition-all"
                     >
-                      Abrir Integrações
+                      Abrir WhatsApp
                     </button>
                   </div>
 
@@ -14700,5 +14734,3 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
-
