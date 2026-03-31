@@ -278,23 +278,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     }
 
-    const [updatedUser, updatedProfile, updatedSubscription] = await prisma.$transaction([
-      prisma.user.update({
+    const ownerWorkspaceIds = user.workspaces
+      .filter((membership) => membership.role === 'OWNER')
+      .map((membership) => membership.workspace_id);
+
+    const [updatedUser, updatedProfile, updatedSubscription] = await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
         where: { id },
         data: {
           name: nextName,
           email: nextEmail,
         },
-      }),
-      prisma.profile.upsert({
+      });
+
+      const updatedProfile = await tx.profile.upsert({
         where: { user_id: id },
         update: { plan: profilePlan },
         create: {
           user_id: id,
           plan: profilePlan,
         },
-      }),
-      prisma.subscriptionEntitlement.upsert({
+      });
+
+      const updatedSubscription = await tx.subscriptionEntitlement.upsert({
         where: { user_id: id },
         update: {
           plan: entitlementPlan,
@@ -307,8 +313,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           status: entitlementStatus,
           current_period_end: currentPeriodEnd,
         },
-      }),
-    ]);
+      });
+
+      if (ownerWorkspaceIds.length > 0) {
+        await Promise.all(
+          ownerWorkspaceIds.map((workspaceId) =>
+            tx.workspaceSubscription.upsert({
+              where: { workspace_id: workspaceId },
+              update: {
+                plan: entitlementPlan,
+                status: entitlementStatus,
+                current_period_end: currentPeriodEnd,
+              },
+              create: {
+                workspace_id: workspaceId,
+                plan: entitlementPlan,
+                status: entitlementStatus,
+                current_period_end: currentPeriodEnd,
+              },
+            })
+          )
+        );
+      }
+
+      return [updatedUser, updatedProfile, updatedSubscription] as const;
+    });
 
     const currentResolvedRole = await resolvePlatformRoleForEmail(user.email);
     const primaryWorkspaceMembership =
