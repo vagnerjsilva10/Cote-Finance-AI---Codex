@@ -271,21 +271,63 @@ body {
   .public-light-shell,
   .theme-blog-shell,
   .ds-shell-light {
+    min-height: 100vh;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #eef2f7;
+    --bg-card: #ffffff;
     --bg-app: #ffffff;
     --bg-app-secondary: #f8fafc;
-    --bg-surface: #f8fafc;
-    --bg-container: #ffffff;
+    --bg-surface: #ffffff;
+    --bg-container: #f8fafc;
     --bg-surface-elevated: #f1f5f9;
     --bg-hover: #e2e8f0;
-    --border-default: rgba(15, 23, 42, 0.08);
-    --border-strong: rgba(15, 23, 42, 0.16);
+    --bg-deep: #e2e8f0;
+    --border-default: rgba(15, 23, 42, 0.1);
+    --border-soft: rgba(15, 23, 42, 0.08);
+    --border-strong: rgba(15, 23, 42, 0.18);
     --text-primary: #0f172a;
     --text-secondary: #334155;
     --text-muted: #64748b;
+    --text-on-primary: #f8fafc;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-soft: rgba(37, 99, 235, 0.14);
+    --primary: var(--accent);
+    --primary-hover: var(--accent-hover);
+    --primary-active: #1e40af;
+    --primary-soft: var(--accent-soft);
+    --interactive-focus-ring: rgba(37, 99, 235, 0.3);
+    --focus-ring: var(--interactive-focus-ring);
+    --field-bg: #ffffff;
+    --field-bg-focus: #ffffff;
+    --field-border: rgba(15, 23, 42, 0.16);
+    --field-placeholder: #64748b;
+    --selection-bg: #dbeafe;
+    --selection-border: #2563eb;
+    --selection-glow: rgba(37, 99, 235, 0.28);
     --icon-default: #334155;
     --icon-muted: #64748b;
     --overlay-soft: rgba(248, 250, 252, 0.72);
     --overlay-strong: rgba(248, 250, 252, 0.86);
+    --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
+    --shadow-card: 0 16px 30px rgba(15, 23, 42, 0.1);
+    --shadow-elevated: 0 24px 42px rgba(15, 23, 42, 0.13);
+    --surface-card-border: rgba(15, 23, 42, 0.1);
+    --surface-card-border-hover: rgba(37, 99, 235, 0.28);
+    --surface-card-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    --surface-card-bg-hover: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    --surface-card-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+    --surface-card-panel-border: rgba(15, 23, 42, 0.08);
+    --surface-card-panel-bg: rgba(248, 250, 252, 0.88);
+    --surface-card-skeleton-bg: rgba(148, 163, 184, 0.24);
+    --dashboard-card-shell-border: var(--surface-card-border);
+    --dashboard-card-shell-border-hover: var(--surface-card-border-hover);
+    --dashboard-card-shell-bg: var(--surface-card-bg);
+    --dashboard-card-shell-shadow: var(--surface-card-shadow);
+    --dashboard-card-panel-border: var(--surface-card-panel-border);
+    --dashboard-card-panel-bg: var(--surface-card-panel-bg);
+    --dashboard-skeleton-bg: var(--surface-card-skeleton-bg);
     color-scheme: light;
     background:
       radial-gradient(circle at 14% 4%, rgba(59, 130, 246, 0.09), transparent 36%),
@@ -1315,7 +1357,7 @@ body {
   .button-light-primary,
   .ds-button-primary {
     background: var(--accent);
-    color: var(--text-primary);
+    color: var(--text-on-primary);
     border-color: color-mix(in srgb, var(--accent) 48%, transparent);
     box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 20%, transparent);
   }

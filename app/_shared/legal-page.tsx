@@ -14,7 +14,7 @@ type LegalPageProps = {
   description: string;
   lastUpdated: string;
   sections: LegalSection[];
-  currentPage: 'termos' | 'privacidade';
+  currentPage: 'termos' | 'privacidade' | 'cookies';
 };
 
 export function LegalPage({ eyebrow, title, description, lastUpdated, sections, currentPage }: LegalPageProps) {
@@ -24,6 +24,7 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
     { href: '/central-de-ajuda', label: 'Ajuda', active: false },
     { href: '/termos-de-uso', label: 'Termos', active: currentPage === 'termos' },
     { href: '/politica-de-privacidade', label: 'Privacidade', active: currentPage === 'privacidade' },
+    { href: '/cookies', label: 'Cookies', active: currentPage === 'cookies' },
   ];
 
   return (
@@ -111,6 +112,9 @@ export function LegalPage({ eyebrow, title, description, lastUpdated, sections, 
             </Link>
             <Link href="/politica-de-privacidade" className="hover:text-[var(--text-primary)]">
               Privacidade
+            </Link>
+            <Link href="/cookies" className="hover:text-[var(--text-primary)]">
+              Cookies
             </Link>
           </div>
         </div>

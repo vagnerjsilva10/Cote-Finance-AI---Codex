@@ -28,6 +28,11 @@ const staticPages = [
     changeFrequency: 'yearly' as const,
     priority: 0.4,
   },
+  {
+    path: '/cookies',
+    changeFrequency: 'yearly' as const,
+    priority: 0.35,
+  },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

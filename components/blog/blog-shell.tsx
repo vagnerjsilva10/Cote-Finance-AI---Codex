@@ -29,6 +29,9 @@ export function BlogShell({ children, activeItem = 'blog' }: BlogShellProps) {
             <Link href="/politica-de-privacidade" className="hover:text-[var(--text-primary)]">
               Privacidade
             </Link>
+            <Link href="/cookies" className="hover:text-[var(--text-primary)]">
+              Cookies
+            </Link>
           </div>
         </Container>
       </footer>
