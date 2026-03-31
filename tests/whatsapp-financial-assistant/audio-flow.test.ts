@@ -49,6 +49,7 @@ test('normalizes text and audio messages from webhook payload into same canonica
 
 test('accepts only supported audio mime types', () => {
   assert.equal(isSupportedIncomingAudioMime('audio/ogg'), true);
+  assert.equal(isSupportedIncomingAudioMime('audio/ogg; codecs=opus'), true);
   assert.equal(isSupportedIncomingAudioMime('audio/mpeg'), true);
   assert.equal(isSupportedIncomingAudioMime('audio/flac'), false);
 });
