@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveReplyMode } from '@/lib/finance-assistant/reply-mode.service';
+import { resolveReplyMode } from '@/lib/finance-assistant/reply-mode-resolver';
 
 test('keeps persisted mode when request is unchanged', () => {
   const mode = resolveReplyMode({

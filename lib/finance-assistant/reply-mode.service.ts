@@ -4,9 +4,9 @@ import {
   getWorkspaceWhatsAppConfig,
   saveWorkspaceWhatsAppConfig,
 } from '@/lib/server/whatsapp-config';
-import { type AssistantReplyMode } from '@/lib/ai/schemas/financial-intent.schema';
+import { resolveReplyMode, type PersistedReplyMode } from '@/lib/finance-assistant/reply-mode-resolver';
 
-export type PersistedReplyMode = 'text' | 'audio' | 'both';
+export { resolveReplyMode, type PersistedReplyMode };
 
 export async function getWorkspaceReplyMode(workspaceId: string): Promise<PersistedReplyMode> {
   const config = await getWorkspaceWhatsAppConfig(workspaceId);
@@ -24,14 +24,3 @@ export async function setWorkspaceReplyMode(params: {
     assistantReplyMode: params.mode,
   });
 }
-
-export function resolveReplyMode(params: {
-  persistedMode: PersistedReplyMode;
-  requestedMode: AssistantReplyMode;
-}): PersistedReplyMode {
-  if (params.requestedMode === 'unchanged') {
-    return params.persistedMode;
-  }
-  return params.requestedMode;
-}
-

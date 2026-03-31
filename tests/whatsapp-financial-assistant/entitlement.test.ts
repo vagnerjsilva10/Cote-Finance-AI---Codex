@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateFeatureAccessFromSnapshot } from '@/lib/billing/feature-access-service';
+import { evaluateFeatureAccessFromSnapshot } from '@/lib/billing/feature-access-evaluator';
 
 test('free workspace is blocked from whatsapp financial assistant', () => {
   const result = evaluateFeatureAccessFromSnapshot({

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeIncomingWhatsAppMessages } from '@/lib/whatsapp/normalize-incoming-message';
-import { isSupportedIncomingAudioMime } from '@/lib/whatsapp/download-whatsapp-media';
+import { isSupportedIncomingAudioMime } from '@/lib/whatsapp/audio-mime';
 
 test('normalizes text and audio messages from webhook payload into same canonical envelope', () => {
   const payload = {

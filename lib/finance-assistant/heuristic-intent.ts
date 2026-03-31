@@ -146,7 +146,26 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     };
   }
 
-  if (normalized.includes('investi') || normalized.includes('apliquei')) {
+  if (normalized.includes('quanto eu gastei') || normalized.includes('quanto falta') || normalized.includes('qual meu total')) {
+    return {
+      intent: 'query_summary',
+      confidence: 0.68,
+      needsConfirmation: false,
+      replyModeRequested: 'unchanged',
+      transaction: null,
+      goal: null,
+      investment: null,
+      debt: null,
+      query: {
+        metric: normalized.includes('invest') ? 'investment_total' : normalized.includes('meta') ? 'goal_remaining' : 'category_spend_month',
+        categoryHint: normalized.includes('gastei com') ? messageText : null,
+        goalHint: normalized.includes('meta') ? messageText : null,
+        periodHint: 'mes_atual',
+      },
+    };
+  }
+
+  if (/\binvesti\b/.test(normalized) || /\bapliquei\b/.test(normalized)) {
     return {
       intent: 'create_investment',
       confidence: amount ? 0.79 : 0.43,
@@ -206,25 +225,6 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     };
   }
 
-  if (normalized.includes('quanto eu gastei') || normalized.includes('quanto falta') || normalized.includes('qual meu total')) {
-    return {
-      intent: 'query_summary',
-      confidence: 0.68,
-      needsConfirmation: false,
-      replyModeRequested: 'unchanged',
-      transaction: null,
-      goal: null,
-      investment: null,
-      debt: null,
-      query: {
-        metric: normalized.includes('invest') ? 'investment_total' : normalized.includes('meta') ? 'goal_remaining' : 'category_spend_month',
-        categoryHint: normalized.includes('gastei com') ? messageText : null,
-        goalHint: normalized.includes('meta') ? messageText : null,
-        periodHint: 'mes_atual',
-      },
-    };
-  }
-
   return {
     intent: 'unknown',
     confidence: 0.3,
@@ -237,4 +237,3 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     query: null,
   };
 }
-

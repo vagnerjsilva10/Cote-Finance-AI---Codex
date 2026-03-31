@@ -1,6 +1,10 @@
 import 'server-only';
 
 import { getWhatsAppConfig } from '@/lib/whatsapp';
+import {
+  isSupportedIncomingAudioMime,
+  normalizeIncomingMimeType,
+} from '@/lib/whatsapp/audio-mime';
 
 export const WHATSAPP_MEDIA_MAX_SIZE_BYTES = 12 * 1024 * 1024;
 
@@ -11,26 +15,7 @@ export type DownloadedWhatsAppMedia = {
   data: Buffer;
 };
 
-function normalizeMimeType(value: string | null | undefined) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
-}
-
-export function isSupportedIncomingAudioMime(mimeType: string | null | undefined) {
-  const normalized = normalizeMimeType(mimeType);
-  if (!normalized) return false;
-
-  return (
-    normalized === 'audio/ogg' ||
-    normalized === 'audio/opus' ||
-    normalized === 'audio/mpeg' ||
-    normalized === 'audio/mp4' ||
-    normalized === 'audio/aac' ||
-    normalized === 'audio/wav' ||
-    normalized === 'audio/x-wav'
-  );
-}
+export { isSupportedIncomingAudioMime };
 
 export async function downloadWhatsAppMedia(params: {
   mediaId: string;
@@ -68,12 +53,12 @@ export async function downloadWhatsAppMedia(params: {
     throw new Error('Mídia do WhatsApp sem URL de download.');
   }
 
-  const mimeType = normalizeMimeType(mediaInfo.mime_type || params.expectedMimeType || '');
+  const mimeType = normalizeIncomingMimeType(mediaInfo.mime_type || params.expectedMimeType || '');
   if (!mimeType) {
     throw new Error('Não foi possível determinar o tipo de mídia do WhatsApp.');
   }
 
-  if (params.expectedMimeType && !mimeType.startsWith(normalizeMimeType(params.expectedMimeType))) {
+  if (params.expectedMimeType && !mimeType.startsWith(normalizeIncomingMimeType(params.expectedMimeType))) {
     throw new Error('O tipo de mídia recebido não corresponde ao esperado.');
   }
 
@@ -110,4 +95,3 @@ export async function downloadWhatsAppMedia(params: {
     data,
   } satisfies DownloadedWhatsAppMedia;
 }
-

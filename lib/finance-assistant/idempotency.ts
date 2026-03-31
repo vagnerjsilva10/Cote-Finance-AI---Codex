@@ -2,12 +2,9 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { buildWhatsAppMessageIdempotencyKey } from '@/lib/finance-assistant/idempotency-key';
 
-const WHATSAPP_MESSAGE_IDEMPOTENCY_PREFIX = 'whatsapp.assistant.processed-message.';
-
-export function buildWhatsAppMessageIdempotencyKey(messageId: string) {
-  return `${WHATSAPP_MESSAGE_IDEMPOTENCY_PREFIX}${messageId.trim()}`;
-}
+export { buildWhatsAppMessageIdempotencyKey };
 
 export async function markWhatsAppMessageAsProcessed(params: {
   workspaceId: string;
