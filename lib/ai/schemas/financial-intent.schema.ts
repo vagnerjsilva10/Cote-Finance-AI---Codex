@@ -21,6 +21,8 @@ const AssistantTransactionPayloadSchema = z.object({
   description: z.string().trim().nullable().optional(),
   merchant: z.string().trim().nullable().optional(),
   categoryHint: z.string().trim().nullable().optional(),
+  shortCategoryName: z.string().trim().nullable().optional(),
+  shortDescription: z.string().trim().nullable().optional(),
   walletHint: z.string().trim().nullable().optional(),
   date: z.string().trim().nullable().optional(),
   notes: z.string().trim().nullable().optional(),
@@ -70,6 +72,9 @@ export const ParsedFinancialIntentSchema = z.object({
   confidence: z.number().min(0).max(1).default(0.5),
   needsConfirmation: z.boolean().default(false),
   replyModeRequested: AssistantReplyModeSchema.default('unchanged'),
+  rawUserUtterance: z.string().trim().nullable().optional(),
+  normalizedMeaning: z.string().trim().nullable().optional(),
+  responseStyleHint: z.string().trim().nullable().optional(),
   transaction: AssistantTransactionPayloadSchema.nullable().optional(),
   goal: AssistantGoalPayloadSchema.nullable().optional(),
   investment: AssistantInvestmentPayloadSchema.nullable().optional(),
@@ -80,4 +85,3 @@ export const ParsedFinancialIntentSchema = z.object({
 export type AssistantIntent = z.infer<typeof AssistantIntentSchema>;
 export type AssistantReplyMode = z.infer<typeof AssistantReplyModeSchema>;
 export type ParsedFinancialIntent = z.infer<typeof ParsedFinancialIntentSchema>;
-

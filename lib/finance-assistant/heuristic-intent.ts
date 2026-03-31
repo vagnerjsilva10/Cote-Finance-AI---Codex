@@ -1,4 +1,4 @@
-import type { ParsedFinancialIntent } from '@/lib/ai/schemas/financial-intent.schema';
+﻿import type { ParsedFinancialIntent } from '@/lib/ai/schemas/financial-intent.schema';
 
 function normalize(value: string) {
   return value
@@ -16,6 +16,23 @@ function parseAmount(rawText: string) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+function inferExpenseHint(text: string) {
+  if (text.includes('ifood')) return 'Delivery';
+  if (text.includes('gasolina') || text.includes('posto')) return 'Combustivel';
+  if (text.includes('mercado') || text.includes('supermercado')) return 'Mercado';
+  if (text.includes('uber') || text.includes('99')) return 'Transporte';
+  if (text.includes('farmacia') || text.includes('remedio')) return 'Farmacia';
+  return null;
+}
+
+function inferIncomeHint(text: string) {
+  if (text.includes('pix')) return 'Pix';
+  if (text.includes('cliente')) return 'Cliente';
+  if (text.includes('comissao')) return 'Comissao';
+  if (text.includes('salario')) return 'Salario';
+  return null;
+}
+
 export function parseIntentHeuristically(messageText: string): ParsedFinancialIntent {
   const normalized = normalize(messageText);
   const amount = parseAmount(normalized);
@@ -26,6 +43,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       confidence: 0.93,
       needsConfirmation: false,
       replyModeRequested: 'audio',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'alterar modo para audio',
+      responseStyleHint: 'breve',
       transaction: null,
       goal: null,
       investment: null,
@@ -34,12 +54,15 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     };
   }
 
-  if (normalized.includes('texto e audio') || normalized.includes('texto e áudio')) {
+  if (normalized.includes('texto e audio')) {
     return {
       intent: 'set_reply_mode',
       confidence: 0.93,
       needsConfirmation: false,
       replyModeRequested: 'both',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'alterar modo para texto e audio',
+      responseStyleHint: 'breve',
       transaction: null,
       goal: null,
       investment: null,
@@ -48,12 +71,15 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     };
   }
 
-  if (normalized.includes('so texto') || normalized.includes('só texto') || normalized === 'texto') {
+  if (normalized.includes('so texto') || normalized === 'texto') {
     return {
       intent: 'set_reply_mode',
       confidence: 0.92,
       needsConfirmation: false,
       replyModeRequested: 'text',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'alterar modo para texto',
+      responseStyleHint: 'breve',
       transaction: null,
       goal: null,
       investment: null,
@@ -63,17 +89,23 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
   }
 
   if (normalized.includes('gastei') || normalized.includes('paguei') || normalized.includes('comprei')) {
+    const hint = inferExpenseHint(normalized);
     return {
       intent: 'create_expense',
       confidence: amount ? 0.84 : 0.48,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'registrar despesa',
+      responseStyleHint: 'natural_curto',
       transaction: {
         amount,
         currency: 'BRL',
-        description: messageText,
+        description: null,
         merchant: null,
-        categoryHint: messageText,
+        categoryHint: hint,
+        shortCategoryName: hint,
+        shortDescription: null,
         walletHint: null,
         date: null,
         notes: null,
@@ -86,17 +118,23 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
   }
 
   if (normalized.includes('recebi') || normalized.includes('entrou') || normalized.includes('ganhei')) {
+    const hint = inferIncomeHint(normalized);
     return {
       intent: 'create_income',
       confidence: amount ? 0.84 : 0.48,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'registrar receita',
+      responseStyleHint: 'natural_curto',
       transaction: {
         amount,
         currency: 'BRL',
-        description: messageText,
+        description: null,
         merchant: null,
-        categoryHint: messageText,
+        categoryHint: hint,
+        shortCategoryName: hint,
+        shortDescription: null,
         walletHint: null,
         date: null,
         notes: null,
@@ -114,6 +152,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       confidence: amount ? 0.82 : 0.45,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'criar meta',
+      responseStyleHint: 'natural_curto',
       transaction: null,
       goal: {
         name: messageText,
@@ -133,6 +174,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       confidence: amount ? 0.78 : 0.42,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'adicionar valor em meta',
+      responseStyleHint: 'natural_curto',
       transaction: null,
       goal: {
         name: messageText,
@@ -152,6 +196,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       confidence: 0.68,
       needsConfirmation: false,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'consulta financeira',
+      responseStyleHint: 'natural_curto',
       transaction: null,
       goal: null,
       investment: null,
@@ -171,6 +218,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       confidence: amount ? 0.79 : 0.43,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'registrar investimento',
+      responseStyleHint: 'natural_curto',
       transaction: null,
       goal: null,
       investment: {
@@ -185,12 +235,15 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     };
   }
 
-  if (normalized.includes('divida') || normalized.includes('dívida')) {
+  if (normalized.includes('divida')) {
     return {
       intent: 'create_debt',
       confidence: amount ? 0.76 : 0.4,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'registrar divida',
+      responseStyleHint: 'natural_curto',
       transaction: null,
       goal: null,
       investment: null,
@@ -211,6 +264,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       confidence: amount ? 0.77 : 0.41,
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
+      rawUserUtterance: messageText,
+      normalizedMeaning: 'pagar divida',
+      responseStyleHint: 'natural_curto',
       transaction: null,
       goal: null,
       investment: null,
@@ -230,6 +286,9 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
     confidence: 0.3,
     needsConfirmation: true,
     replyModeRequested: 'unchanged',
+    rawUserUtterance: messageText,
+    normalizedMeaning: null,
+    responseStyleHint: null,
     transaction: null,
     goal: null,
     investment: null,

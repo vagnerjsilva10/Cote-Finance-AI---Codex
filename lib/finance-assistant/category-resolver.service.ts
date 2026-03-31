@@ -3,8 +3,8 @@ import 'server-only';
 import { prisma } from '@/lib/prisma';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import {
+  buildShortCategoryName,
   normalizeCategoryKey,
-  toCategoryDisplayName,
 } from '@/lib/finance-assistant/category-normalizer';
 import { matchCategoryCandidate, type CategoryCandidate } from '@/lib/finance-assistant/category-matcher';
 
@@ -103,7 +103,7 @@ export async function resolveCategoryForWorkspace(params: {
   categoryHint: string | null | undefined;
 }) {
   const sourceHint = (params.categoryHint || '').trim();
-  const fallbackHint = params.flowType === 'income' ? 'Receitas' : 'Outros';
+  const fallbackHint = params.flowType === 'income' ? 'Recebimento' : 'Outros';
   const effectiveHint = sourceHint || fallbackHint;
 
   const candidates = await collectWorkspaceCategoryCandidates(params.workspaceId);
@@ -128,7 +128,11 @@ export async function resolveCategoryForWorkspace(params: {
     return result;
   }
 
-  const normalizedTarget = normalizeCategoryKey(match.canonicalHint || effectiveHint);
+  const shortCategoryName = buildShortCategoryName({
+    hint: match.canonicalHint || effectiveHint,
+    flowType: params.flowType,
+  });
+  const normalizedTarget = normalizeCategoryKey(shortCategoryName);
   const existingGlobalCategory = normalizedTarget
     ? await findCategoryByNormalizedName(normalizedTarget)
     : null;
@@ -148,10 +152,9 @@ export async function resolveCategoryForWorkspace(params: {
     return result;
   }
 
-  const categoryName = toCategoryDisplayName(match.canonicalHint || effectiveHint);
   const created = await prisma.category.create({
     data: {
-      name: categoryName,
+      name: shortCategoryName,
       color: '#3B82F6',
       icon: 'tag',
     },
@@ -186,4 +189,3 @@ export async function resolveCategoryForWorkspace(params: {
 
   return result;
 }
-

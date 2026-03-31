@@ -248,6 +248,21 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
     },
   });
 
+  await logWhatsAppAssistantEvent({
+    workspaceId: workspace.workspaceId,
+    event: 'INTENT_PARSE_SUCCESS',
+    payload: {
+      messageId,
+      intent: parsedIntent.intent,
+      confidence: parsedIntent.confidence,
+      rawUserUtterance: parsedIntent.rawUserUtterance || canonicalText,
+      normalizedMeaning: parsedIntent.normalizedMeaning || null,
+      categoryHint: parsedIntent.transaction?.categoryHint || null,
+      shortCategoryName: parsedIntent.transaction?.shortCategoryName || null,
+      shortDescription: parsedIntent.transaction?.shortDescription || null,
+    },
+  });
+
   const persistedReplyMode = await getWorkspaceReplyMode(workspace.workspaceId);
 
   if (parsedIntent.intent === 'set_reply_mode') {
@@ -297,6 +312,9 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
   let resultText = UNKNOWN_COMMAND_HELP;
   let categoryAudit: unknown = null;
+  let generatedDescription: string | null = null;
+  let responsePreview: string | null = null;
+  let savedDescriptionLength: number | null = null;
   try {
     await logWhatsAppAssistantEvent({
       workspaceId: workspace.workspaceId,
@@ -314,20 +332,27 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
         payload: {
           messageId,
           intent: parsedIntent.intent,
-          hint: parsedIntent.transaction?.categoryHint || parsedIntent.transaction?.description || canonicalText,
+          hint:
+            parsedIntent.transaction?.shortCategoryName ||
+            parsedIntent.transaction?.categoryHint ||
+            parsedIntent.transaction?.description ||
+            canonicalText,
         },
       });
 
       const execution = await executeCreateExpense({
         ctx: { workspaceId: workspace.workspaceId, messageId, parsedText: canonicalText },
         amount: Number(parsedIntent.transaction?.amount || 0),
-        description: parsedIntent.transaction?.description || canonicalText,
+        descriptionHint: parsedIntent.transaction?.shortDescription || parsedIntent.transaction?.description || null,
         merchant: parsedIntent.transaction?.merchant || null,
-        categoryHint: parsedIntent.transaction?.categoryHint || null,
+        categoryHint: parsedIntent.transaction?.shortCategoryName || parsedIntent.transaction?.categoryHint || null,
         dateHint: parsedIntent.transaction?.date || null,
       });
       resultText = execution.summaryText;
       categoryAudit = execution.categoryAudit;
+      generatedDescription = execution.generatedDescription || null;
+      responsePreview = execution.responsePreview || null;
+      savedDescriptionLength = execution.savedDescriptionLength ?? null;
     } else if (parsedIntent.intent === 'create_income') {
       await logWhatsAppAssistantEvent({
         workspaceId: workspace.workspaceId,
@@ -335,20 +360,27 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
         payload: {
           messageId,
           intent: parsedIntent.intent,
-          hint: parsedIntent.transaction?.categoryHint || parsedIntent.transaction?.description || canonicalText,
+          hint:
+            parsedIntent.transaction?.shortCategoryName ||
+            parsedIntent.transaction?.categoryHint ||
+            parsedIntent.transaction?.description ||
+            canonicalText,
         },
       });
 
       const execution = await executeCreateIncome({
         ctx: { workspaceId: workspace.workspaceId, messageId, parsedText: canonicalText },
         amount: Number(parsedIntent.transaction?.amount || 0),
-        description: parsedIntent.transaction?.description || canonicalText,
+        descriptionHint: parsedIntent.transaction?.shortDescription || parsedIntent.transaction?.description || null,
         merchant: parsedIntent.transaction?.merchant || null,
-        categoryHint: parsedIntent.transaction?.categoryHint || null,
+        categoryHint: parsedIntent.transaction?.shortCategoryName || parsedIntent.transaction?.categoryHint || null,
         dateHint: parsedIntent.transaction?.date || null,
       });
       resultText = execution.summaryText;
       categoryAudit = execution.categoryAudit;
+      generatedDescription = execution.generatedDescription || null;
+      responsePreview = execution.responsePreview || null;
+      savedDescriptionLength = execution.savedDescriptionLength ?? null;
     } else if (parsedIntent.intent === 'create_goal') {
       const execution = await executeCreateGoal({
         ctx: { workspaceId: workspace.workspaceId, messageId, parsedText: canonicalText },
@@ -438,6 +470,29 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
     resultText = 'Não consegui concluir essa ação agora. Tente novamente com mais contexto e valor.';
   }
+
+  if (generatedDescription) {
+    await logWhatsAppAssistantEvent({
+      workspaceId: workspace.workspaceId,
+      event: 'DESCRIPTION_GENERATED',
+      payload: {
+        messageId,
+        intent: parsedIntent.intent,
+        description: generatedDescription,
+        descriptionLength: savedDescriptionLength,
+      },
+    });
+  }
+
+  await logWhatsAppAssistantEvent({
+    workspaceId: workspace.workspaceId,
+    event: 'WHATSAPP_RESPONSE_GENERATED',
+    payload: {
+      messageId,
+      intent: parsedIntent.intent,
+      responsePreview: responsePreview || resultText,
+    },
+  });
 
   await sendWhatsAppTextMessage({
     to: sender,

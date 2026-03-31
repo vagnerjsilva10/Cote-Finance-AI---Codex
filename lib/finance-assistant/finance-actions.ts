@@ -1,8 +1,10 @@
-import 'server-only';
+﻿import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import { mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
 import { resolveCategoryForWorkspace, type CategoryResolutionResult } from '@/lib/finance-assistant/category-resolver.service';
+import { generateTransactionDescription } from '@/lib/finance-assistant/generate-transaction-description';
+import { generateWhatsAppConfirmationMessage } from '@/lib/finance-assistant/generate-whatsapp-confirmation-message';
 
 type ExecutionContext = {
   workspaceId: string;
@@ -13,20 +15,13 @@ type ExecutionContext = {
 type FinanceExecutionResult = {
   summaryText: string;
   categoryAudit?: CategoryResolutionResult | null;
+  generatedDescription?: string | null;
+  responsePreview?: string | null;
+  savedDescriptionLength?: number | null;
 };
 
 function formatCurrency(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function parseAmount(value: unknown) {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (typeof value === 'string') {
-    const normalized = value.replace(/\./g, '').replace(',', '.');
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
 }
 
 function parseDateHint(value: string | null | undefined) {
@@ -78,17 +73,12 @@ async function getPrimaryWallet(workspaceId: string) {
 export async function executeCreateExpense(params: {
   ctx: ExecutionContext;
   amount: number;
-  description: string;
+  descriptionHint?: string | null;
   merchant?: string | null;
   categoryHint?: string | null;
   dateHint?: string | null;
 }) {
   const wallet = await getPrimaryWallet(params.ctx.workspaceId);
-  const category = await resolveCategoryForWorkspace({
-    workspaceId: params.ctx.workspaceId,
-    flowType: 'expense',
-    categoryHint: params.categoryHint || params.merchant || params.description,
-  });
 
   const existing = await prisma.transaction.findFirst({
     where: {
@@ -98,12 +88,31 @@ export async function executeCreateExpense(params: {
     },
     select: { id: true },
   });
+
   if (existing) {
     return {
-      summaryText: 'Essa mensagem já foi processada e o lançamento já está registrado.',
-      categoryAudit: category,
+      summaryText: 'Esse lancamento ja foi processado e continua registrado.',
+      categoryAudit: null,
+      generatedDescription: null,
+      responsePreview: null,
+      savedDescriptionLength: null,
     } satisfies FinanceExecutionResult;
   }
+
+  const category = await resolveCategoryForWorkspace({
+    workspaceId: params.ctx.workspaceId,
+    flowType: 'expense',
+    categoryHint: params.categoryHint || params.merchant || params.descriptionHint || params.ctx.parsedText,
+  });
+
+  const generatedDescription = generateTransactionDescription({
+    intent: 'create_expense',
+    categoryName: category.categoryName,
+    categoryHint: params.categoryHint,
+    merchant: params.merchant,
+    modelShortDescription: params.descriptionHint,
+    rawUtterance: params.ctx.parsedText,
+  });
 
   const date = parseDateHint(params.dateHint) || new Date();
 
@@ -117,7 +126,7 @@ export async function executeCreateExpense(params: {
         payment_method: 'OTHER',
         amount: params.amount,
         date,
-        description: params.description,
+        description: generatedDescription,
         status: 'CONFIRMED',
         origin_type: 'SYSTEM',
         origin_id: `whatsapp:${params.ctx.messageId}`,
@@ -134,31 +143,32 @@ export async function executeCreateExpense(params: {
     });
   });
 
-  const updatedWallet = await prisma.wallet.findUnique({
-    where: { id: wallet.id },
-    select: { balance: true },
+  const responsePreview = generateWhatsAppConfirmationMessage({
+    intent: 'create_expense',
+    amount: params.amount,
+    categoryName: category.categoryName,
+    wasCategoryAutoCreated: category.wasAutoCreated,
+    seed: params.ctx.messageId,
   });
 
   return {
-    summaryText: `Despesa lançada: ${formatCurrency(params.amount)} em ${category.categoryName}. Saldo atual: ${formatCurrency(Number(updatedWallet?.balance || 0))}.`,
+    summaryText: responsePreview,
     categoryAudit: category,
+    generatedDescription,
+    responsePreview,
+    savedDescriptionLength: generatedDescription.length,
   } satisfies FinanceExecutionResult;
 }
 
 export async function executeCreateIncome(params: {
   ctx: ExecutionContext;
   amount: number;
-  description: string;
+  descriptionHint?: string | null;
   merchant?: string | null;
   categoryHint?: string | null;
   dateHint?: string | null;
 }) {
   const wallet = await getPrimaryWallet(params.ctx.workspaceId);
-  const category = await resolveCategoryForWorkspace({
-    workspaceId: params.ctx.workspaceId,
-    flowType: 'income',
-    categoryHint: params.categoryHint || params.merchant || params.description,
-  });
 
   const existing = await prisma.transaction.findFirst({
     where: {
@@ -168,12 +178,31 @@ export async function executeCreateIncome(params: {
     },
     select: { id: true },
   });
+
   if (existing) {
     return {
-      summaryText: 'Essa mensagem já foi processada e o lançamento já está registrado.',
-      categoryAudit: category,
+      summaryText: 'Esse lancamento ja foi processado e continua registrado.',
+      categoryAudit: null,
+      generatedDescription: null,
+      responsePreview: null,
+      savedDescriptionLength: null,
     } satisfies FinanceExecutionResult;
   }
+
+  const category = await resolveCategoryForWorkspace({
+    workspaceId: params.ctx.workspaceId,
+    flowType: 'income',
+    categoryHint: params.categoryHint || params.merchant || params.descriptionHint || params.ctx.parsedText,
+  });
+
+  const generatedDescription = generateTransactionDescription({
+    intent: 'create_income',
+    categoryName: category.categoryName,
+    categoryHint: params.categoryHint,
+    merchant: params.merchant,
+    modelShortDescription: params.descriptionHint,
+    rawUtterance: params.ctx.parsedText,
+  });
 
   const date = parseDateHint(params.dateHint) || new Date();
 
@@ -187,7 +216,7 @@ export async function executeCreateIncome(params: {
         payment_method: 'OTHER',
         amount: params.amount,
         date,
-        description: params.description,
+        description: generatedDescription,
         status: 'CONFIRMED',
         origin_type: 'SYSTEM',
         origin_id: `whatsapp:${params.ctx.messageId}`,
@@ -204,14 +233,20 @@ export async function executeCreateIncome(params: {
     });
   });
 
-  const updatedWallet = await prisma.wallet.findUnique({
-    where: { id: wallet.id },
-    select: { balance: true },
+  const responsePreview = generateWhatsAppConfirmationMessage({
+    intent: 'create_income',
+    amount: params.amount,
+    categoryName: category.categoryName,
+    wasCategoryAutoCreated: category.wasAutoCreated,
+    seed: params.ctx.messageId,
   });
 
   return {
-    summaryText: `Receita lançada: ${formatCurrency(params.amount)} em ${category.categoryName}. Saldo atual: ${formatCurrency(Number(updatedWallet?.balance || 0))}.`,
+    summaryText: responsePreview,
     categoryAudit: category,
+    generatedDescription,
+    responsePreview,
+    savedDescriptionLength: generatedDescription.length,
   } satisfies FinanceExecutionResult;
 }
 
@@ -264,7 +299,7 @@ export async function executeContributeGoal(params: {
   const goal = goals.find((item) => item.name.toLowerCase().includes(hint)) || goals[0];
   if (!goal) {
     return {
-      summaryText: 'Não encontrei nenhuma meta para adicionar valor. Você pode criar uma nova meta primeiro.',
+      summaryText: 'Nao encontrei nenhuma meta para adicionar valor. Voce pode criar uma nova meta primeiro.',
     } satisfies FinanceExecutionResult;
   }
 
@@ -285,7 +320,7 @@ export async function executeContributeGoal(params: {
   const remaining = Math.max(0, Number(updated.target_amount) - Number(updated.current_amount));
 
   return {
-    summaryText: `Contribuição registrada na meta ${updated.name}: +${formatCurrency(params.contributionAmount)}. Falta ${formatCurrency(remaining)} para concluir.`,
+    summaryText: `Contribuicao registrada na meta ${updated.name}: +${formatCurrency(params.contributionAmount)}. Falta ${formatCurrency(remaining)} para concluir.`,
   } satisfies FinanceExecutionResult;
 }
 
@@ -328,7 +363,7 @@ export async function executeCreateDebt(params: {
 }) {
   const dueDate = parseDateHint(params.dueDateHint);
   const dueDay = dueDate ? dueDate.getDate() : params.dueDay && params.dueDay >= 1 && params.dueDay <= 31 ? params.dueDay : 10;
-  const category = params.categoryHint || 'Dívidas';
+  const category = params.categoryHint || 'Dividas';
 
   const created = await prisma.debt.create({
     data: {
@@ -349,7 +384,7 @@ export async function executeCreateDebt(params: {
   });
 
   return {
-    summaryText: `Dívida criada para ${created.creditor} no valor de ${formatCurrency(Number(created.remaining_amount))}.`,
+    summaryText: `Divida criada para ${created.creditor} no valor de ${formatCurrency(Number(created.remaining_amount))}.`,
   } satisfies FinanceExecutionResult;
 }
 
@@ -379,7 +414,7 @@ export async function executePayDebt(params: {
 
   if (!targetDebt) {
     return {
-      summaryText: 'Não encontrei dívida em aberto para registrar pagamento.',
+      summaryText: 'Nao encontrei divida em aberto para registrar pagamento.',
     } satisfies FinanceExecutionResult;
   }
 
@@ -400,7 +435,7 @@ export async function executePayDebt(params: {
   });
 
   return {
-    summaryText: `Pagamento da dívida registrado para ${updated.creditor}: ${formatCurrency(params.amount)}. Saldo devedor atual: ${formatCurrency(Number(updated.remaining_amount))}.`,
+    summaryText: `Pagamento da divida registrado para ${updated.creditor}: ${formatCurrency(params.amount)}. Saldo devedor atual: ${formatCurrency(Number(updated.remaining_amount))}.`,
   } satisfies FinanceExecutionResult;
 }
 
@@ -440,7 +475,7 @@ export async function executeQuerySummary(params: {
 
     const label = categoryHint || 'a categoria informada';
     return {
-      summaryText: `Neste mês, você gastou ${formatCurrency(total)} com ${label}.`,
+      summaryText: `Neste mes, voce gastou ${formatCurrency(total)} com ${label}.`,
     } satisfies FinanceExecutionResult;
   }
 
@@ -458,7 +493,7 @@ export async function executeQuerySummary(params: {
     const goalHint = String(params.goalHint || '').trim().toLowerCase();
     const goal = goals.find((item) => item.name.toLowerCase().includes(goalHint)) || goals[0];
     if (!goal) {
-      return { summaryText: 'Ainda não há metas cadastradas no seu workspace.' } satisfies FinanceExecutionResult;
+      return { summaryText: 'Ainda nao ha metas cadastradas no seu workspace.' } satisfies FinanceExecutionResult;
     }
     const remaining = Math.max(0, Number(goal.target_amount) - Number(goal.current_amount));
     return {
@@ -473,7 +508,7 @@ export async function executeQuerySummary(params: {
     });
     const total = investments.reduce((acc, item) => acc + Number(item.current_amount), 0);
     return {
-      summaryText: `Seu total atual em investimentos é ${formatCurrency(total)}.`,
+      summaryText: `Seu total atual em investimentos e ${formatCurrency(total)}.`,
     } satisfies FinanceExecutionResult;
   }
 
@@ -486,7 +521,7 @@ export async function executeQuerySummary(params: {
     });
     const total = debts.reduce((acc, item) => acc + Number(item.remaining_amount), 0);
     return {
-      summaryText: `Seu total em dívidas abertas é ${formatCurrency(total)}.`,
+      summaryText: `Seu total em dividas abertas e ${formatCurrency(total)}.`,
     } satisfies FinanceExecutionResult;
   }
 
@@ -514,7 +549,6 @@ export async function executeQuerySummary(params: {
   const balance = totalIncome - totalExpense;
 
   return {
-    summaryText: `Resumo do mês: receitas ${formatCurrency(totalIncome)}, despesas ${formatCurrency(totalExpense)} e saldo ${formatCurrency(balance)}.`,
+    summaryText: `Resumo do mes: receitas ${formatCurrency(totalIncome)}, despesas ${formatCurrency(totalExpense)} e saldo ${formatCurrency(balance)}.`,
   } satisfies FinanceExecutionResult;
 }
-

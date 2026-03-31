@@ -1,4 +1,4 @@
-import 'server-only';
+﻿import 'server-only';
 
 import { Type } from '@google/genai';
 import { getGeminiClient } from '@/lib/gemini';
@@ -24,6 +24,9 @@ const RESPONSE_SCHEMA = {
     },
     confidence: { type: Type.NUMBER },
     needsConfirmation: { type: Type.BOOLEAN },
+    rawUserUtterance: { type: Type.STRING, nullable: true },
+    normalizedMeaning: { type: Type.STRING, nullable: true },
+    responseStyleHint: { type: Type.STRING, nullable: true },
     replyModeRequested: {
       type: Type.STRING,
       enum: ['text', 'audio', 'both', 'unchanged'],
@@ -37,6 +40,8 @@ const RESPONSE_SCHEMA = {
         description: { type: Type.STRING, nullable: true },
         merchant: { type: Type.STRING, nullable: true },
         categoryHint: { type: Type.STRING, nullable: true },
+        shortCategoryName: { type: Type.STRING, nullable: true },
+        shortDescription: { type: Type.STRING, nullable: true },
         walletHint: { type: Type.STRING, nullable: true },
         date: { type: Type.STRING, nullable: true },
         notes: { type: Type.STRING, nullable: true },
@@ -104,12 +109,14 @@ export async function parseFinancialIntentWithGemini(params: {
 }): Promise<ParsedFinancialIntent> {
   const ai = getGeminiClient();
   const prompt = [
-    'Você é um parser de intenção financeira para WhatsApp.',
-    'Retorne APENAS JSON válido.',
-    `Data de referência: ${params.todayIsoDate}.`,
+    'Voce e um parser de intencao financeira para WhatsApp.',
+    'Retorne APENAS JSON valido.',
+    `Data de referencia: ${params.todayIsoDate}.`,
     'Classifique a mensagem em uma intent e extraia entidades objetivas.',
-    'Use "unknown" quando não houver intenção confiável.',
-    'Respeite o schema e não invente valores ausentes.',
+    'Se preencher transaction.shortCategoryName, use nome curto e padronizado, nunca frase inteira.',
+    'Se preencher transaction.shortDescription, use texto curto, limpo e sem transcricao literal.',
+    'Use unknown quando nao houver intencao confiavel.',
+    'Respeite o schema e nao invente valores ausentes.',
     '',
     'Mensagem:',
     params.userText,
@@ -128,4 +135,3 @@ export async function parseFinancialIntentWithGemini(params: {
   const payload = JSON.parse(response.text || '{}');
   return ParsedFinancialIntentSchema.parse(payload);
 }
-

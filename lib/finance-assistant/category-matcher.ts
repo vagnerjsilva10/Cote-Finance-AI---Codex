@@ -1,7 +1,8 @@
 import {
-  CATEGORY_ALIAS_TABLE,
+  areEquivalentCategoryKeys,
   normalizeCategoryKey,
   normalizeCategoryToken,
+  resolveCanonicalCategoryHint,
 } from '@/lib/finance-assistant/category-normalizer';
 
 export type CategoryCandidate = {
@@ -34,18 +35,7 @@ function computeTokenSimilarity(a: string, b: string) {
 }
 
 function findAliasCanonical(params: { hint: string; flowType: 'expense' | 'income' }) {
-  const normalizedHint = normalizeCategoryToken(params.hint);
-  for (const item of CATEGORY_ALIAS_TABLE) {
-    if (item.type !== 'both' && item.type !== params.flowType) continue;
-    for (const alias of item.aliases) {
-      const normalizedAlias = normalizeCategoryToken(alias);
-      if (!normalizedAlias) continue;
-      if (normalizedHint === normalizedAlias || normalizedHint.includes(normalizedAlias)) {
-        return item.canonical;
-      }
-    }
-  }
-  return null;
+  return resolveCanonicalCategoryHint(params);
 }
 
 export function matchCategoryCandidate(params: {
@@ -79,7 +69,7 @@ export function matchCategoryCandidate(params: {
       };
     }
 
-    if (aliasCanonical && normalizeCategoryKey(aliasCanonical) === normalizedCandidate) {
+    if (aliasCanonical && areEquivalentCategoryKeys(aliasCanonical, normalizedCandidate)) {
       return {
         candidate,
         score: 0.97,
@@ -104,4 +94,3 @@ export function matchCategoryCandidate(params: {
 
   return best;
 }
-
