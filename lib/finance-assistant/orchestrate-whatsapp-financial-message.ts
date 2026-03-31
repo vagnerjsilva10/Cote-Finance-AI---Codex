@@ -460,6 +460,17 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
           mode: resolvedReplyMode,
         },
       });
+    } else {
+      await logWhatsAppAssistantEvent({
+        workspaceId: workspace.workspaceId,
+        event: 'WHATSAPP_REPLY_AUDIO_SKIPPED',
+        payload: {
+          messageId,
+          intent: parsedIntent.intent,
+          mode: resolvedReplyMode,
+          reason: 'tts_unavailable_or_failed',
+        },
+      });
     }
   }
 

@@ -22,6 +22,7 @@ export type WhatsAppAssistantAuditEvent =
   | 'ACTION_EXECUTION_ERROR'
   | 'WHATSAPP_REPLY_TEXT_SENT'
   | 'WHATSAPP_REPLY_AUDIO_SENT'
+  | 'WHATSAPP_REPLY_AUDIO_SKIPPED'
   | 'WHATSAPP_IDEMPOTENT_SKIP';
 
 const EVENT_PREFIX = 'whatsapp.assistant.';
@@ -52,4 +53,3 @@ export async function logWhatsAppAssistantEvent(params: {
     payload: logPayload,
   });
 }
-
