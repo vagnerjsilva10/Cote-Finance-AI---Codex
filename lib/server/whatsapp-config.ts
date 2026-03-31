@@ -44,6 +44,7 @@ export type WorkspaceWhatsAppConfig = {
   lastErrorCategory: string | null;
   lastValidatedAt: string | null;
   lastTestSentAt: string | null;
+  assistantReplyMode: 'text' | 'audio' | 'both';
   pendingConfirmation: {
     action: 'undo_last_transaction' | 'remove_recent_transaction';
     transactionId: string;
@@ -108,6 +109,13 @@ function normalizeConnectionState(value: unknown): WorkspaceWhatsAppConfig['last
   if (normalized === 'failed' || normalized === 'error') return 'failed';
   if (normalized === 'connecting' || normalized === 'testing') return 'connecting';
   return 'idle';
+}
+
+function normalizeAssistantReplyMode(value: unknown): WorkspaceWhatsAppConfig['assistantReplyMode'] {
+  const normalized = cleanValue(value).toLowerCase();
+  if (normalized === 'audio') return 'audio';
+  if (normalized === 'both') return 'both';
+  return 'text';
 }
 
 function normalizePendingConfirmation(
@@ -200,6 +208,7 @@ function readConfigPayload(payload: unknown): WorkspaceWhatsAppConfig {
       sourceRecord && typeof sourceRecord.lastValidatedAt === 'string' ? sourceRecord.lastValidatedAt : null,
     lastTestSentAt:
       sourceRecord && typeof sourceRecord.lastTestSentAt === 'string' ? sourceRecord.lastTestSentAt : null,
+    assistantReplyMode: sourceRecord ? normalizeAssistantReplyMode(sourceRecord.assistantReplyMode) : 'text',
     pendingConfirmation: sourceRecord ? normalizePendingConfirmation(sourceRecord.pendingConfirmation) : null,
     pendingConnection: sourceRecord ? normalizePendingDelivery(sourceRecord.pendingConnection) : null,
     pendingTest: sourceRecord ? normalizePendingDelivery(sourceRecord.pendingTest) : null,
@@ -276,6 +285,7 @@ export async function getWorkspaceWhatsAppConfig(workspaceId: string): Promise<W
       lastErrorCategory: null,
       lastValidatedAt: null,
       lastTestSentAt: null,
+      assistantReplyMode: 'text',
       pendingConfirmation: null,
       pendingConnection: null,
       pendingTest: null,
@@ -315,6 +325,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
   pendingConfirmation?: WorkspaceWhatsAppConfig['pendingConfirmation'] | null;
   pendingConnection?: WorkspaceWhatsAppConfig['pendingConnection'] | null;
   pendingTest?: WorkspaceWhatsAppConfig['pendingTest'] | null;
+  assistantReplyMode?: WorkspaceWhatsAppConfig['assistantReplyMode'];
 }) {
   const currentConfig = await getWorkspaceWhatsAppConfig(params.workspaceId);
   const normalizedConfig: WorkspaceWhatsAppConfig = {
@@ -339,6 +350,10 @@ export async function saveWorkspaceWhatsAppConfig(params: {
       typeof params.lastValidatedAt === 'undefined' ? currentConfig.lastValidatedAt : params.lastValidatedAt,
     lastTestSentAt:
       typeof params.lastTestSentAt === 'undefined' ? currentConfig.lastTestSentAt : params.lastTestSentAt,
+    assistantReplyMode:
+      typeof params.assistantReplyMode === 'undefined'
+        ? currentConfig.assistantReplyMode
+        : normalizeAssistantReplyMode(params.assistantReplyMode),
     pendingConfirmation:
       typeof params.pendingConfirmation === 'undefined'
         ? currentConfig.pendingConfirmation
@@ -393,6 +408,7 @@ export async function saveWorkspaceWhatsAppConfig(params: {
         lastErrorCategory: normalizedConfig.lastErrorCategory,
         lastValidatedAt: normalizedConfig.lastValidatedAt,
         lastTestSentAt: normalizedConfig.lastTestSentAt,
+        assistantReplyMode: normalizedConfig.assistantReplyMode,
         pendingConfirmation: normalizedConfig.pendingConfirmation,
         pendingConnection: normalizedConfig.pendingConnection,
         pendingTest: normalizedConfig.pendingTest,
@@ -429,6 +445,7 @@ export function resolveWorkspaceWhatsAppConfig(params: {
     lastErrorCategory: params.workspaceConfig.lastErrorCategory,
     lastValidatedAt: params.workspaceConfig.lastValidatedAt,
     lastTestSentAt: params.workspaceConfig.lastTestSentAt,
+    assistantReplyMode: params.workspaceConfig.assistantReplyMode,
     pendingConfirmation: params.workspaceConfig.pendingConfirmation,
     pendingConnection: params.workspaceConfig.pendingConnection,
     pendingTest: params.workspaceConfig.pendingTest,

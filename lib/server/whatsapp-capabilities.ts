@@ -9,7 +9,8 @@ export type WhatsAppCapability =
   | 'auto_advanced_alerts'
   | 'ai_assistant'
   | 'admin_actions'
-  | 'gemini_transaction_parser';
+  | 'gemini_transaction_parser'
+  | 'financial_assistant';
 
 export type WhatsAppCapabilityPolicy = {
   requiredPlan: 'PRO' | 'PREMIUM';
@@ -29,6 +30,7 @@ export const WHATSAPP_CAPABILITY_MATRIX: Record<WorkspacePlan, WhatsAppPlanCapab
     ai_assistant: false,
     admin_actions: false,
     gemini_transaction_parser: false,
+    financial_assistant: false,
   },
   PRO: {
     connect: true,
@@ -39,6 +41,7 @@ export const WHATSAPP_CAPABILITY_MATRIX: Record<WorkspacePlan, WhatsAppPlanCapab
     ai_assistant: false,
     admin_actions: false,
     gemini_transaction_parser: false,
+    financial_assistant: true,
   },
   PREMIUM: {
     connect: true,
@@ -49,6 +52,7 @@ export const WHATSAPP_CAPABILITY_MATRIX: Record<WorkspacePlan, WhatsAppPlanCapab
     ai_assistant: true,
     admin_actions: true,
     gemini_transaction_parser: true,
+    financial_assistant: true,
   },
 };
 
@@ -92,6 +96,11 @@ const CAPABILITY_POLICY: Record<WhatsAppCapability, WhatsAppCapabilityPolicy> = 
     requiredPlan: 'PREMIUM',
     code: 'WHATSAPP_REQUIRES_PREMIUM',
     message: 'O parser avançado de transações via WhatsApp está disponível no plano Premium.',
+  },
+  financial_assistant: {
+    requiredPlan: 'PRO',
+    code: 'WHATSAPP_REQUIRES_PRO',
+    message: 'O assistente financeiro conversacional no WhatsApp está disponível nos planos Pro e Premium.',
   },
 };
 

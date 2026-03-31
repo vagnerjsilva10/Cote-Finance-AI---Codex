@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Type } from '@google/genai';
 import { getGeminiClient, GEMINI_KEY_MISSING_ERROR } from '@/lib/gemini';
 import { prisma } from '@/lib/prisma';
+import { getWorkspaceFeatureAccess } from '@/lib/billing/feature-access-service';
 import {
   getWhatsAppConfig,
   getWhatsAppVerifyToken,
@@ -15,6 +16,8 @@ import { hasWhatsAppCapabilityForSubscription } from '@/lib/server/whatsapp-capa
 import { getWorkspaceWhatsAppConfig, saveWorkspaceWhatsAppConfig } from '@/lib/server/whatsapp-config';
 import { logWhatsAppOperationalEvent } from '@/lib/server/whatsapp-observability';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
+import { normalizeIncomingWhatsAppMessages } from '@/lib/whatsapp/normalize-incoming-message';
+import { orchestrateWhatsAppFinancialMessage } from '@/lib/finance-assistant/orchestrate-whatsapp-financial-message';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -100,6 +103,9 @@ const HELP_MESSAGE = [
   '- quais contas vencem primeiro',
   '- ajuda',
 ].join('\n');
+
+const WHATSAPP_PRO_FEATURE_BLOCK_MESSAGE =
+  'Essa automacao inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lancar despesas, metas, dividas e investimentos por mensagem.';
 
 const EXPENSE_KEYWORDS = ['gastei', 'paguei', 'despesa', 'comprei', 'debito', 'conta'];
 const INCOME_KEYWORDS = ['recebi', 'ganhei', 'entrada', 'salario', 'faturei', 'credito'];
@@ -1811,6 +1817,30 @@ async function processIncomingMessage(message: IncomingTextMessage) {
     return;
   }
 
+  const financialAssistantAccess = await getWorkspaceFeatureAccess({
+    workspaceId: workspace.id,
+    featureKey: 'whatsapp_financial_assistant',
+  });
+
+  if (!financialAssistantAccess.allowed) {
+    await sendWhatsAppTextMessage({
+      to: sender,
+      text: WHATSAPP_PRO_FEATURE_BLOCK_MESSAGE,
+    });
+    await logWorkspaceEventSafe({
+      workspaceId: workspace.id,
+      type: 'whatsapp.financial_assistant.denied',
+      payload: {
+        messageId: message.id,
+        reason: financialAssistantAccess.reason,
+        plan: financialAssistantAccess.plan,
+        status: financialAssistantAccess.status,
+        source: financialAssistantAccess.source,
+      },
+    });
+    return;
+  }
+
   const txResult = await prisma.$transaction(async (tx) => {
     let wallet = await tx.wallet.findFirst({
       where: { workspace_id: workspace.id },
@@ -1981,7 +2011,7 @@ export async function POST(req: Request) {
 
     const body = rawBody ? JSON.parse(rawBody) : {};
     const incomingStatuses = extractIncomingStatuses(body);
-    const incomingMessages = extractIncomingMessages(body);
+    const incomingMessages = normalizeIncomingWhatsAppMessages(body);
     if (incomingMessages.length > 0 || incomingStatuses.length > 0) {
       getWhatsAppConfig();
     }
@@ -2001,11 +2031,29 @@ export async function POST(req: Request) {
 
     for (const message of incomingMessages) {
       try {
-        await processIncomingMessage(message);
+        if (message.kind === 'audio') {
+          await orchestrateWhatsAppFinancialMessage({ message });
+          continue;
+        }
+
+        const orchestrationResult = await orchestrateWhatsAppFinancialMessage({
+          message,
+          allowUnknownPassthrough: true,
+        });
+        if (orchestrationResult.handled) {
+          continue;
+        }
+
+        await processIncomingMessage({
+          id: message.messageId,
+          from: message.from,
+          body: message.text,
+        });
       } catch (error) {
         console.error('WhatsApp message processing error:', {
-          messageId: message.id,
+          messageId: message.messageId,
           from: message.from,
+          kind: message.kind,
           error,
         });
       }
