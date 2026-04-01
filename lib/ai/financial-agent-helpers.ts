@@ -28,7 +28,7 @@ export type FinancialAgentHeuristicIntent = {
   isFinancial: boolean;
 };
 
-export const PREMIUM_ONLY_MESSAGE = 'Esse recurso est· disponÌvel apenas no plano Premium.';
+export const PREMIUM_ONLY_MESSAGE = 'Esse recurso est√° dispon√≠vel apenas no plano Premium.';
 
 function normalize(text: string) {
   return text
@@ -86,7 +86,7 @@ export function deriveFinancialIntentHeuristically(text: string): FinancialAgent
   const categoryHint = inferCategoryHintFromText(normalized);
   const goalName = extractGoalNameHint(text);
   const containsFinancialWord =
-    /(gastei|paguei|comprei|recebi|ganhei|meta|investi|aporte|divida|dÌvida|categoria|lancamento|lanÁamento|corrigir|na verdade|deleta|apaga|remove)/i.test(
+    /(gastei|paguei|comprei|recebi|ganhei|meta|investi|aporte|divida|d√≠vida|categoria|lancamento|lan√ßamento|corrigir|na verdade|deleta|apaga|remove)/i.test(
       normalized
     );
 
@@ -111,7 +111,7 @@ export function deriveFinancialIntentHeuristically(text: string): FinancialAgent
     };
   }
 
-  if (/(deleta|apaga|remove|exclui).*(lancamento|lanÁamento|transacao|transaÁ„o)/i.test(normalized)) {
+  if (/(deleta|apaga|remove|exclui).*(lancamento|lan√ßamento|transacao|transa√ß√£o)/i.test(normalized)) {
     return {
       action: 'deleteTransaction',
       confidence: 0.82,
@@ -195,7 +195,7 @@ export function deriveFinancialIntentHeuristically(text: string): FinancialAgent
     };
   }
 
-  if (/(paguei|quitei).*(divida|dÌvida|fatura)/i.test(normalized) && amount) {
+  if (/(paguei|quitei).*(divida|d√≠vida|fatura)/i.test(normalized) && amount) {
     return {
       action: 'registerDebtPayment',
       confidence: 0.84,
@@ -237,7 +237,7 @@ export function deriveFinancialIntentHeuristically(text: string): FinancialAgent
     };
   }
 
-  if (/(gastei|paguei|comprei|despesa|saida|saÌda)/i.test(normalized) && amount) {
+  if (/(gastei|paguei|comprei|despesa|saida|sa√≠da)/i.test(normalized) && amount) {
     return {
       action: 'createTransaction',
       confidence: 0.92,
@@ -326,13 +326,13 @@ export function buildFinancialAgentSummary(params: {
   }
 
   if (params.action === 'deleteTransaction') {
-    return 'Removi o lanÁamento anterior.';
+    return 'Removi o lan√ßamento anterior.';
   }
 
   if (params.action === 'addGoalContribution') {
     const amount = Number(result.contributedAmount || 0);
     const goalName = String(result.goalName || 'sua meta').trim();
-    return `Adicionei ${formatCurrency(amount)} ‡ meta ${goalName}.`;
+    return `Adicionei ${formatCurrency(amount)} √† meta ${goalName}.`;
   }
 
   if (params.action === 'createGoal') {
@@ -349,7 +349,7 @@ export function buildFinancialAgentSummary(params: {
 
   if (params.action === 'registerDebtPayment') {
     const amount = Number(result.paidAmount || 0);
-    const creditor = String(result.creditor || 'dÌvida').trim();
+    const creditor = String(result.creditor || 'd√≠vida').trim();
     return `Pagamento de ${formatCurrency(amount)} registrado para ${creditor}.`;
   }
 
