@@ -27,7 +27,7 @@ const PERIOD_OPTIONS: Array<{ key: PeriodPreset; label: string; compact: string 
   { key: 'last_month', label: 'Mês passado', compact: 'Mês passado' },
   { key: 'last_90_days', label: '90 dias', compact: '90D' },
   { key: 'this_year', label: 'Ano atual', compact: 'Ano' },
-  { key: 'custom', label: 'Personalizado', compact: 'Custom' },
+  { key: 'custom', label: 'Personalizado', compact: 'Personalizado' },
 ];
 
 function getBrowserTimeZone() {
@@ -115,3 +115,4 @@ export function PeriodFilter({
     </section>
   );
 }
+
