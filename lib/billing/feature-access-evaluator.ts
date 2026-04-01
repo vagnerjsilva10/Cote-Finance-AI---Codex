@@ -1,4 +1,6 @@
-export type FeatureKey = 'whatsapp_financial_assistant';
+export type FeatureKey =
+  | 'whatsapp_financial_assistant'
+  | 'premium_financial_conversational_assistant';
 export type WorkspacePlan = 'FREE' | 'PRO' | 'PREMIUM';
 
 type AccessReason =
@@ -20,6 +22,7 @@ export type FeatureAccessResult = {
 
 const FEATURE_MIN_PLAN: Record<FeatureKey, WorkspacePlan> = {
   whatsapp_financial_assistant: 'PRO',
+  premium_financial_conversational_assistant: 'PREMIUM',
 };
 
 const PLAN_WEIGHT: Record<WorkspacePlan, number> = {

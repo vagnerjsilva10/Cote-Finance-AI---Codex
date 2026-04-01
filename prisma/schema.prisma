@@ -63,6 +63,7 @@ model Workspace {
   events                WorkspaceEvent[]
   financial_events      FinancialEvent[]
   marketing_attribution MarketingAttribution[]
+  conversation_memories ConversationMemory[]
 }
 
 model Goal {
@@ -474,4 +475,19 @@ model MarketingAttribution {
   @@index([utm_source, created_at])
   @@index([utm_campaign, created_at])
   @@index([workspace_id])
+}
+
+model ConversationMemory {
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_phone   String
+  messages     Json
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, user_phone])
+  @@index([workspace_id, updated_at])
+  @@map("conversation_memory")
 }

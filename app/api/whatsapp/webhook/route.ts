@@ -21,6 +21,13 @@ import { orchestrateWhatsAppFinancialMessage } from '@/lib/finance-assistant/orc
 import { parseIntentHeuristically } from '@/lib/finance-assistant/heuristic-intent';
 import { decideLegacyPassthrough } from '@/lib/finance-assistant/legacy-passthrough-policy';
 import { warnIfTtsEnvMissingAtStartup } from '@/lib/config/env';
+import { runFinancialAgent } from '@/lib/ai/financial-agent';
+import { resolveWorkspaceFromWhatsAppSender } from '@/lib/finance-assistant/resolve-user-workspace-from-whatsapp';
+import { getWorkspaceReplyMode } from '@/lib/finance-assistant/reply-mode.service';
+import { trySendWhatsAppAudioReply } from '@/lib/finance-assistant/audio-reply.service';
+import { downloadWhatsAppMedia, isSupportedIncomingAudioMime } from '@/lib/whatsapp/download-whatsapp-media';
+import { transcribeAudioWithGemini } from '@/lib/ai/gemini-transcribe';
+import type { NormalizedIncomingWhatsAppMessage } from '@/lib/whatsapp/normalize-incoming-message';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -1971,6 +1978,75 @@ async function processIncomingMessage(message: IncomingTextMessage) {
   });
 }
 
+async function tryHandlePremiumFinancialAgentMessage(message: NormalizedIncomingWhatsAppMessage) {
+  const workspace = await resolveWorkspaceFromWhatsAppSender(message.from);
+  if (!workspace) {
+    return { handled: false };
+  }
+
+  let canonicalText = '';
+  if (message.kind === 'audio') {
+    if (!isSupportedIncomingAudioMime(message.mimeType)) {
+      await sendWhatsAppTextMessage({
+        to: message.from,
+        text: 'Recebi seu áudio, mas esse formato não está disponível agora. Pode enviar por texto?',
+      });
+      return { handled: true };
+    }
+
+    try {
+      const media = await downloadWhatsAppMedia({
+        mediaId: message.audioId,
+        expectedMimeType: message.mimeType,
+      });
+      canonicalText = await transcribeAudioWithGemini({
+        audioBuffer: media.data,
+        mimeType: media.mimeType,
+      });
+    } catch {
+      await sendWhatsAppTextMessage({
+        to: message.from,
+        text: 'Não consegui entender o áudio agora. Pode repetir em texto?',
+      });
+      return { handled: true };
+    }
+  } else {
+    canonicalText = message.text;
+  }
+
+  const replyMode = await getWorkspaceReplyMode(workspace.workspaceId);
+  const agentResult = await runFinancialAgent({
+    workspaceId: workspace.workspaceId,
+    channel: 'whatsapp',
+    messageId: message.messageId,
+    userPhone: message.from,
+    text: canonicalText,
+    preferredReplyMode: replyMode,
+  });
+
+  if (!agentResult.handled || !agentResult.responseText) {
+    return { handled: false };
+  }
+
+  await sendWhatsAppTextMessage({
+    to: message.from,
+    text: agentResult.responseText,
+  });
+
+  if (!agentResult.blockedByPlan && (agentResult.responseMode === 'audio' || agentResult.responseMode === 'both')) {
+    await trySendWhatsAppAudioReply({
+      workspaceId: workspace.workspaceId,
+      messageId: message.messageId,
+      intent: agentResult.intent,
+      mode: agentResult.responseMode,
+      to: message.from,
+      textForSpeech: agentResult.responseText,
+    });
+  }
+
+  return { handled: true };
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -2035,6 +2111,11 @@ export async function POST(req: Request) {
 
     for (const message of incomingMessages) {
       try {
+        const premiumAgentResult = await tryHandlePremiumFinancialAgentMessage(message);
+        if (premiumAgentResult.handled) {
+          continue;
+        }
+
         if (message.kind === 'audio') {
           await orchestrateWhatsAppFinancialMessage({ message });
           continue;

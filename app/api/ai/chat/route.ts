@@ -12,6 +12,8 @@ import {
   getRuntimePlanLimits,
   resolveFeatureFlagState,
 } from '@/lib/server/superadmin-governance';
+import { runFinancialAgent } from '@/lib/ai/financial-agent';
+import { synthesizeSpeechWithGemini } from '@/lib/ai/gemini-tts';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -59,6 +61,53 @@ async function getCurrentMonthAiUsage(workspaceId: string) {
 export async function POST(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
+    const payload = await req.json().catch(() => ({}));
+
+    const message = typeof payload?.message === 'string' ? payload.message.trim() : '';
+    const history = Array.isArray(payload?.history) ? payload.history : [];
+    const contextPayload = payload?.context ?? {};
+    const requestedReplyMode =
+      payload?.replyMode === 'audio' || payload?.replyMode === 'both' || payload?.replyMode === 'text'
+        ? payload.replyMode
+        : contextPayload?.replyMode === 'audio' || contextPayload?.replyMode === 'both' || contextPayload?.replyMode === 'text'
+        ? contextPayload.replyMode
+        : 'text';
+
+    if (!message) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
+
+    const financialAgentResult = await runFinancialAgent({
+      workspaceId: context.workspaceId,
+      channel: 'app',
+      userId: context.userId,
+      messageId: null,
+      text: message,
+      preferredReplyMode: requestedReplyMode,
+    });
+
+    if (financialAgentResult.handled && financialAgentResult.responseText) {
+      let audio: { mimeType: string; base64: string } | null = null;
+      if (!financialAgentResult.blockedByPlan && (financialAgentResult.responseMode === 'audio' || financialAgentResult.responseMode === 'both')) {
+        try {
+          const tts = await synthesizeSpeechWithGemini(financialAgentResult.responseText);
+          audio = {
+            mimeType: tts.mimeType,
+            base64: tts.audioBuffer.toString('base64'),
+          };
+        } catch {
+          audio = null;
+        }
+      }
+
+      return NextResponse.json({
+        text: financialAgentResult.responseText,
+        audio,
+        source: 'financial_agent',
+        blockedByPlan: financialAgentResult.blockedByPlan,
+      });
+    }
+
     const plan = await getWorkspacePlan(context.workspaceId, context.userId);
     const aiFlag = await resolveFeatureFlagState({
       key: 'advanced_ai_insights',
@@ -98,15 +147,6 @@ export async function POST(req: Request) {
     }
 
     const ai = getGeminiClient();
-    const payload = await req.json().catch(() => ({}));
-
-    const message = typeof payload?.message === 'string' ? payload.message.trim() : '';
-    const history = Array.isArray(payload?.history) ? payload.history : [];
-    const contextPayload = payload?.context ?? {};
-
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-    }
 
     const financialSummary = contextPayload?.financialSummary ?? {};
     const topExpenseCategories = Array.isArray(financialSummary?.topExpenseCategories)
