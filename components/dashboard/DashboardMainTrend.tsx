@@ -1,20 +1,30 @@
 import * as React from 'react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { DashboardOverviewForecast as DashboardOverviewForecastData } from '@/lib/dashboard/overview';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import type {
+  DashboardOverviewForecast as DashboardOverviewForecastData,
+  DashboardOverviewPeriod,
+} from '@/lib/dashboard/overview';
 import {
   DASHBOARD_CARD_PANEL_CLASSNAME,
   DASHBOARD_CARD_SHELL_CLASSNAME,
   DashboardSkeletonLine,
 } from '@/components/dashboard/dashboard-primitives';
-import { formatCurrency, formatDateShort } from '@/components/dashboard/dashboard-utils';
+import { formatCurrency } from '@/components/dashboard/dashboard-utils';
 import { cn } from '@/lib/utils';
 
 type DashboardMainTrendProps = {
   forecast: DashboardOverviewForecastData | null;
+  period: DashboardOverviewPeriod | null;
   loading: boolean;
 };
-
-type PeriodOption = '30D' | '90D' | '1A';
 
 type TrendRow = {
   date: string;
@@ -24,51 +34,104 @@ type TrendRow = {
   expense: number;
 };
 
-const PERIOD_OPTIONS: PeriodOption[] = ['30D', '90D', '1A'];
 const DAY_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-
-function getWindowSize(period: PeriodOption) {
-  if (period === '30D') return 30;
-  if (period === '90D') return 90;
-  return 365;
-}
+const HOUR_KEY_REGEX = /^(\d{4}-\d{2}-\d{2})T(\d{2}):\d{2}:\d{2}$/;
 
 function parseChartDate(value: string) {
   if (DAY_ONLY_REGEX.test(value)) {
     const [year, month, day] = value.split('-').map(Number);
     return new Date(year, (month || 1) - 1, day || 1);
   }
+
+  const hourMatch = HOUR_KEY_REGEX.exec(value);
+  if (hourMatch) {
+    const datePart = hourMatch[1].split('-').map(Number);
+    const hour = Number(hourMatch[2] || 0);
+    return new Date(
+      datePart[0] || 0,
+      (datePart[1] || 1) - 1,
+      datePart[2] || 1,
+      hour,
+      0,
+      0,
+      0
+    );
+  }
+
   return new Date(value);
 }
 
-function formatXAxisTick(value: string, period: PeriodOption) {
+function formatXAxisTick(value: string, period: DashboardOverviewPeriod | null) {
   const parsed = parseChartDate(value);
   if (Number.isNaN(parsed.getTime())) return '--';
-  if (period === '1A') {
-    return parsed.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+
+  if (period?.granularity === 'hour') {
+    return parsed.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
-  return parsed.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+  if (period?.granularity === 'week') {
+    return parsed.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+    });
+  }
+
+  return parsed.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+  });
 }
 
-function formatRangeDate(value: string, period: PeriodOption) {
+function formatRangeDate(value: string, period: DashboardOverviewPeriod | null) {
   const parsed = parseChartDate(value);
   if (Number.isNaN(parsed.getTime())) return '--';
-  if (period === '1A') {
-    return parsed.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  if (period?.granularity === 'hour') {
+    return parsed.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: '2-digit',
+    });
   }
-  return parsed.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+
+  return parsed.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit',
+  });
 }
 
-function resolveXAxisInterval(period: PeriodOption, points: number) {
+function resolveXAxisInterval(period: DashboardOverviewPeriod | null, points: number) {
   if (points <= 1) return 0;
-  if (period === '30D') return Math.max(0, Math.floor(points / 6) - 1);
-  if (period === '90D') return Math.max(0, Math.floor(points / 7) - 1);
-  return Math.max(0, Math.floor(points / 12) - 1);
+  if (period?.granularity === 'hour') return Math.max(0, Math.floor(points / 8) - 1);
+  if (period?.granularity === 'week') return Math.max(0, Math.floor(points / 10) - 1);
+  return Math.max(0, Math.floor(points / 7) - 1);
 }
 
-export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProps) {
-  const [period, setPeriod] = React.useState<PeriodOption>('30D');
+function formatTooltipLabel(value: string, period: DashboardOverviewPeriod | null) {
+  const parsed = parseChartDate(value);
+  if (Number.isNaN(parsed.getTime())) return '--';
 
+  if (period?.granularity === 'hour') {
+    return parsed.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  return parsed.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit',
+  });
+}
+
+export function DashboardMainTrend({ forecast, period, loading }: DashboardMainTrendProps) {
   const rows = React.useMemo<TrendRow[]>(
     () =>
       (forecast?.daily ?? [])
@@ -87,13 +150,11 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
     [forecast?.daily]
   );
 
-  const windowSize = getWindowSize(period);
-  const visibleRows = rows.length > windowSize ? rows.slice(-windowSize) : rows;
-  const xAxisInterval = resolveXAxisInterval(period, visibleRows.length);
+  const xAxisInterval = resolveXAxisInterval(period, rows.length);
   const rangeLabel =
-    visibleRows.length > 0
-      ? `${formatRangeDate(visibleRows[0].date, period)} - ${formatRangeDate(
-          visibleRows[visibleRows.length - 1].date,
+    rows.length > 0
+      ? `${formatRangeDate(rows[0].date, period)} - ${formatRangeDate(
+          rows[rows.length - 1].date,
           period
         )}`
       : null;
@@ -104,25 +165,11 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
         <div>
           <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Visao Geral</h3>
           {!loading && rangeLabel ? (
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">{rangeLabel}</p>
+            <p className="mt-1 text-xs text-[var(--text-secondary)]">
+              {period?.label ? `${period.label} - ` : ''}
+              {rangeLabel}
+            </p>
           ) : null}
-        </div>
-        <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-1">
-          {PERIOD_OPTIONS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setPeriod(item)}
-              className={cn(
-                'rounded-lg px-3 py-1 text-sm font-semibold transition-colors',
-                period === item
-                  ? 'bg-[var(--accent-soft)] text-[var(--text-primary)]'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              )}
-            >
-              {item}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -130,11 +177,11 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
         <div className="space-y-2.5">
           <DashboardSkeletonLine className="h-[320px] w-full rounded-xl" />
         </div>
-      ) : visibleRows.length > 0 ? (
+      ) : rows.length > 0 ? (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-2.5 sm:p-3')}>
           <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={visibleRows} margin={{ top: 8, right: 14, left: 0, bottom: 6 }}>
+              <LineChart data={rows} margin={{ top: 8, right: 14, left: 0, bottom: 6 }}>
                 <CartesianGrid
                   strokeDasharray="2 10"
                   stroke="color-mix(in srgb, var(--neutral) 24%, transparent)"
@@ -164,11 +211,11 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
                     boxShadow: 'var(--shadow-card)',
                   }}
                   labelStyle={{ color: 'var(--text-secondary)' }}
-                  labelFormatter={(value) => formatDateShort(String(value))}
+                  labelFormatter={(value) => formatTooltipLabel(String(value), period)}
                   formatter={(value, name) => {
                     if (name === 'income') return [formatCurrency(Number(value || 0)), 'Entradas'];
                     if (name === 'expense') return [formatCurrency(Number(value || 0)), 'Saidas'];
-                    return [formatCurrency(Number(value || 0)), 'Saldo'];
+                    return [formatCurrency(Number(value || 0)), 'Saldo acumulado'];
                   }}
                 />
                 <Line
@@ -178,7 +225,12 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
                   stroke="var(--chart-balance)"
                   strokeWidth={2.8}
                   dot={false}
-                  activeDot={{ r: 4, fill: 'var(--chart-balance)', stroke: 'var(--bg-card)', strokeWidth: 1 }}
+                  activeDot={{
+                    r: 4,
+                    fill: 'var(--chart-balance)',
+                    stroke: 'var(--bg-card)',
+                    strokeWidth: 1,
+                  }}
                 />
                 <Line
                   type="monotone"
@@ -206,16 +258,18 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
             <span className="inline-flex items-center gap-2">
               <span className="size-2 rounded-full bg-[var(--chart-expense)]" /> Saidas
             </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="size-2 rounded-full bg-[var(--chart-balance)]" /> Saldo acumulado
+            </span>
           </div>
         </div>
       ) : (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
           <p className="text-sm text-[var(--text-secondary)]">
-            Ainda nao ha dados suficientes para exibir tendencia de saldo.
+            Ainda nao ha dados suficientes para exibir tendencia de saldo neste periodo.
           </p>
         </div>
       )}
     </article>
   );
 }
-

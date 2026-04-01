@@ -1,3 +1,8 @@
+import type {
+  DashboardChartGranularity,
+  DashboardPeriodPreset,
+} from '@/lib/dashboard/date-range';
+
 export type DashboardOverviewAlertTone = 'danger' | 'warning' | 'info' | 'success';
 
 export type DashboardOverviewAlert = {
@@ -28,6 +33,7 @@ export type DashboardOverviewForecastPoint = {
 export type DashboardOverviewForecast = {
   asOfDate: string;
   updatedAt: string;
+  granularity: DashboardChartGranularity;
   currentBalance: number;
   projectedBalance30d: number | null;
   projectedNegativeDate: string | null;
@@ -78,15 +84,36 @@ export type DashboardOverviewSummary = {
   projectedBalance30d: number | null;
   inflow: number;
   outflow: number;
+  periodNet: number;
   upcomingInflow: number;
   upcomingOutflow: number;
   upcomingInflowCount: number;
   upcomingOutflowCount: number;
+  comparison: {
+    label: string;
+    inflow: number;
+    outflow: number;
+    periodNet: number;
+    inflowDeltaPercent: number | null;
+    outflowDeltaPercent: number | null;
+    periodNetDeltaPercent: number | null;
+  };
+};
+
+export type DashboardOverviewPeriod = {
+  preset: DashboardPeriodPreset;
+  label: string;
+  startDate: string;
+  endDate: string;
+  timeZone: string;
+  granularity: DashboardChartGranularity;
+  comparisonLabel: string;
 };
 
 export type DashboardOverviewPayload = {
   workspaceId: string;
   generatedAt: string;
+  period: DashboardOverviewPeriod;
   summary: DashboardOverviewSummary;
   forecast: DashboardOverviewForecast;
   monthlySeries: DashboardOverviewMonthlySeriesPoint[];

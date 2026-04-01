@@ -84,6 +84,12 @@ import { fetchWorkspaceShellResource } from '@/app/app/modules/workspace-shell/d
 import { fetchReportsOverviewResource } from '@/app/app/modules/reports/data-client';
 import { ResourceClientError } from '@/app/app/modules/shared/resource-client';
 import type { DashboardOverviewPayload, DashboardOverviewRecentTransaction } from '@/lib/dashboard/overview';
+import {
+  applyDashboardPeriodSelectionToSearchParams,
+  parseDashboardPeriodSelectionFromSearchParams,
+  resolveDashboardDateRange,
+  type DashboardPeriodSelection,
+} from '@/lib/dashboard/date-range';
 import type { ReportsOverviewPayload } from '@/domain/reports/report-overview';
 import {
   CONVENTIONAL_DEBT_CATEGORIES,
@@ -241,6 +247,47 @@ const NAVIGATION_SEARCH_ITEMS: NavigationSearchItem[] = [
 
 const isTabValue = (value: unknown): value is Tab =>
   typeof value === 'string' && (APP_TABS as string[]).includes(value);
+
+const getBrowserTimeZone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
+  } catch {
+    return 'America/Sao_Paulo';
+  }
+};
+
+const readDashboardPeriodSelectionFromSearch = (
+  search: string
+): DashboardPeriodSelection => {
+  const searchParams = new URLSearchParams(search);
+  const selection = parseDashboardPeriodSelectionFromSearchParams(searchParams);
+  const hasExplicitTimeZone = Boolean(searchParams.get('tz'));
+  return {
+    ...selection,
+    timeZone: hasExplicitTimeZone ? selection.timeZone : getBrowserTimeZone(),
+  };
+};
+
+const writeDashboardPeriodSelectionToUrl = (
+  selection: DashboardPeriodSelection,
+  historyMode: 'push' | 'replace' = 'push'
+) => {
+  if (typeof window === 'undefined') return;
+
+  const url = new URL(window.location.href);
+  applyDashboardPeriodSelectionToSearchParams(url.searchParams, {
+    ...selection,
+    timeZone: selection.timeZone || getBrowserTimeZone(),
+  });
+
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  if (historyMode === 'replace') {
+    window.history.replaceState({ tab: url.searchParams.get(APP_TAB_QUERY_PARAM) }, '', nextUrl);
+    return;
+  }
+
+  window.history.pushState({ tab: url.searchParams.get(APP_TAB_QUERY_PARAM) }, '', nextUrl);
+};
 
 type TransactionFlowType = 'Entrada' | 'Saida' | 'Transferência' | 'Receita' | 'Despesa';
 type IncomeScheduleMode = 'SINGLE' | 'RECURRING';
@@ -1377,7 +1424,7 @@ const mapBackendTypeToFlowType = (rawType: string): TransactionFlowType => {
 
 const isTransientDashboardOverviewError = (error: unknown) => {
   if (error instanceof ResourceClientError) {
-    if (error.path === '/api/dashboard/overview' && [408, 429, 502, 503, 504].includes(error.status)) {
+    if (error.path.startsWith('/api/dashboard/overview') && [408, 429, 502, 503, 504].includes(error.status)) {
       return true;
     }
   }
@@ -2505,7 +2552,8 @@ type DashboardViewProps = {
   investments: Investment[];
   onAddTransaction: () => void;
   onUpgrade: () => void;
-  onOpenSummaryTarget: (target: 'balance' | 'income' | 'expense') => void;
+  onOpenSummaryTarget: (target: 'balance' | 'income' | 'expense' | 'net') => void;
+  onPeriodChange: (selection: DashboardPeriodSelection) => void;
   onOpenGoals: () => void;
   onOpenPortfolio: () => void;
   onOpenCreateGoal: () => void;
@@ -2527,6 +2575,7 @@ const DashboardView = ({
   onAddTransaction,
   onUpgrade,
   onOpenSummaryTarget,
+  onPeriodChange,
   onOpenGoals,
   onOpenPortfolio,
   onOpenCreateGoal,
@@ -2552,6 +2601,8 @@ const DashboardView = ({
         investments={investments}
         onAddTransaction={onAddTransaction}
         onUpgrade={onUpgrade}
+        period={overview?.period ?? null}
+        onPeriodChange={onPeriodChange}
         onOpenSummaryTarget={onOpenSummaryTarget}
         onOpenGoals={onOpenGoals}
         onOpenPortfolio={onOpenPortfolio}
@@ -3981,7 +4032,7 @@ const DebtsView = ({
                       {debtGroupLabels[group]}
                     </span>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {debtsByGroup[group].length} item(ns) " {formatCurrency(debtsByGroup[group].reduce((acc, debt) => acc + Math.max(0, debt.remainingAmount), 0))}
+                      {debtsByGroup[group].length} item(ns) - {formatCurrency(debtsByGroup[group].reduce((acc, debt) => acc + Math.max(0, debt.remainingAmount), 0))}
                     </p>
                   </div>
                   <div className={cn('grid gap-4', debtViewMode === 'list' ? 'xl:grid-cols-2' : 'grid-cols-1')}>
@@ -8859,6 +8910,11 @@ export default function App() {
     if (isTabValue(requestedTab)) {
       setActiveTab(requestedTab);
     }
+
+    if (!searchParams.get('period')) {
+      const defaultSelection = readDashboardPeriodSelectionFromSearch(window.location.search);
+      writeDashboardPeriodSelectionToUrl(defaultSelection, 'replace');
+    }
   }, []);
 
   React.useEffect(() => {
@@ -9411,7 +9467,7 @@ export default function App() {
   );
 
   const handleDashboardOpenSummaryTarget = React.useCallback(
-    (target: 'balance' | 'income' | 'expense') => {
+    (target: 'balance' | 'income' | 'expense' | 'net') => {
       if (target === 'income') {
         setTransactionsInitialFlowFilter('Entrada');
       } else if (target === 'expense') {
@@ -9531,7 +9587,7 @@ export default function App() {
     ]
   );
 
-  const fetchDashboardOverviewData = React.useCallback(async (options?: { silent?: boolean }) => {
+  const fetchDashboardOverviewData = React.useCallback(async (options?: { silent?: boolean; periodSelection?: DashboardPeriodSelection }) => {
     if (!user) return;
 
     const silent = Boolean(options?.silent);
@@ -9542,6 +9598,32 @@ export default function App() {
       setDashboardOverviewLoading(true);
     }
 
+    const selectionFromUrl =
+      typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          };
+    const periodSelection: DashboardPeriodSelection = {
+      ...selectionFromUrl,
+      ...(options?.periodSelection || {}),
+      timeZone:
+        options?.periodSelection?.timeZone ||
+        selectionFromUrl.timeZone ||
+        getBrowserTimeZone(),
+    };
+
+    const fallbackRange = resolveDashboardDateRange({
+      period: periodSelection.period,
+      startDate: periodSelection.startDate,
+      endDate: periodSelection.endDate,
+      timeZone: periodSelection.timeZone,
+      now: new Date(),
+    });
+
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
 
     try {
@@ -9550,6 +9632,7 @@ export default function App() {
         payload = await fetchDashboardOverviewResource({
           getAuthHeaders,
           workspaceIdOverride: workspaceIdForRequest,
+          periodSelection,
         });
       } catch (error) {
         if (error instanceof ResourceClientError && error.status === 404) {
@@ -9563,6 +9646,7 @@ export default function App() {
           payload = await fetchDashboardOverviewResource({
             getAuthHeaders,
             workspaceIdOverride: workspaceIdForRequest,
+            periodSelection,
           });
         } else {
           throw error;
@@ -9585,25 +9669,45 @@ export default function App() {
       const friendlyMessage =
         error instanceof Error
           ? error.message
-          : 'Não foi possível carregar a dashboard agora. Tente novamente em instantes.';
+          : 'Nao foi possivel carregar a dashboard agora. Tente novamente em instantes.';
       setDashboardOverviewError(friendlyMessage);
       setDashboardOverview((current) =>
         current ?? {
           workspaceId: workspaceIdForRequest || activeWorkspaceId || 'unknown',
           generatedAt: new Date().toISOString(),
+          period: {
+            preset: fallbackRange.period,
+            label: fallbackRange.label,
+            startDate: fallbackRange.startDate,
+            endDate: fallbackRange.endDate,
+            timeZone: fallbackRange.timeZone,
+            granularity: fallbackRange.granularity,
+            comparisonLabel: 'Comparado ao periodo anterior equivalente',
+          },
           summary: {
             currentBalance: 0,
             projectedBalance30d: 0,
             inflow: 0,
             outflow: 0,
+            periodNet: 0,
             upcomingInflow: 0,
             upcomingOutflow: 0,
             upcomingInflowCount: 0,
             upcomingOutflowCount: 0,
+            comparison: {
+              label: 'Sem comparacao disponivel',
+              inflow: 0,
+              outflow: 0,
+              periodNet: 0,
+              inflowDeltaPercent: null,
+              outflowDeltaPercent: null,
+              periodNetDeltaPercent: null,
+            },
           },
           forecast: {
             asOfDate: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            granularity: fallbackRange.granularity,
             currentBalance: 0,
             projectedBalance30d: 0,
             projectedNegativeDate: null,
@@ -9619,7 +9723,7 @@ export default function App() {
             {
               id: 'dashboard-overview-error',
               tone: 'warning',
-              title: 'Visão geral indisponível',
+              title: 'Visao geral indisponivel',
               message: friendlyMessage,
             },
           ],
@@ -9637,6 +9741,20 @@ export default function App() {
       }
     }
   }, [activeWorkspaceId, getAuthHeaders, resolveWorkspaceIdForResourceRequest, setupUserOnServer, upsertWorkspaceSnapshot, user]);
+
+  const handleDashboardPeriodChange = React.useCallback(
+    (selection: DashboardPeriodSelection) => {
+      const normalizedSelection: DashboardPeriodSelection = {
+        ...selection,
+        timeZone: selection.timeZone || getBrowserTimeZone(),
+      };
+      writeDashboardPeriodSelectionToUrl(normalizedSelection, 'push');
+      void fetchDashboardOverviewData({
+        periodSelection: normalizedSelection,
+      });
+    },
+    [fetchDashboardOverviewData]
+  );
 
   const fetchReportsOverviewData = React.useCallback(async (options?: { silent?: boolean }) => {
     if (!user) return;
@@ -10089,6 +10207,12 @@ React.useEffect(() => {
       setIsProfileMenuOpen(false);
       setIsNotificationsOpen(false);
       setIsHeaderSearchOpen(false);
+
+      const periodSelection = readDashboardPeriodSelectionFromSearch(window.location.search);
+      void fetchDashboardOverviewDataRef.current({
+        silent: true,
+        periodSelection,
+      });
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -14434,6 +14558,7 @@ React.useEffect(() => {
                       onAddTransaction={handleOpenCreateTransaction}
                       onUpgrade={() => void handleUpgrade('Pro Mensal')}
                       onOpenSummaryTarget={handleDashboardOpenSummaryTarget}
+                      onPeriodChange={handleDashboardPeriodChange}
                       onOpenGoals={() => navigateToTab('goals')}
                       onOpenPortfolio={() => navigateToTab('portfolio')}
                       onOpenCreateGoal={() => {
@@ -15021,5 +15146,4 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
-
 

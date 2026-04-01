@@ -3,6 +3,10 @@ import {
   ResourceClientError,
   type AuthHeadersResolver,
 } from '@/app/app/modules/shared/resource-client';
+import {
+  applyDashboardPeriodSelectionToSearchParams,
+  type DashboardPeriodSelection,
+} from '@/lib/dashboard/date-range';
 import type { DashboardOverviewPayload } from '@/lib/dashboard/overview';
 
 export type DashboardScope = 'full' | 'transactions';
@@ -35,10 +39,18 @@ export async function fetchDashboardResource(params: {
 export async function fetchDashboardOverviewResource(params: {
   getAuthHeaders: AuthHeadersResolver;
   workspaceIdOverride?: string | null;
+  periodSelection?: DashboardPeriodSelection | null;
 }) {
+  const query = new URLSearchParams();
+  if (params.periodSelection) {
+    applyDashboardPeriodSelectionToSearchParams(query, params.periodSelection);
+  }
+  const queryString = query.toString();
+  const path = `/api/dashboard/overview${queryString ? `?${queryString}` : ''}`;
+
   const request = () =>
     fetchResourceJson<DashboardOverviewPayload>({
-      path: '/api/dashboard/overview',
+      path,
       getAuthHeaders: params.getAuthHeaders,
       workspaceIdOverride: params.workspaceIdOverride,
       timeoutMs: 14000,

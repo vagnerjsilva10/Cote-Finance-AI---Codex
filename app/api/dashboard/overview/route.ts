@@ -5,6 +5,7 @@ import {
   getDatabaseRuntimeInfo,
 } from '@/lib/prisma';
 import { buildDashboardOverview } from '@/lib/server/dashboard-overview';
+import { parseDashboardPeriodSelectionFromSearchParams } from '@/lib/dashboard/date-range';
 import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,13 @@ export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
     workspaceId = context.workspaceId;
-    const overview = await withOverviewTimeout(buildDashboardOverview(context.workspaceId));
+    const requestUrl = new URL(req.url);
+    const periodSelection = parseDashboardPeriodSelectionFromSearchParams(
+      requestUrl.searchParams
+    );
+    const overview = await withOverviewTimeout(
+      buildDashboardOverview(context.workspaceId, periodSelection)
+    );
     console.info('[dashboard-overview] completed', {
       workspaceId: context.workspaceId,
       totalMs: Date.now() - startedAt,
