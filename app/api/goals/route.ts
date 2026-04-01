@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { parsePeriodSelectionFromSearchParams, resolveDateRange } from '@/lib/date/period-resolver';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -39,8 +40,43 @@ const parseDeadline = (value: unknown) => {
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
+    const url = new URL(req.url);
+    const periodSelection = parsePeriodSelectionFromSearchParams(url.searchParams);
+    const hasPeriodFilter =
+      url.searchParams.has('period') ||
+      url.searchParams.has('start') ||
+      url.searchParams.has('end') ||
+      url.searchParams.has('startDate') ||
+      url.searchParams.has('endDate');
+    const dateFieldRaw = String(url.searchParams.get('dateField') || 'created_at').trim().toLowerCase();
+    const dateField = dateFieldRaw === 'deadline' ? 'deadline' : 'created_at';
+    const range = hasPeriodFilter
+      ? resolveDateRange({
+          period: periodSelection.period,
+          startDate: periodSelection.startDate ?? url.searchParams.get('startDate'),
+          endDate: periodSelection.endDate ?? url.searchParams.get('endDate'),
+          timeZone: periodSelection.timeZone,
+          now: new Date(),
+        })
+      : null;
     const goals = await prisma.goal.findMany({
-      where: { workspace_id: context.workspaceId },
+      where: range
+        ? dateField === 'deadline'
+          ? {
+              workspace_id: context.workspaceId,
+              deadline: {
+                gte: range.start,
+                lte: range.end,
+              },
+            }
+          : {
+              workspace_id: context.workspaceId,
+              created_at: {
+                gte: range.start,
+                lte: range.end,
+              },
+            }
+        : { workspace_id: context.workspaceId },
       orderBy: { created_at: 'desc' },
     });
     return NextResponse.json(goals);

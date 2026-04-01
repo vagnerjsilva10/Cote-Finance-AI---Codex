@@ -24,6 +24,7 @@ import {
 } from '@/lib/server/multi-tenant';
 import { getRuntimePlanLimits, getTransactionUsageEffectiveOffset } from '@/lib/server/superadmin-governance';
 import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
+import { parsePeriodSelectionFromSearchParams, resolveDateRange } from '@/lib/date/period-resolver';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -300,12 +301,12 @@ async function upsertCategorySuggestionSafe(params: {
 }
 
 async function findTransactionsWithCompatibility(params: {
-  workspaceId: string;
+  where: Prisma.TransactionWhereInput;
   limit: number;
   cursor?: string | null;
 }) {
   const query = {
-    where: { workspace_id: params.workspaceId },
+    where: params.where,
     orderBy: [{ date: 'desc' as const }, { id: 'desc' as const }],
     take: params.limit + 1,
     ...(params.cursor
@@ -346,6 +347,64 @@ async function findTransactionsWithCompatibility(params: {
     const nextCursor = hasMore ? items[items.length - 1]?.id || null : null;
     return { items, hasMore, nextCursor };
   }
+}
+
+async function listTransactionsWithCompatibility(params: {
+  where: Prisma.TransactionWhereInput;
+}) {
+  const query = {
+    where: params.where,
+    orderBy: [{ date: 'desc' as const }, { id: 'desc' as const }],
+  };
+
+  try {
+    return await prisma.transaction.findMany({
+      ...query,
+      include: {
+        category: true,
+        wallet: true,
+        destination_wallet: true,
+      },
+    });
+  } catch (error) {
+    if (!isSchemaMismatchError(error)) {
+      throw error;
+    }
+
+    return prisma.transaction.findMany({
+      ...query,
+      include: {
+        category: true,
+        wallet: true,
+      },
+    });
+  }
+}
+
+function normalizeFilterToken(raw: string | null) {
+  const value = String(raw || '').trim();
+  if (!value) return null;
+  const lowered = value.toLowerCase();
+  if (lowered === 'all' || lowered === 'todos') return null;
+  return value;
+}
+
+function parseTransactionTypeFilter(rawType: string | null) {
+  const normalized = String(rawType || '')
+    .trim()
+    .toUpperCase();
+
+  if (!normalized || normalized === 'ALL' || normalized === 'TODOS') return null;
+  if (normalized === 'INCOME' || normalized === 'ENTRADA' || normalized === 'RECEITA' || normalized === 'PIX_IN') {
+    return ['INCOME', 'PIX_IN'];
+  }
+  if (normalized === 'EXPENSE' || normalized === 'SAIDA' || normalized === 'DESPESA' || normalized === 'PIX_OUT') {
+    return ['EXPENSE', 'PIX_OUT'];
+  }
+  if (normalized === 'TRANSFER' || normalized === 'TRANSFERENCIA') {
+    return ['TRANSFER'];
+  }
+  return null;
 }
 
 async function getOrCreateWalletId(workspaceId: string, walletName?: string | null) {
@@ -771,16 +830,110 @@ export async function GET(req: Request) {
       : 50;
     const cursor = url.searchParams.get('cursor');
     const paginatedMode = url.searchParams.get('paginated') === '1' || Boolean(cursor) || url.searchParams.has('limit');
+    const periodSelection = parsePeriodSelectionFromSearchParams(url.searchParams);
+    const hasExplicitDateFilter =
+      url.searchParams.has('period') ||
+      url.searchParams.has('start') ||
+      url.searchParams.has('end') ||
+      url.searchParams.has('startDate') ||
+      url.searchParams.has('endDate');
+    const dateRange = hasExplicitDateFilter
+      ? resolveDateRange({
+          period: periodSelection.period,
+          startDate: periodSelection.startDate ?? url.searchParams.get('startDate'),
+          endDate: periodSelection.endDate ?? url.searchParams.get('endDate'),
+          timeZone: periodSelection.timeZone,
+          now: new Date(),
+        })
+      : null;
 
-    const result = await findTransactionsWithCompatibility({
-      workspaceId: context.workspaceId,
-      limit: paginatedMode ? limit : 200,
-      cursor: paginatedMode ? cursor : null,
-    });
+    const categoryFilter = normalizeFilterToken(url.searchParams.get('category'));
+    const walletFilter = normalizeFilterToken(url.searchParams.get('wallet'));
+    const typeFilter = parseTransactionTypeFilter(url.searchParams.get('type'));
+
+    const andFilters: Prisma.TransactionWhereInput[] = [];
+    if (dateRange) {
+      andFilters.push({
+        OR: [
+          {
+            due_date: {
+              not: null,
+              gte: dateRange.start,
+              lte: dateRange.end,
+            },
+          },
+          {
+            due_date: null,
+            date: {
+              gte: dateRange.start,
+              lte: dateRange.end,
+            },
+          },
+        ],
+      });
+    }
+    if (typeFilter) {
+      andFilters.push({
+        type: {
+          in: typeFilter,
+        },
+      });
+    }
+    if (categoryFilter) {
+      andFilters.push({
+        OR: [
+          { category_id: categoryFilter },
+          {
+            category: {
+              name: {
+                equals: categoryFilter,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+      });
+    }
+    if (walletFilter) {
+      andFilters.push({
+        OR: [
+          { wallet_id: walletFilter },
+          { destination_wallet_id: walletFilter },
+          {
+            wallet: {
+              name: {
+                equals: walletFilter,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            destination_wallet: {
+              name: {
+                equals: walletFilter,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+      });
+    }
+
+    const where: Prisma.TransactionWhereInput = {
+      workspace_id: context.workspaceId,
+      ...(andFilters.length > 0 ? { AND: andFilters } : {}),
+    };
 
     if (!paginatedMode) {
-      return NextResponse.json(result.items);
+      const items = await listTransactionsWithCompatibility({ where });
+      return NextResponse.json(items);
     }
+
+    const result = await findTransactionsWithCompatibility({
+      where,
+      limit,
+      cursor: paginatedMode ? cursor : null,
+    });
 
     return NextResponse.json({
       items: result.items,

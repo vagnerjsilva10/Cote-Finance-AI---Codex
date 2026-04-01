@@ -62,6 +62,7 @@ import { cn } from '@/lib/utils';
 import { FinancialCalendarView } from '@/components/financial-calendar/financial-calendar-view';
 import { PremiumDatePicker } from '@/components/ui/premium-date-picker';
 import { FormContainer, FormField, FormGrid } from '@/components/ui/form-system';
+import { PeriodFilter as GlobalPeriodFilter } from '@/components/finance/PeriodFilter';
 import { DashboardContainer as DashboardPageContainer } from '@/app/app/modules/dashboard/components/dashboard-container';
 import { DashboardContainer as DashboardOverview } from '@/components/dashboard/DashboardContainer';
 import { TransactionsContainer } from '@/app/app/modules/transactions/components/transactions-container';
@@ -85,11 +86,11 @@ import { fetchReportsOverviewResource } from '@/app/app/modules/reports/data-cli
 import { ResourceClientError } from '@/app/app/modules/shared/resource-client';
 import type { DashboardOverviewPayload, DashboardOverviewRecentTransaction } from '@/lib/dashboard/overview';
 import {
-  applyDashboardPeriodSelectionToSearchParams,
-  parseDashboardPeriodSelectionFromSearchParams,
-  resolveDashboardDateRange,
-  type DashboardPeriodSelection,
-} from '@/lib/dashboard/date-range';
+  applyPeriodSelectionToSearchParams as applyDashboardPeriodSelectionToSearchParams,
+  parsePeriodSelectionFromSearchParams as parseDashboardPeriodSelectionFromSearchParams,
+  resolveDateRange as resolveDashboardDateRange,
+  type DateRangeSelection as DashboardPeriodSelection,
+} from '@/lib/date/period-resolver';
 import type { ReportsOverviewPayload } from '@/domain/reports/report-overview';
 import {
   CONVENTIONAL_DEBT_CATEGORIES,
@@ -2666,6 +2667,32 @@ const TransactionsView = ({
 }: TransactionsViewProps) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState<'Todos' | TransactionFlowType>('Todos');
+  const [categoryFilter, setCategoryFilter] = React.useState('Todos');
+  const [walletFilter, setWalletFilter] = React.useState('Todos');
+
+  const categoryOptions = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          transactions
+            .map((tx) => tx.cat)
+            .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+        )
+      ).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [transactions]
+  );
+
+  const walletOptions = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          transactions
+            .flatMap((tx) => [tx.wallet, tx.destinationWallet || null])
+            .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+        )
+      ).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [transactions]
+  );
 
   React.useEffect(() => {
     if (!initialFlowFilter) return;
@@ -2682,9 +2709,12 @@ const TransactionsView = ({
         tx.cat.toLowerCase().includes(normalizedSearch);
 
       const matchesType = typeFilter === 'Todos' || tx.flowType === typeFilter;
-      return matchesSearch && matchesType;
+      const matchesCategory = categoryFilter === 'Todos' || tx.cat === categoryFilter;
+      const matchesWallet =
+        walletFilter === 'Todos' || tx.wallet === walletFilter || tx.destinationWallet === walletFilter;
+      return matchesSearch && matchesType && matchesCategory && matchesWallet;
     });
-  }, [transactions, searchTerm, typeFilter]);
+  }, [categoryFilter, transactions, searchTerm, typeFilter, walletFilter]);
 
   const totalIncome = transactions
     .filter((tx) => mapFlowTypeToBaseType(tx.flowType) === 'income')
@@ -2726,8 +2756,8 @@ const TransactionsView = ({
       </div>
 
       <div className="app-surface-card rounded-2xl p-4 lg:p-5">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <div className="lg:col-span-2 relative">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <div className="relative md:col-span-2 xl:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
             <input
               value={searchTerm}
@@ -2746,6 +2776,32 @@ const TransactionsView = ({
             {TRANSACTION_FLOW_TYPES.map((flowType) => (
               <option key={flowType} value={flowType}>
                 {flowType}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="app-field w-full rounded-xl py-2 px-4 text-sm"
+          >
+            <option value="Todos">Todas as categorias</option>
+            {categoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={walletFilter}
+            onChange={(e) => setWalletFilter(e.target.value)}
+            className="app-field w-full rounded-xl py-2 px-4 text-sm"
+          >
+            <option value="Todos">Todas as carteiras</option>
+            {walletOptions.map((wallet) => (
+              <option key={wallet} value={wallet}>
+                {wallet}
               </option>
             ))}
           </select>
@@ -8863,6 +8919,12 @@ export default function App() {
   };
 
   const [activeTab, setActiveTab] = React.useState<Tab>('dashboard');
+  const [globalPeriodSelection, setGlobalPeriodSelection] = React.useState<DashboardPeriodSelection>({
+    period: 'this_month',
+    startDate: null,
+    endDate: null,
+    timeZone: getBrowserTimeZone(),
+  });
   const [transactionsInitialFlowFilter, setTransactionsInitialFlowFilter] = React.useState<TransactionFlowType | null>(null);
   const [dashboardOverviewLoading, setDashboardOverviewLoading] = React.useState(false);
   const [dashboardOverviewError, setDashboardOverviewError] = React.useState<string | null>(null);
@@ -8943,8 +9005,9 @@ export default function App() {
       setActiveTab(requestedTab);
     }
 
+    const defaultSelection = readDashboardPeriodSelectionFromSearch(window.location.search);
+    setGlobalPeriodSelection(defaultSelection);
     if (!searchParams.get('period')) {
-      const defaultSelection = readDashboardPeriodSelectionFromSearch(window.location.search);
       writeDashboardPeriodSelectionToUrl(defaultSelection, 'replace');
     }
   }, []);
@@ -9002,10 +9065,25 @@ export default function App() {
     [activeWorkspaceId]
   );
 
-  const fetchDashboardData = React.useCallback(async (options?: { silent?: boolean; scope?: 'full' | 'transactions' }) => {
+  const fetchDashboardData = React.useCallback(
+    async (options?: {
+      silent?: boolean;
+      scope?: 'full' | 'transactions';
+      periodSelection?: DashboardPeriodSelection | null;
+    }) => {
     if (!user) return;
     const silent = Boolean(options?.silent);
     const scope = options?.scope === 'transactions' ? 'transactions' : 'full';
+    const periodSelection =
+      options?.periodSelection ||
+      (typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          });
 
     const preferredWorkspaceId = !activeWorkspaceId && user?.id ? readActiveWorkspacePreference(user.id) : null;
     const workspaceIdForRequest = activeWorkspaceId || preferredWorkspaceId || null;
@@ -9021,6 +9099,7 @@ export default function App() {
           getAuthHeaders,
           scope,
           workspaceIdOverride: workspaceIdForRequest,
+          periodSelection,
         });
       } catch (error) {
         if (error instanceof ResourceClientError && error.status === 404) {
@@ -9035,6 +9114,7 @@ export default function App() {
             getAuthHeaders,
             scope,
             workspaceIdOverride: workspaceIdForRequest,
+            periodSelection,
           });
         } else {
           throw error;
@@ -9215,7 +9295,9 @@ export default function App() {
     } catch (error) {
       console.error('Workspace shell fetch error:', error);
     }
-  }, [activeWorkspaceId, getAuthHeaders, setupUserOnServer, user]);
+  },
+    [activeWorkspaceId, getAuthHeaders, setupUserOnServer, user]
+  );
 
   const [isAssistantOpen, setIsAssistantOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -9409,6 +9491,28 @@ export default function App() {
   const aiLimitReached = isFreePlan && aiUsageCount >= FREE_AI_LIMIT_PER_MONTH;
   const planLabel = getPlanLabel(currentPlan);
   const activeTabTitle = TAB_LABELS[activeTab];
+  const shouldShowGlobalPeriodFilter =
+    activeTab === 'transactions' ||
+    activeTab === 'goals' ||
+    activeTab === 'debts' ||
+    activeTab === 'investments' ||
+    activeTab === 'reports';
+  const resolvedGlobalPeriod = React.useMemo(
+    () =>
+      resolveDashboardDateRange({
+        period: globalPeriodSelection.period,
+        startDate: globalPeriodSelection.startDate,
+        endDate: globalPeriodSelection.endDate,
+        timeZone: globalPeriodSelection.timeZone,
+        now: new Date(),
+      }),
+    [
+      globalPeriodSelection.endDate,
+      globalPeriodSelection.period,
+      globalPeriodSelection.startDate,
+      globalPeriodSelection.timeZone,
+    ]
+  );
   const normalizedHeaderSearchTerm = headerSearchTerm.trim().toLowerCase();
   const headerSearchResults = React.useMemo(() => {
     const baseItems =
@@ -9793,24 +9897,47 @@ export default function App() {
         ...selection,
         timeZone: selection.timeZone || getBrowserTimeZone(),
       };
+      setGlobalPeriodSelection(normalizedSelection);
       writeDashboardPeriodSelectionToUrl(normalizedSelection, 'push');
       void fetchDashboardOverviewData({
         periodSelection: normalizedSelection,
       });
+      void fetchDashboardData({
+        silent: true,
+        scope: activeTab === 'dashboard' ? 'transactions' : 'full',
+        periodSelection: normalizedSelection,
+      });
+      if (activeTab === 'reports' || hasFetchedReportsOverviewRef.current) {
+        void fetchReportsOverviewDataRef.current({
+          silent: true,
+          periodSelection: normalizedSelection,
+        });
+      }
     },
-    [fetchDashboardOverviewData]
+    [activeTab, fetchDashboardData, fetchDashboardOverviewData]
   );
 
-  const fetchReportsOverviewData = React.useCallback(async (options?: { silent?: boolean }) => {
+  const fetchReportsOverviewData = React.useCallback(async (options?: { silent?: boolean; periodSelection?: DashboardPeriodSelection | null }) => {
     if (!user) return;
 
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+    const periodSelection =
+      options?.periodSelection ||
+      (typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          });
     try {
       let payload: ReportsOverviewPayload;
       try {
         payload = await fetchReportsOverviewResource({
           getAuthHeaders,
           workspaceIdOverride: workspaceIdForRequest,
+          periodSelection,
         });
       } catch (error) {
         if (error instanceof ResourceClientError && error.status === 404) {
@@ -9824,6 +9951,7 @@ export default function App() {
           payload = await fetchReportsOverviewResource({
             getAuthHeaders,
             workspaceIdOverride: workspaceIdForRequest,
+            periodSelection,
           });
         } else {
           throw error;
@@ -9903,9 +10031,19 @@ export default function App() {
       } = options ?? {};
 
       const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+      const periodSelection =
+        typeof window !== 'undefined'
+          ? readDashboardPeriodSelectionFromSearch(window.location.search)
+          : {
+              period: 'this_month' as const,
+              startDate: null,
+              endDate: null,
+              timeZone: getBrowserTimeZone(),
+            };
       const data = await fetchTransactionsContext({
         getAuthHeaders,
         workspaceIdOverride: workspaceIdForRequest,
+        periodSelection,
       });
 
       const shouldMapTransactions =
@@ -10056,9 +10194,19 @@ export default function App() {
   const refreshGoalsResource = React.useCallback(async () => {
     if (!user) return;
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+    const periodSelection =
+      typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          };
     const payload = await fetchGoalsContext({
       getAuthHeaders,
       workspaceIdOverride: workspaceIdForRequest,
+      periodSelection,
     });
     const mappedGoals = Array.isArray(payload) ? payload.map((goal: any) => mapApiGoalToClientGoal(goal)) : [];
     setGoals(mappedGoals);
@@ -10072,9 +10220,19 @@ export default function App() {
   const refreshInvestmentsResource = React.useCallback(async () => {
     if (!user) return;
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+    const periodSelection =
+      typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          };
     const payload = await fetchInvestmentsContext({
       getAuthHeaders,
       workspaceIdOverride: workspaceIdForRequest,
+      periodSelection,
     });
     const mappedInvestments = Array.isArray(payload)
       ? payload.map((investment: any) => mapApiInvestmentToClientInvestment(investment))
@@ -10089,9 +10247,19 @@ export default function App() {
   const refreshDebtsResource = React.useCallback(async () => {
     if (!user) return;
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+    const periodSelection =
+      typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          };
     const payload = await fetchDebtsContext({
       getAuthHeaders,
       workspaceIdOverride: workspaceIdForRequest,
+      periodSelection,
     });
     const mappedDebts = Array.isArray(payload) ? payload.map((debt: any) => mapApiDebtToClientDebt(debt)) : [];
     setDebts(mappedDebts);
@@ -10104,9 +10272,19 @@ export default function App() {
   const refreshRecurringDebtsResource = React.useCallback(async () => {
     if (!user) return;
     const workspaceIdForRequest = resolveWorkspaceIdForResourceRequest();
+    const periodSelection =
+      typeof window !== 'undefined'
+        ? readDashboardPeriodSelectionFromSearch(window.location.search)
+        : {
+            period: 'this_month' as const,
+            startDate: null,
+            endDate: null,
+            timeZone: getBrowserTimeZone(),
+          };
     const payload = await fetchRecurringDebtsContext({
       getAuthHeaders,
       workspaceIdOverride: workspaceIdForRequest,
+      periodSelection,
     });
     const mappedRecurringDebts = Array.isArray(payload)
       ? payload.map((debt: any) => mapApiRecurringDebtToClientRecurringDebt(debt))
@@ -10245,8 +10423,9 @@ React.useEffect(() => {
     const handlePopState = () => {
       const searchParams = new URLSearchParams(window.location.search);
       const requestedTab = searchParams.get(APP_TAB_QUERY_PARAM);
+      const nextTab = isTabValue(requestedTab) ? requestedTab : 'dashboard';
       suppressNextTabHistorySyncRef.current = true;
-      setActiveTab(isTabValue(requestedTab) ? requestedTab : 'dashboard');
+      setActiveTab(nextTab);
       setIsSidebarOpen(false);
       setIsQuickCreateOpen(false);
       setIsProfileMenuOpen(false);
@@ -10254,10 +10433,22 @@ React.useEffect(() => {
       setIsHeaderSearchOpen(false);
 
       const periodSelection = readDashboardPeriodSelectionFromSearch(window.location.search);
+      setGlobalPeriodSelection(periodSelection);
       void fetchDashboardOverviewDataRef.current({
         silent: true,
         periodSelection,
       });
+      void fetchDashboardDataRef.current({
+        silent: true,
+        scope: nextTab === 'dashboard' ? 'transactions' : 'full',
+        periodSelection,
+      });
+      if (nextTab === 'reports' || hasFetchedReportsOverviewRef.current) {
+        void fetchReportsOverviewDataRef.current({
+          silent: true,
+          periodSelection,
+        });
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -14590,6 +14781,20 @@ React.useEffect(() => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
+              {shouldShowGlobalPeriodFilter ? (
+                <div className="mb-5 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 shadow-[var(--shadow-card)]">
+                  <GlobalPeriodFilter
+                    value={{
+                      period: globalPeriodSelection.period,
+                      startDate: globalPeriodSelection.period === 'custom' ? globalPeriodSelection.startDate : null,
+                      endDate: globalPeriodSelection.period === 'custom' ? globalPeriodSelection.endDate : null,
+                      label: resolvedGlobalPeriod.label,
+                    }}
+                    compactLabels
+                    onChange={handleDashboardPeriodChange}
+                  />
+                </div>
+              ) : null}
               {activeTab === 'dashboard' && (
                 <DashboardPageContainer>
                   <DashboardView

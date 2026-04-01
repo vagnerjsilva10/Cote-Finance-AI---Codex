@@ -2,12 +2,14 @@ import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { asPrismaServiceUnavailableError, DATABASE_SCHEMA_MISMATCH_MESSAGE, prisma } from '@/lib/prisma';
 import { isRecurringDebtCategory, mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
+import { parsePeriodSelectionFromSearchParams, resolveDateRange } from '@/lib/date/period-resolver';
 import {
   HttpError,
   logWorkspaceEventSafe,
   resolveWorkspaceContext,
 } from '@/lib/server/multi-tenant';
 import { triggerWorkspaceFinancialSync } from '@/lib/server/financial-sync';
+import { findWorkspaceConventionalDebts } from '@/lib/server/debts';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -78,11 +80,33 @@ const buildMissingTableResponse = () =>
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
-    const debts = await prisma.debt.findMany({
-      where: { workspace_id: context.workspaceId },
-      orderBy: { created_at: 'desc' },
+    const url = new URL(req.url);
+    const periodSelection = parsePeriodSelectionFromSearchParams(url.searchParams);
+    const hasPeriodFilter =
+      url.searchParams.has('period') ||
+      url.searchParams.has('start') ||
+      url.searchParams.has('end') ||
+      url.searchParams.has('startDate') ||
+      url.searchParams.has('endDate');
+    const dateFieldRaw = String(url.searchParams.get('dateField') || 'due_date').trim().toLowerCase();
+    const dateField: 'due_date' | 'payment_date' | 'created_at' =
+      dateFieldRaw === 'payment_date' || dateFieldRaw === 'created_at' ? dateFieldRaw : 'due_date';
+    const range = hasPeriodFilter
+      ? resolveDateRange({
+          period: periodSelection.period,
+          startDate: periodSelection.startDate ?? url.searchParams.get('startDate'),
+          endDate: periodSelection.endDate ?? url.searchParams.get('endDate'),
+          timeZone: periodSelection.timeZone,
+          now: new Date(),
+        })
+      : null;
+
+    const debts = await findWorkspaceConventionalDebts(context.workspaceId, {
+      range,
+      dateField,
     });
-    return NextResponse.json(debts.filter((debt) => !isRecurringDebtCategory(String(debt.category || ''))));
+
+    return NextResponse.json(debts);
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });

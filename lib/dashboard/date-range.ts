@@ -12,6 +12,7 @@ export const DASHBOARD_PERIOD_PRESETS = [
   'this_month',
   'last_month',
   'last_90_days',
+  'this_year',
   'year_to_date',
   'custom',
 ] as const;
@@ -78,6 +79,7 @@ function normalizeTimeZone(timeZone: string | null | undefined) {
 
 function parsePeriodPreset(period: string | null | undefined): DashboardPeriodPreset {
   const normalized = String(period || 'this_month').trim().toLowerCase();
+  if (normalized === 'year_to_date') return 'this_year';
   if (PERIOD_SET.has(normalized)) {
     return normalized as DashboardPeriodPreset;
   }
@@ -379,7 +381,7 @@ export function getRangeLabel(range: {
   if (range.period === 'this_month') return 'Este mês';
   if (range.period === 'last_month') return 'Mês passado';
   if (range.period === 'last_90_days') return 'Últimos 90 dias';
-  if (range.period === 'year_to_date') return 'Ano atual';
+  if (range.period === 'year_to_date' || range.period === 'this_year') return 'Ano atual';
   return `${formatDateKey(range.startDate)} - ${formatDateKey(range.endDate)}`;
 }
 
@@ -473,7 +475,7 @@ export function resolveDashboardDateRange(input: {
         endDate,
         totalDays: dayDiffFromDateKeys(startDate, endDate) + 1,
       };
-    } else if (period === 'year_to_date') {
+    } else if (period === 'year_to_date' || period === 'this_year') {
       const start = startOfYearInTimeZone(now, timeZone);
       const startDate = toDateKeyInTimeZone(start, timeZone);
       const endDate = toDateKeyInTimeZone(todayEnd, timeZone);
@@ -578,7 +580,7 @@ export function getComparisonDateRange(range: DashboardResolvedDateRange): Dashb
     });
   }
 
-  if (range.period === 'year_to_date') {
+  if (range.period === 'year_to_date' || range.period === 'this_year') {
     const currentYearStart = toYearStartDateKey(range.startDate);
     const previousYearStart = toMonthStartDateKey(currentYearStart, -12);
     return buildComparisonRange({

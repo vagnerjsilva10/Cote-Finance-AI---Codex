@@ -1,24 +1,19 @@
-import 'server-only';
+﻿import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import type { ReportsOverviewPayload } from '@/domain/reports/report-overview';
+import {
+  getComparisonRange,
+  getDatePartsInTimeZone,
+  resolveDateRange,
+  toDateKeyInTimeZone,
+  zonedDateTimeToUtc,
+  type DateRangeSelection,
+  type ResolvedDateRange,
+} from '@/lib/date/period-resolver';
 
 type DecimalLike = Prisma.Decimal | number | string | null;
-
-const numberFrom = (value: DecimalLike) => Number(value || 0);
-const PALETTE = ['var(--primary)', 'var(--text-secondary)', 'var(--positive)', 'var(--danger)', 'var(--text-muted)'];
-
-type MonthlyRow = {
-  month: Date;
-  income: DecimalLike;
-  expense: DecimalLike;
-};
-
-type CategoryRow = {
-  name: string;
-  total: DecimalLike;
-};
 
 type TransactionRow = {
   id: string;
@@ -26,6 +21,7 @@ type TransactionRow = {
   type: string;
   description: string;
   date: Date;
+  due_date: Date | null;
   category_name: string | null;
   status: string | null;
 };
@@ -38,163 +34,155 @@ type GoalRow = {
   deadline: Date | null;
 };
 
-export async function buildReportsOverview(workspaceId: string): Promise<ReportsOverviewPayload> {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const series12Start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-  const series6Start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const next30DaysEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30, 23, 59, 59, 999);
+const numberFrom = (value: DecimalLike) => Number(value || 0);
+const PALETTE = ['var(--primary)', 'var(--text-secondary)', 'var(--positive)', 'var(--danger)', 'var(--text-muted)'];
 
-  const [wallets, series12Rows, series6Rows, categoryRows, allTransactions, goals, forecastRows] =
-    await Promise.all([
-      prisma.wallet.findMany({
-        where: { workspace_id: workspaceId },
-        select: { balance: true },
-      }),
-      prisma.$queryRaw<MonthlyRow[]>(Prisma.sql`
-        SELECT
-          DATE_TRUNC('month', "date") AS month,
-          COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('INCOME', 'PIX_IN') THEN "amount" ELSE 0 END), 0) AS income,
-          COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('EXPENSE', 'PIX_OUT') THEN "amount" ELSE 0 END), 0) AS expense
-        FROM "Transaction"
-        WHERE "workspace_id" = ${workspaceId}
-          AND "date" >= ${series12Start}
-          AND "date" < ${nextMonthStart}
-        GROUP BY 1
-        ORDER BY 1 ASC
-      `),
-      prisma.$queryRaw<MonthlyRow[]>(Prisma.sql`
-        SELECT
-          DATE_TRUNC('month', "date") AS month,
-          COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('INCOME', 'PIX_IN') THEN "amount" ELSE 0 END), 0) AS income,
-          COALESCE(SUM(CASE WHEN UPPER(COALESCE("status", 'CONFIRMED')) = 'CONFIRMED' AND UPPER("type") IN ('EXPENSE', 'PIX_OUT') THEN "amount" ELSE 0 END), 0) AS expense
-        FROM "Transaction"
-        WHERE "workspace_id" = ${workspaceId}
-          AND "date" >= ${series6Start}
-          AND "date" < ${nextMonthStart}
-        GROUP BY 1
-        ORDER BY 1 ASC
-      `),
-      prisma.$queryRaw<CategoryRow[]>(Prisma.sql`
-        SELECT
-          COALESCE("Category"."name", 'Outros') AS name,
-          COALESCE(SUM("Transaction"."amount"), 0) AS total
-        FROM "Transaction"
-        LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-        WHERE "Transaction"."workspace_id" = ${workspaceId}
-          AND UPPER(COALESCE("Transaction"."status", 'CONFIRMED')) = 'CONFIRMED'
-          AND UPPER("Transaction"."type") IN ('EXPENSE', 'PIX_OUT')
-        GROUP BY 1
-        ORDER BY total DESC
-      `),
-      prisma.$queryRaw<TransactionRow[]>(Prisma.sql`
-        SELECT
-          "Transaction"."id",
-          "Transaction"."amount",
-          "Transaction"."type",
-          "Transaction"."description",
-          "Transaction"."date",
-          "Category"."name" AS category_name,
-          "Transaction"."status"
-        FROM "Transaction"
-        LEFT JOIN "Category" ON "Category"."id" = "Transaction"."category_id"
-        WHERE "Transaction"."workspace_id" = ${workspaceId}
-          AND UPPER(COALESCE("Transaction"."status", 'CONFIRMED')) = 'CONFIRMED'
-          AND "Transaction"."date" >= ${series12Start}
-        ORDER BY "Transaction"."date" DESC
-      `),
-      prisma.goal.findMany({
-        where: { workspace_id: workspaceId },
-        select: {
-          id: true,
-          name: true,
-          target_amount: true,
-          current_amount: true,
-          deadline: true,
-        },
-      }) as Promise<GoalRow[]>,
-      prisma.$queryRaw<Array<{ effective_date: Date; type: string; amount: DecimalLike }>>(Prisma.sql`
-        SELECT
-          COALESCE("due_date", "date") AS effective_date,
-          "type",
-          "amount"
-        FROM "Transaction"
-        WHERE "workspace_id" = ${workspaceId}
-          AND UPPER(COALESCE("status", 'CONFIRMED')) = 'PENDING'
-          AND COALESCE("due_date", "date") >= ${todayStart}
-          AND COALESCE("due_date", "date") <= ${next30DaysEnd}
-        ORDER BY effective_date ASC, "created_at" ASC
-      `),
-    ]);
+function normalizeTransactionType(rawType: string) {
+  const normalized = String(rawType || '').trim().toUpperCase();
+  if (normalized === 'PIX_IN') return 'INCOME';
+  if (normalized === 'PIX_OUT') return 'EXPENSE';
+  return normalized;
+}
 
-  const currentBalance = wallets.reduce((acc, wallet) => acc + numberFrom(wallet.balance), 0);
-  const totalIncome = allTransactions
-    .filter((row) => ['INCOME', 'PIX_IN'].includes(String(row.type).toUpperCase()))
-    .reduce((acc, row) => acc + numberFrom(row.amount), 0);
-  const totalExpenses = allTransactions
-    .filter((row) => ['EXPENSE', 'PIX_OUT'].includes(String(row.type).toUpperCase()))
-    .reduce((acc, row) => acc + numberFrom(row.amount), 0);
+function isConfirmedStatus(status: string | null | undefined) {
+  return String(status || 'CONFIRMED').trim().toUpperCase() === 'CONFIRMED';
+}
 
-  const monthTransactions = allTransactions.filter((row) => row.date >= monthStart && row.date < nextMonthStart);
-  const previousMonthTransactions = allTransactions.filter(
-    (row) => row.date >= previousMonthStart && row.date < monthStart
-  );
-  const currentMonthExpenses = monthTransactions
-    .filter((row) => ['EXPENSE', 'PIX_OUT'].includes(String(row.type).toUpperCase()))
-    .reduce((acc, row) => acc + numberFrom(row.amount), 0);
-  const previousMonthExpenses = previousMonthTransactions
-    .filter((row) => ['EXPENSE', 'PIX_OUT'].includes(String(row.type).toUpperCase()))
-    .reduce((acc, row) => acc + numberFrom(row.amount), 0);
+function isPendingStatus(status: string | null | undefined) {
+  return String(status || '').trim().toUpperCase() === 'PENDING';
+}
 
-  const buildMonthSeries = (rows: MonthlyRow[], length: number) => {
-    const months = Array.from({ length }, (_, index) => {
-      const date = new Date(now.getFullYear(), now.getMonth() - (length - 1 - index), 1);
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      return {
-        key,
-        label: date
-          .toLocaleDateString('pt-BR', { month: 'short' })
-          .replace('.', '')
-          .replace(/^./, (char) => char.toUpperCase()),
-        income: 0,
-        expense: 0,
-      };
-    });
-    const monthMap = new Map(months.map((item) => [item.key, item]));
-    for (const row of rows) {
-      const monthKey = `${row.month.getFullYear()}-${row.month.getMonth()}`;
-      const bucket = monthMap.get(monthKey);
-      if (!bucket) continue;
-      bucket.income = numberFrom(row.income);
-      bucket.expense = numberFrom(row.expense);
+function isIncomeType(type: string) {
+  const normalized = normalizeTransactionType(type);
+  return normalized === 'INCOME';
+}
+
+function isExpenseType(type: string) {
+  const normalized = normalizeTransactionType(type);
+  return normalized === 'EXPENSE';
+}
+
+function inRange(value: Date, range: { start: Date; end: Date }) {
+  const ms = value.getTime();
+  return ms >= range.start.getTime() && ms <= range.end.getTime();
+}
+
+function buildWindowSeries(params: {
+  range: ResolvedDateRange;
+  rows: TransactionRow[];
+  windows: number;
+}) {
+  const totalDays = Math.max(1, params.range.totalDays);
+  const windowCount = Math.max(1, Math.min(params.windows, totalDays));
+  const chunkSizeDays = Math.max(1, Math.ceil(totalDays / windowCount));
+  const dayMs = 86_400_000;
+
+  const buckets = Array.from({ length: windowCount }, (_, index) => {
+    const start = new Date(params.range.start.getTime() + index * chunkSizeDays * dayMs);
+    const end = new Date(
+      Math.min(
+        params.range.end.getTime(),
+        start.getTime() + chunkSizeDays * dayMs - 1
+      )
+    );
+
+    return {
+      label:
+        start.getMonth() === end.getMonth() && start.getDate() === end.getDate()
+          ? start.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+          : `${start.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}-${end.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`,
+      income: 0,
+      expense: 0,
+      start,
+      end,
+    };
+  });
+
+  for (const row of params.rows) {
+    if (!isConfirmedStatus(row.status)) continue;
+    if (!inRange(row.date, params.range)) continue;
+
+    const dayOffset = Math.floor((row.date.getTime() - params.range.start.getTime()) / dayMs);
+    const index = Math.max(0, Math.min(windowCount - 1, Math.floor(dayOffset / chunkSizeDays)));
+    const amount = numberFrom(row.amount);
+
+    if (isIncomeType(row.type)) {
+      buckets[index].income += amount;
+    } else if (isExpenseType(row.type)) {
+      buckets[index].expense += amount;
     }
-    return months.map(({ label, income, expense }) => ({ label, income, expense }));
-  };
+  }
 
-  const categoryData = categoryRows.map((row, index) => ({
-    name: row.name,
-    value: numberFrom(row.total),
-    color: PALETTE[index % PALETTE.length],
+  return buckets.map((bucket) => ({
+    label: bucket.label,
+    income: bucket.income,
+    expense: bucket.expense,
   }));
+}
+
+function buildCategoryData(rows: TransactionRow[]) {
+  const categoryTotals = new Map<string, number>();
+
+  for (const row of rows) {
+    if (!isConfirmedStatus(row.status)) continue;
+    if (!isExpenseType(row.type)) continue;
+
+    const category = row.category_name || 'Outros';
+    categoryTotals.set(category, (categoryTotals.get(category) || 0) + numberFrom(row.amount));
+  }
+
+  return Array.from(categoryTotals.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value], index) => ({
+      name,
+      value,
+      color: PALETTE[index % PALETTE.length],
+    }));
+}
+
+function summarizeFlows(rows: TransactionRow[]) {
+  let totalIncome = 0;
+  let totalExpenses = 0;
+
+  for (const row of rows) {
+    if (!isConfirmedStatus(row.status)) continue;
+
+    const amount = numberFrom(row.amount);
+    if (isIncomeType(row.type)) totalIncome += amount;
+    if (isExpenseType(row.type)) totalExpenses += amount;
+  }
+
+  return {
+    totalIncome,
+    totalExpenses,
+    balance: totalIncome - totalExpenses,
+  };
+}
+
+function buildExpenseDeepDive(currentRows: TransactionRow[], previousRows: TransactionRow[]) {
+  const currentExpenses = currentRows.filter((row) => isConfirmedStatus(row.status) && isExpenseType(row.type));
+  const previousExpenses = previousRows.filter((row) => isConfirmedStatus(row.status) && isExpenseType(row.type));
+
+  const currentMonthTotal = currentExpenses.reduce((acc, row) => acc + numberFrom(row.amount), 0);
+  const previousMonthTotal = previousExpenses.reduce((acc, row) => acc + numberFrom(row.amount), 0);
 
   const currentCategoryMap = new Map<string, number>();
   const previousCategoryMap = new Map<string, number>();
   const recurringMap = new Map<string, { name: string; count: number; total: number }>();
+
   let largestExpense: ReportsOverviewPayload['expenseDeepDive']['largestExpense'] = null;
 
-  for (const row of monthTransactions) {
-    const type = String(row.type).toUpperCase();
-    if (!['EXPENSE', 'PIX_OUT'].includes(type)) continue;
-    const amount = numberFrom(row.amount);
+  for (const row of currentExpenses) {
     const category = row.category_name || 'Outros';
+    const amount = numberFrom(row.amount);
+
     currentCategoryMap.set(category, (currentCategoryMap.get(category) || 0) + amount);
+
     const recurring = recurringMap.get(category) || { name: category, count: 0, total: 0 };
     recurring.count += 1;
     recurring.total += amount;
     recurringMap.set(category, recurring);
+
     if (!largestExpense || amount > largestExpense.amount) {
       largestExpense = {
         id: row.id,
@@ -206,12 +194,9 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
     }
   }
 
-  for (const row of previousMonthTransactions) {
-    const type = String(row.type).toUpperCase();
-    if (!['EXPENSE', 'PIX_OUT'].includes(type)) continue;
-    const amount = numberFrom(row.amount);
+  for (const row of previousExpenses) {
     const category = row.category_name || 'Outros';
-    previousCategoryMap.set(category, (previousCategoryMap.get(category) || 0) + amount);
+    previousCategoryMap.set(category, (previousCategoryMap.get(category) || 0) + numberFrom(row.amount));
   }
 
   const topCurrentCategory = Array.from(currentCategoryMap.entries())
@@ -234,67 +219,200 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
     .sort((a, b) => b.total - a.total)
     .slice(0, 3);
 
-  let rollingBalance = currentBalance;
-  const dailyBuckets = new Map<string, { inflow: number; outflow: number }>();
-  for (const row of forecastRows) {
-    const key = row.effective_date.toISOString().slice(0, 10);
-    const bucket = dailyBuckets.get(key) || { inflow: 0, outflow: 0 };
+  return {
+    currentMonthTotal,
+    previousMonthTotal,
+    monthOverMonthVariation:
+      previousMonthTotal > 0 ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 : null,
+    topCurrentCategory,
+    growingCategories,
+    recurringHeavyCategories,
+    largestExpense,
+  };
+}
+
+function buildForecast(params: {
+  currentBalance: number;
+  pendingRows: TransactionRow[];
+  timeZone: string;
+}) {
+  const now = new Date();
+  const nowParts = getDatePartsInTimeZone(now, params.timeZone);
+  const todayStart = zonedDateTimeToUtc({
+    timeZone: params.timeZone,
+    year: nowParts.year,
+    month: nowParts.month,
+    day: nowParts.day,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+
+  const byDate = new Map<string, { inflow: number; outflow: number }>();
+  for (const row of params.pendingRows) {
+    if (!isPendingStatus(row.status)) continue;
+    const effectiveDate = row.due_date || row.date;
+    const key = toDateKeyInTimeZone(effectiveDate, params.timeZone);
+    const bucket = byDate.get(key) || { inflow: 0, outflow: 0 };
     const amount = numberFrom(row.amount);
-    if (String(row.type).toUpperCase() === 'INCOME' || String(row.type).toUpperCase() === 'PIX_IN') {
-      bucket.inflow += amount;
-    } else {
-      bucket.outflow += amount;
-    }
-    dailyBuckets.set(key, bucket);
+    if (isIncomeType(row.type)) bucket.inflow += amount;
+    if (isExpenseType(row.type)) bucket.outflow += amount;
+    byDate.set(key, bucket);
   }
 
-  const forecastDaily = Array.from({ length: 30 }, (_, index) => {
-    const date = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate() + index);
-    const key = date.toISOString().slice(0, 10);
-    const bucket = dailyBuckets.get(key) || { inflow: 0, outflow: 0 };
+  let rollingBalance = params.currentBalance;
+  const points = Array.from({ length: 30 }, (_, index) => {
+    const cursor = new Date(todayStart.getTime() + index * 86_400_000);
+    const key = toDateKeyInTimeZone(cursor, params.timeZone);
+    const bucket = byDate.get(key) || { inflow: 0, outflow: 0 };
+
     const openingBalance = rollingBalance;
     const closingBalance = openingBalance + bucket.inflow - bucket.outflow;
     rollingBalance = closingBalance;
+
     return {
-      date: key,
+      day: index + 1,
       openingBalance,
-      inflow: bucket.inflow,
-      outflow: bucket.outflow,
       closingBalance,
     };
   });
 
-  const lastPoint = forecastDaily[forecastDaily.length - 1] ?? null;
-  const dailyNetFlow =
-    forecastDaily.length > 0
-      ? (forecastDaily[forecastDaily.length - 1].closingBalance - forecastDaily[0].openingBalance) / forecastDaily.length
-      : 0;
-  const projectedNegativeDate =
-    forecastDaily.find((point) => point.closingBalance < 0)?.date ?? null;
-  const projectedNegativeInDays =
-    projectedNegativeDate
-      ? Math.max(
-          0,
-          Math.ceil((new Date(projectedNegativeDate).getTime() - todayStart.getTime()) / 86_400_000)
-        )
-      : null;
+  const projectedNegativeInDays = points.find((point) => point.closingBalance < 0)?.day ?? null;
+  const first = points[0];
+  const last = points[points.length - 1];
+  const dailyNetFlow = points.length > 0 ? (last.closingBalance - first.openingBalance) / points.length : 0;
+
+  return {
+    projections: [7, 15, 30].map((days) => ({
+      days,
+      projectedBalance: points[Math.max(0, Math.min(days - 1, points.length - 1))]?.closingBalance ?? params.currentBalance,
+    })),
+    dailyNetFlow,
+    trend: dailyNetFlow > 5 ? ('positive' as const) : dailyNetFlow < -5 ? ('negative' as const) : ('stable' as const),
+    projectedNegativeInDays,
+    source: 'read-model' as const,
+  };
+}
+
+export async function buildReportsOverview(
+  workspaceId: string,
+  selection?: Partial<DateRangeSelection>
+): Promise<ReportsOverviewPayload> {
+  const now = new Date();
+  const range = resolveDateRange({
+    period: selection?.period,
+    startDate: selection?.startDate,
+    endDate: selection?.endDate,
+    timeZone: selection?.timeZone,
+    now,
+  });
+  const comparisonRange = getComparisonRange(range);
+
+  const [wallets, transactionRowsRaw, goals] = await Promise.all([
+    prisma.wallet.findMany({
+      where: { workspace_id: workspaceId },
+      select: { balance: true },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        workspace_id: workspaceId,
+        date: {
+          gte: comparisonRange.start,
+          lte: range.end,
+        },
+      },
+      orderBy: [{ date: 'desc' }, { id: 'desc' }],
+      select: {
+        id: true,
+        amount: true,
+        type: true,
+        description: true,
+        date: true,
+        due_date: true,
+        status: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+    prisma.goal.findMany({
+      where: { workspace_id: workspaceId },
+      select: {
+        id: true,
+        name: true,
+        target_amount: true,
+        current_amount: true,
+        deadline: true,
+      },
+    }) as Promise<GoalRow[]>,
+  ]);
+
+  const transactionRows: TransactionRow[] = transactionRowsRaw.map((row) => ({
+    id: row.id,
+    amount: row.amount,
+    type: row.type,
+    description: row.description,
+    date: row.date,
+    due_date: row.due_date,
+    status: row.status,
+    category_name: row.category?.name || null,
+  }));
+
+  const currentRows = transactionRows.filter((row) => inRange(row.date, range));
+  const previousRows = transactionRows.filter((row) => inRange(row.date, comparisonRange));
+
+  const currentBalance = wallets.reduce((acc, wallet) => acc + numberFrom(wallet.balance), 0);
+  const summary = summarizeFlows(currentRows);
+  const revenueExpense12Months = buildWindowSeries({
+    range,
+    rows: currentRows,
+    windows: 12,
+  });
+  const savingsRate6Months = buildWindowSeries({
+    range,
+    rows: currentRows,
+    windows: 6,
+  }).map((item) => ({
+    ...item,
+    savingsRate: item.income > 0 ? ((item.income - item.expense) / item.income) * 100 : 0,
+  }));
+  const categoryData = buildCategoryData(currentRows);
+  const expenseDeepDive = buildExpenseDeepDive(currentRows, previousRows);
+
+  const pendingRows = transactionRows.filter((row) => isPendingStatus(row.status));
+  const balanceForecast = buildForecast({
+    currentBalance,
+    pendingRows,
+    timeZone: range.timeZone,
+  });
 
   const premiumSmartAlerts: ReportsOverviewPayload['premiumSmartAlerts'] = [];
-  if (projectedNegativeInDays !== null && projectedNegativeInDays <= 30) {
+  if (balanceForecast.projectedNegativeInDays !== null && balanceForecast.projectedNegativeInDays <= 30) {
     premiumSmartAlerts.push({
       id: 'premium-balance-risk',
       title: 'Alerta inteligente: risco de saldo',
-      message: `No ritmo atual, seu saldo pode ficar negativo em cerca de ${projectedNegativeInDays} dias.`,
+      message: `No ritmo atual, seu saldo pode ficar negativo em cerca de ${balanceForecast.projectedNegativeInDays} dias.`,
       tone: 'error',
       targetTab: 'reports',
     });
   }
-  if (previousMonthExpenses > 0 && currentMonthExpenses > previousMonthExpenses * 1.18) {
-    const variation = Math.round(((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100);
+
+  if (
+    expenseDeepDive.previousMonthTotal > 0 &&
+    expenseDeepDive.currentMonthTotal > expenseDeepDive.previousMonthTotal * 1.18
+  ) {
+    const variation = Math.round(
+      ((expenseDeepDive.currentMonthTotal - expenseDeepDive.previousMonthTotal) /
+        expenseDeepDive.previousMonthTotal) *
+        100
+    );
     premiumSmartAlerts.push({
       id: 'premium-expense-spike',
-      title: 'Alerta inteligente: gasto acima do padrão',
-      message: `Suas saidas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
+      title: 'Alerta inteligente: gastos acima do periodo anterior',
+      message: `As saidas subiram ${variation}% em comparacao com o periodo anterior equivalente.`,
       tone: 'warning',
       targetTab: 'reports',
     });
@@ -324,7 +442,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
     premiumSmartAlerts.push({
       id: 'premium-smart-alerts-ok',
       title: 'Alertas inteligentes monitorando seu caixa',
-      message: 'Nenhum sinal crítico foi detectado agora. Seu fluxo está estável e dentro do esperado.',
+      message: 'Nenhum sinal critico foi detectado agora. Seu fluxo esta estavel e dentro do esperado.',
       tone: 'success',
       targetTab: 'reports',
     });
@@ -332,40 +450,12 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
 
   return {
     generatedAt: now.toISOString(),
-    summary: {
-      totalIncome,
-      totalExpenses,
-      balance: totalIncome - totalExpenses,
-    },
-    revenueExpense12Months: buildMonthSeries(series12Rows, 12),
-    savingsRate6Months: buildMonthSeries(series6Rows, 6).map((item) => ({
-      ...item,
-      savingsRate: item.income > 0 ? ((item.income - item.expense) / item.income) * 100 : 0,
-    })),
+    summary,
+    revenueExpense12Months,
+    savingsRate6Months,
     categoryData,
-    expenseDeepDive: {
-      currentMonthTotal: currentMonthExpenses,
-      previousMonthTotal: previousMonthExpenses,
-      monthOverMonthVariation:
-        previousMonthExpenses > 0 ? ((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100 : null,
-      topCurrentCategory,
-      growingCategories,
-      recurringHeavyCategories,
-      largestExpense,
-    },
-    balanceForecast: {
-      projections: [7, 15, 30].map((days) => ({
-        days,
-        projectedBalance:
-          forecastDaily[Math.max(0, Math.min(days - 1, forecastDaily.length - 1))]?.closingBalance ??
-          lastPoint?.closingBalance ??
-          currentBalance,
-      })),
-      dailyNetFlow,
-      trend: dailyNetFlow > 5 ? 'positive' : dailyNetFlow < -5 ? 'negative' : 'stable',
-      projectedNegativeInDays,
-      source: 'read-model',
-    },
+    expenseDeepDive,
+    balanceForecast,
     premiumSmartAlerts,
   };
 }

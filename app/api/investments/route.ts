@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { asPrismaServiceUnavailableError, DATABASE_SCHEMA_MISMATCH_MESSAGE, prisma } from '@/lib/prisma';
+import { parsePeriodSelectionFromSearchParams, resolveDateRange } from '@/lib/date/period-resolver';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -64,8 +65,33 @@ const buildMissingTableResponse = () =>
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
+    const url = new URL(req.url);
+    const periodSelection = parsePeriodSelectionFromSearchParams(url.searchParams);
+    const hasPeriodFilter =
+      url.searchParams.has('period') ||
+      url.searchParams.has('start') ||
+      url.searchParams.has('end') ||
+      url.searchParams.has('startDate') ||
+      url.searchParams.has('endDate');
+    const range = hasPeriodFilter
+      ? resolveDateRange({
+          period: periodSelection.period,
+          startDate: periodSelection.startDate ?? url.searchParams.get('startDate'),
+          endDate: periodSelection.endDate ?? url.searchParams.get('endDate'),
+          timeZone: periodSelection.timeZone,
+          now: new Date(),
+        })
+      : null;
     const investments = await prisma.investment.findMany({
-      where: { workspace_id: context.workspaceId },
+      where: range
+        ? {
+            workspace_id: context.workspaceId,
+            created_at: {
+              gte: range.start,
+              lte: range.end,
+            },
+          }
+        : { workspace_id: context.workspaceId },
       orderBy: { created_at: 'desc' },
     });
     return NextResponse.json(investments);

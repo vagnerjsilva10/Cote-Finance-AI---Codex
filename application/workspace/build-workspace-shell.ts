@@ -10,6 +10,7 @@ import {
 } from '@/lib/server/multi-tenant';
 import { findWorkspaceConventionalDebts, findWorkspaceRecurringDebts } from '@/lib/server/debts';
 import type { WorkspaceShellPayload } from '@/lib/workspace/shell';
+import { resolveDateRange, type DateRangeSelection, type ResolvedDateRange } from '@/lib/date/period-resolver';
 
 function isSchemaCompatibilityError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -21,11 +22,39 @@ function isSchemaCompatibilityError(error: unknown) {
   return false;
 }
 
-async function findWorkspaceTransactions(workspaceId: string, take: number) {
+function buildTransactionEffectiveDateFilter(range: ResolvedDateRange): Prisma.TransactionWhereInput {
+  return {
+    OR: [
+      {
+        due_date: {
+          not: null,
+          gte: range.start,
+          lte: range.end,
+        },
+      },
+      {
+        due_date: null,
+        date: {
+          gte: range.start,
+          lte: range.end,
+        },
+      },
+    ],
+  };
+}
+
+async function findWorkspaceTransactions(
+  workspaceId: string,
+  options?: { take?: number; range?: ResolvedDateRange | null }
+) {
+  const where: Prisma.TransactionWhereInput = {
+    workspace_id: workspaceId,
+    ...(options?.range ? { AND: [buildTransactionEffectiveDateFilter(options.range)] } : {}),
+  };
   const query = {
-    where: { workspace_id: workspaceId },
+    where,
     orderBy: [{ date: 'desc' as const }, { id: 'desc' as const }],
-    take,
+    ...(typeof options?.take === 'number' ? { take: options.take } : {}),
   };
 
   try {
@@ -89,9 +118,18 @@ async function getCurrentMonthTransactionCount(workspaceId: string) {
 
 export async function buildWorkspaceShell(
   context: WorkspaceContext,
-  options?: { scope?: 'full' | 'transactions' }
+  options?: { scope?: 'full' | 'transactions'; periodSelection?: DateRangeSelection | null }
 ): Promise<WorkspaceShellPayload> {
   const scope = options?.scope === 'transactions' ? 'transactions' : 'full';
+  const resolvedRange = options?.periodSelection
+    ? resolveDateRange({
+        period: options.periodSelection.period,
+        startDate: options.periodSelection.startDate,
+        endDate: options.periodSelection.endDate,
+        timeZone: options.periodSelection.timeZone,
+        now: new Date(),
+      })
+    : null;
   const plan = await getWorkspacePlan(context.workspaceId, context.userId);
   const [limits, preference, workspace, wallets, recentEvents, currentMonthTransactionCount, currentMonthAiUsage] =
     await Promise.all([
@@ -184,22 +222,63 @@ export async function buildWorkspaceShell(
     })),
   };
 
+  const transactionTake = resolvedRange ? undefined : scope === 'transactions' ? 80 : 200;
+
   const [transactions, goals, investments, debts, recurringDebts] = await Promise.all([
-    findWorkspaceTransactions(context.workspaceId, scope === 'transactions' ? 80 : 200),
+    findWorkspaceTransactions(context.workspaceId, {
+      take: transactionTake,
+      range: resolvedRange,
+    }),
     scope === 'full'
       ? prisma.goal.findMany({
-          where: { workspace_id: context.workspaceId },
+          where: resolvedRange
+            ? {
+                workspace_id: context.workspaceId,
+                OR: [
+                  {
+                    created_at: {
+                      gte: resolvedRange.start,
+                      lte: resolvedRange.end,
+                    },
+                  },
+                  {
+                    deadline: {
+                      gte: resolvedRange.start,
+                      lte: resolvedRange.end,
+                    },
+                  },
+                ],
+              }
+            : { workspace_id: context.workspaceId },
           orderBy: { created_at: 'desc' },
         })
       : Promise.resolve(undefined),
     scope === 'full'
       ? prisma.investment.findMany({
-          where: { workspace_id: context.workspaceId },
+          where: resolvedRange
+            ? {
+                workspace_id: context.workspaceId,
+                created_at: {
+                  gte: resolvedRange.start,
+                  lte: resolvedRange.end,
+                },
+              }
+            : { workspace_id: context.workspaceId },
           orderBy: { created_at: 'desc' },
         })
       : Promise.resolve(undefined),
-    scope === 'full' ? findWorkspaceConventionalDebts(context.workspaceId) : Promise.resolve(undefined),
-    scope === 'full' ? findWorkspaceRecurringDebts(context.workspaceId) : Promise.resolve(undefined),
+    scope === 'full'
+      ? findWorkspaceConventionalDebts(context.workspaceId, {
+          range: resolvedRange,
+          dateField: 'due_date',
+        })
+      : Promise.resolve(undefined),
+    scope === 'full'
+      ? findWorkspaceRecurringDebts(context.workspaceId, {
+          range: resolvedRange,
+          dateField: 'next_due_date',
+        })
+      : Promise.resolve(undefined),
   ]);
 
   payload.transactions = transactions;

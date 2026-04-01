@@ -1,9 +1,9 @@
-import type {
+﻿import type {
   DashboardOverviewPayload,
   DashboardOverviewPeriod,
   DashboardOverviewRecentTransaction,
 } from '@/lib/dashboard/overview';
-import type { DashboardPeriodSelection } from '@/lib/dashboard/date-range';
+import type { DateRangeSelection } from '@/lib/date/period-resolver';
 import { DashboardAssistantMini } from '@/components/dashboard/DashboardAssistantMini';
 import { DashboardMainTrend } from '@/components/dashboard/DashboardMainTrend';
 import { PeriodFilter } from '@/components/dashboard/PeriodFilter';
@@ -20,7 +20,7 @@ type DashboardContainerProps = {
   wallets?: Array<{ id: string; name: string; balance: number }>;
   investments?: Array<{ id: string | number; label: string; value: number }>;
   onAddTransaction: () => void;
-  onPeriodChange: (selection: DashboardPeriodSelection) => void;
+  onPeriodChange: (selection: DateRangeSelection) => void;
   onUpgrade?: () => void;
   onOpenSummaryTarget?: (target: 'balance' | 'income' | 'expense' | 'net') => void;
   onOpenGoals?: () => void;
@@ -80,6 +80,8 @@ export function DashboardContainer({
   onSendAssistantPrompt,
 }: DashboardContainerProps) {
   const selectedPeriod = period ?? overview?.period ?? null;
+  const selectedPreset =
+    selectedPeriod?.preset === 'year_to_date' ? 'this_year' : selectedPeriod?.preset || 'this_month';
   const periodLabel = selectedPeriod?.label || 'Este mês';
   const assistantContext = buildAssistantContext(overview);
 
@@ -100,7 +102,7 @@ export function DashboardContainer({
 
       <PeriodFilter
         value={{
-          period: selectedPeriod?.preset || 'this_month',
+          period: selectedPreset,
           startDate: selectedPeriod?.preset === 'custom' ? selectedPeriod.startDate : null,
           endDate: selectedPeriod?.preset === 'custom' ? selectedPeriod.endDate : null,
           label: selectedPeriod?.label,
@@ -154,3 +156,6 @@ export function DashboardContainer({
     </div>
   );
 }
+
+
+

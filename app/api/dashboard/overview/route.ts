@@ -5,7 +5,7 @@ import {
   getDatabaseRuntimeInfo,
 } from '@/lib/prisma';
 import { buildDashboardOverview } from '@/lib/server/dashboard-overview';
-import { parseDashboardPeriodSelectionFromSearchParams } from '@/lib/dashboard/date-range';
+import { parsePeriodSelectionFromSearchParams } from '@/lib/date/period-resolver';
 import { HttpError, resolveWorkspaceContext } from '@/lib/server/multi-tenant';
 
 export const dynamic = 'force-dynamic';
@@ -43,9 +43,7 @@ export async function GET(req: Request) {
     const context = await resolveWorkspaceContext(req);
     workspaceId = context.workspaceId;
     const requestUrl = new URL(req.url);
-    const periodSelection = parseDashboardPeriodSelectionFromSearchParams(
-      requestUrl.searchParams
-    );
+    const periodSelection = parsePeriodSelectionFromSearchParams(requestUrl.searchParams);
     const overview = await withOverviewTimeout(
       buildDashboardOverview(context.workspaceId, periodSelection)
     );

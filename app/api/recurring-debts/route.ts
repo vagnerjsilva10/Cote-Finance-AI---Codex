@@ -9,6 +9,7 @@ import {
   findWorkspaceRecurringDebts,
   normalizeRecurringDebtStatus,
 } from '@/lib/server/debts';
+import { parsePeriodSelectionFromSearchParams, resolveDateRange } from '@/lib/date/period-resolver';
 import {
   HttpError,
   logWorkspaceEventSafe,
@@ -86,7 +87,31 @@ const normalizeFrequency = (value: string | undefined) => {
 export async function GET(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
-    const recurringDebts = await findWorkspaceRecurringDebts(context.workspaceId);
+    const url = new URL(req.url);
+    const periodSelection = parsePeriodSelectionFromSearchParams(url.searchParams);
+    const hasPeriodFilter =
+      url.searchParams.has('period') ||
+      url.searchParams.has('start') ||
+      url.searchParams.has('end') ||
+      url.searchParams.has('startDate') ||
+      url.searchParams.has('endDate');
+    const dateFieldRaw = String(url.searchParams.get('dateField') || 'next_due_date').trim().toLowerCase();
+    const dateField: 'next_due_date' | 'start_date' | 'created_at' =
+      dateFieldRaw === 'start_date' || dateFieldRaw === 'created_at' ? dateFieldRaw : 'next_due_date';
+    const range = hasPeriodFilter
+      ? resolveDateRange({
+          period: periodSelection.period,
+          startDate: periodSelection.startDate ?? url.searchParams.get('startDate'),
+          endDate: periodSelection.endDate ?? url.searchParams.get('endDate'),
+          timeZone: periodSelection.timeZone,
+          now: new Date(),
+        })
+      : null;
+
+    const recurringDebts = await findWorkspaceRecurringDebts(context.workspaceId, {
+      range,
+      dateField,
+    });
     return NextResponse.json(recurringDebts);
   } catch (error: any) {
     if (error instanceof HttpError) {
