@@ -46,7 +46,7 @@ test('gastei 50 no mercado -> categoria e descricao premium', () => {
   });
 
   assert.equal(category, 'Mercado');
-  assert.equal(description, 'Compra no mercado');
+  assert.equal(description, 'Despesa no mercado');
 });
 
 test('paguei 120 de gasolina -> descricao Abastecimento', () => {
@@ -110,4 +110,27 @@ test('resposta nao replica transcricao literal', () => {
 
   assert.notEqual(normalize(response), normalize(utterance));
   assert.ok(!normalize(response).includes(normalize(utterance)));
+});
+
+test('fallback de descricao curta e fraca e substituido por template melhor', () => {
+  const description = generateTransactionDescription({
+    intent: 'create_expense',
+    categoryName: 'Mercado',
+    categoryHint: 'mercado',
+    modelShortDescription: 'mercado',
+    rawUtterance: 'gastei 60 reais no mercado',
+  });
+
+  assert.equal(description, 'Despesa no mercado');
+});
+
+test('resposta usa emoji discreto no inicio', () => {
+  const response = generateWhatsAppConfirmationMessage({
+    intent: 'create_expense',
+    amount: 60,
+    categoryName: 'Mercado',
+    seed: 'emoji-expense',
+  });
+
+  assert.match(response, /^[✅💸💰📈🎯🏦]/);
 });

@@ -26,7 +26,10 @@ function isSupportedOutgoingAudioMime(mimeType: string) {
     normalized === 'audio/aac' ||
     normalized === 'audio/mpeg' ||
     normalized === 'audio/mp4' ||
-    normalized === 'audio/amr'
+    normalized === 'audio/amr' ||
+    normalized === 'audio/webm' ||
+    normalized === 'audio/wav' ||
+    normalized === 'audio/x-wav'
   );
 }
 
@@ -60,20 +63,30 @@ function extractInlineAudioFromResponse(response: unknown): SynthesizedAssistant
 
     for (const part of parts) {
       if (!part || typeof part !== 'object') continue;
-      const inlineData = (part as Record<string, unknown>).inlineData;
+      const inlineData =
+        (part as Record<string, unknown>).inlineData ||
+        (part as Record<string, unknown>).inline_data;
       if (!inlineData || typeof inlineData !== 'object') continue;
-      const data = String((inlineData as Record<string, unknown>).data || '').trim();
+      const data = String(
+        (inlineData as Record<string, unknown>).data ||
+          (inlineData as Record<string, unknown>).audio ||
+          ''
+      ).trim();
       if (!data) continue;
 
-      const mimeType = String((inlineData as Record<string, unknown>).mimeType || 'audio/ogg').trim() || 'audio/ogg';
+      const mimeType = String(
+        (inlineData as Record<string, unknown>).mimeType ||
+          (inlineData as Record<string, unknown>).mime_type ||
+          'audio/ogg'
+      ).trim() || 'audio/ogg';
       const audioBuffer = Buffer.from(data, 'base64');
       if (!audioBuffer.length) continue;
-      if (!isSupportedOutgoingAudioMime(mimeType)) continue;
+      const normalizedMime = isSupportedOutgoingAudioMime(mimeType) ? mimeType : 'audio/ogg';
 
       return {
         audioBuffer,
-        mimeType,
-        filename: pickAudioFilename(mimeType),
+        mimeType: normalizedMime,
+        filename: pickAudioFilename(normalizedMime),
       };
     }
   }

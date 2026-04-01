@@ -8,7 +8,6 @@ import {
   downloadWhatsAppMedia,
   isSupportedIncomingAudioMime,
 } from '@/lib/whatsapp/download-whatsapp-media';
-import { sendWhatsAppAudioMessage } from '@/lib/whatsapp/send-whatsapp-audio';
 import { shouldRequireConfirmation } from '@/lib/finance-assistant/confirmation-policy';
 import {
   executeContributeGoal,
@@ -26,8 +25,8 @@ import { resolveReplyMode, setWorkspaceReplyMode, getWorkspaceReplyMode } from '
 import { resolveWorkspaceFromWhatsAppSender } from '@/lib/finance-assistant/resolve-user-workspace-from-whatsapp';
 import { logWhatsAppAssistantEvent } from '@/lib/finance-assistant/audit-log.service';
 import type { NormalizedIncomingWhatsAppMessage } from '@/lib/whatsapp/normalize-incoming-message';
-import { synthesizeAssistantAudio } from '@/lib/finance-assistant/tts-adapter';
 import { resolveDailyGreeting } from '@/lib/finance-assistant/daily-greeting.service';
+import { trySendWhatsAppAudioReply } from '@/lib/finance-assistant/audio-reply.service';
 
 const PREMIUM_BLOCK_MESSAGE =
   'Essa automação inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lançar despesas, metas, dívidas e investimentos por mensagem.';
@@ -333,9 +332,8 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
           messageId,
           intent: parsedIntent.intent,
           hint:
-            parsedIntent.transaction?.shortCategoryName ||
             parsedIntent.transaction?.categoryHint ||
-            parsedIntent.transaction?.description ||
+            parsedIntent.transaction?.shortCategoryName ||
             canonicalText,
         },
       });
@@ -345,7 +343,7 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
         amount: Number(parsedIntent.transaction?.amount || 0),
         descriptionHint: parsedIntent.transaction?.shortDescription || parsedIntent.transaction?.description || null,
         merchant: parsedIntent.transaction?.merchant || null,
-        categoryHint: parsedIntent.transaction?.shortCategoryName || parsedIntent.transaction?.categoryHint || null,
+        categoryHint: parsedIntent.transaction?.categoryHint || parsedIntent.transaction?.shortCategoryName || null,
         dateHint: parsedIntent.transaction?.date || null,
       });
       resultText = execution.summaryText;
@@ -361,7 +359,6 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
           messageId,
           intent: parsedIntent.intent,
           hint:
-            parsedIntent.transaction?.shortCategoryName ||
             parsedIntent.transaction?.categoryHint ||
             parsedIntent.transaction?.description ||
             canonicalText,
@@ -373,7 +370,7 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
         amount: Number(parsedIntent.transaction?.amount || 0),
         descriptionHint: parsedIntent.transaction?.shortDescription || parsedIntent.transaction?.description || null,
         merchant: parsedIntent.transaction?.merchant || null,
-        categoryHint: parsedIntent.transaction?.shortCategoryName || parsedIntent.transaction?.categoryHint || null,
+        categoryHint: parsedIntent.transaction?.categoryHint || parsedIntent.transaction?.shortCategoryName || null,
         dateHint: parsedIntent.transaction?.date || null,
       });
       resultText = execution.summaryText;
@@ -512,53 +509,14 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
     requestedMode: parsedIntent.replyModeRequested,
   });
 
-  if (resolvedReplyMode === 'audio' || resolvedReplyMode === 'both') {
-    try {
-      const audio = await synthesizeAssistantAudio(withGreeting(resultText, dailyGreeting));
-      if (audio) {
-        await sendWhatsAppAudioMessage({
-          to: sender,
-          audioBuffer: audio.audioBuffer,
-          mimeType: audio.mimeType,
-          filename: audio.filename,
-        });
-        await logWhatsAppAssistantEvent({
-          workspaceId: workspace.workspaceId,
-          event: 'WHATSAPP_REPLY_AUDIO_SENT',
-          payload: {
-            messageId,
-            intent: parsedIntent.intent,
-            mode: resolvedReplyMode,
-            mimeType: audio.mimeType,
-            sizeBytes: audio.audioBuffer.length,
-          },
-        });
-      } else {
-        await logWhatsAppAssistantEvent({
-          workspaceId: workspace.workspaceId,
-          event: 'WHATSAPP_REPLY_AUDIO_SKIPPED',
-          payload: {
-            messageId,
-            intent: parsedIntent.intent,
-            mode: resolvedReplyMode,
-            reason: 'tts_unavailable_or_failed',
-          },
-        });
-      }
-    } catch (error) {
-      await logWhatsAppAssistantEvent({
-        workspaceId: workspace.workspaceId,
-        event: 'WHATSAPP_REPLY_AUDIO_SKIPPED',
-        payload: {
-          messageId,
-          intent: parsedIntent.intent,
-          mode: resolvedReplyMode,
-          reason: 'audio_send_failed',
-          error: error instanceof Error ? error.message : String(error || 'unknown_error'),
-        },
-      });
-    }
-  }
+  await trySendWhatsAppAudioReply({
+    workspaceId: workspace.workspaceId,
+    messageId,
+    intent: parsedIntent.intent,
+    mode: resolvedReplyMode,
+    to: sender,
+    textForSpeech: withGreeting(resultText, dailyGreeting),
+  });
 
   return { handled: true };
 }

@@ -27,6 +27,24 @@ function sanitizeDescription(value: string) {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
+function isLowQualityDescription(params: {
+  candidate: string;
+  categoryName: string;
+}) {
+  const normalizedCandidate = normalizeCategoryToken(params.candidate);
+  if (!normalizedCandidate) return true;
+
+  const wordCount = normalizedCandidate.split(' ').filter(Boolean).length;
+  if (wordCount < 2) return true;
+  if (normalizedCandidate.length < 10) return true;
+
+  const candidateKey = normalizeCategoryKey(normalizedCandidate);
+  const categoryKey = normalizeCategoryKey(params.categoryName);
+  if (candidateKey && categoryKey && candidateKey === categoryKey) return true;
+
+  return false;
+}
+
 function isLiteralCopy(candidate: string, rawUtterance: string | null | undefined) {
   const left = normalizeCategoryToken(candidate);
   const right = normalizeCategoryToken(rawUtterance || '');
@@ -67,11 +85,11 @@ export function generateTransactionDescription(params: {
     candidate = sanitizeDescription(params.modelShortDescription);
   }
 
-  if (!candidate || isLiteralCopy(candidate, params.rawUtterance)) {
+  if (!candidate || isLiteralCopy(candidate, params.rawUtterance) || isLowQualityDescription({ candidate, categoryName: categoryLabel })) {
     if (params.intent === 'create_expense') {
-      if (matchesAny(key, ['Mercado'])) candidate = 'Compra no mercado';
+      if (matchesAny(key, ['Mercado'])) candidate = 'Despesa no mercado';
       else if (matchesAny(key, ['Delivery']) && merchantToken.includes('ifood')) candidate = 'Compra no iFood';
-      else if (matchesAny(key, ['Delivery'])) candidate = 'Pedido de delivery';
+      else if (matchesAny(key, ['Delivery'])) candidate = 'Despesa em delivery';
       else if (matchesAny(key, ['Combustivel'])) candidate = 'Abastecimento';
       else if (matchesAny(key, ['Farmacia'])) candidate = 'Compra na farmacia';
       else if (matchesAny(key, ['Assinaturas'])) candidate = 'Assinatura digital';
@@ -100,4 +118,3 @@ export function generateTransactionDescription(params: {
 
   return clampByWordBoundary(absolute, ABSOLUTE_DESCRIPTION_MAX_LENGTH);
 }
-

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import {
   buildShortCategoryName,
+  isLikelyEnglishCategoryName,
   normalizeCategoryKey,
 } from '@/lib/finance-assistant/category-normalizer';
 import { matchCategoryCandidate, type CategoryCandidate } from '@/lib/finance-assistant/category-matcher';
@@ -18,6 +19,14 @@ export type CategoryResolutionResult = {
   reason: string;
   sourceHint: string;
 };
+
+function scoreReasonRank(reason: string) {
+  if (reason === 'exact_normalized_match') return 4;
+  if (reason === 'alias_match') return 3;
+  if (reason === 'prefix_match') return 2;
+  if (reason === 'token_similarity_match') return 1;
+  return 0;
+}
 
 async function collectWorkspaceCategoryCandidates(workspaceId: string): Promise<CategoryCandidate[]> {
   const [transactionRows, suggestionRows] = await Promise.all([
@@ -90,6 +99,7 @@ async function findCategoryByNormalizedName(normalized: string) {
 
   for (const category of categories) {
     if (normalizeCategoryKey(category.name) === normalized) {
+      if (isLikelyEnglishCategoryName(category.name)) continue;
       return category;
     }
   }
@@ -101,17 +111,37 @@ export async function resolveCategoryForWorkspace(params: {
   workspaceId: string;
   flowType: 'expense' | 'income';
   categoryHint: string | null | undefined;
+  rawUtterance?: string | null;
 }) {
   const sourceHint = (params.categoryHint || '').trim();
+  const utteranceHint = (params.rawUtterance || '').trim();
   const fallbackHint = params.flowType === 'income' ? 'Recebimento' : 'Outros';
-  const effectiveHint = sourceHint || fallbackHint;
+  const effectiveHint = sourceHint || utteranceHint || fallbackHint;
+  const hintQueue = [utteranceHint, sourceHint, fallbackHint].map((item) => item.trim()).filter(Boolean);
 
   const candidates = await collectWorkspaceCategoryCandidates(params.workspaceId);
-  const match = matchCategoryCandidate({
+  let match = matchCategoryCandidate({
     categoryHint: effectiveHint,
     flowType: params.flowType,
     candidates,
   });
+  let matchedHintUsed = effectiveHint;
+
+  for (const hint of hintQueue) {
+    const current = matchCategoryCandidate({
+      categoryHint: hint,
+      flowType: params.flowType,
+      candidates,
+    });
+
+    const currentRank = scoreReasonRank(current.reason);
+    const bestRank = scoreReasonRank(match.reason);
+    const shouldReplace = currentRank > bestRank || (currentRank === bestRank && current.score > match.score);
+    if (shouldReplace) {
+      match = current;
+      matchedHintUsed = hint;
+    }
+  }
 
   if (match.candidate && match.score >= 0.74) {
     const result: CategoryResolutionResult = {
@@ -122,14 +152,14 @@ export async function resolveCategoryForWorkspace(params: {
       matchScore: match.score,
       wasAutoCreated: false,
       reason: match.reason,
-      sourceHint: effectiveHint,
+      sourceHint: matchedHintUsed,
     };
 
     return result;
   }
 
   const shortCategoryName = buildShortCategoryName({
-    hint: match.canonicalHint || effectiveHint,
+    hint: match.canonicalHint || utteranceHint || effectiveHint,
     flowType: params.flowType,
   });
   const normalizedTarget = normalizeCategoryKey(shortCategoryName);
@@ -146,7 +176,7 @@ export async function resolveCategoryForWorkspace(params: {
       matchScore: Math.max(match.score, 0.69),
       wasAutoCreated: false,
       reason: 'normalized_global_match',
-      sourceHint: effectiveHint,
+      sourceHint: matchedHintUsed,
     };
 
     return result;
@@ -170,7 +200,7 @@ export async function resolveCategoryForWorkspace(params: {
     payload: {
       categoryId: created.id,
       categoryName: created.name,
-      sourceHint: effectiveHint,
+      sourceHint: matchedHintUsed,
       flowType: params.flowType,
       matchScore: match.score,
     },
@@ -184,7 +214,7 @@ export async function resolveCategoryForWorkspace(params: {
     matchScore: match.score,
     wasAutoCreated: true,
     reason: 'auto_created',
-    sourceHint: effectiveHint,
+    sourceHint: matchedHintUsed,
   };
 
   return result;

@@ -103,6 +103,7 @@ export async function executeCreateExpense(params: {
     workspaceId: params.ctx.workspaceId,
     flowType: 'expense',
     categoryHint: params.categoryHint || params.merchant || params.descriptionHint || params.ctx.parsedText,
+    rawUtterance: params.ctx.parsedText,
   });
 
   const generatedDescription = generateTransactionDescription({
@@ -193,6 +194,7 @@ export async function executeCreateIncome(params: {
     workspaceId: params.ctx.workspaceId,
     flowType: 'income',
     categoryHint: params.categoryHint || params.merchant || params.descriptionHint || params.ctx.parsedText,
+    rawUtterance: params.ctx.parsedText,
   });
 
   const generatedDescription = generateTransactionDescription({

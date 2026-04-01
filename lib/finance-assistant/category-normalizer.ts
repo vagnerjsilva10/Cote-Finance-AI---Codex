@@ -9,19 +9,19 @@ export type CategoryAliasItem = {
 export const MAX_CATEGORY_NAME_LENGTH = 20;
 
 export const CATEGORY_ALIAS_TABLE: CategoryAliasItem[] = [
-  { type: 'expense', canonical: 'Delivery', aliases: ['ifood', 'i food', 'delivery', 'restaurante', 'lanche'] },
-  { type: 'expense', canonical: 'Transporte', aliases: ['uber', '99', 'taxi', 'corrida'] },
-  { type: 'expense', canonical: 'Combustivel', aliases: ['gasolina', 'etanol', 'posto', 'abastecimento', 'shell', 'ipiranga'] },
-  { type: 'expense', canonical: 'Mercado', aliases: ['mercado', 'supermercado', 'atacadao', 'feira'] },
-  { type: 'expense', canonical: 'Farmacia', aliases: ['farmacia', 'remedio', 'drogaria', 'medicamento'] },
-  { type: 'expense', canonical: 'Moradia', aliases: ['aluguel', 'condominio', 'moradia'] },
-  { type: 'expense', canonical: 'Energia', aliases: ['energia', 'luz', 'eletrica'] },
-  { type: 'expense', canonical: 'Internet', aliases: ['internet', 'banda larga', 'wi fi', 'wifi'] },
-  { type: 'expense', canonical: 'Assinaturas', aliases: ['netflix', 'spotify', 'assinatura', 'streaming'] },
-  { type: 'income', canonical: 'Pix', aliases: ['pix', 'transferencia pix'] },
-  { type: 'income', canonical: 'Salario', aliases: ['salario', 'holerite', 'pagamento mensal'] },
-  { type: 'income', canonical: 'Comissao', aliases: ['comissao', 'bonus', 'bonificacao'] },
-  { type: 'income', canonical: 'Cliente', aliases: ['cliente', 'freela', 'freelance', 'projeto'] },
+  { type: 'expense', canonical: 'Delivery', aliases: ['ifood', 'i food', 'delivery', 'food delivery', 'restaurante', 'lanche'] },
+  { type: 'expense', canonical: 'Transporte', aliases: ['uber', '99', 'taxi', 'corrida', 'transport'] },
+  { type: 'expense', canonical: 'Combustivel', aliases: ['gasolina', 'etanol', 'posto', 'abastecimento', 'shell', 'ipiranga', 'fuel', 'gas station', 'gas'] },
+  { type: 'expense', canonical: 'Mercado', aliases: ['mercado', 'supermercado', 'atacadao', 'feira', 'grocery', 'groceries', 'supermarket'] },
+  { type: 'expense', canonical: 'Farmacia', aliases: ['farmacia', 'remedio', 'drogaria', 'medicamento', 'pharmacy', 'medicine'] },
+  { type: 'expense', canonical: 'Moradia', aliases: ['aluguel', 'condominio', 'moradia', 'rent', 'housing'] },
+  { type: 'expense', canonical: 'Energia', aliases: ['energia', 'luz', 'eletrica', 'electricity', 'utilities', 'utility', 'power'] },
+  { type: 'expense', canonical: 'Internet', aliases: ['internet', 'banda larga', 'wi fi', 'wifi', 'broadband'] },
+  { type: 'expense', canonical: 'Assinaturas', aliases: ['netflix', 'spotify', 'assinatura', 'streaming', 'subscription', 'subscriptions'] },
+  { type: 'income', canonical: 'Pix', aliases: ['pix', 'transferencia pix', 'instant transfer'] },
+  { type: 'income', canonical: 'Salario', aliases: ['salario', 'holerite', 'pagamento mensal', 'salary'] },
+  { type: 'income', canonical: 'Comissao', aliases: ['comissao', 'bonus', 'bonificacao', 'commission'] },
+  { type: 'income', canonical: 'Cliente', aliases: ['cliente', 'freela', 'freelance', 'projeto', 'client'] },
   { type: 'both', canonical: 'Investimento', aliases: ['investimento', 'cdb', 'tesouro', 'fii', 'acoes', 'acao'] },
 ];
 
@@ -94,6 +94,26 @@ const VERB_TOKENS = new Set([
   'registrado',
   'registra',
   'registrei',
+]);
+
+const LIKELY_ENGLISH_TOKENS = new Set([
+  'groceries',
+  'grocery',
+  'fuel',
+  'rent',
+  'health',
+  'utilities',
+  'utility',
+  'delivery',
+  'food',
+  'client',
+  'commission',
+  'salary',
+  'subscription',
+  'subscriptions',
+  'market',
+  'expense',
+  'income',
 ]);
 
 function stripAccents(value: string) {
@@ -200,8 +220,15 @@ export function buildShortCategoryName(params: {
   });
 
   const fallback = params.flowType === 'income' ? 'Recebimento' : 'Outros';
-  const candidateBase = aliasCanonical || extractRelevantTokens(params.hint).slice(0, 2).join(' ') || fallback;
+  const extracted = extractRelevantTokens(params.hint).slice(0, 2);
+  const looksEnglishOnly = extracted.length > 0 && extracted.every((token) => LIKELY_ENGLISH_TOKENS.has(token));
+  const candidateBase = aliasCanonical || (looksEnglishOnly ? fallback : extracted.join(' ')) || fallback;
   const displayName = toCategoryDisplayName(candidateBase) || fallback;
   return clampByWordBoundary(displayName, MAX_CATEGORY_NAME_LENGTH);
 }
 
+export function isLikelyEnglishCategoryName(value: string) {
+  const tokens = normalizeCategoryToken(value).split(' ').filter(Boolean);
+  if (!tokens.length) return false;
+  return tokens.every((token) => LIKELY_ENGLISH_TOKENS.has(token));
+}

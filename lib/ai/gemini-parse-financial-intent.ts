@@ -115,6 +115,8 @@ export async function parseFinancialIntentWithGemini(params: {
     'Classifique a mensagem em uma intent e extraia entidades objetivas.',
     'Se preencher transaction.shortCategoryName, use nome curto e padronizado, nunca frase inteira.',
     'Se preencher transaction.shortDescription, use texto curto, limpo e sem transcricao literal.',
+    'Use portugues do Brasil para categoryHint, shortCategoryName e shortDescription.',
+    'Nunca devolva categorias em ingles.',
     'Use unknown quando nao houver intencao confiavel.',
     'Respeite o schema e nao invente valores ausentes.',
     '',
