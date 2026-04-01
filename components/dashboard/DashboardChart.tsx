@@ -17,7 +17,7 @@ export function DashboardChart({ monthlySeries, loading }: DashboardChartProps) 
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[350px] space-y-3 !p-4 sm:!p-5')}>
       <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Entradas vs Sa�das</h3>
+        <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Entradas vs Saidas</h3>
         <p className="text-xs text-[var(--text-secondary)]">Comparativo dos últimos 6 meses para leitura rápida de ritmo financeiro.</p>
       </div>
 

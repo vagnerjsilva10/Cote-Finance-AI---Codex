@@ -167,7 +167,7 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
                   labelFormatter={(value) => formatDateShort(String(value))}
                   formatter={(value, name) => {
                     if (name === 'income') return [formatCurrency(Number(value || 0)), 'Entradas'];
-                    if (name === 'expense') return [formatCurrency(Number(value || 0)), 'Saídas'];
+                    if (name === 'expense') return [formatCurrency(Number(value || 0)), 'Saidas'];
                     return [formatCurrency(Number(value || 0)), 'Saldo'];
                   }}
                 />
@@ -204,7 +204,7 @@ export function DashboardMainTrend({ forecast, loading }: DashboardMainTrendProp
               <span className="size-2 rounded-full bg-[var(--chart-income)]" /> Entradas
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-[var(--chart-expense)]" /> Saídas
+              <span className="size-2 rounded-full bg-[var(--chart-expense)]" /> Saidas
             </span>
           </div>
         </div>

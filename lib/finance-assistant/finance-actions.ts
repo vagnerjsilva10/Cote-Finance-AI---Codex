@@ -551,7 +551,7 @@ export async function executeQuerySummary(params: {
   const balance = totalIncome - totalExpense;
 
   return {
-    summaryText: `Resumo do mes: entradas ${formatCurrency(totalIncome)}, saídas ${formatCurrency(totalExpense)} e saldo ${formatCurrency(balance)}.`,
+    summaryText: `Resumo do mes: entradas ${formatCurrency(totalIncome)}, saidas ${formatCurrency(totalExpense)} e saldo ${formatCurrency(balance)}.`,
   } satisfies FinanceExecutionResult;
 }
 

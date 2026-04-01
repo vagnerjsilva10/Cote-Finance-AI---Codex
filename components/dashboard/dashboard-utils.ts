@@ -37,7 +37,7 @@ export const mapUpcomingStatusLabel = (status: string) => {
 
 export const getUpcomingFlowLabel = (flow: DashboardOverviewUpcomingEvent['flow']) => {
   if (flow === 'in') return 'Entrada';
-  if (flow === 'out') return 'Saída';
+  if (flow === 'out') return 'Saida';
   return 'Neutro';
 };
 

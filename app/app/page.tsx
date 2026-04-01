@@ -5809,7 +5809,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="app-surface-card rounded-2xl p-6">
         <div className="mb-5">
-          <h4 className="label-premium text-[var(--text-primary)]">Entradas x Saídas (12 meses)</h4>
+          <h4 className="label-premium text-[var(--text-primary)]">Entradas x Saidas (12 meses)</h4>
         </div>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">

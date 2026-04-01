@@ -93,7 +93,7 @@ export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummar
       </div>
       <div className="lg:col-span-4">
         <SummaryCard
-          label="Saídas"
+          label="Saidas"
           value={summary ? formatCurrency(outflow) : '--'}
           trend={expenseTrend}
           tone="danger"
