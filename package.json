@@ -18,6 +18,7 @@
         "clean": "node scripts/clean-next.js",
         "ops:verify-whatsapp-cron": "node scripts/ops/verify-whatsapp-cron-production.js",
         "ops:verify-whatsapp-cron:strict": "node scripts/ops/verify-whatsapp-cron-production.js --strict",
+        "test:period": "node scripts/run-period-tests.js",
         "test:e2e": "npx playwright test",
         "test:e2e:headed": "npx playwright test --headed",
         "ops:verify-financial-calendar-schema": "node scripts/ops/verify-financial-calendar-schema.js",

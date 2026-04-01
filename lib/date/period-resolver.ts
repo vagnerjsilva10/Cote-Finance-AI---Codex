@@ -10,7 +10,7 @@ import {
   toDateKeyInTimeZone,
   zonedDateTimeToUtc,
   type DashboardChartGranularity,
-} from '@/lib/dashboard/date-range';
+} from '../dashboard/date-range';
 
 export const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
