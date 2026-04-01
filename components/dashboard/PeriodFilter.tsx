@@ -22,8 +22,8 @@ const PERIOD_OPTIONS: Array<{ key: DashboardPeriodPreset; label: string }> = [
   { key: 'today', label: 'Hoje' },
   { key: 'last_7_days', label: '7 dias' },
   { key: 'last_30_days', label: '30 dias' },
-  { key: 'this_month', label: 'Este mes' },
-  { key: 'last_month', label: 'Mes passado' },
+  { key: 'this_month', label: 'Este mês' },
+  { key: 'last_month', label: 'Mês passado' },
   { key: 'last_90_days', label: '90 dias' },
   { key: 'year_to_date', label: 'Ano atual' },
   { key: 'custom', label: 'Personalizado' },
@@ -104,7 +104,7 @@ export function PeriodFilter({ value, loading = false, onChange }: DashboardPeri
       ) : null}
 
       <p className="text-xs text-[var(--text-muted)]">
-        {value.label ? `Periodo atual: ${value.label}` : 'Selecione um periodo para analisar suas movimentacoes.'}
+        {value.label ? `Período atual: ${value.label}` : 'Selecione um período para analisar suas movimentações.'}
       </p>
     </section>
   );

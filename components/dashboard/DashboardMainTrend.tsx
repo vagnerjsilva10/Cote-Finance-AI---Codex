@@ -165,7 +165,7 @@ export function DashboardMainTrend({ forecast, period, loading }: DashboardMainT
     <article className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'space-y-3 !p-4 sm:!p-5')}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Visao Geral</h3>
+          <h3 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Visão Geral</h3>
           {!loading && rangeLabel ? (
             <p className="mt-1 text-xs text-[var(--text-secondary)]">
               {period?.label ? `${period.label} - ` : ''}
@@ -216,7 +216,7 @@ export function DashboardMainTrend({ forecast, period, loading }: DashboardMainT
                   labelFormatter={(value) => formatTooltipLabel(String(value), period)}
                   formatter={(value, name) => {
                     if (name === 'income') return [formatCurrency(Number(value || 0)), 'Entradas'];
-                    if (name === 'expense') return [formatCurrency(Number(value || 0)), 'Saidas'];
+                    if (name === 'expense') return [formatCurrency(Number(value || 0)), 'Saídas'];
                     return [formatCurrency(Number(value || 0)), 'Saldo acumulado'];
                   }}
                 />
@@ -258,7 +258,7 @@ export function DashboardMainTrend({ forecast, period, loading }: DashboardMainT
               <span className="size-2 rounded-full bg-[var(--chart-income)]" /> Entradas
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-[var(--chart-expense)]" /> Saidas
+              <span className="size-2 rounded-full bg-[var(--chart-expense)]" /> Saídas
             </span>
             <span className="inline-flex items-center gap-2">
               <span className="size-2 rounded-full bg-[var(--chart-balance)]" /> Saldo acumulado
@@ -268,7 +268,7 @@ export function DashboardMainTrend({ forecast, period, loading }: DashboardMainT
       ) : (
         <div className={cn(DASHBOARD_CARD_PANEL_CLASSNAME, 'p-3')}>
           <p className="text-sm text-[var(--text-secondary)]">
-            Ainda nao ha dados suficientes para exibir tendencia de saldo neste periodo.
+            Ainda não há dados suficientes para exibir tendência de saldo neste período.
           </p>
         </div>
       )}

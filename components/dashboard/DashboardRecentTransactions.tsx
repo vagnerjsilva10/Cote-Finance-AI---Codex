@@ -40,7 +40,7 @@ export function DashboardRecentTransactions({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-0.5">
           <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
-            Transacoes do periodo
+            Transações do período
           </h3>
           {periodLabel ? (
             <p className="text-xs text-[var(--text-secondary)]">{periodLabel}</p>
@@ -61,7 +61,7 @@ export function DashboardRecentTransactions({
             <thead>
               <tr className="border-b border-[var(--border-default)] bg-[var(--bg-tertiary)]">
                 <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                  Descricao
+                  Descrição
                 </th>
                 <th className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                   Categoria
@@ -95,7 +95,7 @@ export function DashboardRecentTransactions({
               ) : visibleTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center text-sm text-[var(--text-secondary)]">
-                    Nenhuma transacao encontrada para o periodo selecionado.
+                    Nenhuma transação encontrada para o período selecionado.
                   </td>
                 </tr>
               ) : (

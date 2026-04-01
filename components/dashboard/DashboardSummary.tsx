@@ -53,7 +53,7 @@ function SummaryCard({ label, value, hint, tone, loading, onClick }: CardProps) 
           <p className={cn('text-xs font-bold', valueClassByTone[tone])}>{hint}</p>
         ) : (
           <span className="inline-flex rounded-full border border-[var(--border-soft)] bg-[var(--bg-tertiary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
-            Sem comparacao
+            Sem comparação
           </span>
         )}
       </div>
@@ -94,7 +94,7 @@ export function DashboardSummary({ summary, loading, onOpenSummaryTarget }: Dash
         </div>
         <div className="lg:col-span-3">
           <SummaryCard
-            label="Saidas"
+            label="Saídas"
             value={summary ? formatCurrency(summary.outflow) : '--'}
             hint={outflowTrend}
             tone="danger"
@@ -104,7 +104,7 @@ export function DashboardSummary({ summary, loading, onOpenSummaryTarget }: Dash
         </div>
         <div className="lg:col-span-3">
           <SummaryCard
-            label="Resultado do periodo"
+            label="Resultado do período"
             value={summary ? formatCurrency(summary.periodNet) : '--'}
             hint={netTrend}
             tone={periodNetTone}

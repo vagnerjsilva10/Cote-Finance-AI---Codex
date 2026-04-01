@@ -39,15 +39,15 @@ function buildAssistantContext(overview: DashboardOverviewPayload | null) {
 
   if (!hasTransactions) {
     return {
-      headline: 'Pergunte sobre organizacao financeira e proximos passos para comecar.',
-      primary: 'Como organizar minhas financas?',
+      headline: 'Pergunte sobre organização financeira e próximos passos para começar.',
+      primary: 'Como organizar minhas finanças?',
       secondary: 'Criar um plano mensal',
     };
   }
 
   if ((summary?.outflow ?? 0) > (summary?.inflow ?? 0)) {
     return {
-      headline: 'Receba analises e sugestoes com base na sua movimentacao mais recente.',
+      headline: 'Receba análises e sugestões com base na sua movimentação mais recente.',
       primary: 'Onde posso economizar?',
       secondary: 'Analisar meus gastos',
     };
@@ -80,7 +80,7 @@ export function DashboardContainer({
   onSendAssistantPrompt,
 }: DashboardContainerProps) {
   const selectedPeriod = period ?? overview?.period ?? null;
-  const periodLabel = selectedPeriod?.label || 'Este mes';
+  const periodLabel = selectedPeriod?.label || 'Este mês';
   const assistantContext = buildAssistantContext(overview);
 
   return (
@@ -88,13 +88,13 @@ export function DashboardContainer({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="page-title-premium text-[var(--text-primary)]">Dashboard</h3>
-          <p className="text-sm text-[var(--text-secondary)]">Analise de {periodLabel}</p>
+          <p className="text-sm text-[var(--text-secondary)]">Análise de {periodLabel}</p>
         </div>
         <button
           onClick={onAddTransaction}
           className="app-button-primary rounded-xl px-4 py-2 text-sm font-semibold"
         >
-          + Nova transacao
+          + Nova transação
         </button>
       </div>
 

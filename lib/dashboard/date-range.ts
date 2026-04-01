@@ -374,11 +374,11 @@ export function getRangeLabel(range: {
   endDate: string;
 }) {
   if (range.period === 'today') return 'Hoje';
-  if (range.period === 'last_7_days') return 'Ultimos 7 dias';
-  if (range.period === 'last_30_days') return 'Ultimos 30 dias';
-  if (range.period === 'this_month') return 'Este mes';
-  if (range.period === 'last_month') return 'Mes passado';
-  if (range.period === 'last_90_days') return 'Ultimos 90 dias';
+  if (range.period === 'last_7_days') return 'Últimos 7 dias';
+  if (range.period === 'last_30_days') return 'Últimos 30 dias';
+  if (range.period === 'this_month') return 'Este mês';
+  if (range.period === 'last_month') return 'Mês passado';
+  if (range.period === 'last_90_days') return 'Últimos 90 dias';
   if (range.period === 'year_to_date') return 'Ano atual';
   return `${formatDateKey(range.startDate)} - ${formatDateKey(range.endDate)}`;
 }
@@ -563,7 +563,7 @@ export function getComparisonDateRange(range: DashboardResolvedDateRange): Dashb
     return buildComparisonRange({
       startDate: previousMonthStart,
       endDate: alignedEnd,
-      label: 'Comparado ao mesmo ritmo do mes anterior',
+      label: 'Comparado ao mesmo ritmo do mês anterior',
       timeZone: range.timeZone,
     });
   }
@@ -573,7 +573,7 @@ export function getComparisonDateRange(range: DashboardResolvedDateRange): Dashb
     return buildComparisonRange({
       startDate: previousMonthStart,
       endDate: toMonthEndDateKey(previousMonthStart),
-      label: 'Comparado ao mes anterior',
+      label: 'Comparado ao mês anterior',
       timeZone: range.timeZone,
     });
   }
@@ -584,7 +584,7 @@ export function getComparisonDateRange(range: DashboardResolvedDateRange): Dashb
     return buildComparisonRange({
       startDate: previousYearStart,
       endDate: shiftDateKey(previousYearStart, range.totalDays - 1),
-      label: 'Comparado ao mesmo periodo do ano anterior',
+      label: 'Comparado ao mesmo período do ano anterior',
       timeZone: range.timeZone,
     });
   }
@@ -592,7 +592,7 @@ export function getComparisonDateRange(range: DashboardResolvedDateRange): Dashb
   return buildComparisonRange({
     startDate: sameLengthPreviousStart,
     endDate: sameLengthPreviousEnd,
-    label: 'Comparado ao periodo anterior equivalente',
+    label: 'Comparado ao período anterior equivalente',
     timeZone: range.timeZone,
   });
 }
