@@ -83,7 +83,7 @@ export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummar
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:gap-4">
       <div className="lg:col-span-4">
         <SummaryCard
-          label="Receita"
+          label="Entradas"
           value={summary ? formatCurrency(inflow) : '--'}
           trend={incomeTrend}
           tone="success"
@@ -93,7 +93,7 @@ export function DashboardSummary({ summary, monthlySeries, loading, onOpenSummar
       </div>
       <div className="lg:col-span-4">
         <SummaryCard
-          label="Despesa"
+          label="Saídas"
           value={summary ? formatCurrency(outflow) : '--'}
           trend={expenseTrend}
           tone="danger"

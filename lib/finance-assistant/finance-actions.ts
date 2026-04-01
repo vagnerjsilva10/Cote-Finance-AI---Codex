@@ -1,4 +1,4 @@
-ï»¿import 'server-only';
+import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import { mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
@@ -551,6 +551,7 @@ export async function executeQuerySummary(params: {
   const balance = totalIncome - totalExpense;
 
   return {
-    summaryText: `Resumo do mes: receitas ${formatCurrency(totalIncome)}, despesas ${formatCurrency(totalExpense)} e saldo ${formatCurrency(balance)}.`,
+    summaryText: `Resumo do mes: entradas ${formatCurrency(totalIncome)}, saídas ${formatCurrency(totalExpense)} e saldo ${formatCurrency(balance)}.`,
   } satisfies FinanceExecutionResult;
 }
+

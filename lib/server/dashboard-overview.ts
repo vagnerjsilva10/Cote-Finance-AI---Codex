@@ -405,6 +405,18 @@ function extendForecastSeriesToDays(params: {
   return seed;
 }
 
+function shiftForecastSeriesBalance(
+  daily: DashboardOverviewForecastPoint[],
+  delta: number
+): DashboardOverviewForecastPoint[] {
+  if (!Number.isFinite(delta) || Math.abs(delta) < 0.01) return daily;
+  return daily.map((point) => ({
+    ...point,
+    openingBalance: point.openingBalance + delta,
+    closingBalance: point.closingBalance + delta,
+  }));
+}
+
 function buildHistoricalForecastFromConfirmedRows(params: {
   currentBalance: number;
   historyStart: Date;
@@ -567,6 +579,20 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
   let nextCriticalDate: string | null = null;
   let forecastDaily: DashboardOverviewForecastPoint[] = [];
   let upcomingEvents: DashboardOverviewUpcomingEvent[] = [];
+  const walletBalances = await safeSection<Array<{ balance: DecimalLike }>>(
+    workspaceId,
+    'wallet_balances',
+    [],
+    () =>
+      prisma.wallet.findMany({
+        where: { workspace_id: workspaceId },
+        select: { balance: true },
+      })
+  );
+  const canonicalCurrentBalance = walletBalances.reduce(
+    (acc, wallet) => acc + numberFrom(wallet.balance),
+    0
+  );
 
   if (readModel) {
     currentBalance = numberFrom(readModel.current_balance);
@@ -681,17 +707,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
       category: row.category ?? null,
     }));
   } else {
-    const wallets = await safeSection<Array<{ balance: DecimalLike }>>(
-      workspaceId,
-      'wallet_balances',
-      [],
-      () =>
-        prisma.wallet.findMany({
-          where: { workspace_id: workspaceId },
-          select: { balance: true },
-        })
-    );
-    currentBalance = wallets.reduce((acc, wallet) => acc + numberFrom(wallet.balance), 0);
+    currentBalance = canonicalCurrentBalance;
 
     const totals = await safeSection<TotalsRow[]>(
       workspaceId,
@@ -792,6 +808,23 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
       sourceType: row.source_type ? String(row.source_type) : null,
       category: row.category ?? null,
     }));
+  }
+
+  const balanceDelta = canonicalCurrentBalance - currentBalance;
+  if (Number.isFinite(balanceDelta) && Math.abs(balanceDelta) >= 0.01) {
+    console.warn('[dashboard-overview] balance.mismatch', {
+      workspaceId,
+      canonicalCurrentBalance,
+      computedCurrentBalance: currentBalance,
+      delta: balanceDelta,
+      source: readModel ? 'read_model' : 'fallback',
+      database: getDatabaseRuntimeInfo(),
+    });
+    currentBalance = canonicalCurrentBalance;
+    forecastDaily = shiftForecastSeriesBalance(forecastDaily, balanceDelta);
+    if (projectedBalance30d !== null && Number.isFinite(projectedBalance30d)) {
+      projectedBalance30d += balanceDelta;
+    }
   }
 
   // Keep monthly confirmed totals consistent with recorded transactions even when the
@@ -975,7 +1008,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
     .filter(Boolean);
 
   const topExpense = topExpenseRows[0];
-  const topExpenseLabel = topExpense?.category_name || 'Sem despesas registradas no mês atual.';
+  const topExpenseLabel = topExpense?.category_name || 'Sem saídas registradas no mês atual.';
   const topExpenseAmount = numberFrom(topExpense?.total || 0);
   const expenseTransactionCount = insightRows.filter((row) => {
     const normalizedType = normalizeTransactionType(row.type);
@@ -997,7 +1030,7 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
     {
       id: 'expense-volume',
       badge: 'Tendência',
-      title: 'Despesas no mês',
+      title: 'Saídas no mês',
       metric: currencyFormatter.format(monthConfirmedExpense),
       description: `Você gastou ${currencyFormatter.format(monthConfirmedExpense)} em ${expenseTransactionCount} transações no período atual.`,
       action: 'Ação sugerida: acompanhe o relatório de categorias para conter desvios.',

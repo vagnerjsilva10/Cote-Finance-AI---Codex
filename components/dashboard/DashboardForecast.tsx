@@ -83,7 +83,7 @@ export function DashboardDecisionPanel({ forecast, alerts, loading }: DashboardD
                   type="button"
                   className="rounded-md border border-[var(--border-soft)] bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--border-default)]"
                 >
-                  Ver despesas futuras
+                  Ver saídas futuras
                 </button>
                 <button
                   type="button"
@@ -259,4 +259,5 @@ export function DashboardBalanceEvolutionCard({ forecast, loading }: DashboardBa
     </section>
   );
 }
+
 

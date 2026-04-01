@@ -240,7 +240,7 @@ function parseFinancialCommand(rawText: string): ParsedFinancialCommand | null {
   const amountTokenIndex = tokens.findIndex((token) => token.includes(amountData.rawAmount));
   const descriptionTokens = amountTokenIndex >= 0 ? tokens.slice(amountTokenIndex + 1) : [];
   const description = descriptionTokens.join(' ').replace(/^(de|do|da|no|na|em|para)\s+/i, '').trim();
-  const finalDescription = description || (type === 'INCOME' ? 'Entrada via WhatsApp' : 'Despesa via WhatsApp');
+  const finalDescription = description || (type === 'INCOME' ? 'Entrada via WhatsApp' : 'Saída via WhatsApp');
 
   return {
     type,
@@ -875,7 +875,7 @@ async function handleWhatsAppActionIntent(params: {
       text: [
         `Últimos lançamentos do workspace ${params.workspaceName}:`,
         ...recentTransactions.map((tx, index) => {
-          const label = String(tx.type).toUpperCase() === 'INCOME' ? 'entrada' : 'despesa';
+          const label = String(tx.type).toUpperCase() === 'INCOME' ? 'entrada' : 'saída';
           return `${index + 1}. ${label} de ${formatCurrency(Number(tx.amount || 0))} em ${tx.category?.name || 'Outros'} - ${tx.description}.`;
         }),
         'Para remover, envie por exemplo: remover lancamento 2',
@@ -1966,8 +1966,8 @@ async function processIncomingMessage(message: IncomingTextMessage) {
     to: sender,
     text:
       parserMode === 'gemini'
-        ? `Lançamento confirmado com interpretação assistida: ${parsed.type === 'INCOME' ? 'entrada' : 'despesa'} de ${formatCurrency(parsed.amount)} em ${parsed.category}. Descrição considerada: ${parsed.description}. Método: ${parsed.paymentMethod}. Saldo da carteira: ${formatCurrency(txResult.walletBalance)}.`
-        : `Lançamento confirmado: ${parsed.type === 'INCOME' ? 'entrada' : 'despesa'} de ${formatCurrency(parsed.amount)} em ${parsed.category}. Método: ${parsed.paymentMethod}. Saldo da carteira: ${formatCurrency(txResult.walletBalance)}.`,
+        ? `Lançamento confirmado com interpretação assistida: ${parsed.type === 'INCOME' ? 'entrada' : 'saída'} de ${formatCurrency(parsed.amount)} em ${parsed.category}. Descrição considerada: ${parsed.description}. Método: ${parsed.paymentMethod}. Saldo da carteira: ${formatCurrency(txResult.walletBalance)}.`
+        : `Lançamento confirmado: ${parsed.type === 'INCOME' ? 'entrada' : 'saída'} de ${formatCurrency(parsed.amount)} em ${parsed.category}. Método: ${parsed.paymentMethod}. Saldo da carteira: ${formatCurrency(txResult.walletBalance)}.`,
   });
 }
 

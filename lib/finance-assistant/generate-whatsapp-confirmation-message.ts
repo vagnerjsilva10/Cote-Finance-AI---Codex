@@ -41,6 +41,6 @@ export function generateWhatsAppConfirmationMessage(params: {
 
   return pickVariant(seed, [
     `✅ Pronto! Registrei ${amountLabel} em ${categoryLabel}.`,
-    `💸 Feito! Lancei ${amountLabel} como despesa em ${categoryLabel}.`,
+    `💸 Feito! Lancei ${amountLabel} como saída em ${categoryLabel}.`,
   ]);
 }

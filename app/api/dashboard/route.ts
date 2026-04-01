@@ -497,7 +497,22 @@ export async function GET(req: Request) {
     };
 
     const fallbackBalance = wallets.reduce<number>((acc, wallet) => acc + Number(wallet.balance), 0);
-    const totalBalance = dashboardReadModel ? Number(dashboardReadModel.current_balance || 0) : fallbackBalance;
+    const readModelBalance = dashboardReadModel
+      ? Number(dashboardReadModel.current_balance || 0)
+      : null;
+    const totalBalance = fallbackBalance;
+    if (
+      readModelBalance !== null &&
+      Number.isFinite(readModelBalance) &&
+      Math.abs(readModelBalance - fallbackBalance) >= 0.01
+    ) {
+      console.warn('DASHBOARD_BALANCE_MISMATCH', {
+        workspaceId,
+        walletBalance: fallbackBalance,
+        readModelBalance,
+        delta: fallbackBalance - readModelBalance,
+      });
+    }
     const totalInvested = (investments ?? []).reduce<number>((acc, item) => acc + Number(item.current_amount), 0);
     const insightsBase = insightTransactions.length > 0 ? insightTransactions : transactions;
     const insights =
@@ -545,7 +560,7 @@ export async function GET(req: Request) {
       projection: shouldUseDashboardReadModel && dashboardReadModel
         ? {
             asOfDate: dashboardReadModel.as_of_date,
-            currentBalance: Number(dashboardReadModel.current_balance || 0),
+            currentBalance: totalBalance,
             projectedBalance30d: Number(dashboardReadModel.projected_balance_30d || 0),
             projectedNegativeDate: dashboardReadModel.projected_negative_date,
             monthConfirmedIncome: Number(dashboardReadModel.month_confirmed_income || 0),
