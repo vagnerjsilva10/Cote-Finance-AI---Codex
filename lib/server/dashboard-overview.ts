@@ -112,6 +112,7 @@ const UPCOMING_DAYS = 14;
 const MONTHLY_SERIES_MONTHS = 6;
 const RECENT_TRANSACTIONS_LIMIT = 8;
 const UPCOMING_EVENTS_LIMIT = 6;
+const DASHBOARD_TIMEZONE = 'America/Sao_Paulo';
 
 const monthLabelFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -125,6 +126,85 @@ const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth
 
 const addDays = (value: Date, days: number) =>
   new Date(value.getFullYear(), value.getMonth(), value.getDate() + days);
+
+function getDatePartsInTimeZone(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+
+  const map = new Map(parts.map((part) => [part.type, part.value]));
+
+  return {
+    year: Number(map.get('year') || 0),
+    month: Number(map.get('month') || 0),
+    day: Number(map.get('day') || 0),
+    hour: Number(map.get('hour') || 0),
+    minute: Number(map.get('minute') || 0),
+    second: Number(map.get('second') || 0),
+  };
+}
+
+function getTimeZoneOffsetMs(date: Date, timeZone: string) {
+  const zoned = getDatePartsInTimeZone(date, timeZone);
+  const asUtc = Date.UTC(
+    zoned.year,
+    zoned.month - 1,
+    zoned.day,
+    zoned.hour,
+    zoned.minute,
+    zoned.second
+  );
+  return asUtc - date.getTime();
+}
+
+function zonedDateTimeToUtc(input: {
+  timeZone: string;
+  year: number;
+  month: number;
+  day: number;
+  hour?: number;
+  minute?: number;
+  second?: number;
+  millisecond?: number;
+}) {
+  const guess = new Date(
+    Date.UTC(
+      input.year,
+      input.month - 1,
+      input.day,
+      input.hour ?? 0,
+      input.minute ?? 0,
+      input.second ?? 0,
+      input.millisecond ?? 0
+    )
+  );
+  const offset = getTimeZoneOffsetMs(guess, input.timeZone);
+  return new Date(guess.getTime() - offset);
+}
+
+function getMonthStartInTimeZone(reference: Date, timeZone: string, monthOffset = 0) {
+  const zoned = getDatePartsInTimeZone(reference, timeZone);
+  const shifted = new Date(Date.UTC(zoned.year, zoned.month - 1 + monthOffset, 1));
+  const year = shifted.getUTCFullYear();
+  const month = shifted.getUTCMonth() + 1;
+  return zonedDateTimeToUtc({
+    timeZone,
+    year,
+    month,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+}
 
 function normalizeTransactionType(rawType: string) {
   const normalized = String(rawType || '').trim().toUpperCase();
@@ -442,10 +522,10 @@ export async function buildDashboardOverview(workspaceId: string): Promise<Dashb
     59,
     999
   );
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const seriesStart = new Date(now.getFullYear(), now.getMonth() - (MONTHLY_SERIES_MONTHS - 1), 1);
+  const monthStart = getMonthStartInTimeZone(now, DASHBOARD_TIMEZONE, 0);
+  const nextMonthStart = getMonthStartInTimeZone(now, DASHBOARD_TIMEZONE, 1);
+  const previousMonthStart = getMonthStartInTimeZone(now, DASHBOARD_TIMEZONE, -1);
+  const seriesStart = getMonthStartInTimeZone(now, DASHBOARD_TIMEZONE, -(MONTHLY_SERIES_MONTHS - 1));
 
   const readModel = await safeSection<DashboardReadModelRow | null>(
     workspaceId,
