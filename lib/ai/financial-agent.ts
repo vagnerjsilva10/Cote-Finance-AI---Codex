@@ -5,7 +5,6 @@ import { prisma } from '@/lib/prisma';
 import { getGeminiClient, GEMINI_KEY_MISSING_ERROR } from '@/lib/gemini';
 import { getWorkspaceFeatureAccess } from '@/lib/billing/feature-access-service';
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
-import { mapConventionalStatusToLegacyDebtStatus } from '@/lib/debts';
 import {
   appendConversationMemory,
   findLatestTransactionIdFromMemory,
@@ -16,12 +15,12 @@ import {
 import { createTransactionTool } from '@/lib/ai/tools/create-transaction';
 import { updateTransactionTool } from '@/lib/ai/tools/update-transaction';
 import { addGoalContributionTool } from '@/lib/ai/tools/add-goal-contribution';
-import {
-  buildShortCategoryName,
-  isLikelyEnglishCategoryName,
-  normalizeCategoryKey,
-  toCategoryDisplayName,
-} from '@/lib/finance-assistant/category-normalizer';
+import { deleteTransactionTool } from '@/lib/ai/tools/delete-transaction';
+import { createGoalTool } from '@/lib/ai/tools/create-goal';
+import { addInvestmentTool } from '@/lib/ai/tools/add-investment';
+import { registerDebtPaymentTool } from '@/lib/ai/tools/register-debt-payment';
+import { createCategoryTool } from '@/lib/ai/tools/create-category';
+import { toCategoryDisplayName } from '@/lib/finance-assistant/category-normalizer';
 
 const PREMIUM_ONLY_MESSAGE = 'Esse recurso está disponível apenas no plano Premium.';
 
@@ -550,242 +549,6 @@ async function logFinancialAgentEvent(params: {
       ...(params.payload || {}),
     },
   });
-}
-
-async function createGoalTool(params: {
-  workspaceId: string;
-  goalName: string;
-  targetAmount: number;
-}) {
-  const goal = await prisma.goal.create({
-    data: {
-      workspace_id: params.workspaceId,
-      name: params.goalName,
-      target_amount: params.targetAmount,
-      current_amount: 0,
-      deadline: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      target_amount: true,
-    },
-  });
-
-  return {
-    goalId: goal.id,
-    goalName: goal.name,
-    targetAmount: Number(goal.target_amount || 0),
-  };
-}
-
-async function deleteTransactionTool(params: {
-  workspaceId: string;
-  transactionId?: string | null;
-}) {
-  const transactionId = String(params.transactionId || '').trim();
-  const transaction =
-    (transactionId
-      ? await prisma.transaction.findFirst({
-          where: {
-            workspace_id: params.workspaceId,
-            id: transactionId,
-          },
-          select: {
-            id: true,
-            amount: true,
-            type: true,
-            wallet_id: true,
-          },
-        })
-      : null) ||
-    (await prisma.transaction.findFirst({
-      where: { workspace_id: params.workspaceId },
-      orderBy: { date: 'desc' },
-      select: {
-        id: true,
-        amount: true,
-        type: true,
-        wallet_id: true,
-      },
-    }));
-
-  if (!transaction) return null;
-
-  const amount = Number(transaction.amount || 0);
-  const type = String(transaction.type || 'EXPENSE').toUpperCase();
-  const walletDelta = type === 'INCOME' ? -amount : amount;
-
-  return prisma.$transaction(async (tx) => {
-    await tx.transaction.delete({
-      where: {
-        id: transaction.id,
-        workspace_id: params.workspaceId,
-      },
-    });
-
-    const wallet = await tx.wallet.update({
-      where: {
-        id: transaction.wallet_id,
-        workspace_id: params.workspaceId,
-      },
-      data: {
-        balance: {
-          increment: walletDelta,
-        },
-      },
-      select: {
-        id: true,
-        balance: true,
-      },
-    });
-
-    return {
-      transactionId: transaction.id,
-      walletId: wallet.id,
-      walletBalance: Number(wallet.balance || 0),
-      amount,
-    };
-  });
-}
-
-async function addInvestmentTool(params: {
-  workspaceId: string;
-  amount: number;
-  name: string | null;
-  investmentType: string | null;
-  institution: string | null;
-}) {
-  const now = new Date().toLocaleDateString('pt-BR');
-  const investment = await prisma.investment.create({
-    data: {
-      workspace_id: params.workspaceId,
-      name: sanitizeShortText(params.name, 48) || `Aporte ${now}`,
-      type: sanitizeShortText(params.investmentType, 24) || 'Outros',
-      institution: sanitizeShortText(params.institution, 32) || 'Carteira Principal',
-      invested_amount: params.amount,
-      current_amount: params.amount,
-      expected_return_annual: 0,
-    },
-    select: {
-      id: true,
-      name: true,
-      current_amount: true,
-    },
-  });
-
-  return {
-    investmentId: investment.id,
-    name: investment.name,
-    amount: Number(investment.current_amount || 0),
-  };
-}
-
-async function registerDebtPaymentTool(params: {
-  workspaceId: string;
-  amount: number;
-  creditorHint: string | null;
-}) {
-  const normalizedHint = normalize(String(params.creditorHint || ''));
-  const debts = await prisma.debt.findMany({
-    where: {
-      workspace_id: params.workspaceId,
-    },
-    select: {
-      id: true,
-      creditor: true,
-      remaining_amount: true,
-    },
-    orderBy: {
-      created_at: 'desc',
-    },
-    take: 25,
-  });
-
-  const targetDebt =
-    (normalizedHint
-      ? debts.find((debt) => normalize(debt.creditor).includes(normalizedHint) && Number(debt.remaining_amount) > 0)
-      : null) || debts.find((debt) => Number(debt.remaining_amount) > 0);
-
-  if (!targetDebt) return null;
-
-  const previousRemaining = Number(targetDebt.remaining_amount || 0);
-  const remaining = Math.max(0, previousRemaining - params.amount);
-  const status =
-    remaining <= 0
-      ? mapConventionalStatusToLegacyDebtStatus('Quitada')
-      : mapConventionalStatusToLegacyDebtStatus('Em aberto');
-
-  const updated = await prisma.debt.update({
-    where: {
-      id: targetDebt.id,
-      workspace_id: params.workspaceId,
-    },
-    data: {
-      remaining_amount: remaining,
-      status,
-    },
-    select: {
-      id: true,
-      creditor: true,
-      remaining_amount: true,
-    },
-  });
-
-  return {
-    debtId: updated.id,
-    creditor: updated.creditor,
-    paidAmount: params.amount,
-    remainingAmount: Number(updated.remaining_amount || 0),
-  };
-}
-
-async function createCategoryTool(params: { workspaceId: string; categoryHint: string | null }) {
-  const hint = sanitizeShortText(params.categoryHint, 40) || 'Outros';
-  const shortName = buildShortCategoryName({
-    hint,
-    flowType: 'expense',
-  });
-  const normalized = normalizeCategoryKey(shortName);
-  const finalName = !isLikelyEnglishCategoryName(shortName) && shortName ? shortName : 'Outros';
-
-  const existing = await prisma.category.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
-    orderBy: {
-      name: 'asc',
-    },
-    take: 400,
-  });
-
-  const matched = existing.find((category) => normalizeCategoryKey(category.name) === normalized);
-  if (matched) {
-    return {
-      categoryId: matched.id,
-      categoryName: matched.name,
-      created: false,
-    };
-  }
-
-  const created = await prisma.category.create({
-    data: {
-      name: toCategoryDisplayName(finalName) || 'Outros',
-      icon: 'tag',
-      color: '#3B82F6',
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
-
-  return {
-    categoryId: created.id,
-    categoryName: created.name,
-    created: true,
-  };
 }
 
 function resolveResponseMode(mode: FinancialAgentReplyMode | undefined): FinancialAgentReplyMode {

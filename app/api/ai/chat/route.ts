@@ -14,6 +14,7 @@ import {
 } from '@/lib/server/superadmin-governance';
 import { runFinancialAgent } from '@/lib/ai/financial-agent';
 import { synthesizeSpeechWithGemini } from '@/lib/ai/gemini-tts';
+import { transcribeAudioWithGemini } from '@/lib/ai/gemini-transcribe';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -58,20 +59,53 @@ async function getCurrentMonthAiUsage(workspaceId: string) {
   }
 }
 
+function parseAudioInput(value: unknown) {
+  if (!value || typeof value !== 'object') return null;
+  const input = value as Record<string, unknown>;
+  const base64 = typeof input.base64 === 'string' ? input.base64.trim() : '';
+  const mimeType = typeof input.mimeType === 'string' ? input.mimeType.trim() : '';
+  if (!base64 || !mimeType) return null;
+  return { base64, mimeType };
+}
+
+function decodeAudioBase64(value: string) {
+  try {
+    const normalized = value.replace(/\s+/g, '');
+    return Buffer.from(normalized, 'base64');
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const context = await resolveWorkspaceContext(req);
     const payload = await req.json().catch(() => ({}));
 
-    const message = typeof payload?.message === 'string' ? payload.message.trim() : '';
+    let message = typeof payload?.message === 'string' ? payload.message.trim() : '';
     const history = Array.isArray(payload?.history) ? payload.history : [];
     const contextPayload = payload?.context ?? {};
+    const audioInput = parseAudioInput(payload?.audioInput);
+    let inputTranscript: string | null = null;
     const requestedReplyMode =
       payload?.replyMode === 'audio' || payload?.replyMode === 'both' || payload?.replyMode === 'text'
         ? payload.replyMode
         : contextPayload?.replyMode === 'audio' || contextPayload?.replyMode === 'both' || contextPayload?.replyMode === 'text'
         ? contextPayload.replyMode
         : 'text';
+
+    if (!message && audioInput) {
+      const audioBuffer = decodeAudioBase64(audioInput.base64);
+      if (!audioBuffer || !audioBuffer.length) {
+        return NextResponse.json({ error: 'Invalid audio payload' }, { status: 400 });
+      }
+
+      message = await transcribeAudioWithGemini({
+        audioBuffer,
+        mimeType: audioInput.mimeType,
+      });
+      inputTranscript = message;
+    }
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -105,6 +139,7 @@ export async function POST(req: Request) {
         audio,
         source: 'financial_agent',
         blockedByPlan: financialAgentResult.blockedByPlan,
+        inputTranscript,
       });
     }
 
@@ -223,7 +258,24 @@ REGRAS DE RESPOSTA
       },
     });
 
-    return NextResponse.json({ text: response.text || '' });
+    let audio: { mimeType: string; base64: string } | null = null;
+    if (requestedReplyMode === 'audio' || requestedReplyMode === 'both') {
+      try {
+        const tts = await synthesizeSpeechWithGemini(response.text || '');
+        audio = {
+          mimeType: tts.mimeType,
+          base64: tts.audioBuffer.toString('base64'),
+        };
+      } catch {
+        audio = null;
+      }
+    }
+
+    return NextResponse.json({
+      text: response.text || '',
+      audio,
+      inputTranscript,
+    });
   } catch (error: any) {
     if (error instanceof HttpError) {
       return NextResponse.json({ error: error.message }, { status: error.status });

@@ -31,6 +31,8 @@ import {
   Smartphone,
   X,
   Menu,
+  Mic,
+  StopCircle,
   Trash2,
   Pencil,
   Download,
@@ -408,6 +410,9 @@ type Message = {
   role: 'user' | 'model';
   text: string;
   time: string;
+  clientNonce?: string;
+  audioUrl?: string | null;
+  audioMimeType?: string | null;
 };
 
 type SubscriptionPlan = 'FREE' | 'PRO' | 'PREMIUM';
@@ -2008,6 +2013,54 @@ const renderAssistantMessageText = (rawText: string) => {
     </div>
   );
 };
+
+function decodeBase64ToBlob(base64: string, mimeType: string) {
+  try {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return new Blob([bytes], { type: mimeType });
+  } catch {
+    return null;
+  }
+}
+
+function blobToBase64(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler áudio gravado.'));
+    reader.onloadend = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      const [, base64] = result.split(',');
+      if (!base64) {
+        reject(new Error('Falha ao converter áudio.'));
+        return;
+      }
+      resolve(base64);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+function pickSupportedRecorderMimeType() {
+  if (typeof MediaRecorder === 'undefined') return '';
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/ogg',
+  ];
+
+  for (const candidate of candidates) {
+    if (MediaRecorder.isTypeSupported(candidate)) {
+      return candidate;
+    }
+  }
+
+  return '';
+}
 
 // --- Components ---
 
@@ -9160,6 +9213,12 @@ export default function App() {
 
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isRecordingAudio, setIsRecordingAudio] = React.useState(false);
+  const [isSubmittingAudio, setIsSubmittingAudio] = React.useState(false);
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = React.useRef<MediaStream | null>(null);
+  const audioChunksRef = React.useRef<Blob[]>([]);
+  const responseAudioUrlsRef = React.useRef<string[]>([]);
   const notificationStorageKey = React.useMemo(() => {
     if (!user?.id || !activeWorkspaceId) return null;
     return getNotificationStorageKey(user.id, activeWorkspaceId);
@@ -9179,6 +9238,29 @@ export default function App() {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(SIDEBAR_PREFERENCE_STORAGE_KEY, String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
+
+  React.useEffect(() => {
+    return () => {
+      for (const url of responseAudioUrlsRef.current) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          // noop
+        }
+      }
+      responseAudioUrlsRef.current = [];
+
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      mediaRecorderRef.current = null;
+
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+    };
+  }, []);
 
   React.useEffect(() => {
     if (!notificationStorageKey || typeof window === 'undefined') {
@@ -10994,19 +11076,25 @@ React.useEffect(() => {
     return true;
   };
 
-  const handleSendMessage = async (presetMessage?: string) => {
-    const messageText = (presetMessage ?? input).trim();
-    if (!messageText || isLoading) return;
-    if (!consumeAiQuota()) return;
-
+  const sendAssistantRequest = async (params: {
+    userText: string;
+    messageText: string;
+    audioInput?: { base64: string; mimeType: string } | null;
+  }) => {
+    const nowLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const clientNonce = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const userMessage: Message = {
       role: 'user',
-      text: messageText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      text: params.userText,
+      time: nowLabel,
+      clientNonce,
     };
+    const historyForRequest = [...messages, userMessage].map((m) => ({
+      role: m.role,
+      parts: [{ text: m.text }],
+    }));
 
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
     setIsLoading(true);
 
     try {
@@ -11014,16 +11102,16 @@ React.useEffect(() => {
         method: 'POST',
         headers: await getAuthHeaders(true),
         body: JSON.stringify({
-          message: messageText,
-          history: messages.map((m) => ({
-            role: m.role,
-            parts: [{ text: m.text }],
-          })),
+          message: params.messageText,
+          audioInput: params.audioInput || undefined,
+          replyMode: 'both',
+          history: historyForRequest,
           context: {
-            userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário',
+            userName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario',
             activeTab,
             isWhatsAppConnected,
             financialSummary: assistantFinancialContext,
+            replyMode: 'both',
           },
         }),
       });
@@ -11032,15 +11120,53 @@ React.useEffect(() => {
       if (!response.ok) {
         throw new Error(typeof data?.error === 'string' ? data.error : 'Falha ao processar mensagem');
       }
-      const text = typeof data?.text === 'string' ? data.text : '';
 
-      if (text) {
+      const inputTranscript =
+        params.audioInput && typeof data?.inputTranscript === 'string' ? data.inputTranscript.trim() : '';
+      if (inputTranscript) {
+        setMessages((prev) => {
+          const next = [...prev];
+          for (let index = next.length - 1; index >= 0; index -= 1) {
+            const row = next[index];
+            if (row.role !== 'user') continue;
+            if (row.clientNonce !== clientNonce) continue;
+            next[index] = {
+              ...row,
+              text: inputTranscript,
+            };
+            break;
+          }
+          return next;
+        });
+      }
+
+      const text = typeof data?.text === 'string' ? data.text : '';
+      let audioUrl: string | null = null;
+      let audioMimeType: string | null = null;
+
+      if (
+        data?.audio &&
+        typeof data.audio === 'object' &&
+        typeof data.audio.base64 === 'string' &&
+        typeof data.audio.mimeType === 'string'
+      ) {
+        const audioBlob = decodeBase64ToBlob(data.audio.base64, data.audio.mimeType);
+        if (audioBlob && audioBlob.size > 0) {
+          audioMimeType = data.audio.mimeType;
+          audioUrl = URL.createObjectURL(audioBlob);
+          responseAudioUrlsRef.current.push(audioUrl);
+        }
+      }
+
+      if (text || audioUrl) {
         setMessages((prev) => [
           ...prev,
           {
             role: 'model',
-            text: text,
+            text: text || 'Resposta em audio gerada.',
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            audioUrl,
+            audioMimeType,
           },
         ]);
       }
@@ -11050,7 +11176,7 @@ React.useEffect(() => {
         ...prev,
         {
           role: 'model',
-          text: `Desculpe, tive um problema técnico ao processar sua mensagem. ${
+          text: `Desculpe, tive um problema tecnico ao processar sua mensagem. ${
             error instanceof Error ? error.message : 'Tente novamente em alguns instantes.'
           }`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -11058,9 +11184,134 @@ React.useEffect(() => {
       ]);
     } finally {
       setIsLoading(false);
+      setIsSubmittingAudio(false);
     }
   };
 
+  const handleSendMessage = async (presetMessage?: string) => {
+    const messageText = (presetMessage ?? input).trim();
+    if (!messageText || isLoading || isSubmittingAudio || isRecordingAudio) return;
+    if (!consumeAiQuota()) return;
+
+    setInput('');
+    await sendAssistantRequest({
+      userText: messageText,
+      messageText,
+    });
+  };
+
+  const handleSendAudioBlob = async (audioBlob: Blob, mimeTypeHint: string) => {
+    if (isLoading || isSubmittingAudio) return;
+    if (!consumeAiQuota()) return;
+
+    setIsSubmittingAudio(true);
+    try {
+      const base64 = await blobToBase64(audioBlob);
+      await sendAssistantRequest({
+        userText: 'Audio enviado',
+        messageText: '',
+        audioInput: {
+          base64,
+          mimeType: mimeTypeHint || audioBlob.type || 'audio/webm',
+        },
+      });
+    } catch (error) {
+      console.error('Audio send error:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'model',
+          text: `Nao consegui processar seu audio agora. ${
+            error instanceof Error ? error.message : 'Tente novamente.'
+          }`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+      setIsSubmittingAudio(false);
+    }
+  };
+
+  const stopAssistantAudioRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    recorder.stop();
+  };
+
+  const startAssistantAudioRecording = async () => {
+    if (isLoading || isSubmittingAudio) return;
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      showUiFeedback('Seu navegador nao suporta gravacao de audio.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      audioChunksRef.current = [];
+
+      const preferredMimeType = pickSupportedRecorderMimeType();
+      const recorder = preferredMimeType
+        ? new MediaRecorder(stream, { mimeType: preferredMimeType })
+        : new MediaRecorder(stream);
+
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        setIsRecordingAudio(false);
+
+        const chunks = [...audioChunksRef.current];
+        audioChunksRef.current = [];
+        const mimeType = recorder.mimeType || preferredMimeType || 'audio/webm';
+
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+          mediaStreamRef.current = null;
+        }
+        mediaRecorderRef.current = null;
+
+        if (!chunks.length) return;
+        const audioBlob = new Blob(chunks, { type: mimeType });
+        void handleSendAudioBlob(audioBlob, mimeType);
+      };
+
+      recorder.onerror = () => {
+        setIsRecordingAudio(false);
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+          mediaStreamRef.current = null;
+        }
+        mediaRecorderRef.current = null;
+        showUiFeedback('Falha ao gravar audio. Tente novamente.');
+      };
+
+      recorder.start();
+      setIsRecordingAudio(true);
+    } catch (error) {
+      console.error('Audio record error:', error);
+      showUiFeedback('Nao consegui acessar seu microfone.');
+      setIsRecordingAudio(false);
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+      mediaRecorderRef.current = null;
+    }
+  };
+
+  const toggleAssistantAudioRecording = () => {
+    if (isRecordingAudio) {
+      stopAssistantAudioRecording();
+      return;
+    }
+    void startAssistantAudioRecording();
+  };
   const handleUpgrade = React.useCallback(
     async (plan: string) => {
       try {
@@ -14631,7 +14882,7 @@ React.useEffect(() => {
                       <button
                         key={suggestion}
                         onClick={() => void handleSendMessage(suggestion)}
-                        disabled={isLoading}
+                        disabled={isLoading || isSubmittingAudio || isRecordingAudio}
                         className="px-2.5 py-1.5 rounded-lg bg-[color:var(--primary-soft)] border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] text-[11px] text-[var(--primary)] hover:text-[var(--text-primary)] hover:bg-[color:color-mix(in_srgb,var(--primary-soft)_70%,var(--bg-surface-elevated))] transition-all disabled:opacity-50"
                       >
                         {suggestion}
@@ -14658,7 +14909,17 @@ React.useEffect(() => {
                       </div>
                     )}
                     {msg.role === 'model' ? (
-                      renderAssistantMessageText(msg.text)
+                      <div className="space-y-3">
+                        {renderAssistantMessageText(msg.text)}
+                        {msg.audioUrl && (
+                          <audio
+                            controls
+                            preload="none"
+                            src={msg.audioUrl}
+                            className="w-full h-9 rounded-lg"
+                          />
+                        )}
+                      </div>
                     ) : (
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>
                     )}
@@ -14688,17 +14949,40 @@ React.useEffect(() => {
                     }
                   }}
                   placeholder="Digite uma mensagem..."
-                  disabled={isLoading}
-                  className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-3 pl-4 pr-12 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--primary)_25%,transparent)] transition-all disabled:opacity-50"
+                  disabled={isLoading || isSubmittingAudio || isRecordingAudio}
+                  className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-default)] rounded-xl py-3 pl-4 pr-20 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--primary)_25%,transparent)] transition-all disabled:opacity-50"
                 />
                 <button
+                  onClick={toggleAssistantAudioRecording}
+                  disabled={!isRecordingAudio && (isLoading || isSubmittingAudio)}
+                  className={cn(
+                    'absolute right-10 top-1/2 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-lg transition-colors disabled:opacity-50',
+                    isRecordingAudio
+                      ? 'bg-[var(--danger-soft)] text-[var(--danger)] hover:bg-[color:color-mix(in_srgb,var(--danger-soft)_75%,var(--bg-surface-elevated))]'
+                      : 'bg-[var(--bg-surface-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  )}
+                  title={isRecordingAudio ? 'Parar gravação' : 'Gravar áudio'}
+                >
+                  {isRecordingAudio ? <StopCircle size={14} /> : <Mic size={14} />}
+                </button>
+                <button
                   onClick={() => void handleSendMessage()}
-                  disabled={isLoading}
+                  disabled={isLoading || isSubmittingAudio || isRecordingAudio}
                   className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-lg bg-[var(--primary)] text-[var(--text-primary)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
                 >
                   <Send size={16} />
                 </button>
               </div>
+              {isRecordingAudio && (
+                <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[var(--danger)]">
+                  Gravando audio... toque no icone para enviar.
+                </p>
+              )}
+              {isSubmittingAudio && !isRecordingAudio && (
+                <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[var(--primary)]">
+                  Enviando audio para o assistente...
+                </p>
+              )}
 
               {isFreePlan && (
                 <div className="mt-3 flex items-center justify-between gap-2">
@@ -14737,4 +15021,5 @@ React.useEffect(() => {
     </AppErrorBoundary>
   );
 }
+
 
