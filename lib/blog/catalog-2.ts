@@ -14,10 +14,10 @@ export const articleCatalogPart2: ArticleSeed[] = [
     author: 'Equipe Cote Finance AI',
     accent: 'cyan',
     relatedSlugs: ['como-saber-para-onde-seu-dinheiro-esta-indo', 'como-melhorar-sua-saude-financeira'],
-    keywords: ['gastos mensais', 'controle financeiro', 'controle de despesas', 'planejamento financeiro'],
+    keywords: ['gastos mensais', 'controle financeiro', 'controle de saidas', 'planejamento financeiro'],
     intro: [
       'Muita gente olha para o fechamento do mês e pensa apenas em um número: “gastei demais” ou “até que deu para passar”. O problema é que esse total, sozinho, diz muito pouco sobre o que realmente aconteceu com o seu dinheiro.',
-      'Entender gastos mensais é uma tarefa mais estratégica. Você precisa saber quais categorias puxaram o orçamento, quais despesas cresceram, quais compromissos se repetem e qual foi o impacto do seu comportamento financeiro ao longo das semanas.',
+      'Entender gastos mensais é uma tarefa mais estratégica. Você precisa saber quais categorias puxaram o orçamento, quais saidas cresceram, quais compromissos se repetem e qual foi o impacto do seu comportamento financeiro ao longo das semanas.',
       'Quando essa leitura existe, o mês deixa de ser uma surpresa desagradável e passa a ser uma fonte de aprendizado para decisões melhores.',
     ],
     explanation: [
@@ -29,7 +29,7 @@ export const articleCatalogPart2: ArticleSeed[] = [
       'Total gasto no período e quantidade de transações',
       'Categoria com maior peso no orçamento mensal',
       'Variação em relação ao mês anterior',
-      'Despesas recorrentes e exceções relevantes do período',
+      'Saidas recorrentes e exceções relevantes do período',
     ],
     example: [
       'Seu gasto total pode até cair em um determinado mês, mas a categoria de transporte pode ter subido bastante. Se você olha apenas o valor final, essa informação importante passa despercebida.',
@@ -85,7 +85,7 @@ export const articleCatalogPart2: ArticleSeed[] = [
     ],
     example: [
       'Uma pessoa com renda mediana, mas que conhece seus números e acompanha gastos com disciplina, costuma atravessar imprevistos com mais segurança do que alguém que ganha mais, mas vive no improviso e no limite do cartão.',
-      'Outro exemplo está no final do mês. Quem tem clareza sobre despesas fixas, categorias sensíveis e prioridades consegue ajustar rota com antecedência. Quem não acompanha, reage tarde e paga mais caro por isso.',
+      'Outro exemplo está no final do mês. Quem tem clareza sobre saidas fixas, categorias sensíveis e prioridades consegue ajustar rota com antecedência. Quem não acompanha, reage tarde e paga mais caro por isso.',
       'Saúde financeira, portanto, não é só um destino. É um conjunto de hábitos e decisões que fortalecem seu mês de forma acumulativa.',
     ],
     tips: [
@@ -216,7 +216,7 @@ export const articleCatalogPart2: ArticleSeed[] = [
       'Controle total não é saber tudo de memória. É ter um sistema claro para acompanhar o que importa.',
     seoTitle: 'Como ter controle total do seu dinheiro | Cote Finance AI',
     seoDescription:
-      'Aprenda como ter controle total do seu dinheiro com um sistema simples para acompanhar saldo, despesas, metas e prioridades.',
+      'Aprenda como ter controle total do seu dinheiro com um sistema simples para acompanhar saldo, saidas, metas e prioridades.',
     category: 'Ferramenta',
     publishedAt: '2026-02-26T10:00:00.000Z',
     author: 'Equipe Cote Finance AI',

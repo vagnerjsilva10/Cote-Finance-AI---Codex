@@ -36,7 +36,7 @@ const planFeatures = {
     'Até 10 interações com IA por mês',
     'Dashboard financeiro',
     'Categorias automáticas',
-    'Análise básica de despesas',
+    'Análise básica de saidas',
   ],
   PRO: [
     'Lançamentos ilimitados',
@@ -54,7 +54,7 @@ const planFeatures = {
     'IA financeira sem limite mensal',
     'Insights financeiros mais avançados',
     'Previsão de saldo e alertas inteligentes',
-    'Análises profundas de despesas',
+    'Análises profundas de saidas',
     'Automação financeira no WhatsApp',
     'Suporte por e-mail',
   ],
@@ -198,7 +198,7 @@ export default function PaidLandingClient() {
             <Card className="p-6 md:p-7">
               <div className="mb-5 grid gap-3 sm:grid-cols-3">
                 {[
-                  { title: 'Despesas invisíveis', value: 'R$ 870/mês' },
+                  { title: 'Saidas invisíveis', value: 'R$ 870/mês' },
                   { title: 'Potencial de ajuste', value: '19%' },
                   { title: 'Economia anual', value: 'R$ 10.440' },
                 ].map((item) => (

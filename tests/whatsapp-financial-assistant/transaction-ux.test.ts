@@ -46,7 +46,7 @@ test('gastei 50 no mercado -> categoria e descricao premium', () => {
   });
 
   assert.equal(category, 'Mercado');
-  assert.equal(description, 'Despesa no mercado');
+  assert.equal(description, 'Saida no mercado');
 });
 
 test('paguei 120 de gasolina -> descricao Abastecimento', () => {
@@ -121,7 +121,7 @@ test('fallback de descricao curta e fraca e substituido por template melhor', ()
     rawUtterance: 'gastei 60 reais no mercado',
   });
 
-  assert.equal(description, 'Despesa no mercado');
+  assert.equal(description, 'Saida no mercado');
 });
 
 test('resposta usa emoji discreto no inicio', () => {

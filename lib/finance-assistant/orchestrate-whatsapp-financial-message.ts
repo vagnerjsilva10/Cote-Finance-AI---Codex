@@ -30,7 +30,7 @@ import { trySendWhatsAppAudioReply } from '@/lib/finance-assistant/audio-reply.s
 import { decideLegacyPassthrough } from '@/lib/finance-assistant/legacy-passthrough-policy';
 
 const PREMIUM_BLOCK_MESSAGE =
-  'Essa automação inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lançar despesas, metas, dívidas e investimentos por mensagem.';
+  'Essa automação inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lançar saidas, metas, dívidas e investimentos por mensagem.';
 
 const UNKNOWN_COMMAND_HELP =
   'Posso te ajudar com lançamentos, metas, investimentos, dívidas e consultas financeiras. Exemplo: "gastei 60 no iFood".';

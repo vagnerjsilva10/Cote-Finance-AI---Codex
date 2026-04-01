@@ -884,7 +884,7 @@ function CheckoutPageContent() {
           'IA financeira sem limite mensal',
           'Insights financeiros mais avançados',
           'Previsões de saldo e alertas inteligentes',
-          'Análises profundas de despesas',
+          'Análises profundas de saidas',
           'Automação financeira no WhatsApp',
           'Suporte por e-mail',
         ]

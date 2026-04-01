@@ -179,7 +179,7 @@ const NAVIGATION_SEARCH_ITEMS: NavigationSearchItem[] = [
     tab: 'transactions',
     label: 'Transações',
     description: 'Entradas, saídas e histórico de movimentações.',
-    keywords: ['movimentações', 'receitas', 'despesas', 'lançamentos'],
+    keywords: ['movimentações', 'entradas', 'saidas', 'lançamentos'],
   },
   {
     tab: 'agenda',
@@ -240,7 +240,7 @@ const NAVIGATION_SEARCH_ITEMS: NavigationSearchItem[] = [
 const isTabValue = (value: unknown): value is Tab =>
   typeof value === 'string' && (APP_TABS as string[]).includes(value);
 
-type TransactionFlowType = 'Receita' | 'Despesa' | 'Transferência';
+type TransactionFlowType = 'Entrada' | 'Saida' | 'Transferência' | 'Receita' | 'Despesa';
 type IncomeScheduleMode = 'SINGLE' | 'RECURRING';
 type IncomeRecurrenceFrequency = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type PaymentMethodLabel =
@@ -923,7 +923,7 @@ const buildPremiumSmartAlerts = ({
     alerts.push({
       id: 'premium-expense-spike',
       title: 'Alerta inteligente: gasto acima do padrão',
-      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
+      message: `Suas saidas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
       tone: 'warning',
       targetTab: 'reports',
     });
@@ -1175,8 +1175,8 @@ const maskMoneyInput = (rawValue: string) => {
 };
 
 const TRANSACTION_FLOW_TYPES: TransactionFlowType[] = [
-  'Receita',
-  'Despesa',
+  'Entrada',
+  'Saida',
   'Transferência',
 ];
 
@@ -1280,7 +1280,7 @@ const normalizeRecurringDebtCategory = (value: string) =>
 
 const getRecurringDebtDescriptionDefault = (category: string) =>
   RECURRING_DEBT_CATEGORY_DESCRIPTION_DEFAULTS[normalizeRecurringDebtCategory(category)] ||
-  `Conta de ${category || 'despesa recorrente'}`;
+  `Conta de ${category || 'saida recorrente'}`;
 
 const INVESTMENT_TYPES = [
   'Renda fixa',
@@ -1321,7 +1321,7 @@ const ONBOARDING_USAGE_LEVELS = [
 const createInitialOnboardingTransaction = (): TransactionFormData => ({
   description: '',
   amount: '',
-  flowType: 'Despesa',
+  flowType: 'Saida',
   incomeScheduleMode: 'SINGLE',
   recurrenceFrequency: 'MONTHLY',
   recurrenceEndDate: '',
@@ -1350,24 +1350,24 @@ const getInvestmentColor = (type: string) => {
 };
 
 const mapFlowTypeToBaseType = (flowType: TransactionFlowType): 'income' | 'expense' | 'transfer' => {
-  if (flowType === 'Receita') return 'income';
-  if (flowType === 'Despesa') return 'expense';
+  if (flowType === 'Entrada') return 'income';
+  if (flowType === 'Saida') return 'expense';
   return 'transfer';
 };
 
 const mapFlowTypeToBackendType = (flowType: TransactionFlowType) => {
-  if (flowType === 'Receita') return 'INCOME';
-  if (flowType === 'Despesa') return 'EXPENSE';
+  if (flowType === 'Entrada') return 'INCOME';
+  if (flowType === 'Saida') return 'EXPENSE';
   return 'TRANSFER';
 };
 
 const mapBackendTypeToFlowType = (rawType: string): TransactionFlowType => {
-  if (rawType === 'INCOME' || rawType === 'PIX_IN') return 'Receita';
-  if (rawType === 'EXPENSE' || rawType === 'PIX_OUT') return 'Despesa';
+  if (rawType === 'INCOME' || rawType === 'PIX_IN') return 'Entrada';
+  if (rawType === 'EXPENSE' || rawType === 'PIX_OUT') return 'Saida';
   if (rawType === 'TRANSFER') return 'Transferência';
-  if (rawType === 'income') return 'Receita';
-  if (rawType === 'expense') return 'Despesa';
-  return 'Despesa';
+  if (rawType === 'income') return 'Entrada';
+  if (rawType === 'expense') return 'Saida';
+  return 'Saida';
 };
 
 const isTransientDashboardOverviewError = (error: unknown) => {
@@ -1419,13 +1419,13 @@ const getDefaultPaymentMethodForFlow = (flowType: TransactionFlowType): PaymentM
 };
 
 const getDefaultCategoryForFlow = (flowType: TransactionFlowType) => {
-  if (flowType === 'Receita') return 'Salário';
+  if (flowType === 'Entrada') return 'Salário';
   if (flowType === 'Transferência') return 'Outros';
   return 'Alimentação';
 };
 
 const getAvailableCategoriesForFlow = (flowType: TransactionFlowType): string[] => {
-  if (flowType === 'Receita') return [...REVENUE_TRANSACTION_CATEGORIES];
+  if (flowType === 'Entrada') return [...REVENUE_TRANSACTION_CATEGORIES];
   if (flowType === 'Transferência') return [...TRANSFER_TRANSACTION_CATEGORIES];
   return [...EXPENSE_TRANSACTION_CATEGORIES];
 };
@@ -1447,7 +1447,7 @@ const getPaymentMethodIconLabel = (method: PaymentMethodLabel) => {
 };
 
 const getFlowTypeIcon = (flowType: TransactionFlowType) => {
-  if (flowType === 'Receita') return ArrowUpRight;
+  if (flowType === 'Entrada') return ArrowUpRight;
   if (flowType === 'Transferência') return Workflow;
   return ArrowDownRight;
 };
@@ -1482,8 +1482,11 @@ const getInsightActionHint = (insight: string) => {
   if (normalized.includes('dívida') || normalized.includes('divida')) {
     return 'Ação sugerida: priorize redução de dívidas com maior juros.';
   }
-  if (normalized.includes('gasto') || normalized.includes('despesa')) {
+  if (normalized.includes('gasto') || normalized.includes('saida') || normalized.includes('despesa')) {
     return 'Ação sugerida: revise categorias que mais pressionam o caixa.';
+  }
+  if (normalized.includes('entrada') || normalized.includes('receita')) {
+    return 'Acao sugerida: use esse ganho para reforcar reserva e metas prioritarias.';
   }
   if (normalized.includes('saldo') || normalized.includes('caixa')) {
     return 'Ação sugerida: ajuste saídas recorrentes para proteger o saldo.';
@@ -3559,7 +3562,7 @@ const DebtsView = ({
       return `Estimativa: faltam ${estimatedInstallments} parcelas no ritmo atual.`;
     }
     const share = (Math.max(0, debt.remainingAmount) / Math.max(1, monthlyExpenseBase)) * 100;
-    return `Essa dívida representa ${share.toFixed(0)}% das despesas previstas do mês.`;
+    return `Essa dívida representa ${share.toFixed(0)}% das saidas previstas do mês.`;
   };
   const getDebtStatusTone = (status: Debt['status']) => {
     if (status === 'Quitada') return 'badge-success';
@@ -4148,7 +4151,7 @@ const DebtsView = ({
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{formatCurrency(monthlyImpact)}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">% nas despesas</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">% nas saidas</p>
                           <p className="mt-1 text-base font-bold text-[var(--text-primary)]">{monthlyImpactShare}%</p>
                         </div>
                       </div>
@@ -5267,7 +5270,7 @@ const ReportsView = ({
       .map((tx) => ({
         id: tx.id,
         amount: parseCurrency(tx.amount),
-        description: tx.desc || tx.cat || 'Despesa sem descrição',
+        description: tx.desc || tx.cat || 'Saida sem descrição',
         category: tx.cat || 'Outros',
         date: tx.parsedDate,
       }))
@@ -5385,7 +5388,7 @@ const ReportsView = ({
     balanceForecast.trend === 'positive'
       ? 'Ação sugerida: manter a cadência atual e ampliar reserva de segurança.'
       : balanceForecast.trend === 'negative'
-        ? 'Ação sugerida: revisar despesas recorrentes e reduzir saídas nas próximas 2 semanas.'
+        ? 'Ação sugerida: revisar saidas recorrentes e reduzir saídas nas próximas 2 semanas.'
         : 'Ação sugerida: acompanhar os próximos 7 dias para confirmar estabilidade.';
 
   const getAlertActionLabel = (tone: AppNotification['tone']) => {
@@ -5403,8 +5406,8 @@ const ReportsView = ({
     setIsGeneratingInsight(true);
     try {
       const prompt = `Analise estes dados financeiros e gere 3 insights curtos e acionáveis:
-Receitas: ${formatCurrency(totalIncome)}
-Despesas: ${formatCurrency(totalExpenses)}
+Entradas: ${formatCurrency(totalIncome)}
+Saidas: ${formatCurrency(totalExpenses)}
 Saldo: ${formatCurrency(balance)}
 Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurrency(c.value)}`).join(', ')}
 `;
@@ -5452,11 +5455,11 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="label-premium mb-1 text-[var(--text-muted)]">Receitas</p>
+            <p className="label-premium mb-1 text-[var(--text-muted)]">Entradas</p>
             <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
-            <p className="label-premium mb-1 text-[var(--text-muted)]">Despesas</p>
+            <p className="label-premium mb-1 text-[var(--text-muted)]">Saidas</p>
             <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
           </div>
           <div className="app-surface-card rounded-2xl p-6">
@@ -5470,7 +5473,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             <h4 className="label-premium text-[var(--text-primary)] mb-4">Resumo por categoria</h4>
             <div className="space-y-3">
               {categoryData.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">Registre despesas para visualizar um resumo por categoria.</p>
+                <p className="text-sm text-[var(--text-muted)]">Registre saidas para visualizar um resumo por categoria.</p>
               ) : (
                 categoryData.slice(0, 5).map((item) => (
                   <div
@@ -5495,7 +5498,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 'Gráficos comparativos completos',
                 'Insights automáticos com IA',
                 'Exportação em PDF e CSV',
-                'Comparativos avançados de receita, despesa e economia',
+                'Comparativos avançados de entrada, saida e economia',
               ].map((feature) => (
                 <div
                   key={feature}
@@ -5541,11 +5544,11 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="label-premium mb-1 text-[var(--text-muted)]">Receitas</p>
+          <p className="label-premium mb-1 text-[var(--text-muted)]">Entradas</p>
           <p className="text-2xl font-black text-[var(--positive)]">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
-          <p className="label-premium mb-1 text-[var(--text-muted)]">Despesas</p>
+          <p className="label-premium mb-1 text-[var(--text-muted)]">Saidas</p>
           <p className="text-2xl font-black text-[var(--danger)]">{formatCurrency(totalExpenses)}</p>
         </div>
         <div className="app-surface-card rounded-2xl p-6">
@@ -5663,9 +5666,9 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           <div className="app-surface-card rounded-2xl p-6">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h4 className="label-premium text-[var(--text-primary)]">Análises profundas de despesas</h4>
+                <h4 className="label-premium text-[var(--text-primary)]">Análises profundas de saidas</h4>
                 <p className="mt-2 max-w-3xl text-sm text-[var(--text-secondary)]">
-                  Veja quais categorias mais cresceram, onde estão os gastos recorrentes mais pesados e qual despesa individual mais pressiona seu caixa neste mês.
+                  Veja quais categorias mais cresceram, onde estão os gastos recorrentes mais pesados e qual saida individual mais pressiona seu caixa neste mês.
                 </p>
               </div>
               <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
@@ -5675,7 +5678,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-[var(--text-muted)]">Despesas do mês</p>
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Saidas do mês</p>
                 <p className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(expenseDeepDive.currentMonthTotal)}</p>
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.previousMonthTotal > 0
@@ -5701,7 +5704,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                     : `${expenseDeepDive.monthOverMonthVariation > 0 ? '+' : ''}${expenseDeepDive.monthOverMonthVariation.toFixed(1)}%`}
                 </p>
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
-                  Comparação entre as despesas do mês atual e do mês anterior.
+                  Comparação entre as saidas do mês atual e do mês anterior.
                 </p>
               </div>
 
@@ -5713,12 +5716,12 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 <p className="mt-2 text-xs text-[var(--text-secondary)]">
                   {expenseDeepDive.topCurrentCategory
                     ? formatCurrency(expenseDeepDive.topCurrentCategory.value)
-                    : 'Registre mais despesas para gerar a análise.'}
+                    : 'Registre mais saidas para gerar a análise.'}
                 </p>
               </div>
 
               <div className="app-surface-subtle rounded-2xl p-5">
-                <p className="label-premium mb-2 text-[var(--text-muted)]">Maior despesa individual</p>
+                <p className="label-premium mb-2 text-[var(--text-muted)]">Maior saida individual</p>
                 <p className="card-title-premium text-[var(--text-primary)]">
                   {expenseDeepDive.largestExpense?.description || 'Sem dados'}
                 </p>
@@ -5794,7 +5797,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
             <div>
               <h4 className="label-premium text-[var(--text-primary)]">Disponível no Premium</h4>
               <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-2xl">
-                Desbloqueie previsões de saldo em 7, 15 e 30 dias, alertas inteligentes e análises profundas de despesas para identificar crescimento por categoria e padrões que pressionam seu caixa.
+                Desbloqueie previsões de saldo em 7, 15 e 30 dias, alertas inteligentes e análises profundas de saidas para identificar crescimento por categoria e padrões que pressionam seu caixa.
               </p>
             </div>
             <button
@@ -5831,7 +5834,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
                 }}
                 formatter={(value, name) => [
                   formatCurrency(Number(value || 0)),
-                  name === 'income' ? 'Receitas' : 'Despesas',
+                  name === 'income' ? 'Entradas' : 'Saidas',
                 ]}
               />
               <Line type="monotone" dataKey="income" name="income" stroke="var(--positive)" strokeWidth={3} dot={{ r: 2 }} />
@@ -5875,7 +5878,7 @@ Maiores gastos: ${categoryData.slice(0, 3).map((c) => `${c.name}: ${formatCurren
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
             {categoryData.length === 0 ? (
-              <p className="text-xs text-[var(--text-muted)]">Sem despesas para exibir por categoria.</p>
+              <p className="text-xs text-[var(--text-muted)]">Sem saidas para exibir por categoria.</p>
             ) : (
               categoryData.map((item) => (
                 <div key={item.name} className="flex items-center gap-2 text-xs">
@@ -6933,7 +6936,7 @@ type TransactionModalProps = {
   >;
   walletOptions: WalletAccount[];
   customCategories?: CustomTransactionCategoryBuckets;
-  onCreateCategory?: (flowType: 'Receita' | 'Despesa', categoryName: string) => void;
+  onCreateCategory?: (flowType: 'Entrada' | 'Saida', categoryName: string) => void;
   initialData?: Transaction | null;
   initialDraft?: Partial<TransactionFormData> | null;
 };
@@ -6985,7 +6988,7 @@ const TransactionModal = ({
 
   const getInitialFormData = React.useCallback((): TransactionFormData => {
     if (!initialData) {
-      const draftFlowType = initialDraft?.flowType || 'Despesa';
+      const draftFlowType = initialDraft?.flowType || 'Saida';
       const draftWallet = normalizeWalletSelection(initialDraft?.wallet);
       const normalizedPaymentMethod =
         initialDraft?.paymentMethod ||
@@ -7067,10 +7070,10 @@ const TransactionModal = ({
 
   const availableCategories = React.useMemo(() => {
     const base = getAvailableCategoriesForFlow(formData.flowType);
-    if (formData.flowType === 'Receita') {
+    if (formData.flowType === 'Entrada') {
       return mergeTransactionCategoryLists(base, customCategories.income);
     }
-    if (formData.flowType === 'Despesa') {
+    if (formData.flowType === 'Saida') {
       return mergeTransactionCategoryLists(base, customCategories.expense);
     }
     return base;
@@ -7191,7 +7194,7 @@ const TransactionModal = ({
   if (!isOpen) return null;
 
   const parsedAmount = parseMoneyInput(formData.amount);
-  const isIncomeFlow = formData.flowType === 'Receita';
+  const isIncomeFlow = formData.flowType === 'Entrada';
   const isTransferFlow = mapFlowTypeToBaseType(formData.flowType) === 'transfer';
   const canUseRecurringIncome = isIncomeFlow && !initialData;
   const isRecurringIncome = canUseRecurringIncome && formData.incomeScheduleMode === 'RECURRING';
@@ -7224,11 +7227,11 @@ const TransactionModal = ({
   const dateInvalid = hasAttemptedSubmit && !hasDate;
   const recurrenceEndDateInvalid = hasAttemptedSubmit && !hasValidRecurrenceEndDate;
   const destinationWalletInvalid = hasAttemptedSubmit && isTransferFlow && !hasValidDestinationWallet;
-  const canCreateInlineCategory = (formData.flowType === 'Receita' || formData.flowType === 'Despesa') && formData.category === 'Outros';
+  const canCreateInlineCategory = (formData.flowType === 'Entrada' || formData.flowType === 'Saida') && formData.category === 'Outros';
 
   const handleCreateCategory = () => {
     if (!canCreateInlineCategory || !onCreateCategory) return;
-    if (formData.flowType !== 'Receita' && formData.flowType !== 'Despesa') return;
+    if (formData.flowType !== 'Entrada' && formData.flowType !== 'Saida') return;
 
     const normalizedLabel = normalizeCustomCategoryLabel(newCategoryName);
     if (normalizedLabel.length < 2) {
@@ -7289,7 +7292,7 @@ const TransactionModal = ({
 
         <FormContainer
           title={initialData ? 'Editar transação' : 'Nova transação'}
-          subtitle="Padrão único para receitas, despesas e transferências em fluxo compacto."
+          subtitle="Padrão único para entradas, saidas e transferências em fluxo compacto."
           onClose={onClose}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
@@ -7328,7 +7331,7 @@ const TransactionModal = ({
                         ...prev,
                         flowType,
                         incomeScheduleMode:
-                          flowType === 'Receita' ? prev.incomeScheduleMode : 'SINGLE',
+                          flowType === 'Entrada' ? prev.incomeScheduleMode : 'SINGLE',
                         category: getAvailableCategoriesForFlow(flowType).includes(prev.category)
                           ? prev.category
                           : getDefaultCategoryForFlow(flowType),
@@ -7362,7 +7365,7 @@ const TransactionModal = ({
             </FormField>
 
             {canUseRecurringIncome ? (
-              <FormField label="Tipo de receita" className="sm:col-span-2">
+              <FormField label="Tipo de entrada" className="sm:col-span-2">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button
                     type="button"
@@ -7378,7 +7381,7 @@ const TransactionModal = ({
                       formData.incomeScheduleMode === 'SINGLE' && 'is-selected'
                     )}
                   >
-                    <span className="truncate">Receita única</span>
+                    <span className="truncate">Entrada única</span>
                     <span className="app-selection-chip-check" aria-hidden="true">
                       <CheckCircle2 size={12} />
                     </span>
@@ -7397,7 +7400,7 @@ const TransactionModal = ({
                       formData.incomeScheduleMode === 'RECURRING' && 'is-selected'
                     )}
                   >
-                    <span className="truncate">Receita recorrente</span>
+                    <span className="truncate">Entrada recorrente</span>
                     <span className="app-selection-chip-check" aria-hidden="true">
                       <CheckCircle2 size={12} />
                     </span>
@@ -7568,7 +7571,7 @@ const TransactionModal = ({
                         setNewCategoryName(event.target.value);
                         if (newCategoryError) setNewCategoryError(null);
                       }}
-                      placeholder={formData.flowType === 'Receita' ? 'Ex: Bônus' : 'Ex: Pets'}
+                      placeholder={formData.flowType === 'Entrada' ? 'Ex: Bônus' : 'Ex: Pets'}
                       className="app-field h-11 flex-1 rounded-xl px-4 text-sm"
                     />
                     <button
@@ -7580,7 +7583,7 @@ const TransactionModal = ({
                     </button>
                   </div>
                   <p className="text-xs text-[var(--text-muted)]">
-                    A categoria ficará disponível para {formData.flowType === 'Receita' ? 'receitas' : 'despesas'} nesta conta.
+                    A categoria ficará disponível para {formData.flowType === 'Entrada' ? 'entradas' : 'saidas'} nesta conta.
                   </p>
                   {newCategoryError ? <p className="text-xs font-semibold text-[var(--danger)]">{newCategoryError}</p> : null}
                 </div>
@@ -7739,7 +7742,7 @@ const TransactionModal = ({
               </FormField>
             ) : (
               <div className="rounded-xl border border-[var(--border-default)] bg-[color:var(--primary-soft)] px-3 py-2 text-xs text-[var(--text-secondary)] sm:col-span-2">
-                Receita recorrente cria próximas entradas automaticamente no calendário e na projeção de saldo.
+                Entrada recorrente cria próximas entradas automaticamente no calendário e na projeção de saldo.
               </div>
             )}
 
@@ -9328,9 +9331,9 @@ export default function App() {
   const handleDashboardOpenSummaryTarget = React.useCallback(
     (target: 'balance' | 'income' | 'expense') => {
       if (target === 'income') {
-        setTransactionsInitialFlowFilter('Receita');
+        setTransactionsInitialFlowFilter('Entrada');
       } else if (target === 'expense') {
-        setTransactionsInitialFlowFilter('Despesa');
+        setTransactionsInitialFlowFilter('Saida');
       } else {
         setTransactionsInitialFlowFilter(null);
       }
@@ -10745,7 +10748,7 @@ React.useEffect(() => {
     const annualSaving = appliedTotal * 0.15 * 12;
 
     return {
-      categoryLabel: transportTotal > 0 ? 'transporte' : 'despesas variáveis',
+      categoryLabel: transportTotal > 0 ? 'transporte' : 'saidas variáveis',
       total: appliedTotal,
       annualSaving,
     };
@@ -10758,8 +10761,8 @@ React.useEffect(() => {
     const hasInsightPreview = onboardingInsightViewed;
 
     return [
-      { label: 'Adicionar 3 despesas', done: expenseCount >= 3 },
-      { label: 'Adicionar uma receita', done: incomeCount >= 1 },
+      { label: 'Adicionar 3 saidas', done: expenseCount >= 3 },
+      { label: 'Adicionar uma entrada', done: incomeCount >= 1 },
       { label: 'Criar uma meta financeira', done: hasGoal },
       { label: 'Conhecer a prévia das análises com IA', done: hasInsightPreview },
     ];
@@ -10936,14 +10939,14 @@ React.useEffect(() => {
       ...onboardingFirstRecord,
       flowType:
         onboardingFirstRecord.flowType === 'Transferência'
-          ? 'Despesa'
+          ? 'Saida'
           : onboardingFirstRecord.flowType,
       destinationWallet: '',
       description:
         onboardingFirstRecord.description.trim() ||
-        (onboardingFirstRecord.flowType === 'Receita'
+        (onboardingFirstRecord.flowType === 'Entrada'
           ? 'Primeiro registro de entrada'
-          : 'Primeiro registro de despesa'),
+          : 'Primeiro registro de saida'),
     };
 
     if (!payload.amount || parseMoneyInput(payload.amount) <= 0) {
@@ -11263,8 +11266,8 @@ React.useEffect(() => {
       .filter((tx) => tx.type === 'expense')
       .reduce((acc, tx) => acc + parseCurrency(tx.amount), 0);
 
-    doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 20, 45);
-    doc.text(`Total Despesas: ${formatCurrency(totalExpenses)}`, 20, 55);
+    doc.text(`Total Entradas: ${formatCurrency(totalIncome)}`, 20, 45);
+    doc.text(`Total Saidas: ${formatCurrency(totalExpenses)}`, 20, 55);
     doc.text(`Saldo Líquido: ${formatCurrency(totalIncome - totalExpenses)}`, 20, 65);
 
     const tableData = transactions.map((tx) => [tx.date, tx.desc, tx.cat, tx.amount, tx.wallet]);
@@ -11433,7 +11436,7 @@ React.useEffect(() => {
 
     const shouldCreateRecurringIncome =
       !editingTransactionId &&
-      flowType === 'Receita' &&
+      flowType === 'Entrada' &&
       tx.incomeScheduleMode === 'RECURRING';
 
     if (shouldCreateRecurringIncome) {
@@ -11462,7 +11465,7 @@ React.useEffect(() => {
         throw new Error(
           typeof responseData?.error === 'string'
             ? responseData.error
-            : 'Falha ao salvar receita recorrente.'
+            : 'Falha ao salvar entrada recorrente.'
         );
       }
 
@@ -11558,13 +11561,13 @@ React.useEffect(() => {
   };
 
   const handleCreateCustomTransactionCategory = React.useCallback(
-    (flowType: 'Receita' | 'Despesa', categoryName: string) => {
+    (flowType: 'Entrada' | 'Saida', categoryName: string) => {
       const normalizedCategory = normalizeCustomCategoryLabel(categoryName);
       if (!normalizedCategory) return;
 
       setCustomTransactionCategories((current) => {
         const next: CustomTransactionCategoryBuckets =
-          flowType === 'Receita'
+          flowType === 'Entrada'
             ? {
                 ...current,
                 income: current.income.includes(normalizedCategory)
@@ -11929,7 +11932,7 @@ React.useEffect(() => {
         wallet: wallets[0]?.name || DEFAULT_TRANSACTION_WALLET,
         category: 'Pagamento de dívida',
         type: 'EXPENSE',
-        flowType: 'Despesa',
+        flowType: 'Saida',
         paymentMethod: 'Outro',
         status: 'CONFIRMED',
         originType: 'DEBT',
@@ -13099,7 +13102,7 @@ React.useEffect(() => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    {(['Receita', 'Despesa'] as TransactionFlowType[]).map((flowType) => (
+                    {(['Entrada', 'Saida'] as TransactionFlowType[]).map((flowType) => (
                       <button
                         key={flowType}
                         aria-pressed={onboardingFirstRecord.flowType === flowType}
@@ -13219,7 +13222,7 @@ React.useEffect(() => {
                     <p className="text-sm text-[var(--text-primary)]">Aqui você pode ver:</p>
                     <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
                       <li>saldo atual</li>
-                      <li>despesas por categoria</li>
+                      <li>saidas por categoria</li>
                       <li>evolução dos gastos</li>
                       <li>análises completas disponíveis no Pro</li>
                     </ul>
@@ -13691,23 +13694,23 @@ React.useEffect(() => {
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
                       type="button"
-                      onClick={() => handleQuickCreateTransaction('Receita')}
+                      onClick={() => handleQuickCreateTransaction('Entrada')}
                       className="app-surface-subtle rounded-xl px-3 py-3 text-left text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
                         <ArrowUpRight size={15} className="text-[var(--text-secondary)]" />
-                        Receita
+                        Entrada
                       </div>
                       <p className="text-[11px] text-[var(--text-secondary)]">{'Entrada r\u00e1pida de sal\u00e1rio, pix ou freelance.'}</p>
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleQuickCreateTransaction('Despesa')}
+                      onClick={() => handleQuickCreateTransaction('Saida')}
                       className="app-surface-subtle rounded-xl px-3 py-3 text-left text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                     >
                       <div className="mb-1 flex items-center gap-2 text-sm font-bold">
                         <ArrowDownRight size={15} className="text-[var(--danger)]" />
-                        Despesa
+                        Saida
                       </div>
                       <p className="text-[11px] text-[var(--text-secondary)]">{'Registre um gasto sem navegar at\u00e9 a aba.'}</p>
                     </button>
@@ -13740,7 +13743,7 @@ React.useEffect(() => {
                       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                         Categorias mais usadas
                       </p>
-                      <span className="text-[10px] text-[var(--text-muted)]">Abre como despesa</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">Abre como saida</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {([
@@ -13753,7 +13756,7 @@ React.useEffect(() => {
                         <button
                           key={quickCategory.value}
                           type="button"
-                          onClick={() => handleQuickCreateTransaction('Despesa', quickCategory.value)}
+                          onClick={() => handleQuickCreateTransaction('Saida', quickCategory.value)}
                           className="app-surface-subtle rounded-full px-3 py-1.5 text-[11px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[color:var(--border-default)] hover:text-[var(--text-primary)]"
                         >
                           {quickCategory.label}
@@ -14289,10 +14292,10 @@ React.useEffect(() => {
                   onAdjustWalletBalance={(walletName) => {
                     navigateToTab('transactions');
                     handleOpenCreateTransaction({
-                      flowType: 'Receita',
+                      flowType: 'Entrada',
                       wallet: walletName ?? wallets[0]?.name ?? '',
-                      category: getDefaultCategoryForFlow('Receita'),
-                      paymentMethod: getDefaultPaymentMethodForFlow('Receita'),
+                      category: getDefaultCategoryForFlow('Entrada'),
+                      paymentMethod: getDefaultPaymentMethodForFlow('Entrada'),
                       description: 'Ajuste de saldo',
                     });
                   }}

@@ -14,12 +14,12 @@ Fonte unica de tokens, componentes e padroes para toda a UI do produto.
 - Distribuicao visual: `80%` neutro, `15%` accent, `5%` semantica
 - Nao usar hardcode de cor em componentes de modulo
 - Nao pintar cards inteiros com semantica; usar apenas acento lateral, badge, icone, barra ou KPI
-- Receitas usam `success`, despesas usam `danger`, saldo usa `accent`, metas usam `goal`, IA usa `info`, risco usa `warning`
+- Entradas usam `success`, saidas usam `danger`, saldo usa `accent`, metas usam `goal`, IA usa `info`, risco usa `warning`
 
 ## Cores de grafico obrigatorias
 
-- receitas: `#34D399`
-- despesas: `#F87171`
+- entradas: `#34D399`
+- saidas: `#F87171`
 - saldo: `#3B82F6`
 - metas: `#A78BFA`
 - informacao/IA: `#22D3EE`
@@ -27,7 +27,7 @@ Fonte unica de tokens, componentes e padroes para toda a UI do produto.
 
 ## Modulos
 
-- Dashboard: saldo `accent`, receita `success`, despesa `danger`, metas `goal`, IA `info`
+- Dashboard: saldo `accent`, entrada `success`, saida `danger`, metas `goal`, IA `info`
 - Dividas: vencida `danger`, risco `warning`, em dia `accent` ou `neutral`, quitada `success`
 - Contas fixas: ativa `info` ou `accent`, proxima cobranca `warning`, paga/controlada `success`
 - Metas: `goal` como semantica principal

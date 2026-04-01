@@ -28,7 +28,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
     focusBullets: [
       'Mapeie entradas, saídas e vencimentos do mês',
       'Liste dívidas, parcelas e compromissos recorrentes',
-      'Separe despesas fixas e variáveis para ganhar leitura',
+      'Separe saidas fixas e variáveis para ganhar leitura',
       'Crie uma rotina simples de revisão semanal',
     ],
     example: [
@@ -136,7 +136,7 @@ export const articleCatalogPart3: ArticleSeed[] = [
       'Separe a reserva da conta usada no dia a dia',
     ],
     example: [
-      'Mesmo uma meta inicial menor, como um mês de despesas essenciais, já muda bastante sua capacidade de reagir a problemas sem recorrer imediatamente ao cartão ou a empréstimos caros.',
+      'Mesmo uma meta inicial menor, como um mês de saidas essenciais, já muda bastante sua capacidade de reagir a problemas sem recorrer imediatamente ao cartão ou a empréstimos caros.',
       'Outro exemplo está na tranquilidade mental. Quando você sabe que existe um valor guardado para imprevistos, a tomada de decisão melhora porque o medo diminui e o dinheiro deixa de ser uma urgência constante.',
       'A reserva de emergência protege não apenas seu caixa. Ela protege sua capacidade de decidir com mais calma.',
     ],

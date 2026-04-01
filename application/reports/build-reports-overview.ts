@@ -294,7 +294,7 @@ export async function buildReportsOverview(workspaceId: string): Promise<Reports
     premiumSmartAlerts.push({
       id: 'premium-expense-spike',
       title: 'Alerta inteligente: gasto acima do padrão',
-      message: `Suas despesas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
+      message: `Suas saidas subiram ${variation}% em relação ao mês anterior. Vale revisar onde o caixa acelerou.`,
       tone: 'warning',
       targetTab: 'reports',
     });

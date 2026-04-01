@@ -139,7 +139,7 @@ function getDefaultPlanCatalog(): EditablePlanConfig[] {
         'Até 10 interações com IA por mês',
         'Dashboard financeiro',
         'Categorias automáticas',
-        'Análise básica de despesas',
+        'Análise básica de saidas',
       ],
       trustBadges: ['Sem cartão para começar', 'Entrada gratuita', 'Sem compromisso'],
       limits: PLAN_LIMITS.FREE,

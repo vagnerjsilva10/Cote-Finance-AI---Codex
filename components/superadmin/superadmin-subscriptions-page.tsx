@@ -156,7 +156,7 @@ export function SuperadminSubscriptionsPage() {
         </div>
 
         <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
-          <h2 className="text-lg font-bold text-[var(--text-primary)]">Pulso de receita</h2>
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Pulso de entrada</h2>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">Leitura rapida do estado da base pagante.</p>
           <div className="mt-4 space-y-2.5">
             <MetricPill label="Ativas" value={formatAdminNumber(metrics?.active || 0)} />

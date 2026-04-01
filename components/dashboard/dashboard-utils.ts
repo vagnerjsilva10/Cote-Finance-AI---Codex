@@ -56,10 +56,10 @@ export const extractInsightMetric = (text: string): string | null => {
 
 export const getInsightActionHint = (insight: string) => {
   const normalized = insight.toLowerCase();
-  if (normalized.includes('gasto') || normalized.includes('despesa')) {
+  if (normalized.includes('gasto') || normalized.includes('saida') || normalized.includes('despesa')) {
     return 'Acao sugerida: acompanhe esta categoria de perto nos proximos dias.';
   }
-  if (normalized.includes('receita') || normalized.includes('entrada')) {
+  if (normalized.includes('entrada') || normalized.includes('receita')) {
     return 'Acao sugerida: use esse ganho para reforcar reserva ou metas prioritarias.';
   }
   if (normalized.includes('saldo negativo')) {

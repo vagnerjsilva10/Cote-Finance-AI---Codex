@@ -87,17 +87,17 @@ export function generateTransactionDescription(params: {
 
   if (!candidate || isLiteralCopy(candidate, params.rawUtterance) || isLowQualityDescription({ candidate, categoryName: categoryLabel })) {
     if (params.intent === 'create_expense') {
-      if (matchesAny(key, ['Mercado'])) candidate = 'Despesa no mercado';
+      if (matchesAny(key, ['Mercado'])) candidate = 'Saida no mercado';
       else if (matchesAny(key, ['Delivery']) && merchantToken.includes('ifood')) candidate = 'Compra no iFood';
-      else if (matchesAny(key, ['Delivery'])) candidate = 'Despesa em delivery';
+      else if (matchesAny(key, ['Delivery'])) candidate = 'Saida em delivery';
       else if (matchesAny(key, ['Combustivel'])) candidate = 'Abastecimento';
       else if (matchesAny(key, ['Farmacia'])) candidate = 'Compra na farmacia';
       else if (matchesAny(key, ['Assinaturas'])) candidate = 'Assinatura digital';
       else if (matchesAny(key, ['Moradia'])) candidate = 'Pagamento de moradia';
       else if (matchesAny(key, ['Internet'])) candidate = 'Conta de internet';
       else if (matchesAny(key, ['Energia'])) candidate = 'Conta de energia';
-      else if (matchesAny(key, ['Transporte'])) candidate = 'Despesa com transporte';
-      else candidate = `Despesa em ${categoryLabel}`;
+      else if (matchesAny(key, ['Transporte'])) candidate = 'Saida com transporte';
+      else candidate = `Saida em ${categoryLabel}`;
     } else {
       if (matchesAny(key, ['Pix'])) candidate = 'Recebimento no Pix';
       else if (matchesAny(key, ['Comissao'])) candidate = 'Recebimento de comissao';

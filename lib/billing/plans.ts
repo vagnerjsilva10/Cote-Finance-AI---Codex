@@ -42,7 +42,7 @@ export const BILLING_PLAN_DETAILS: Record<BillingPlanCode, BillingPlanDetails> =
       'IA financeira sem limite mensal',
       'Insights financeiros mais avançados',
       'Previsão de saldo e alertas inteligentes',
-      'Análises profundas de despesas',
+      'Análises profundas de saidas',
       'Automação financeira no WhatsApp',
       'Suporte por e-mail',
     ],

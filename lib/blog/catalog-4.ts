@@ -65,19 +65,19 @@ export const articleCatalogPart4: ArticleSeed[] = [
     author: 'Equipe Cote Finance AI',
     accent: 'emerald',
     relatedSlugs: ['como-comecar-a-organizar-sua-vida-financeira', 'como-montar-uma-reserva-de-emergencia'],
-    keywords: ['planejar dinheiro no mês', 'planejamento financeiro', 'controle financeiro', 'controle de despesas'],
+    keywords: ['planejar dinheiro no mês', 'planejamento financeiro', 'controle financeiro', 'controle de saidas'],
     intro: [
       'Planejar seu dinheiro no mês é sair do modo reativo. Em vez de descobrir problemas no fechamento, você antecipa compromissos, define limites e decide com mais calma o que realmente cabe no período.',
       'Sem esse planejamento, o mês vira uma sequência de respostas apressadas: paga o que chegou, usa o cartão quando falta folga e tenta descobrir depois por que nada avançou.',
       'Um bom plano mensal não precisa ser rígido demais. Ele precisa ser claro e ajustável o suficiente para funcionar na vida real.',
     ],
     explanation: [
-      'Todo planejamento mensal parte da renda disponível. A partir daí, você distribui esse valor entre despesas fixas, categorias variáveis, metas e uma margem mínima de segurança. O objetivo não é adivinhar tudo com precisão. É criar direção.',
+      'Todo planejamento mensal parte da renda disponível. A partir daí, você distribui esse valor entre saidas fixas, categorias variáveis, metas e uma margem mínima de segurança. O objetivo não é adivinhar tudo com precisão. É criar direção.',
       'Outro ponto importante é tratar o plano como algo vivo. Imprevistos acontecem, categorias oscilam e prioridades mudam. O bom planejamento não é o que nunca muda. É o que permite revisão sem perder o controle do todo.',
       'Quando o leitor entende isso, deixa de tratar orçamento como prisão e passa a usá-lo como ferramenta de decisão.',
     ],
     focusBullets: [
-      'Liste receitas previstas para o período',
+      'Liste entradas previstas para o período',
       'Mapeie compromissos fixos e vencimentos importantes',
       'Defina limites para categorias variáveis',
       'Reserve espaço para metas e margem de segurança',
@@ -89,7 +89,7 @@ export const articleCatalogPart4: ArticleSeed[] = [
     ],
     tips: [
       'Revise o plano no meio do mês, e não apenas no início.',
-      'Ajuste despesas não previstas sem abandonar o controle do todo.',
+      'Ajuste saidas não previstas sem abandonar o controle do todo.',
       'Compare o planejado com o realizado para aprender com cada ciclo.',
       'Dê atenção extra às categorias que mais oscilam.',
     ],

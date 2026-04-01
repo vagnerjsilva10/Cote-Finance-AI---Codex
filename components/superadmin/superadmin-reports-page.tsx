@@ -67,7 +67,7 @@ export function SuperadminReportsPage() {
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">Relatórios</p>
             <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)] md:text-3xl">Visão executiva</h1>
             <p className="max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
-              Crescimento, receita, ativação e intensidade operacional em um único painel.
+              Crescimento, entrada, ativação e intensidade operacional em um único painel.
             </p>
           </div>
           <a
@@ -162,7 +162,7 @@ export function SuperadminReportsPage() {
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <h2 className="text-lg font-black text-[var(--text-primary)]">Mix de planos</h2>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">Distribuicao atual da base e impacto em receita.</p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Distribuicao atual da base e impacto em entrada.</p>
           <div className="mt-4 space-y-3">
             {data.planMix.map((item) => (
               <article key={item.plan} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-3.5">

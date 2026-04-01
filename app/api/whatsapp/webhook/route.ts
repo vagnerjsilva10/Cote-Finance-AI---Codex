@@ -108,10 +108,10 @@ const HELP_MESSAGE = [
 ].join('\n');
 
 const WHATSAPP_PRO_FEATURE_BLOCK_MESSAGE =
-  'Essa automacao inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lancar despesas, metas, dividas e investimentos por mensagem.';
+  'Essa automacao inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lancar saidas, metas, dividas e investimentos por mensagem.';
 
-const EXPENSE_KEYWORDS = ['gastei', 'paguei', 'despesa', 'comprei', 'debito', 'conta'];
-const INCOME_KEYWORDS = ['recebi', 'ganhei', 'entrada', 'salario', 'faturei', 'credito'];
+const EXPENSE_KEYWORDS = ['gastei', 'paguei', 'saida', 'saída', 'despesa', 'comprei', 'debito', 'conta'];
+const INCOME_KEYWORDS = ['recebi', 'ganhei', 'entrada', 'receita', 'salario', 'faturei', 'credito'];
 const PIX_IN_KEYWORDS = ['pix in', 'pixin', 'recebi pix'];
 const PIX_OUT_KEYWORDS = ['pix out', 'pixout', 'enviei pix', 'paguei pix'];
 const HELP_KEYWORDS = ['ajuda', 'help', 'menu', 'comandos', 'exemplos'];
@@ -800,7 +800,7 @@ async function handleWhatsAppGeminiIntent(params: {
 Responda sempre em português do Brasil.
 Use apenas os dados do contexto abaixo.
 Se a pergunta não puder ser respondida com o contexto, diga isso com objetividade.
-Se a pergunta não for sobre finanças pessoais, gastos, metas, dívidas, saldo, receitas, categorias ou uso do workspace, responda de forma curta dizendo que aqui você ajuda com finanças do workspace.
+Se a pergunta não for sobre finanças pessoais, gastos, metas, dívidas, saldo, entradas, categorias ou uso do workspace, responda de forma curta dizendo que aqui você ajuda com finanças do workspace.
 Responda em no máximo 5 linhas curtas, sem markdown pesado, sem inventar números e sem tom promocional.
 
 CONTEXTO:

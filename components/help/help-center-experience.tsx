@@ -58,8 +58,8 @@ const categories: HelpCategory[] = [
     id: 'controle-de-gastos',
     icon: Wallet,
     title: 'Controle de gastos',
-    description: 'Veja como registrar despesas, acompanhar movimentações e entender seus hábitos financeiros.',
-    keywords: ['gastos', 'despesas', 'movimentações', 'receitas', 'controle', 'whatsapp', 'alertas'],
+    description: 'Veja como registrar saidas, acompanhar movimentações e entender seus hábitos financeiros.',
+    keywords: ['gastos', 'saidas', 'movimentações', 'entradas', 'controle', 'whatsapp', 'alertas'],
   },
   {
     id: 'metas-e-planejamento-financeiro',
@@ -97,9 +97,9 @@ const popularGuides: PopularGuide[] = [
     id: 'guia-gastos',
     title: 'Como acompanhar seus gastos',
     description:
-      'Registrar despesas ajuda você a entender para onde seu dinheiro está indo e identificar hábitos financeiros que podem ser melhorados.',
+      'Registrar saidas ajuda você a entender para onde seu dinheiro está indo e identificar hábitos financeiros que podem ser melhorados.',
     categoryId: 'controle-de-gastos',
-    keywords: ['gastos', 'despesas', 'controle de gastos', 'dinheiro'],
+    keywords: ['gastos', 'saidas', 'controle de gastos', 'dinheiro'],
   },
   {
     id: 'guia-metas',
@@ -115,7 +115,7 @@ const popularGuides: PopularGuide[] = [
     description:
       'Os relatórios mostram como seu dinheiro entra e sai ao longo do mês, ajudando você a tomar decisões financeiras melhores.',
     categoryId: 'controle-de-gastos',
-    keywords: ['relatórios', 'painel', 'gastos mensais', 'receitas e despesas'],
+    keywords: ['relatórios', 'painel', 'gastos mensais', 'entradas e saidas'],
   },
   {
     id: 'guia-whatsapp',
@@ -132,7 +132,7 @@ const faqs: HelpFaq[] = [
     id: 'faq-comecar',
     question: 'Como começo a usar o Cote Finance AI?',
     answer: [
-      'Crie sua conta, confirme seu e-mail e registre suas primeiras despesas ou receitas.',
+      'Crie sua conta, confirme seu e-mail e registre suas primeiras saidas ou entradas.',
       'Em poucos minutos você já terá uma visão clara da sua situação financeira.',
     ],
     keywords: ['começar', 'conta', 'email', 'primeiro acesso'],

@@ -56,8 +56,8 @@ export function buildFinancialInsights(
     if (Math.abs(delta) >= 10) {
       insights.push(
         delta > 0
-          ? `Sua receita cresceu ${delta.toFixed(1)}% em relação ao mês anterior.`
-          : `Sua receita reduziu ${Math.abs(delta).toFixed(1)}% em relação ao mês anterior.`
+          ? `Sua entrada cresceu ${delta.toFixed(1)}% em relação ao mês anterior.`
+          : `Sua entrada reduziu ${Math.abs(delta).toFixed(1)}% em relação ao mês anterior.`
       );
     }
   }

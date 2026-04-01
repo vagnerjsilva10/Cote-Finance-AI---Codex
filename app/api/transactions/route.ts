@@ -181,10 +181,10 @@ const normalizeTransactionType = (rawType?: string | null, rawFlowType?: string 
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase();
-  if (normalizedFlowType === 'receita' || normalizedFlowType === 'entrada' || normalizedFlowType === 'pix in') {
+  if (normalizedFlowType === 'entrada' || normalizedFlowType === 'receita' || normalizedFlowType === 'pix in') {
     return 'INCOME';
   }
-  if (normalizedFlowType === 'despesa' || normalizedFlowType === 'pix out') {
+  if (normalizedFlowType === 'saida' || normalizedFlowType === 'despesa' || normalizedFlowType === 'pix out') {
     return 'EXPENSE';
   }
   if (normalizedFlowType === 'transferencia') {

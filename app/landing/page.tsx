@@ -172,7 +172,7 @@ const planFeatures = {
     'Até 10 interações com IA por mês',
     'Dashboard financeiro',
     'Categorias automáticas',
-    'Análise básica de despesas',
+    'Análise básica de saidas',
   ],
   PRO: [
     'Lançamentos ilimitados',
@@ -190,7 +190,7 @@ const planFeatures = {
     'IA financeira sem limite mensal',
     'Insights financeiros mais avançados',
     'Previsão de saldo e alertas inteligentes',
-    'Análises profundas de despesas',
+    'Análises profundas de saidas',
     'Automação financeira no WhatsApp',
     'Suporte por e-mail',
   ],
@@ -492,7 +492,7 @@ function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: 'Entradas', value: 9120 },
-              { label: 'Despesas', value: 5940 },
+              { label: 'Saidas', value: 5940 },
               { label: 'Margem', value: 3180 },
             ].map((item) => (
               <div key={item.label} className="landing-tile p-3">
@@ -516,7 +516,7 @@ function HeroVisual({ offset, enableParallax }: { offset: number; enableParallax
         animate={enableParallax ? { y: [0, -6, 0] } : undefined}
         transition={enableParallax ? { duration: 5, repeat: Infinity } : undefined}
       >
-        <p className="text-xs text-[var(--text-secondary)]">Despesas invisíveis</p>
+        <p className="text-xs text-[var(--text-secondary)]">Saidas invisíveis</p>
         <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">R$680/mês</p>
       </motion.div>
 
@@ -707,7 +707,7 @@ export default function LandingPage() {
               <p className="label-premium">Diagnóstico rápido</p>
               <div className="mt-4 space-y-3">
                 {[
-                  { k: 'Despesas invisíveis', v: 'R$680' },
+                  { k: 'Saidas invisíveis', v: 'R$680' },
                   { k: 'Categoria mais crítica', v: 'Alimentação' },
                   { k: 'Perda anual', v: 'R$8.160' },
                 ].map((row) => (
@@ -808,7 +808,7 @@ export default function LandingPage() {
             <div className="landing-panel landing-depth-card p-6 sm:p-7">
               <div className="landing-tile p-4">
                 <p className="label-premium">Padrão detectado</p>
-                <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">Pico de despesa entre dia 19 e 24</p>
+                <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">Pico de saida entre dia 19 e 24</p>
                 <p className="mt-1 text-sm leading-7 text-[var(--text-secondary)]">Concentração em alimentação e recorrentes no fim do ciclo.</p>
               </div>
               <div className="mt-4 landing-tile p-4">

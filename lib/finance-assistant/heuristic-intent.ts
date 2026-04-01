@@ -96,7 +96,7 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
       rawUserUtterance: messageText,
-      normalizedMeaning: 'registrar despesa',
+      normalizedMeaning: 'registrar saida',
       responseStyleHint: 'natural_curto',
       transaction: {
         amount,
@@ -125,7 +125,7 @@ export function parseIntentHeuristically(messageText: string): ParsedFinancialIn
       needsConfirmation: !amount,
       replyModeRequested: 'unchanged',
       rawUserUtterance: messageText,
-      normalizedMeaning: 'registrar receita',
+      normalizedMeaning: 'registrar entrada',
       responseStyleHint: 'natural_curto',
       transaction: {
         amount,

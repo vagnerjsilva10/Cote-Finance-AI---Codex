@@ -1629,7 +1629,7 @@ export async function markFinancialCalendarEventStatus(input: MarkFinancialEvent
     });
 
     if (!debt) {
-      throw new Error('Despesa de origem não encontrada.');
+      throw new Error('Saida de origem não encontrada.');
     }
 
     const persistedStatus = nextStatus === 'RECEIVED' ? 'PAID' : nextStatus;

@@ -148,8 +148,8 @@ function resolveOriginMeta(event: FinancialCalendarOccurrence) {
 
   if (event.sourceType === 'INCOME') {
     return {
-      label: 'Receita sincronizada a partir do m\u00f3dulo de lan\u00e7amentos.',
-      actionLabel: 'Abrir receita',
+      label: 'Entrada sincronizada a partir do m\u00f3dulo de lan\u00e7amentos.',
+      actionLabel: 'Abrir entrada',
     };
   }
 
@@ -162,7 +162,7 @@ function resolveOriginMeta(event: FinancialCalendarOccurrence) {
 
   if (event.sourceType === 'SUBSCRIPTION') {
     return {
-      label: 'Recorr\u00eancia conectada a despesas assinadas ou fixas.',
+      label: 'Recorr\u00eancia conectada a saidas assinadas ou fixas.',
       actionLabel: 'Abrir origem',
     };
   }

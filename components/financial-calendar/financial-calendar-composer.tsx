@@ -419,7 +419,7 @@ export function FinancialCalendarComposer({
                     value={form.category}
                     onChange={(event) => updateField('category', event.target.value)}
                     className="app-field rounded-2xl px-4 py-3"
-                    placeholder={'Ex.: Moradia, Cart\u00e3o, Receita'}
+                    placeholder={'Ex.: Moradia, Cart\u00e3o, Entrada'}
                     maxLength={60}
                   />
                   <p className="text-xs text-[var(--text-muted)]">Opcional. Ajuda a organizar o contexto financeiro do dia.</p>

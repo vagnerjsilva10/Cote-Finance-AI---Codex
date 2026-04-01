@@ -40,7 +40,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
       ],
     },
     intro: [
-      'Organizar as finanças pessoais ainda é um desafio para muita gente. Mesmo quando existe vontade de controlar gastos, a rotina se perde entre extratos, faturas, contas variáveis e pequenas despesas que aparecem ao longo do mês sem pedir licença.',
+      'Organizar as finanças pessoais ainda é um desafio para muita gente. Mesmo quando existe vontade de controlar gastos, a rotina se perde entre extratos, faturas, contas variáveis e pequenas saidas que aparecem ao longo do mês sem pedir licença.',
       'A boa notícia é que a inteligência artificial está mudando a forma como lidamos com esse caos. Em vez de depender só de memória, planilhas dispersas ou revisão tardia, já é possível usar tecnologia para entender hábitos financeiros, identificar desperdícios e tomar decisões muito melhores com base em dados reais.',
       'Neste guia, você vai entender como a IA ajuda na organização financeira, por que ela acelera a leitura dos seus gastos e como isso se transforma em mais controle sobre dinheiro, metas e prioridades.',
     ],
@@ -51,7 +51,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
     ],
     focusBullets: [
       'Análise automática de gastos por categoria e padrão de comportamento',
-      'Identificação de despesas recorrentes, assinaturas e excessos silenciosos',
+      'Identificação de saidas recorrentes, assinaturas e excessos silenciosos',
       'Leitura mais rápida do que cresceu, do que pesa e do que pode ser ajustado',
       'Planejamento financeiro mais claro com base em dados reais do seu mês',
     ],
@@ -62,7 +62,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
     ],
     tips: [
       'Acompanhe todos os gastos, inclusive os pequenos, porque eles revelam padrões importantes no fechamento do mês.',
-      'Categorize despesas em grupos simples, como moradia, alimentação, transporte, lazer, investimentos e assinaturas.',
+      'Categorize saidas em grupos simples, como moradia, alimentação, transporte, lazer, investimentos e assinaturas.',
       'Use a análise mensal para descobrir qual categoria está crescendo e qual delas merece atenção primeiro.',
       'Transforme cada insight em uma decisão prática, como rever uma assinatura, limitar delivery ou reduzir compras impulsivas.',
     ],
@@ -91,7 +91,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
     accent: 'cyan',
     featured: true,
     relatedSlugs: ['como-organizar-suas-financas-usando-inteligencia-artificial', 'como-entender-seus-gastos-mensais'],
-    keywords: ['controle de despesas', 'controlar gastos', 'organizar finanças', 'para onde seu dinheiro está indo'],
+    keywords: ['controle de saidas', 'controlar gastos', 'organizar finanças', 'para onde seu dinheiro está indo'],
     visual: {
       eyebrow: 'O que o painel revela',
       title: 'O dinheiro não some. Ele se espalha sem contexto',
@@ -138,8 +138,8 @@ export const articleCatalogPart1: ArticleSeed[] = [
     ],
     tips: [
       'Revise seus gastos pelo menos uma vez por semana, e não apenas no fechamento do mês.',
-      'Separe despesas fixas, variáveis e recorrentes para não misturar hábitos com obrigações permanentes.',
-      'Observe a categoria mais cara do mês antes de sair cortando pequenas despesas aleatórias.',
+      'Separe saidas fixas, variáveis e recorrentes para não misturar hábitos com obrigações permanentes.',
+      'Observe a categoria mais cara do mês antes de sair cortando pequenas saidas aleatórias.',
       'Compare períodos equivalentes para perceber aumento de gastos antes que eles virem problema grande.',
     ],
     checklist: [
@@ -166,7 +166,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
     accent: 'blue',
     featured: true,
     relatedSlugs: ['como-organizar-suas-financas-usando-inteligencia-artificial', 'como-ter-controle-total-do-seu-dinheiro'],
-    keywords: ['controle financeiro', 'controle de despesas', 'controlar gastos sem planilhas', 'organizar finanças'],
+    keywords: ['controle financeiro', 'controle de saidas', 'controlar gastos sem planilhas', 'organizar finanças'],
     visual: {
       eyebrow: 'Menos atrito, mais consistência',
       title: 'O melhor sistema é o que você consegue manter',
@@ -214,7 +214,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
     tips: [
       'Registre no momento da compra para não depender de memória depois.',
       'Use categorias simples e objetivas para facilitar análise e comparação.',
-      'Evite exigir muitos campos obrigatórios no lançamento de cada despesa.',
+      'Evite exigir muitos campos obrigatórios no lançamento de cada saida.',
       'Reserve alguns minutos por semana para revisar o painel e corrigir desvios cedo.',
     ],
     checklist: [
@@ -265,7 +265,7 @@ export const articleCatalogPart1: ArticleSeed[] = [
     tips: [
       'Escolha uma meta principal por vez quando o orçamento estiver apertado.',
       'Divida o objetivo em marcos menores para acompanhar progresso sem depender só do resultado final.',
-      'Revise o plano sempre que renda, despesas ou prioridades mudarem.',
+      'Revise o plano sempre que renda, saidas ou prioridades mudarem.',
       'Use um painel visual para acompanhar a evolução e manter a meta viva na rotina.',
     ],
     checklist: [
