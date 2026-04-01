@@ -1,14 +1,20 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { GeminiTtsError } from '@/lib/ai/gemini-tts';
 import type { RuntimeAudioEnv } from '@/lib/config/env';
 import { trySendWhatsAppAudioReply } from '@/lib/finance-assistant/audio-reply.service';
 
+type LoggedEvent = {
+  event: string;
+  payload?: Record<string, unknown>;
+};
+
 function makeEnv(overrides?: Partial<RuntimeAudioEnv>): RuntimeAudioEnv {
   return {
     geminiApiKey: 'test-gemini-key',
     geminiTtsModel: 'gemini-2.5-flash-preview-tts',
+    geminiTtsVoice: '',
     whatsappAccessToken: 'wa-token',
     whatsappPhoneNumberId: 'wa-phone-id',
     whatsappBusinessAccountId: 'wa-business-id',
@@ -18,8 +24,8 @@ function makeEnv(overrides?: Partial<RuntimeAudioEnv>): RuntimeAudioEnv {
   };
 }
 
-test('A) sem GEMINI_TTS_MODEL faz fallback textual e loga erro de modelo', async () => {
-  const events: string[] = [];
+test('A) sem GEMINI_TTS_MODEL faz fallback textual e loga missing_env', async () => {
+  const logs: LoggedEvent[] = [];
   let synthCalls = 0;
 
   const result = await trySendWhatsAppAudioReply({
@@ -28,7 +34,7 @@ test('A) sem GEMINI_TTS_MODEL faz fallback textual e loga erro de modelo', async
     intent: 'create_expense',
     mode: 'both',
     to: '5511999999999',
-    textForSpeech: '✅ Pronto! Registrei R$ 60,00 em Mercado.',
+    textForSpeech: 'Pronto! Registrei R$ 60,00 em Mercado.',
     deps: {
       readEnv: () => makeEnv({ geminiTtsModel: '' }),
       synthesizeAudio: async () => {
@@ -41,8 +47,8 @@ test('A) sem GEMINI_TTS_MODEL faz fallback textual e loga erro de modelo', async
         };
       },
       sendAudioMessage: async () => undefined,
-      logEvent: async ({ event }) => {
-        events.push(event);
+      logEvent: async ({ event, payload }) => {
+        logs.push({ event, payload });
       },
     },
   });
@@ -50,11 +56,16 @@ test('A) sem GEMINI_TTS_MODEL faz fallback textual e loga erro de modelo', async
   assert.equal(result.sent, false);
   assert.equal(result.reason, 'tts_env_missing');
   assert.equal(synthCalls, 0);
-  assert.ok(events.includes('WHATSAPP_TTS_MODEL_ERROR'));
-  assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_ERROR'));
+
+  const ttsError = logs.find((item) => item.event === 'WHATSAPP_TTS_MODEL_ERROR');
+  assert.ok(ttsError);
+  assert.equal(ttsError?.payload?.reason, 'missing_env');
+  assert.equal(ttsError?.payload?.envName, 'GEMINI_TTS_MODEL');
+  assert.ok(logs.some((item) => item.event === 'WHATSAPP_AUDIO_REPLY_ERROR'));
+  assert.equal(logs.some((item) => item.event === 'WHATSAPP_AUDIO_REPLY_SUCCESS'), false);
 });
 
-test('B) com GEMINI_TTS_MODEL valido e modo both envia audio com sucesso', async () => {
+test('B) com modo both envia audio com sucesso', async () => {
   const events: string[] = [];
   let sendCalls = 0;
 
@@ -64,7 +75,7 @@ test('B) com GEMINI_TTS_MODEL valido e modo both envia audio com sucesso', async
     intent: 'create_income',
     mode: 'both',
     to: '5511999999999',
-    textForSpeech: '💰 Tudo certo! Registrei R$ 800,00 como recebimento no Pix.',
+    textForSpeech: 'Tudo certo! Registrei R$ 800,00 como recebimento no Pix.',
     deps: {
       readEnv: () => makeEnv(),
       synthesizeAudio: async () => ({
@@ -73,8 +84,30 @@ test('B) com GEMINI_TTS_MODEL valido e modo both envia audio com sucesso', async
         filename: 'reply.ogg',
         model: 'gemini-2.5-flash-preview-tts',
       }),
-      sendAudioMessage: async () => {
+      sendAudioMessage: async (params) => {
         sendCalls += 1;
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_UPLOAD_START',
+          phone: '5511999999999',
+          mimeType: params.mimeType,
+          byteLength: params.audioBuffer.length,
+        });
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_UPLOAD_SUCCESS',
+          phone: '5511999999999',
+          mediaId: 'media-1',
+        });
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_SEND_START',
+          phone: '5511999999999',
+          mediaId: 'media-1',
+        });
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_SEND_SUCCESS',
+          phone: '5511999999999',
+          mediaId: 'media-1',
+          messageIds: ['wamid-1'],
+        });
       },
       logEvent: async ({ event }) => {
         events.push(event);
@@ -85,6 +118,10 @@ test('B) com GEMINI_TTS_MODEL valido e modo both envia audio com sucesso', async
   assert.equal(result.sent, true);
   assert.equal(sendCalls, 1);
   assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_START'));
+  assert.ok(events.includes('WHATSAPP_AUDIO_UPLOAD_START'));
+  assert.ok(events.includes('WHATSAPP_AUDIO_UPLOAD_SUCCESS'));
+  assert.ok(events.includes('WHATSAPP_AUDIO_SEND_START'));
+  assert.ok(events.includes('WHATSAPP_AUDIO_SEND_SUCCESS'));
   assert.ok(events.includes('WHATSAPP_REPLY_AUDIO_SENT'));
   assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_SUCCESS'));
 });
@@ -99,7 +136,7 @@ test('C) provider retorna audio vazio e loga WHATSAPP_TTS_EMPTY_AUDIO', async ()
     intent: 'create_expense',
     mode: 'audio',
     to: '5511999999999',
-    textForSpeech: '✅ Pronto! Registrei R$ 60,00 em Mercado.',
+    textForSpeech: 'Pronto! Registrei R$ 60,00 em Mercado.',
     deps: {
       readEnv: () => makeEnv(),
       synthesizeAudio: async () => ({
@@ -120,6 +157,7 @@ test('C) provider retorna audio vazio e loga WHATSAPP_TTS_EMPTY_AUDIO', async ()
   assert.equal(result.reason, 'tts_empty_audio');
   assert.equal(sendCalls, 0);
   assert.ok(events.includes('WHATSAPP_TTS_EMPTY_AUDIO'));
+  assert.equal(events.includes('WHATSAPP_AUDIO_REPLY_SUCCESS'), false);
 });
 
 test('D) erro do provider TTS loga WHATSAPP_TTS_MODEL_ERROR e fallback textual', async () => {
@@ -131,7 +169,7 @@ test('D) erro do provider TTS loga WHATSAPP_TTS_MODEL_ERROR e fallback textual',
     intent: 'create_income',
     mode: 'audio',
     to: '5511999999999',
-    textForSpeech: '💰 Tudo certo! Registrei R$ 800,00 como recebimento no Pix.',
+    textForSpeech: 'Tudo certo! Registrei R$ 800,00 como recebimento no Pix.',
     deps: {
       readEnv: () => makeEnv(),
       synthesizeAudio: async () => {
@@ -153,9 +191,10 @@ test('D) erro do provider TTS loga WHATSAPP_TTS_MODEL_ERROR e fallback textual',
   assert.equal(result.reason, 'tts_generation_failed');
   assert.ok(events.includes('WHATSAPP_TTS_MODEL_ERROR'));
   assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_ERROR'));
+  assert.equal(events.includes('WHATSAPP_AUDIO_REPLY_SUCCESS'), false);
 });
 
-test('E) erro no envio de midia WhatsApp loga WHATSAPP_AUDIO_REPLY_ERROR', async () => {
+test('E) erro no upload de midia loga WHATSAPP_AUDIO_UPLOAD_ERROR', async () => {
   const events: string[] = [];
 
   const result = await trySendWhatsAppAudioReply({
@@ -164,7 +203,7 @@ test('E) erro no envio de midia WhatsApp loga WHATSAPP_AUDIO_REPLY_ERROR', async
     intent: 'create_expense',
     mode: 'both',
     to: '5511999999999',
-    textForSpeech: '✅ Pronto! Registrei R$ 60,00 em Mercado.',
+    textForSpeech: 'Pronto! Registrei R$ 60,00 em Mercado.',
     deps: {
       readEnv: () => makeEnv(),
       synthesizeAudio: async () => ({
@@ -173,8 +212,21 @@ test('E) erro no envio de midia WhatsApp loga WHATSAPP_AUDIO_REPLY_ERROR', async
         filename: 'reply.ogg',
         model: 'gemini-2.5-flash-preview-tts',
       }),
-      sendAudioMessage: async () => {
-        throw new Error('whatsapp media upload failed');
+      sendAudioMessage: async (params) => {
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_UPLOAD_START',
+          phone: '5511999999999',
+          mimeType: params.mimeType,
+          byteLength: params.audioBuffer.length,
+        });
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_UPLOAD_ERROR',
+          phone: '5511999999999',
+          error: 'upload failed',
+          status: 500,
+          responseBody: '{"error":"upload"}',
+        });
+        throw new Error('upload failed');
       },
       logEvent: async ({ event }) => {
         events.push(event);
@@ -184,19 +236,73 @@ test('E) erro no envio de midia WhatsApp loga WHATSAPP_AUDIO_REPLY_ERROR', async
 
   assert.equal(result.sent, false);
   assert.equal(result.reason, 'audio_send_failed');
+  assert.ok(events.includes('WHATSAPP_AUDIO_UPLOAD_ERROR'));
   assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_ERROR'));
+  assert.equal(events.includes('WHATSAPP_AUDIO_REPLY_SUCCESS'), false);
 });
 
-test('F) modo text nao tenta TTS', async () => {
-  let synthCalls = 0;
+test('F) erro no envio de midia loga WHATSAPP_AUDIO_SEND_ERROR', async () => {
+  const events: string[] = [];
 
   const result = await trySendWhatsAppAudioReply({
     workspaceId: 'w1',
     messageId: 'm-f',
     intent: 'create_expense',
+    mode: 'both',
+    to: '5511999999999',
+    textForSpeech: 'Pronto! Registrei R$ 60,00 em Mercado.',
+    deps: {
+      readEnv: () => makeEnv(),
+      synthesizeAudio: async () => ({
+        audioBuffer: Buffer.from('abc'),
+        mimeType: 'audio/ogg',
+        filename: 'reply.ogg',
+        model: 'gemini-2.5-flash-preview-tts',
+      }),
+      sendAudioMessage: async (params) => {
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_UPLOAD_SUCCESS',
+          phone: '5511999999999',
+          mediaId: 'media-2',
+        });
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_SEND_START',
+          phone: '5511999999999',
+          mediaId: 'media-2',
+        });
+        await params.onEvent?.({
+          event: 'WHATSAPP_AUDIO_SEND_ERROR',
+          phone: '5511999999999',
+          mediaId: 'media-2',
+          error: 'send failed',
+          status: 500,
+          responseBody: '{"error":"send"}',
+        });
+        throw new Error('send failed');
+      },
+      logEvent: async ({ event }) => {
+        events.push(event);
+      },
+    },
+  });
+
+  assert.equal(result.sent, false);
+  assert.equal(result.reason, 'audio_send_failed');
+  assert.ok(events.includes('WHATSAPP_AUDIO_SEND_ERROR'));
+  assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_ERROR'));
+  assert.equal(events.includes('WHATSAPP_AUDIO_REPLY_SUCCESS'), false);
+});
+
+test('G) modo text nao tenta TTS', async () => {
+  let synthCalls = 0;
+
+  const result = await trySendWhatsAppAudioReply({
+    workspaceId: 'w1',
+    messageId: 'm-g',
+    intent: 'create_expense',
     mode: 'text',
     to: '5511999999999',
-    textForSpeech: '✅ Pronto! Registrei R$ 60,00 em Mercado.',
+    textForSpeech: 'Pronto! Registrei R$ 60,00 em Mercado.',
     deps: {
       readEnv: () => makeEnv(),
       synthesizeAudio: async () => {
@@ -216,16 +322,16 @@ test('F) modo text nao tenta TTS', async () => {
   assert.equal(synthCalls, 0);
 });
 
-test('G) modo audio tenta TTS e preserva fallback textual quando falha', async () => {
+test('H) modo audio tenta TTS e preserva fallback textual quando falha', async () => {
   const events: string[] = [];
 
   const result = await trySendWhatsAppAudioReply({
     workspaceId: 'w1',
-    messageId: 'm-g',
+    messageId: 'm-h',
     intent: 'create_expense',
     mode: 'audio',
     to: '5511999999999',
-    textForSpeech: '✅ Pronto! Registrei R$ 60,00 em Mercado.',
+    textForSpeech: 'Pronto! Registrei R$ 60,00 em Mercado.',
     deps: {
       readEnv: () => makeEnv(),
       synthesizeAudio: async () => {
@@ -242,4 +348,5 @@ test('G) modo audio tenta TTS e preserva fallback textual quando falha', async (
   assert.equal(result.reason, 'tts_generation_failed');
   assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_START'));
   assert.ok(events.includes('WHATSAPP_AUDIO_REPLY_ERROR'));
+  assert.equal(events.includes('WHATSAPP_AUDIO_REPLY_SUCCESS'), false);
 });

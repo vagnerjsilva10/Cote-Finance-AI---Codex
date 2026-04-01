@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { Modality } from '@google/genai';
 import { getGeminiClient } from '@/lib/gemini';
 import { getRuntimeAudioEnv } from '@/lib/config/env';
 
@@ -146,7 +147,7 @@ export async function synthesizeSpeechWithGemini(text: string): Promise<GeminiTt
   }
 
   const ai = getGeminiClient();
-  const configuredVoice = String(process.env.GEMINI_TTS_VOICE || '').trim();
+  const configuredVoice = env.geminiTtsVoice;
 
   let response: unknown;
   try {
@@ -169,7 +170,7 @@ export async function synthesizeSpeechWithGemini(text: string): Promise<GeminiTt
         },
       ],
       config: {
-        responseModalities: ['audio'],
+        responseModalities: [Modality.AUDIO],
         speechConfig: {
           languageCode: 'pt-BR',
           ...(configuredVoice
@@ -210,4 +211,3 @@ export async function synthesizeSpeechWithGemini(text: string): Promise<GeminiTt
     model: env.geminiTtsModel,
   };
 }
-

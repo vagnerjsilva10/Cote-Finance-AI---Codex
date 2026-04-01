@@ -18,6 +18,9 @@ import { logWhatsAppOperationalEvent } from '@/lib/server/whatsapp-observability
 import { logWorkspaceEventSafe } from '@/lib/server/multi-tenant';
 import { normalizeIncomingWhatsAppMessages } from '@/lib/whatsapp/normalize-incoming-message';
 import { orchestrateWhatsAppFinancialMessage } from '@/lib/finance-assistant/orchestrate-whatsapp-financial-message';
+import { parseIntentHeuristically } from '@/lib/finance-assistant/heuristic-intent';
+import { decideLegacyPassthrough } from '@/lib/finance-assistant/legacy-passthrough-policy';
+import { warnIfTtsEnvMissingAtStartup } from '@/lib/config/env';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -2014,6 +2017,7 @@ export async function POST(req: Request) {
     const incomingMessages = normalizeIncomingWhatsAppMessages(body);
     if (incomingMessages.length > 0 || incomingStatuses.length > 0) {
       getWhatsAppConfig();
+      warnIfTtsEnvMissingAtStartup();
     }
 
     for (const status of incomingStatuses) {
@@ -2041,6 +2045,20 @@ export async function POST(req: Request) {
           allowUnknownPassthrough: true,
         });
         if (orchestrationResult.handled) {
+          continue;
+        }
+
+        const passthroughPreview = parseIntentHeuristically(message.text);
+        const passthroughDecision = decideLegacyPassthrough({
+          messageKind: message.kind,
+          rawText: message.text,
+          previewIntent: passthroughPreview,
+        });
+        if (!passthroughDecision.shouldPassthrough) {
+          await orchestrateWhatsAppFinancialMessage({
+            message,
+            allowUnknownPassthrough: false,
+          });
           continue;
         }
 

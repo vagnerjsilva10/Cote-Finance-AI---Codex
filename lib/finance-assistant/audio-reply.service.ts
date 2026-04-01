@@ -9,8 +9,13 @@ import {
   getRuntimeAudioEnv,
   type RuntimeAudioEnv,
   validateRuntimeAudioEnv,
+  validateTtsEnv,
 } from '@/lib/config/env';
-import { sendWhatsAppAudioMessage } from '@/lib/whatsapp/send-whatsapp-audio';
+import {
+  sendWhatsAppAudioMessage,
+  WhatsAppAudioMessageError,
+  type WhatsAppAudioTransportEvent,
+} from '@/lib/whatsapp/send-whatsapp-audio';
 
 type ReplyMode = 'text' | 'audio' | 'both';
 
@@ -28,6 +33,7 @@ type AudioReplyDeps = {
     audioBuffer: Buffer;
     mimeType: string;
     filename?: string;
+    onEvent?: (event: WhatsAppAudioTransportEvent) => Promise<void> | void;
   }) => Promise<unknown>;
   logEvent: typeof logWhatsAppAssistantEvent;
   readEnv: () => RuntimeAudioEnv;
@@ -57,12 +63,18 @@ export async function trySendWhatsAppAudioReply(params: {
   const deps = params.deps || defaultDeps;
   const env = deps.readEnv();
   const envValidation = validateRuntimeAudioEnv(env);
+  const ttsEnvValidation = validateTtsEnv(env);
   const ttsModel = env.geminiTtsModel || null;
 
-  if (!env.geminiApiKey || !env.geminiTtsModel) {
-    const missing = envValidation.missing.filter(
+  if (!ttsEnvValidation.ok) {
+    const missing = ttsEnvValidation.missing.filter(
       (item) => item === 'GEMINI_API_KEY' || item === 'GEMINI_TTS_MODEL'
     );
+    const envName = missing.includes('GEMINI_TTS_MODEL')
+      ? 'GEMINI_TTS_MODEL'
+      : missing.includes('GEMINI_API_KEY')
+      ? 'GEMINI_API_KEY'
+      : null;
     await deps.logEvent({
       workspaceId: params.workspaceId,
       userId: params.userId ?? null,
@@ -73,7 +85,8 @@ export async function trySendWhatsAppAudioReply(params: {
         phone: params.to,
         replyMode: params.mode,
         ttsModel,
-        reason: 'tts_env_missing',
+        reason: 'missing_env',
+        envName,
         missingEnv: missing,
         providerStatus: 'not_attempted',
       },
@@ -89,6 +102,7 @@ export async function trySendWhatsAppAudioReply(params: {
         replyMode: params.mode,
         ttsModel,
         reason: 'tts_env_missing',
+        envName,
         missingEnv: missing,
       },
     });
@@ -146,11 +160,122 @@ export async function trySendWhatsAppAudioReply(params: {
     }
 
     stage = 'whatsapp_send';
+    const logTransportEvent = async (transportEvent: WhatsAppAudioTransportEvent) => {
+      if (transportEvent.event === 'WHATSAPP_AUDIO_UPLOAD_START') {
+        await deps.logEvent({
+          workspaceId: params.workspaceId,
+          userId: params.userId ?? null,
+          event: 'WHATSAPP_AUDIO_UPLOAD_START',
+          payload: {
+            messageId: params.messageId,
+            intent: params.intent,
+            phone: transportEvent.phone,
+            replyMode: params.mode,
+            ttsModel: audio.model || ttsModel,
+            mimeType: transportEvent.mimeType,
+            byteLength: transportEvent.byteLength,
+          },
+        });
+        return;
+      }
+
+      if (transportEvent.event === 'WHATSAPP_AUDIO_UPLOAD_SUCCESS') {
+        await deps.logEvent({
+          workspaceId: params.workspaceId,
+          userId: params.userId ?? null,
+          event: 'WHATSAPP_AUDIO_UPLOAD_SUCCESS',
+          payload: {
+            messageId: params.messageId,
+            intent: params.intent,
+            phone: transportEvent.phone,
+            replyMode: params.mode,
+            ttsModel: audio.model || ttsModel,
+            mediaId: transportEvent.mediaId,
+          },
+        });
+        return;
+      }
+
+      if (transportEvent.event === 'WHATSAPP_AUDIO_UPLOAD_ERROR') {
+        await deps.logEvent({
+          workspaceId: params.workspaceId,
+          userId: params.userId ?? null,
+          event: 'WHATSAPP_AUDIO_UPLOAD_ERROR',
+          payload: {
+            messageId: params.messageId,
+            intent: params.intent,
+            phone: transportEvent.phone,
+            replyMode: params.mode,
+            ttsModel: audio.model || ttsModel,
+            error: transportEvent.error,
+            status: transportEvent.status,
+            providerResponse: transportEvent.responseBody,
+          },
+        });
+        return;
+      }
+
+      if (transportEvent.event === 'WHATSAPP_AUDIO_SEND_START') {
+        await deps.logEvent({
+          workspaceId: params.workspaceId,
+          userId: params.userId ?? null,
+          event: 'WHATSAPP_AUDIO_SEND_START',
+          payload: {
+            messageId: params.messageId,
+            intent: params.intent,
+            phone: transportEvent.phone,
+            replyMode: params.mode,
+            ttsModel: audio.model || ttsModel,
+            mediaId: transportEvent.mediaId,
+          },
+        });
+        return;
+      }
+
+      if (transportEvent.event === 'WHATSAPP_AUDIO_SEND_SUCCESS') {
+        await deps.logEvent({
+          workspaceId: params.workspaceId,
+          userId: params.userId ?? null,
+          event: 'WHATSAPP_AUDIO_SEND_SUCCESS',
+          payload: {
+            messageId: params.messageId,
+            intent: params.intent,
+            phone: transportEvent.phone,
+            replyMode: params.mode,
+            ttsModel: audio.model || ttsModel,
+            mediaId: transportEvent.mediaId,
+            messageIds: transportEvent.messageIds,
+          },
+        });
+        return;
+      }
+
+      if (transportEvent.event === 'WHATSAPP_AUDIO_SEND_ERROR') {
+        await deps.logEvent({
+          workspaceId: params.workspaceId,
+          userId: params.userId ?? null,
+          event: 'WHATSAPP_AUDIO_SEND_ERROR',
+          payload: {
+            messageId: params.messageId,
+            intent: params.intent,
+            phone: transportEvent.phone,
+            replyMode: params.mode,
+            ttsModel: audio.model || ttsModel,
+            mediaId: transportEvent.mediaId,
+            error: transportEvent.error,
+            status: transportEvent.status,
+            providerResponse: transportEvent.responseBody,
+          },
+        });
+      }
+    };
+
     await deps.sendAudioMessage({
       to: params.to,
       audioBuffer: audio.audioBuffer,
       mimeType: audio.mimeType,
       filename: audio.filename,
+      onEvent: logTransportEvent,
     });
 
     await deps.logEvent({
@@ -240,6 +365,10 @@ export async function trySendWhatsAppAudioReply(params: {
         reason: stage === 'whatsapp_send' ? 'audio_send_failed' : 'tts_generation_failed',
         stage,
         error: error instanceof Error ? error.message : String(error || 'unknown_error'),
+        whatsappStatus:
+          error instanceof WhatsAppAudioMessageError ? error.status : null,
+        providerResponse:
+          error instanceof WhatsAppAudioMessageError ? error.responseBody : null,
       },
     });
     await deps.logEvent({
@@ -255,6 +384,10 @@ export async function trySendWhatsAppAudioReply(params: {
         reason: stage === 'whatsapp_send' ? 'audio_send_failed' : 'tts_generation_failed',
         stage,
         error: error instanceof Error ? error.message : String(error || 'unknown_error'),
+        whatsappStatus:
+          error instanceof WhatsAppAudioMessageError ? error.status : null,
+        providerResponse:
+          error instanceof WhatsAppAudioMessageError ? error.responseBody : null,
       },
     });
 

@@ -3,6 +3,7 @@ import 'server-only';
 export type RuntimeAudioEnv = {
   geminiApiKey: string;
   geminiTtsModel: string;
+  geminiTtsVoice: string;
   whatsappAccessToken: string;
   whatsappPhoneNumberId: string;
   whatsappBusinessAccountId: string;
@@ -18,6 +19,7 @@ export function getRuntimeAudioEnv(): RuntimeAudioEnv {
   return {
     geminiApiKey: readEnv('GEMINI_API_KEY'),
     geminiTtsModel: readEnv('GEMINI_TTS_MODEL'),
+    geminiTtsVoice: readEnv('GEMINI_TTS_VOICE'),
     whatsappAccessToken: readEnv('WHATSAPP_ACCESS_TOKEN'),
     whatsappPhoneNumberId: readEnv('WHATSAPP_PHONE_NUMBER_ID'),
     whatsappBusinessAccountId: readEnv('WHATSAPP_BUSINESS_ACCOUNT_ID'),
@@ -44,3 +46,31 @@ export function validateRuntimeAudioEnv(env = getRuntimeAudioEnv()) {
   };
 }
 
+export function validateTtsEnv(env = getRuntimeAudioEnv()) {
+  const missing: string[] = [];
+  if (!env.geminiApiKey) missing.push('GEMINI_API_KEY');
+  if (!env.geminiTtsModel) missing.push('GEMINI_TTS_MODEL');
+
+  return {
+    ok: missing.length === 0,
+    missing,
+    env,
+  };
+}
+
+let ttsStartupWarningEmitted = false;
+
+export function warnIfTtsEnvMissingAtStartup(env = getRuntimeAudioEnv()) {
+  if (ttsStartupWarningEmitted) return;
+  ttsStartupWarningEmitted = true;
+
+  const validation = validateTtsEnv(env);
+  if (validation.ok) return;
+
+  console.warn('WHATSAPP_TTS_ENV_WARNING', {
+    reason: 'missing_env',
+    missingEnv: validation.missing,
+    hasGeminiApiKey: Boolean(env.geminiApiKey),
+    hasGeminiTtsModel: Boolean(env.geminiTtsModel),
+  });
+}

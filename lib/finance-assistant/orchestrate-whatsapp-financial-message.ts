@@ -27,6 +27,7 @@ import { logWhatsAppAssistantEvent } from '@/lib/finance-assistant/audit-log.ser
 import type { NormalizedIncomingWhatsAppMessage } from '@/lib/whatsapp/normalize-incoming-message';
 import { resolveDailyGreeting } from '@/lib/finance-assistant/daily-greeting.service';
 import { trySendWhatsAppAudioReply } from '@/lib/finance-assistant/audio-reply.service';
+import { decideLegacyPassthrough } from '@/lib/finance-assistant/legacy-passthrough-policy';
 
 const PREMIUM_BLOCK_MESSAGE =
   'Essa automação inteligente via WhatsApp faz parte do plano Pro do Cote Finance AI. Quando quiser, posso te orientar a ativar o Pro para lançar despesas, metas, dívidas e investimentos por mensagem.';
@@ -108,7 +109,27 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
 
   if (params.message.kind === 'text' && params.allowUnknownPassthrough) {
     const previewIntent = parseIntentHeuristically(params.message.text);
-    if (previewIntent.intent === 'unknown') {
+    const passthroughDecision = decideLegacyPassthrough({
+      messageKind: params.message.kind,
+      rawText: params.message.text,
+      previewIntent,
+    });
+
+    if (passthroughDecision.shouldPassthrough) {
+      await logWhatsAppAssistantEvent({
+        workspaceId: workspace.workspaceId,
+        event: 'WHATSAPP_ORCHESTRATION_PASSTHROUGH_LEGACY',
+        payload: {
+          messageId,
+          reason: passthroughDecision.reason,
+          messageType: params.message.kind,
+          rawText: params.message.text,
+          normalizedText: passthroughDecision.normalizedText,
+          workspaceId: workspace.workspaceId,
+          phone: sender,
+          isLikelyFinancial: passthroughDecision.isLikelyFinancial,
+        },
+      });
       return { handled: false as const, reason: 'unknown_passthrough' as const };
     }
   }
@@ -263,12 +284,24 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
   });
 
   const persistedReplyMode = await getWorkspaceReplyMode(workspace.workspaceId);
-
-  if (parsedIntent.intent === 'set_reply_mode') {
-    const nextMode = resolveReplyMode({
+  const resolvedReplyMode = resolveReplyMode({
+    persistedMode: persistedReplyMode,
+    requestedMode: parsedIntent.replyModeRequested,
+  });
+  await logWhatsAppAssistantEvent({
+    workspaceId: workspace.workspaceId,
+    event: 'WHATSAPP_REPLY_MODE_RESOLVED',
+    payload: {
+      messageId,
+      phone: sender,
       persistedMode: persistedReplyMode,
       requestedMode: parsedIntent.replyModeRequested,
-    });
+      resolvedMode: resolvedReplyMode,
+    },
+  });
+
+  if (parsedIntent.intent === 'set_reply_mode') {
+    const nextMode = resolvedReplyMode;
     await setWorkspaceReplyMode({
       workspaceId: workspace.workspaceId,
       mode: nextMode,
@@ -502,11 +535,6 @@ export async function orchestrateWhatsAppFinancialMessage(params: {
       messageId,
       intent: parsedIntent.intent,
     },
-  });
-
-  const resolvedReplyMode = resolveReplyMode({
-    persistedMode: persistedReplyMode,
-    requestedMode: parsedIntent.replyModeRequested,
   });
 
   await trySendWhatsAppAudioReply({
