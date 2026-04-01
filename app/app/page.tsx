@@ -564,7 +564,7 @@ type CustomTransactionCategoryBuckets = {
   expense: string[];
 };
 
-const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 1;
+const DASHBOARD_SNAPSHOT_STORAGE_VERSION = 2;
 const ACTIVE_WORKSPACE_STORAGE_VERSION = 1;
 const CUSTOM_TRANSACTION_CATEGORIES_STORAGE_VERSION = 1;
 
@@ -577,6 +577,37 @@ function normalizeCustomCategoryLabel(value: string) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 40);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function toArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function isDashboardOverviewPayloadCompatible(value: unknown): value is DashboardOverviewPayload {
+  if (!isRecord(value)) return false;
+
+  const forecast = value.forecast;
+  const insights = value.insights;
+  const period = value.period;
+  const summary = value.summary;
+
+  if (!isRecord(period) || !isRecord(summary) || !isRecord(forecast) || !isRecord(insights)) {
+    return false;
+  }
+
+  return (
+    Array.isArray(forecast.daily) &&
+    Array.isArray(value.monthlySeries) &&
+    Array.isArray(value.alerts) &&
+    Array.isArray(value.upcomingEvents) &&
+    Array.isArray(value.recentTransactions) &&
+    Array.isArray(insights.primary) &&
+    Array.isArray(insights.automated)
+  );
 }
 
 function mergeTransactionCategoryLists(base: string[], custom: string[]) {
@@ -652,7 +683,8 @@ function readDashboardSnapshot(userId: string, workspaceId: string): WorkspaceDa
       return null;
     }
 
-    return JSON.parse(rawSnapshot) as WorkspaceDashboardSnapshot;
+    const parsed = JSON.parse(rawSnapshot);
+    return isRecord(parsed) ? (parsed as WorkspaceDashboardSnapshot) : null;
   } catch {
     return null;
   }
@@ -9503,25 +9535,34 @@ export default function App() {
   );
 
   const applyDashboardSnapshot = React.useCallback((snapshot: WorkspaceDashboardSnapshot) => {
+    const safeOverview = isDashboardOverviewPayloadCompatible(snapshot.dashboardOverview)
+      ? snapshot.dashboardOverview
+      : null;
+    const safeCurrentPlan = normalizePlan(snapshot.currentPlan);
+    const safeReportAccessLevel: ReportAccessLevel =
+      snapshot.reportAccessLevel === 'full' ? 'full' : 'basic';
+
     setIsDisconnectingWhatsApp(false);
-    setTotalBalance(snapshot.totalBalance);
-    setCurrentPlan(snapshot.currentPlan);
-    setReportAccessLevel(snapshot.reportAccessLevel);
-    setCurrentMonthTransactionCount(snapshot.currentMonthTransactionCount);
-    setAiUsageCount(snapshot.aiUsageCount);
-    setTransactions(snapshot.transactions);
-    setGoals(snapshot.goals);
-    setInvestments(snapshot.investments);
-    setDebts(snapshot.debts);
-    setRecurringDebts(snapshot.recurringDebts ?? []);
-    setWorkspaceEvents(snapshot.workspaceEvents);
-    setDashboardOverview(snapshot.dashboardOverview ?? null);
+    setTotalBalance(Number(snapshot.totalBalance) || 0);
+    setCurrentPlan(safeCurrentPlan);
+    setReportAccessLevel(safeReportAccessLevel);
+    setCurrentMonthTransactionCount(Math.max(0, Number(snapshot.currentMonthTransactionCount) || 0));
+    setAiUsageCount(Math.max(0, Number(snapshot.aiUsageCount) || 0));
+    setTransactions(toArray<Transaction>(snapshot.transactions));
+    setGoals(toArray<Goal>(snapshot.goals));
+    setInvestments(toArray<Investment>(snapshot.investments));
+    setDebts(toArray<Debt>(snapshot.debts));
+    setRecurringDebts(toArray<RecurringDebt>(snapshot.recurringDebts));
+    setWorkspaceEvents(toArray<WorkspaceEventItem>(snapshot.workspaceEvents));
+    setDashboardOverview(safeOverview);
     setReportsOverview(snapshot.reportsOverview ?? null);
-    setDashboardInsights(snapshot.dashboardInsights);
+    setDashboardInsights(toArray<string>(snapshot.dashboardInsights).map((value) => String(value)));
     setDashboardProjection(snapshot.dashboardProjection ?? null);
     setDashboardCalendarReadModel(snapshot.dashboardCalendarReadModel ?? null);
-    setIsWhatsAppConnected(snapshot.isWhatsAppConnected);
-    setWorkspaceWhatsAppPhoneNumber(snapshot.workspaceWhatsAppPhoneNumber);
+    setIsWhatsAppConnected(Boolean(snapshot.isWhatsAppConnected));
+    setWorkspaceWhatsAppPhoneNumber(
+      typeof snapshot.workspaceWhatsAppPhoneNumber === 'string' ? snapshot.workspaceWhatsAppPhoneNumber : ''
+    );
   }, []);
 
   const resolveWorkspaceIdForResourceRequest = React.useCallback(() => {
@@ -9651,6 +9692,10 @@ export default function App() {
         } else {
           throw error;
         }
+      }
+
+      if (!isDashboardOverviewPayloadCompatible(payload)) {
+        throw new Error('Resposta da dashboard em formato inesperado.');
       }
 
       setDashboardOverview(payload);

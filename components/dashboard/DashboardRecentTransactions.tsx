@@ -32,7 +32,8 @@ export function DashboardRecentTransactions({
   onViewAll,
   onOpenTransaction,
 }: DashboardRecentTransactionsProps) {
-  const visibleTransactions = transactions.slice(0, 8);
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const visibleTransactions = safeTransactions.slice(0, 8);
 
   return (
     <section className={cn(DASHBOARD_CARD_SHELL_CLASSNAME, 'min-h-[260px] space-y-3 !p-4 sm:!p-5')}>

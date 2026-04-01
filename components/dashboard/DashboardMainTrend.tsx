@@ -133,8 +133,9 @@ function formatTooltipLabel(value: string, period: DashboardOverviewPeriod | nul
 
 export function DashboardMainTrend({ forecast, period, loading }: DashboardMainTrendProps) {
   const rows = React.useMemo<TrendRow[]>(
-    () =>
-      (forecast?.daily ?? [])
+    () => {
+      const dailyPoints = Array.isArray(forecast?.daily) ? forecast.daily : [];
+      return dailyPoints
         .map((row) => {
           const parsedDate = parseChartDate(row.date);
           return {
@@ -146,8 +147,9 @@ export function DashboardMainTrend({ forecast, period, loading }: DashboardMainT
           };
         })
         .filter((row) => Number.isFinite(row.timestamp))
-        .sort((left, right) => left.timestamp - right.timestamp),
-    [forecast?.daily]
+        .sort((left, right) => left.timestamp - right.timestamp);
+    },
+    [forecast]
   );
 
   const xAxisInterval = resolveXAxisInterval(period, rows.length);
